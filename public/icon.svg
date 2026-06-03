@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="2failure">
+  <rect width="512" height="512" fill="#f4f4f0"/>
+  <rect x="32" y="32" width="448" height="448" fill="none" stroke="#000" stroke-width="24"/>
+  <text
+    x="256"
+    y="300"
+    text-anchor="middle"
+    font-family="Arial Black, sans-serif"
+    font-size="200"
+    font-style="italic"
+    fill="#00B2FF">2</text>
+  <ellipse cx="200" cy="360" rx="28" ry="36" fill="#000"/>
+  <ellipse cx="312" cy="360" rx="28" ry="36" fill="#000"/>
+</svg>
