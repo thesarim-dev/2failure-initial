@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Move } from './moves';
 import { ArrowRight, Skull } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import type { SetRepResult } from '../types/repProgress';
+import { formatPersonalBestDate } from '../lib/repProgress';
 
 const MOTIVATION_QUOTES = [
   {
@@ -41,9 +43,10 @@ const MOTIVATION_QUOTES = [
 interface SummaryProps {
   move: Move;
   duration: number;
+  setResult: SetRepResult | null;
   onHome: () => void;
 }
-export function Summary({ move, duration, onHome }: SummaryProps) {
+export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
   const [quote] = useState(
     () => MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)]
   );
@@ -175,33 +178,47 @@ export function Summary({ move, duration, onHome }: SummaryProps) {
               <span>DURATION:</span>
               <span>{formatTime(duration)}</span>
             </div>
+            {setResult && (
+              <>
+                <div className="flex justify-between">
+                  <span>REPS (THIS SET):</span>
+                  <span>{setResult.reps}</span>
+                </div>
+                <div className="flex justify-between items-start gap-4">
+                  <span className="shrink-0">PERSONAL BEST:</span>
+                  <span className="text-right">
+                    {setResult.personalBest.reps ?? '—'}
+                    {setResult.personalBest.reps !== null && (
+                      <span className="block text-sm font-normal normal-case">
+                        ({formatPersonalBestDate(setResult.personalBest.achievedAt)})
+                      </span>
+                    )}
+                  </span>
+                </div>
+                {setResult.isNewPersonalBest && (
+                  <p className="text-center text-sm font-bold text-[#CCFF00] bg-black px-2 py-1">
+                    NEW PERSONAL BEST!
+                  </p>
+                )}
+              </>
+            )}
             <div className="flex justify-between">
               <span>STATUS:</span>
               <span className="text-[#FF00FF]">COOKED</span>
             </div>
           </div>
 
-          <div className="mt-8 pt-4 border-t-4 border-black border-dashed text-center">
-            <p className="text-sm font-bold">
-              "I just failed on a bathroom floor. What did you do today?"
+          <div className="mt-8 pt-4 border-t-4 border-black border-dashed text-center normal-case">
+            <p className="text-sm font-medium leading-snug">
+              &ldquo;{quote.text}&rdquo;
+            </p>
+            <p className="text-xs font-bold mt-1.5">
+              — {quote.author}
             </p>
           </div>
         </motion.div>
 
-        <div className="w-full space-y-4">
-          <motion.blockquote
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="w-full bg-[#CCFF00]/15 text-white border-4 border-[#CCFF00] px-4 py-3 text-center normal-case">
-            <p className="text-sm font-medium leading-snug">
-              &ldquo;{quote.text}&rdquo;
-            </p>
-            <footer className="text-xs font-semibold text-[#CCFF00] mt-1.5">
-              — {quote.author}
-            </footer>
-          </motion.blockquote>
-
+        <div className="w-full">
           <motion.button
             initial={{
               opacity: 0
@@ -210,10 +227,10 @@ export function Summary({ move, duration, onHome }: SummaryProps) {
               opacity: 1
             }}
             transition={{
-              delay: 0.9
+              delay: 0.8
             }}
             onClick={onHome}
-            className="w-full bg-transparent text-white border-4 border-white p-4 flex items-center justify-center gap-2 font-bold text-xl hover:bg-white hover:text-black transition-colors">
+            className="w-full bg-[#CCFF00] text-black rounded-2xl border-2 border-[#CCFF00] p-4 flex items-center justify-center gap-2 font-bold text-xl shadow-[0_0_0_1px_#CCFF00,0_0_14px_rgba(204,255,0,0.7),0_0_28px_rgba(204,255,0,0.35)] hover:shadow-[0_0_0_1px_#CCFF00,0_0_22px_rgba(204,255,0,0.95),0_0_44px_rgba(204,255,0,0.55)] hover:brightness-110 transition-all duration-200">
             
             BACK TO SUFFERING
             <ArrowRight size={24} />

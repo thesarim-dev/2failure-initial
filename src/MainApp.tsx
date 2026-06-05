@@ -8,9 +8,19 @@ import { useWorkoutProgress } from './hooks/useWorkoutProgress';
 import { Workout } from './components/Workout';
 import { Summary } from './components/Summary';
 import { Store } from './components/Store';
-import { Move, MOVE_CATEGORIES, Variant, resolveMove } from './components/moves';
+import {
+  Move,
+  MOVE_CATEGORIES,
+  Variant,
+  isRepLoggedCategory,
+  resolveMove
+} from './components/moves';
+import { RepPrompt } from './components/RepPrompt';
+import { recordSetReps } from './lib/repProgress';
+import { useAuth } from './context/AuthContext';
+import type { SetRepResult } from './types/repProgress';
 
-type AppState = 'HOME' | 'WORKOUT' | 'SUMMARY' | 'STORE';
+type AppState = 'HOME' | 'WORKOUT' | 'REP_PROMPT' | 'SUMMARY' | 'STORE';
 
 const DEFAULT_EQUIPPED = MOVE_CATEGORIES.reduce<Record<string, string>>(
   (acc, cat) => {
@@ -23,6 +33,7 @@ const DEFAULT_EQUIPPED = MOVE_CATEGORIES.reduce<Record<string, string>>(
 const DEFAULT_OWNED = MOVE_CATEGORIES.map((cat) => cat.variants[0].id);
 
 export function MainApp() {
+  const { user } = useAuth();
   const { isDark, toggle: toggleDark } = useDarkMode();
   const {
     coins,
@@ -69,19 +80,47 @@ export function MainApp() {
   const [lastDuration, setLastDuration] = useState<number>(
     screenInit.lastDuration ?? 0
   );
+  const [lastSetResult, setLastSetResult] = useState<SetRepResult | null>(null);
 
   const handleSelectMove = (move: Move) => {
     setCurrentMove(move);
     setAppState('WORKOUT');
   };
-  const handleFinishWorkout = (duration: number) => {
-    setLastDuration(duration);
-    if (currentMove) {
-      void incrementSet(currentMove.categoryId);
-    }
+  const finishWorkoutSession = (duration: number) => {
+    if (!currentMove) return;
+    void incrementSet(currentMove.categoryId);
     void setCoins((c) => c + Math.max(10, Math.floor(duration / 2)));
     void recordWorkoutComplete();
     setAppState('SUMMARY');
+  };
+
+  const handleFinishWorkout = (duration: number) => {
+    setLastDuration(duration);
+    setLastSetResult(null);
+
+    if (currentMove && isRepLoggedCategory(currentMove.categoryId)) {
+      setAppState('REP_PROMPT');
+      return;
+    }
+
+    finishWorkoutSession(duration);
+  };
+
+  const handleRepSubmit = async (reps: number) => {
+    if (!currentMove || !user) return;
+
+    try {
+      const result = await recordSetReps(user.id, currentMove.categoryId, reps);
+      setLastSetResult(result);
+    } catch {
+      setLastSetResult({
+        reps,
+        personalBest: { reps: null, achievedAt: null },
+        isNewPersonalBest: false
+      });
+    }
+
+    finishWorkoutSession(lastDuration);
   };
   const handleCancelWorkout = () => {
     setCurrentMove(null);
@@ -90,6 +129,7 @@ export function MainApp() {
   const handleGoHome = () => {
     setCurrentMove(null);
     setLastDuration(0);
+    setLastSetResult(null);
     setAppState('HOME');
   };
   const handleOpenStore = () => setAppState('STORE');
@@ -154,10 +194,16 @@ export function MainApp() {
 
       }
 
+      {appState === 'REP_PROMPT' && currentMove &&
+      <RepPrompt move={currentMove} onSubmit={(reps) => void handleRepSubmit(reps)} />
+
+      }
+
       {appState === 'SUMMARY' && currentMove &&
       <Summary
         move={currentMove}
         duration={lastDuration}
+        setResult={lastSetResult}
         onHome={handleGoHome} />
 
       }

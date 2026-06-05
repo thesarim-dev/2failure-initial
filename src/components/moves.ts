@@ -195,6 +195,18 @@ export const MOVE_CATEGORIES: MoveCategory[] = [
 }];
 
 
+/** Categories where sets are counted in reps (not time holds). */
+export const REP_LOGGED_CATEGORY_IDS = new Set([
+  'pushups',
+  'squats',
+  'lunges',
+  'crunches'
+]);
+
+export function isRepLoggedCategory(categoryId: string): boolean {
+  return REP_LOGGED_CATEGORY_IDS.has(categoryId);
+}
+
 // Resolve an equipped variant + category color into a renderable Move
 export function resolveMove(category: MoveCategory, variantId: string): Move {
   const variant =
