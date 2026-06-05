@@ -109,17 +109,8 @@ export function MainApp() {
   const handleRepSubmit = async (reps: number) => {
     if (!currentMove || !user) return;
 
-    try {
-      const result = await recordSetReps(user.id, currentMove.categoryId, reps);
-      setLastSetResult(result);
-    } catch {
-      setLastSetResult({
-        reps,
-        personalBest: { reps: null, achievedAt: null },
-        isNewPersonalBest: false
-      });
-    }
-
+    const result = await recordSetReps(user.id, currentMove.categoryId, reps);
+    setLastSetResult(result);
     finishWorkoutSession(lastDuration);
   };
   const handleCancelWorkout = () => {

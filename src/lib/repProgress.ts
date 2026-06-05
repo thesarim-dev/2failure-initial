@@ -54,18 +54,26 @@ export async function recordSetReps(
   let personalBest = currentBest;
 
   if (isNewPersonalBest) {
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from('user_workouts')
       .update({
         best_reps: reps,
         best_reps_at: completedAt
       })
       .eq('user_id', userId)
-      .eq('category_id', categoryId);
+      .eq('category_id', categoryId)
+      .select('best_reps, best_reps_at')
+      .single();
 
     if (updateError) throw updateError;
+    if (!updated) {
+      throw new Error('Personal best update affected no rows.');
+    }
 
-    personalBest = { reps, achievedAt: completedAt };
+    personalBest = {
+      reps: updated.best_reps,
+      achievedAt: updated.best_reps_at
+    };
   }
 
   return {
