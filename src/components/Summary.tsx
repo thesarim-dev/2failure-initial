@@ -1,14 +1,53 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Move } from './moves';
-import { Share2, ArrowRight, Skull } from 'lucide-react';
+import { ArrowRight, Skull } from 'lucide-react';
 import confetti from 'canvas-confetti';
+
+const MOTIVATION_QUOTES = [
+  {
+    text: 'I have not failed. I’ve just found 10,000 ways that won’t work.',
+    author: 'Thomas Edison'
+  },
+  {
+    text: 'Genius is one percent inspiration and ninety-nine percent perspiration.',
+    author: 'Thomas Edison'
+  },
+  {
+    text: 'Whether you think you can, or you think you can’t — you’re right.',
+    author: 'Henry Ford'
+  },
+  {
+    text: 'Nothing in life is to be feared, it is only to be understood.',
+    author: 'Marie Curie'
+  },
+  {
+    text: 'Strive not to be a success, but rather to be of value.',
+    author: 'Albert Einstein'
+  },
+  {
+    text: 'The way to get started is to quit talking and begin doing.',
+    author: 'Walt Disney'
+  },
+  {
+    text: 'It always seems impossible until it’s done.',
+    author: 'Nelson Mandela'
+  },
+  {
+    text: 'The future belongs to those who believe in the beauty of their dreams.',
+    author: 'Eleanor Roosevelt'
+  }
+] as const;
 interface SummaryProps {
   move: Move;
   duration: number;
   onHome: () => void;
 }
 export function Summary({ move, duration, onHome }: SummaryProps) {
+  const [quote] = useState(
+    () => MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)]
+  );
+
   useEffect(() => {
     const colors = ['#CCFF00', '#FF00FF', '#000000'];
     const end = Date.now() + 750;
@@ -122,8 +161,8 @@ export function Summary({ move, duration, onHome }: SummaryProps) {
             <h3 className="font-display text-2xl uppercase tracking-widest text-center">
               Official Receipt
             </h3>
-            <p className="text-center text-sm font-bold mt-1 normal-case">
-              <span className="logo-brand">2failure</span> anti-gym
+            <p className="text-center text-sm font-normal mt-1 normal-case">
+              2failure — lose is improve
             </p>
           </div>
 
@@ -150,21 +189,18 @@ export function Summary({ move, duration, onHome }: SummaryProps) {
         </motion.div>
 
         <div className="w-full space-y-4">
-          <motion.button
-            initial={{
-              opacity: 0
-            }}
-            animate={{
-              opacity: 1
-            }}
-            transition={{
-              delay: 0.8
-            }}
-            className="w-full bg-[#CCFF00] text-black border-4 border-[#CCFF00] p-4 flex items-center justify-center gap-2 font-bold text-xl hover:bg-transparent hover:text-[#CCFF00] transition-colors">
-            
-            <Share2 size={24} />
-            FLEX YOUR FAILURE
-          </motion.button>
+          <motion.blockquote
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="w-full bg-[#CCFF00]/15 text-white border-4 border-[#CCFF00] px-4 py-3 text-center normal-case">
+            <p className="text-sm font-medium leading-snug">
+              &ldquo;{quote.text}&rdquo;
+            </p>
+            <footer className="text-xs font-semibold text-[#CCFF00] mt-1.5">
+              — {quote.author}
+            </footer>
+          </motion.blockquote>
 
           <motion.button
             initial={{

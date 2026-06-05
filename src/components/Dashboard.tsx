@@ -114,7 +114,7 @@ export function Dashboard({
         </div>
 
         <div
-          className="streak-badge shrink-0 w-[7.5rem] h-[7.5rem] rounded-full bg-[#FF4D00] border-4 border-white flex flex-col items-center justify-center text-black"
+          className="streak-badge shrink-0 w-[7.5rem] h-[7.5rem] rounded-full bg-[#FF4D00] border-4 border-white dark:border-white flex flex-col items-center justify-center text-black"
           aria-label={`Current streak: ${currentStreak} days`}>
           {statsLoading || statsCompleting ?
           <Loader2 size={28} className="animate-spin" aria-busy="true" /> :
@@ -146,11 +146,16 @@ export function Dashboard({
                 <h3 className="text-[clamp(0.95rem,4.5vw,1.875rem)] leading-none whitespace-nowrap min-w-0 flex-1">
                   {move.name}
                 </h3>
-                <span className="bg-black text-white px-2.5 py-1 text-xs font-bold tabular-nums rounded-md shrink-0 normal-case">
-                  {setsLoading ?
-                    '…' :
-                    `${setsCompleted[move.categoryId] ?? 0} / 3 sets`}
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs font-semibold text-black/75 normal-case">
+                    {move.muscleGroup}
+                  </span>
+                  <span className="bg-black text-white px-2.5 py-1 text-xs font-bold tabular-nums rounded-md normal-case">
+                    {setsLoading ?
+                      '…' :
+                      `${setsCompleted[move.categoryId] ?? 0} / 3 sets`}
+                  </span>
+                </div>
               </div>
               <p className="font-medium text-black/80">{move.description}</p>
             </div>

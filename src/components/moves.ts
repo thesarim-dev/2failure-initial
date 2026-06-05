@@ -3,6 +3,7 @@ export type Move = {
   categoryId: string;
   name: string;
   description: string;
+  muscleGroup: string;
   color: string;
   glow: string;
 };
@@ -18,6 +19,7 @@ export type Variant = {
 export type MoveCategory = {
   id: string;
   name: string;
+  muscleGroup: string;
   color: string;
   glow: string;
   variants: Variant[];
@@ -27,6 +29,7 @@ export const MOVE_CATEGORIES: MoveCategory[] = [
 {
   id: 'pushups',
   name: 'Pushups',
+  muscleGroup: 'upper body',
   color:
     'bg-[#CCFF00] text-black dark:bg-[#C8E838] dark:text-black',
   glow:
@@ -65,6 +68,7 @@ export const MOVE_CATEGORIES: MoveCategory[] = [
 {
   id: 'squats',
   name: 'Squats',
+  muscleGroup: 'lower body',
   color:
     'bg-[#FF00FF] text-black dark:bg-[#FF66FF] dark:text-black',
   glow:
@@ -96,6 +100,7 @@ export const MOVE_CATEGORIES: MoveCategory[] = [
 {
   id: 'planks',
   name: 'Planks',
+  muscleGroup: 'core',
   color:
     'bg-[#00FFFF] text-black dark:bg-[#4DFFFF] dark:text-black',
   glow:
@@ -127,6 +132,7 @@ export const MOVE_CATEGORIES: MoveCategory[] = [
 {
   id: 'lunges',
   name: 'Lunges',
+  muscleGroup: 'lower body',
   color:
     'bg-[#FF4D00] text-black dark:bg-[#FF7733] dark:text-black',
   glow:
@@ -158,6 +164,7 @@ export const MOVE_CATEGORIES: MoveCategory[] = [
 {
   id: 'crunches',
   name: 'Crunches',
+  muscleGroup: 'core',
   color:
     'bg-[#9D00FF] text-black dark:bg-[#C266FF] dark:text-black',
   glow:
@@ -197,6 +204,7 @@ export function resolveMove(category: MoveCategory, variantId: string): Move {
     categoryId: category.id,
     name: variant.name,
     description: variant.description,
+    muscleGroup: category.muscleGroup,
     color: category.color,
     glow: category.glow
   };
