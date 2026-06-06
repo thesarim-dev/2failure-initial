@@ -13,7 +13,7 @@ import {
 const WASM_CDN =
   'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 const MODEL_URL =
-  'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+  'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
 
 export type TrackerStatus =
   | 'idle'
@@ -21,6 +21,8 @@ export type TrackerStatus =
   | 'ready'
   | 'tracking'
   | 'error';
+
+export type CameraFacing = 'environment' | 'user';
 
 export function usePushupTracker(enabled: boolean) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -31,9 +33,12 @@ export function usePushupTracker(enabled: boolean) {
   const lastVideoTimeRef = useRef(-1);
 
   const [reps, setReps] = useState(0);
+  const [formHint, setFormHint] = useState<string | null>(null);
   const [status, setStatus] = useState<TrackerStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [cameraEnabled, setCameraEnabled] = useState(enabled);
+  const [facingMode, setFacingMode] = useState<CameraFacing>('user');
+  const [landmarkerReady, setLandmarkerReady] = useState(false);
 
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
@@ -49,8 +54,10 @@ export function usePushupTracker(enabled: boolean) {
     stopCamera();
     landmarkerRef.current?.close();
     landmarkerRef.current = null;
+    setLandmarkerReady(false);
     counterRef.current.reset();
     setReps(0);
+    setFormHint(null);
     setStatus('idle');
   }, [stopCamera]);
 
@@ -80,65 +87,71 @@ export function usePushupTracker(enabled: boolean) {
         playRepCheckSound();
       }
       setReps(count);
+      setFormHint(counterRef.current.hint);
       setStatus('tracking');
     }
 
     rafRef.current = requestAnimationFrame(detectFrame);
   }, []);
 
-  const startCamera = useCallback(async () => {
-    if (!landmarkerRef.current || !videoRef.current) return;
+  const startCamera = useCallback(
+    async (facing: CameraFacing) => {
+      if (!landmarkerRef.current || !videoRef.current) return;
 
-    const constraints: MediaStreamConstraints[] = [
-      {
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 640 },
-          height: { ideal: 480 }
+      stopCamera();
+
+      const constraintSets: MediaStreamConstraints[] = [
+        {
+          video: {
+            facingMode: { exact: facing },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
         },
-        audio: false
-      },
-      {
-        video: {
-          facingMode: { ideal: 'user' },
-          width: { ideal: 640 },
-          height: { ideal: 480 }
+        {
+          video: {
+            facingMode: { ideal: facing },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
         },
-        audio: false
-      },
-      { video: true, audio: false }
-    ];
+        { video: true, audio: false }
+      ];
 
-    let stream: MediaStream | null = null;
-    let lastError: unknown = null;
+      let stream: MediaStream | null = null;
+      let lastError: unknown = null;
 
-    for (const constraint of constraints) {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia(constraint);
-        break;
-      } catch (err) {
-        lastError = err;
+      for (const constraint of constraintSets) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraint);
+          break;
+        } catch (err) {
+          lastError = err;
+        }
       }
-    }
 
-    if (!stream) {
-      throw lastError instanceof Error
-        ? lastError
-        : new Error('Camera access was denied.');
-    }
+      if (!stream) {
+        throw lastError instanceof Error
+          ? lastError
+          : new Error('Camera access was denied.');
+      }
 
-    streamRef.current = stream;
-    videoRef.current.srcObject = stream;
-    primeRepCheckSound();
-    await videoRef.current.play();
-    rafRef.current = requestAnimationFrame(detectFrame);
-    setStatus('ready');
-  }, [detectFrame]);
+      streamRef.current = stream;
+      videoRef.current.srcObject = stream;
+      primeRepCheckSound();
+      await videoRef.current.play();
+      rafRef.current = requestAnimationFrame(detectFrame);
+      setStatus('ready');
+      setError(null);
+    },
+    [detectFrame, stopCamera]
+  );
 
   useEffect(() => {
-    if (!enabled || !cameraEnabled) {
-      stopCamera();
-      if (!cameraEnabled) setStatus('idle');
+    if (!enabled) {
+      stopAll();
       return;
     }
 
@@ -149,6 +162,8 @@ export function usePushupTracker(enabled: boolean) {
       setError(null);
       counterRef.current.reset();
       setReps(0);
+      setFormHint(null);
+      setLandmarkerReady(false);
 
       try {
         const vision = await FilesetResolver.forVisionTasks(WASM_CDN);
@@ -177,7 +192,7 @@ export function usePushupTracker(enabled: boolean) {
         }
 
         landmarkerRef.current = landmarker;
-        await startCamera();
+        setLandmarkerReady(true);
       } catch (err) {
         if (cancelled) return;
         setStatus('error');
@@ -192,32 +207,73 @@ export function usePushupTracker(enabled: boolean) {
 
     return () => {
       cancelled = true;
-      stopCamera();
-    };
-  }, [enabled, cameraEnabled, startCamera, stopCamera]);
-
-  useEffect(() => {
-    return () => {
       stopAll();
     };
-  }, [stopAll]);
+  }, [enabled, stopAll, stopCamera]);
+
+  useEffect(() => {
+    if (!enabled || !cameraEnabled || !landmarkerReady) {
+      stopCamera();
+      if (!cameraEnabled && landmarkerReady) setStatus('idle');
+      return;
+    }
+
+    let cancelled = false;
+
+    const run = async () => {
+      setStatus('loading');
+      try {
+        await startCamera(facingMode);
+      } catch (err) {
+        if (cancelled) return;
+        setStatus('error');
+        setError(
+          err instanceof Error ? err.message : 'Could not start camera.'
+        );
+        stopCamera();
+      }
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+      stopCamera();
+    };
+  }, [
+    enabled,
+    cameraEnabled,
+    facingMode,
+    landmarkerReady,
+    startCamera,
+    stopCamera
+  ]);
 
   const toggleCamera = useCallback(() => {
     setCameraEnabled((on) => !on);
   }, []);
 
+  const toggleFacingMode = useCallback(() => {
+    setFacingMode((mode) => (mode === 'environment' ? 'user' : 'environment'));
+  }, []);
+
   const resetReps = useCallback(() => {
     counterRef.current.reset();
     setReps(0);
+    setFormHint(null);
   }, []);
 
   return {
     videoRef,
     reps,
+    formHint,
     status,
     error,
     cameraEnabled,
+    facingMode,
+    isMirrored: facingMode === 'user',
     toggleCamera,
+    toggleFacingMode,
     resetReps
   };
 }

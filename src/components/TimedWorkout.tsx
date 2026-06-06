@@ -1,26 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Move, BUTTON_LABELS } from './moves';
-import { X } from 'lucide-react';
+import { Camera, X } from 'lucide-react';
 
 interface TimedWorkoutProps {
   move: Move;
   onFinish: (duration: number, trackedReps?: number) => void;
   onCancel: () => void;
+  seconds?: number;
+  onEnableAiTracking?: () => void;
 }
 
-export function TimedWorkout({ move, onFinish, onCancel }: TimedWorkoutProps) {
-  const [seconds, setSeconds] = useState(0);
+export function TimedWorkout({
+  move,
+  onFinish,
+  onCancel,
+  seconds: externalSeconds,
+  onEnableAiTracking
+}: TimedWorkoutProps) {
+  const [internalSeconds, setInternalSeconds] = useState(0);
   const [buttonLabel] = useState(
     () => BUTTON_LABELS[Math.floor(Math.random() * BUTTON_LABELS.length)]
   );
+  const seconds = externalSeconds ?? internalSeconds;
 
   useEffect(() => {
+    if (externalSeconds !== undefined) return;
+
     const interval = setInterval(() => {
-      setSeconds((s) => s + 1);
+      setInternalSeconds((s) => s + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [externalSeconds]);
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -64,6 +75,16 @@ export function TimedWorkout({ move, onFinish, onCancel }: TimedWorkoutProps) {
           transition={{ repeat: Infinity, duration: 2 }}>
           {formatTime(seconds)}
         </motion.div>
+
+        {onEnableAiTracking && (
+          <button
+            type="button"
+            onClick={onEnableAiTracking}
+            className="mb-8 bg-white/90 text-black border-2 border-black px-4 py-2 font-bold text-sm flex items-center gap-2 brutal-shadow-sm brutal-shadow-hover transition-all normal-case">
+            <Camera size={16} />
+            Use AI tracking
+          </button>
+        )}
       </div>
 
       <motion.button

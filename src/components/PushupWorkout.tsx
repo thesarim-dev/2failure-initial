@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Move, BUTTON_LABELS } from './moves';
-import { Camera, CameraOff, RotateCcw, Timer, X } from 'lucide-react';
+import { Camera, CameraOff, RotateCcw, SwitchCamera, Timer, X } from 'lucide-react';
 import { usePushupTracker } from '../hooks/usePushupTracker';
 import { TimedWorkout } from './TimedWorkout';
 
@@ -12,6 +12,7 @@ interface PushupWorkoutProps {
 }
 
 interface PushupAiWorkoutProps extends PushupWorkoutProps {
+  seconds: number;
   onUseTimerOnly: () => void;
 }
 
@@ -19,28 +20,25 @@ function PushupAiWorkout({
   move,
   onFinish,
   onCancel,
+  seconds,
   onUseTimerOnly
 }: PushupAiWorkoutProps) {
-  const [seconds, setSeconds] = useState(0);
   const [buttonLabel] = useState(
     () => BUTTON_LABELS[Math.floor(Math.random() * BUTTON_LABELS.length)]
   );
   const {
     videoRef,
     reps,
+    formHint,
     status,
     error,
     cameraEnabled,
+    facingMode,
+    isMirrored,
     toggleCamera,
+    toggleFacingMode,
     resetReps
   } = usePushupTracker(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSeconds((s) => s + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -54,7 +52,7 @@ function PushupAiWorkout({
       : status === 'tracking'
         ? 'Tracking reps'
         : status === 'ready'
-          ? 'Get in frame'
+          ? 'Center head & shoulders'
           : status === 'error'
             ? 'Camera off'
             : 'Camera paused';
@@ -75,17 +73,31 @@ function PushupAiWorkout({
 
       <div className="flex-1 flex flex-col items-center w-full max-w-md mx-auto">
         <h2 className="text-3xl md:text-4xl mb-2 text-center">{move.name}</h2>
-        <p className="text-sm font-bold mb-4 text-center opacity-80">
-          Prop your phone to your side. Full pushup depth counts.
+        <p className="text-sm font-bold mb-2 text-center opacity-80">
+          Face the camera — head & shoulders in the box · arms visible
         </p>
+        {formHint && (
+          <p className="text-xs font-bold mb-4 text-center bg-black text-[#CCFF00] px-3 py-1.5 border-2 border-black normal-case">
+            {formHint}
+          </p>
+        )}
+        {!formHint && <div className="mb-4" />}
 
-        <div className="relative w-full aspect-[3/4] max-h-[50vh] border-4 border-black brutal-shadow-sm overflow-hidden bg-black rounded-2xl mb-4">
+        <div className="relative w-full aspect-[4/3] max-h-[42vh] border-4 border-black brutal-shadow-sm overflow-hidden bg-black rounded-2xl mb-4">
           <video
             ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
+            className={`absolute left-1/2 top-0 h-[165%] w-[165%] -translate-x-1/2 object-cover object-[center_18%]${isMirrored ? ' scale-x-[-1]' : ''}`}
             playsInline
             muted
           />
+
+          <div
+            className="pointer-events-none absolute inset-x-6 top-5 bottom-[38%] rounded-xl border-2 border-dashed border-[#CCFF00]/80"
+            aria-hidden
+          />
+          <p className="pointer-events-none absolute left-1/2 top-7 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-[#CCFF00]">
+            Head & shoulders
+          </p>
 
           {(!cameraEnabled || status === 'loading' || status === 'error') && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 text-white p-4 text-center">
@@ -130,6 +142,14 @@ function PushupAiWorkout({
           </button>
           <button
             type="button"
+            onClick={toggleFacingMode}
+            disabled={!cameraEnabled}
+            className="flex-1 bg-white text-black border-4 border-black p-3 flex items-center justify-center gap-2 font-bold text-sm brutal-shadow-sm brutal-shadow-hover transition-all disabled:opacity-50">
+            <SwitchCamera size={18} />
+            {facingMode === 'user' ? 'Front cam' : 'Back cam'}
+          </button>
+          <button
+            type="button"
             onClick={resetReps}
             className="bg-white text-black border-4 border-black p-3 brutal-shadow-sm brutal-shadow-hover transition-all"
             aria-label="Reset rep count">
@@ -137,20 +157,22 @@ function PushupAiWorkout({
           </button>
         </div>
 
-        <motion.div
-          className="font-display text-5xl tracking-tighter mb-4"
-          animate={{ scale: [1, 1.03, 1] }}
-          transition={{ repeat: Infinity, duration: 2 }}>
-          {formatTime(seconds)}
-        </motion.div>
+        <div className="flex items-center justify-center w-full mb-6 gap-4">
+          <motion.div
+            className="font-display text-5xl tracking-tighter"
+            animate={{ scale: [1, 1.03, 1] }}
+            transition={{ repeat: Infinity, duration: 2 }}>
+            {formatTime(seconds)}
+          </motion.div>
 
-        <button
-          type="button"
-          onClick={onUseTimerOnly}
-          className="mb-6 bg-white/90 text-black border-2 border-black px-4 py-2 font-bold text-sm flex items-center gap-2 brutal-shadow-sm brutal-shadow-hover transition-all normal-case">
-          <Timer size={16} />
-          Use timer only
-        </button>
+          <button
+            type="button"
+            onClick={onUseTimerOnly}
+            className="shrink-0 bg-white/90 text-black border-2 border-black px-4 py-2 font-bold text-sm flex items-center gap-2 brutal-shadow-sm brutal-shadow-hover transition-all normal-case">
+            <Timer size={16} />
+            Use timer only
+          </button>
+        </div>
       </div>
 
       <motion.button
@@ -180,10 +202,24 @@ export function PushupWorkout({
   onCancel
 }: PushupWorkoutProps) {
   const [useTimerOnly, setUseTimerOnly] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSeconds((s) => s + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (useTimerOnly) {
     return (
-      <TimedWorkout move={move} onFinish={onFinish} onCancel={onCancel} />
+      <TimedWorkout
+        move={move}
+        onFinish={onFinish}
+        onCancel={onCancel}
+        seconds={seconds}
+        onEnableAiTracking={() => setUseTimerOnly(false)}
+      />
     );
   }
 
@@ -192,6 +228,7 @@ export function PushupWorkout({
       move={move}
       onFinish={onFinish}
       onCancel={onCancel}
+      seconds={seconds}
       onUseTimerOnly={() => setUseTimerOnly(true)}
     />
   );
