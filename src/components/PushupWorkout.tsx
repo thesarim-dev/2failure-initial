@@ -29,7 +29,6 @@ function PushupAiWorkout({
   const {
     videoRef,
     reps,
-    formHint,
     status,
     error,
     cameraEnabled,
@@ -52,7 +51,7 @@ function PushupAiWorkout({
       : status === 'tracking'
         ? 'Tracking reps'
         : status === 'ready'
-          ? 'Center head & shoulders'
+          ? 'Get in frame'
           : status === 'error'
             ? 'Camera off'
             : 'Camera paused';
@@ -73,31 +72,17 @@ function PushupAiWorkout({
 
       <div className="flex-1 flex flex-col items-center w-full max-w-md mx-auto">
         <h2 className="text-3xl md:text-4xl mb-2 text-center">{move.name}</h2>
-        <p className="text-sm font-bold mb-2 text-center opacity-80">
-          Face the camera — head & shoulders in the box · arms visible
+        <p className="text-sm font-bold mb-4 text-center opacity-80">
+          Prop your phone to your side. Full pushup depth counts.
         </p>
-        {formHint && (
-          <p className="text-xs font-bold mb-4 text-center bg-black text-[#CCFF00] px-3 py-1.5 border-2 border-black normal-case">
-            {formHint}
-          </p>
-        )}
-        {!formHint && <div className="mb-4" />}
 
-        <div className="relative w-full aspect-[4/3] max-h-[42vh] border-4 border-black brutal-shadow-sm overflow-hidden bg-black rounded-2xl mb-4">
+        <div className="relative w-full aspect-[3/4] max-h-[50vh] border-4 border-black brutal-shadow-sm overflow-hidden bg-black rounded-2xl mb-4">
           <video
             ref={videoRef}
-            className={`absolute left-1/2 top-0 h-[165%] w-[165%] -translate-x-1/2 object-cover object-[center_18%]${isMirrored ? ' scale-x-[-1]' : ''}`}
+            className={`absolute inset-0 w-full h-full object-cover${isMirrored ? ' scale-x-[-1]' : ''}`}
             playsInline
             muted
           />
-
-          <div
-            className="pointer-events-none absolute inset-x-6 top-5 bottom-[38%] rounded-xl border-2 border-dashed border-[#CCFF00]/80"
-            aria-hidden
-          />
-          <p className="pointer-events-none absolute left-1/2 top-7 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-[#CCFF00]">
-            Head & shoulders
-          </p>
 
           {(!cameraEnabled || status === 'loading' || status === 'error') && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 text-white p-4 text-center">
@@ -157,7 +142,7 @@ function PushupAiWorkout({
           </button>
         </div>
 
-        <div className="flex items-center justify-center w-full mb-6 gap-4">
+        <div className="flex items-center justify-between w-full mb-4 gap-4">
           <motion.div
             className="font-display text-5xl tracking-tighter"
             animate={{ scale: [1, 1.03, 1] }}

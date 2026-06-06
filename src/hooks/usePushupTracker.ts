@@ -13,7 +13,7 @@ import {
 const WASM_CDN =
   'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 const MODEL_URL =
-  'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+  'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
 
 export type TrackerStatus =
   | 'idle'
@@ -33,11 +33,10 @@ export function usePushupTracker(enabled: boolean) {
   const lastVideoTimeRef = useRef(-1);
 
   const [reps, setReps] = useState(0);
-  const [formHint, setFormHint] = useState<string | null>(null);
   const [status, setStatus] = useState<TrackerStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [cameraEnabled, setCameraEnabled] = useState(enabled);
-  const [facingMode, setFacingMode] = useState<CameraFacing>('user');
+  const [facingMode, setFacingMode] = useState<CameraFacing>('environment');
   const [landmarkerReady, setLandmarkerReady] = useState(false);
 
   const stopCamera = useCallback(() => {
@@ -57,7 +56,6 @@ export function usePushupTracker(enabled: boolean) {
     setLandmarkerReady(false);
     counterRef.current.reset();
     setReps(0);
-    setFormHint(null);
     setStatus('idle');
   }, [stopCamera]);
 
@@ -87,7 +85,6 @@ export function usePushupTracker(enabled: boolean) {
         playRepCheckSound();
       }
       setReps(count);
-      setFormHint(counterRef.current.hint);
       setStatus('tracking');
     }
 
@@ -104,16 +101,16 @@ export function usePushupTracker(enabled: boolean) {
         {
           video: {
             facingMode: { exact: facing },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
+            width: { ideal: 640 },
+            height: { ideal: 480 }
           },
           audio: false
         },
         {
           video: {
             facingMode: { ideal: facing },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
+            width: { ideal: 640 },
+            height: { ideal: 480 }
           },
           audio: false
         },
@@ -162,7 +159,6 @@ export function usePushupTracker(enabled: boolean) {
       setError(null);
       counterRef.current.reset();
       setReps(0);
-      setFormHint(null);
       setLandmarkerReady(false);
 
       try {
@@ -260,13 +256,11 @@ export function usePushupTracker(enabled: boolean) {
   const resetReps = useCallback(() => {
     counterRef.current.reset();
     setReps(0);
-    setFormHint(null);
   }, []);
 
   return {
     videoRef,
     reps,
-    formHint,
     status,
     error,
     cameraEnabled,
