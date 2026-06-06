@@ -94,11 +94,29 @@ export function MainApp() {
     setAppState('SUMMARY');
   };
 
-  const handleFinishWorkout = (duration: number) => {
+  const handleFinishWorkout = async (
+    duration: number,
+    trackedReps?: number
+  ) => {
     setLastDuration(duration);
     setLastSetResult(null);
 
     if (currentMove && isRepLoggedCategory(currentMove.categoryId)) {
+      if (trackedReps && trackedReps > 0 && user) {
+        try {
+          const result = await recordSetReps(
+            user.id,
+            currentMove.categoryId,
+            trackedReps
+          );
+          setLastSetResult(result);
+          finishWorkoutSession(duration);
+          return;
+        } catch {
+          // Fall back to manual rep entry if auto-save fails.
+        }
+      }
+
       setAppState('REP_PROMPT');
       return;
     }
@@ -180,7 +198,9 @@ export function MainApp() {
       {appState === 'WORKOUT' && currentMove &&
       <Workout
         move={currentMove}
-        onFinish={handleFinishWorkout}
+        onFinish={(duration, trackedReps) =>
+          void handleFinishWorkout(duration, trackedReps)
+        }
         onCancel={handleCancelWorkout} />
 
       }
