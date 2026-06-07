@@ -116,17 +116,17 @@ export function Dashboard({
         </div>
 
         <div
-          className="streak-badge shrink-0 w-[7.5rem] h-[7.5rem] rounded-full bg-[#FF4D00] border-4 border-white dark:border-white flex flex-col items-center justify-center text-black"
+          className="streak-badge shrink-0 w-24 h-24 rounded-full bg-[#FF4D00] dark:bg-[#FF6633] flex flex-col items-center justify-center text-black"
           aria-label={`Current streak: ${currentStreak} days`}>
           {statsLoading || statsCompleting ? (
-            <Loader2 size={28} className="animate-spin" aria-busy="true" />
+            <Loader2 size={22} className="animate-spin" aria-busy="true" />
           ) : (
             <>
-              <div className="flex items-center gap-1 leading-none">
-                <Flame size={22} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
-                <span className="text-4xl font-bold tabular-nums">{currentStreak}</span>
+              <div className="flex items-center gap-0.5 leading-none">
+                <Flame size={18} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
+                <span className="text-3xl font-bold tabular-nums">{currentStreak}</span>
               </div>
-              <span className="text-sm font-semibold mt-1">streak</span>
+              <span className="text-xs font-semibold mt-0.5">streak</span>
             </>
           )}
         </div>
