@@ -1,12 +1,12 @@
-import { MOVE_CATEGORIES } from '../components/moves';
+import { getAllWorkoutCategoryIds } from '../components/moves';
 import { supabase } from './supabase';
 import { fetchUserStats, toLocalDateString } from './userStats';
 
 export const MAX_DAILY_SETS = 3;
 
 export function emptySetsMap(): Record<string, number> {
-  return MOVE_CATEGORIES.reduce<Record<string, number>>((acc, cat) => {
-    acc[cat.id] = 0;
+  return getAllWorkoutCategoryIds().reduce<Record<string, number>>((acc, id) => {
+    acc[id] = 0;
     return acc;
   }, {});
 }

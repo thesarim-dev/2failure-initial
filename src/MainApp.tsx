@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useScreenInit } from './useScreenInit';
 import { Dashboard } from './components/Dashboard';
@@ -9,12 +9,17 @@ import { Workout } from './components/Workout';
 import { Summary } from './components/Summary';
 import { Store } from './components/Store';
 import {
+  CORE_STORE_CATEGORY,
   Move,
   MOVE_CATEGORIES,
   Variant,
   isRepLoggedCategory,
-  resolveMove
+  resolveMoveById
 } from './components/moves';
+import {
+  normalizeEquippedCore,
+  useEquippedCore
+} from './hooks/useEquippedCore';
 import { RepPrompt } from './components/RepPrompt';
 import { recordSetReps } from './lib/repProgress';
 import { useAuth } from './context/AuthContext';
@@ -30,7 +35,12 @@ const DEFAULT_EQUIPPED = MOVE_CATEGORIES.reduce<Record<string, string>>(
   {}
 );
 
-const DEFAULT_OWNED = MOVE_CATEGORIES.map((cat) => cat.variants[0].id);
+const DEFAULT_OWNED = [
+  ...MOVE_CATEGORIES.map((cat) => cat.variants[0].id),
+  ...CORE_STORE_CATEGORY.variants
+    .filter((variant) => variant.price === 0)
+    .map((variant) => variant.id)
+];
 
 export function MainApp() {
   const { user } = useAuth();
@@ -65,17 +75,19 @@ export function MainApp() {
   const [owned, setOwned] = useState<string[]>(DEFAULT_OWNED);
   const [equipped, setEquipped] =
   useState<Record<string, string>>(DEFAULT_EQUIPPED);
-  const initialMove: Move | null = (() => {
-    if (screenInit.currentMoveId) {
-      for (const cat of MOVE_CATEGORIES) {
-        const match = cat.variants.find(
-          (v) => v.id === screenInit.currentMoveId
-        );
-        if (match) return resolveMove(cat, match.id);
-      }
+  const { equippedCore, toggleEquipCore, setEquippedCore } = useEquippedCore();
+  const activeEquippedCore = normalizeEquippedCore(equippedCore, owned);
+
+  useEffect(() => {
+    const synced = normalizeEquippedCore(equippedCore, owned);
+    if (synced.join(',') !== equippedCore.join(',')) {
+      setEquippedCore(synced);
     }
-    return null;
-  })();
+  }, [owned, equippedCore, setEquippedCore]);
+
+  const initialMove: Move | null = screenInit.currentMoveId
+    ? resolveMoveById(screenInit.currentMoveId)
+    : null;
   const [currentMove, setCurrentMove] = useState<Move | null>(initialMove);
   const [lastDuration, setLastDuration] = useState<number>(
     screenInit.lastDuration ?? 0
@@ -147,6 +159,9 @@ export function MainApp() {
     if (coins < variant.price || owned.includes(variant.id)) return;
     void setCoins((c) => c - variant.price);
     setOwned((o) => [...o, variant.id]);
+
+    if (categoryId === CORE_STORE_CATEGORY.id) return;
+
     setEquipped((e) => ({
       ...e,
       [categoryId]: variant.id
@@ -158,6 +173,11 @@ export function MainApp() {
       ...e,
       [categoryId]: variantId
     }));
+  };
+
+  const handleToggleEquipCore = (exerciseId: string) => {
+    if (!owned.includes(exerciseId)) return;
+    toggleEquipCore(exerciseId);
   };
 
   return (
@@ -174,6 +194,7 @@ export function MainApp() {
         setsError={setsError}
         setsLoading={setsLoading}
         equipped={equipped}
+        equippedCore={activeEquippedCore}
         setsCompleted={setsCompleted}
         isDark={isDark}
         onToggleDark={toggleDark}
@@ -187,11 +208,13 @@ export function MainApp() {
         coins={coins}
         owned={owned}
         equipped={equipped}
+        equippedCore={activeEquippedCore}
         isDark={isDark}
         onToggleDark={toggleDark}
         onBack={handleCloseStore}
         onBuy={handleBuy}
-        onEquip={handleEquip} />
+        onEquip={handleEquip}
+        onToggleEquipCore={handleToggleEquipCore} />
 
       }
 
