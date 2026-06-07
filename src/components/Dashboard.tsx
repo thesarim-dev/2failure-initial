@@ -145,12 +145,12 @@ export function Dashboard({
             onClick={() => onSelectMove(move)}
             className={`w-full text-left rounded-2xl ${move.color} ${move.glow} border-4 p-5 transition-all duration-200 group relative overflow-visible hover:brightness-[1.03]`}>
             <div className="relative z-10">
-              <div className="flex justify-between items-end gap-2 mb-2 min-w-0">
+              <div className="flex justify-between items-start gap-2 mb-2 min-w-0">
                 <h3 className="text-[clamp(0.95rem,4.5vw,1.875rem)] leading-none whitespace-nowrap min-w-0 flex-1">
                   {move.name}
                 </h3>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs font-semibold text-black/75 normal-case">
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className="text-xs font-semibold text-black/75 normal-case leading-none">
                     {move.displayGroup}
                   </span>
                   <span className="bg-black text-white px-2.5 py-1 text-xs font-bold tabular-nums rounded-md normal-case">

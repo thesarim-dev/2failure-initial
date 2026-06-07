@@ -247,7 +247,16 @@ export function getLineupSlot(id: string): LineupSlot | null {
 }
 
 export function getUpperDisplayGroup(pattern: MovementPattern): string {
-  return pattern === 'push' ? 'upper body - push' : 'upper body - pull';
+  return pattern === 'push' ? 'upperbody push' : 'upperbody pull';
+}
+
+function getLineupDisplayGroup(
+  slot: LineupSlot,
+  pattern?: MovementPattern
+): string {
+  if (slot === 'upper' && pattern) return getUpperDisplayGroup(pattern);
+  if (slot === 'lower') return 'lowerbody';
+  return 'core';
 }
 
 export function getVariantPattern(id: string): MovementPattern | null {
@@ -318,10 +327,7 @@ export function resolveLineupMove(exerciseId: string): Move {
     UPPER_STORE_CATEGORY.variants[0];
 
   const slot = category?.id ?? 'upper';
-  const displayGroup =
-    slot === 'upper' && variant.pattern
-      ? getUpperDisplayGroup(variant.pattern)
-      : (category?.name ?? 'workout').toLowerCase();
+  const displayGroup = getLineupDisplayGroup(slot, variant.pattern);
 
   return {
     id: variant.id,
