@@ -1,7 +1,8 @@
 import React from 'react';
 import { Move } from './moves';
-import { isPushupAiTrackingEnabled } from '../config/features';
-import { PushupWorkout } from './PushupWorkout';
+import { isPoseAiTrackingEnabled } from '../config/features';
+import { isPoseExerciseId } from '../lib/pose/repCounterFactory';
+import { AiRepWorkout } from './AiRepWorkout';
 import { TimedWorkout } from './TimedWorkout';
 
 export interface WorkoutProps {
@@ -11,9 +12,14 @@ export interface WorkoutProps {
 }
 
 export function Workout({ move, onFinish, onCancel }: WorkoutProps) {
-  if (move.categoryId === 'pushups' && isPushupAiTrackingEnabled()) {
+  if (isPoseAiTrackingEnabled() && isPoseExerciseId(move.categoryId)) {
     return (
-      <PushupWorkout move={move} onFinish={onFinish} onCancel={onCancel} />
+      <AiRepWorkout
+        move={move}
+        poseExerciseId={move.categoryId}
+        onFinish={onFinish}
+        onCancel={onCancel}
+      />
     );
   }
 
