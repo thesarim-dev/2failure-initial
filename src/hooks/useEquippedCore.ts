@@ -1,10 +1,14 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   CORE_EQUIP_COUNT,
   CORE_STORE_CATEGORY,
   DEFAULT_EQUIPPED_CORE,
   isCoreExerciseId
 } from '../components/moves';
+import {
+  fetchEquippedCore,
+  saveEquippedCore
+} from '../lib/equippedCoreProgress';
 
 const STORAGE_KEY = '2failure-equipped-core';
 
@@ -65,6 +69,16 @@ export function normalizeEquippedCore(
   return sanitizeEquippedCore(ids, ownedIds);
 }
 
+function writeStoredEquipped(ids: string[]): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
 function readStoredEquipped(): string[] {
   if (typeof window === 'undefined') {
     return [...DEFAULT_EQUIPPED_CORE];
@@ -75,27 +89,74 @@ function readStoredEquipped(): string[] {
     if (!raw) return [...DEFAULT_EQUIPPED_CORE];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [...DEFAULT_EQUIPPED_CORE];
-    return resolveEquippedCore(
-      parsed.filter((id) => typeof id === 'string')
+
+    const sanitized = sanitizeEquippedCore(
+      parsed.filter((id): id is string => typeof id === 'string')
     );
+    return sanitized.length > 0 ? sanitized : [...DEFAULT_EQUIPPED_CORE];
   } catch {
     return [...DEFAULT_EQUIPPED_CORE];
   }
 }
 
-export function useEquippedCore() {
+export function useEquippedCore(userId?: string | null) {
   const [equippedCore, setEquippedCore] = useState<string[]>(readStoredEquipped);
+  const [ready, setReady] = useState(!userId);
 
-  const persist = useCallback((next: string[]) => {
-    const normalized = sanitizeEquippedCore(next);
-    setEquippedCore(normalized);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-    } catch {
-      // Ignore storage failures.
+  useEffect(() => {
+    if (!userId) {
+      setReady(true);
+      return;
     }
-    return normalized;
-  }, []);
+
+    let cancelled = false;
+
+    const hydrate = async () => {
+      try {
+        const remote = await fetchEquippedCore(userId);
+        if (cancelled) return;
+
+        if (remote && remote.length > 0) {
+          const normalized = sanitizeEquippedCore(remote);
+          setEquippedCore(normalized);
+          writeStoredEquipped(normalized);
+        } else {
+          const local = readStoredEquipped();
+          setEquippedCore(local);
+          if (local.length > 0) {
+            void saveEquippedCore(userId, local).catch(() => {});
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setEquippedCore(readStoredEquipped());
+        }
+      } finally {
+        if (!cancelled) setReady(true);
+      }
+    };
+
+    void hydrate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  const persist = useCallback(
+    (next: string[]) => {
+      const normalized = sanitizeEquippedCore(next);
+      setEquippedCore(normalized);
+      writeStoredEquipped(normalized);
+
+      if (userId) {
+        void saveEquippedCore(userId, normalized).catch(() => {});
+      }
+
+      return normalized;
+    },
+    [userId]
+  );
 
   const toggleEquipCore = useCallback(
     (exerciseId: string) => {
@@ -114,5 +175,5 @@ export function useEquippedCore() {
     [equippedCore, persist]
   );
 
-  return { equippedCore, toggleEquipCore, setEquippedCore: persist };
+  return { equippedCore, toggleEquipCore, setEquippedCore: persist, ready };
 }
