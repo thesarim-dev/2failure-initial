@@ -17,7 +17,7 @@ import {
   resolveMoveById
 } from './components/moves';
 import {
-  normalizeEquippedCore,
+  sanitizeEquippedCore,
   useEquippedCore
 } from './hooks/useEquippedCore';
 import { RepPrompt } from './components/RepPrompt';
@@ -76,10 +76,10 @@ export function MainApp() {
   const [equipped, setEquipped] =
   useState<Record<string, string>>(DEFAULT_EQUIPPED);
   const { equippedCore, toggleEquipCore, setEquippedCore } = useEquippedCore();
-  const activeEquippedCore = normalizeEquippedCore(equippedCore, owned);
+  const activeEquippedCore = sanitizeEquippedCore(equippedCore, owned);
 
   useEffect(() => {
-    const synced = normalizeEquippedCore(equippedCore, owned);
+    const synced = sanitizeEquippedCore(equippedCore, owned);
     if (synced.join(',') !== equippedCore.join(',')) {
       setEquippedCore(synced);
     }

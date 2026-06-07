@@ -8,24 +8,34 @@ import {
 
 const STORAGE_KEY = '2failure-equipped-core';
 
-export function normalizeEquippedCore(
+/** Filter valid owned core IDs and cap count. Does not auto-fill slots. */
+export function sanitizeEquippedCore(
   ids: string[],
   ownedIds?: string[]
 ): string[] {
   const ownedSet = ownedIds ? new Set(ownedIds) : null;
-  const unique = [
+  return [
     ...new Set(
       ids.filter(
         (id) =>
           isCoreExerciseId(id) && (ownedSet === null || ownedSet.has(id))
       )
     )
-  ];
-  if (unique.length >= CORE_EQUIP_COUNT) {
-    return unique.slice(0, CORE_EQUIP_COUNT);
+  ].slice(0, CORE_EQUIP_COUNT);
+}
+
+/** Fill missing slots for first load / empty storage only. */
+export function resolveEquippedCore(
+  ids: string[],
+  ownedIds?: string[]
+): string[] {
+  const sanitized = sanitizeEquippedCore(ids, ownedIds);
+  if (sanitized.length >= CORE_EQUIP_COUNT) {
+    return sanitized;
   }
 
-  const padded = [...unique];
+  const ownedSet = ownedIds ? new Set(ownedIds) : null;
+  const padded = [...sanitized];
   for (const variant of CORE_STORE_CATEGORY.variants) {
     if (padded.includes(variant.id)) continue;
     if (ownedSet && !ownedSet.has(variant.id)) continue;
@@ -33,9 +43,26 @@ export function normalizeEquippedCore(
     if (padded.length >= CORE_EQUIP_COUNT) break;
   }
 
-  return padded.length >= CORE_EQUIP_COUNT
-    ? padded.slice(0, CORE_EQUIP_COUNT)
-    : [...DEFAULT_EQUIPPED_CORE];
+  if (padded.length >= CORE_EQUIP_COUNT) {
+    return padded.slice(0, CORE_EQUIP_COUNT);
+  }
+
+  for (const id of DEFAULT_EQUIPPED_CORE) {
+    if (padded.includes(id)) continue;
+    if (ownedSet && !ownedSet.has(id)) continue;
+    padded.push(id);
+    if (padded.length >= CORE_EQUIP_COUNT) break;
+  }
+
+  return padded.slice(0, CORE_EQUIP_COUNT);
+}
+
+/** @deprecated Use sanitizeEquippedCore or resolveEquippedCore explicitly. */
+export function normalizeEquippedCore(
+  ids: string[],
+  ownedIds?: string[]
+): string[] {
+  return sanitizeEquippedCore(ids, ownedIds);
 }
 
 function readStoredEquipped(): string[] {
@@ -48,7 +75,7 @@ function readStoredEquipped(): string[] {
     if (!raw) return [...DEFAULT_EQUIPPED_CORE];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [...DEFAULT_EQUIPPED_CORE];
-    return normalizeEquippedCore(
+    return resolveEquippedCore(
       parsed.filter((id) => typeof id === 'string')
     );
   } catch {
@@ -60,7 +87,7 @@ export function useEquippedCore() {
   const [equippedCore, setEquippedCore] = useState<string[]>(readStoredEquipped);
 
   const persist = useCallback((next: string[]) => {
-    const normalized = normalizeEquippedCore(next);
+    const normalized = sanitizeEquippedCore(next);
     setEquippedCore(normalized);
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));

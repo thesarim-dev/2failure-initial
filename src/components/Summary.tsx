@@ -123,7 +123,7 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
           transition={{
             delay: 0.2
           }}
-          className="text-5xl text-center mb-2 text-[#CCFF00]">
+          className="text-3xl sm:text-4xl md:text-5xl text-center mb-2 text-[#CCFF00] whitespace-nowrap tracking-tight">
           
           FAILURE LOGGED
         </motion.h1>
