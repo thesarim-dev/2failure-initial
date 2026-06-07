@@ -1,15 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Coins, Flame, Loader2, LogOut, Skull, ShoppingBag } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import {
-  MOVE_CATEGORIES,
-  Move,
-  SHADY_QUOTES,
-  resolveCoreMove,
-  resolveMove
-} from './moves';
-import { ThemeToggle } from './ThemeToggle';
+import { Flame, Loader2, Settings as SettingsIcon, Skull, ShoppingBag } from 'lucide-react';
+import { CoinsBadge } from './CoinsBadge';
+import type { DailySetGoal } from '../hooks/useDailySetGoal';
+import { Move, SHADY_QUOTES, resolveLineupMove } from './moves';
 
 interface DashboardProps {
   coins: number;
@@ -21,13 +15,14 @@ interface DashboardProps {
   statsError: string | null;
   setsError: string | null;
   setsLoading: boolean;
-  equipped: Record<string, string>;
+  equippedUpper: string[];
+  equippedLower: string[];
   equippedCore: string[];
   setsCompleted: Record<string, number>;
-  isDark: boolean;
-  onToggleDark: () => void;
+  dailySetGoal: DailySetGoal;
   onSelectMove: (move: Move) => void;
   onOpenStore: () => void;
+  onOpenSettings: () => void;
 }
 
 export function Dashboard({
@@ -40,49 +35,49 @@ export function Dashboard({
   statsError,
   setsError,
   setsLoading,
-  equipped,
+  equippedUpper,
+  equippedLower,
   equippedCore,
   setsCompleted,
-  isDark,
-  onToggleDark,
+  dailySetGoal,
   onSelectMove,
-  onOpenStore
+  onOpenStore,
+  onOpenSettings
 }: DashboardProps) {
-  const { signOut } = useAuth();
   const [quote] = useState(
     () => SHADY_QUOTES[Math.floor(Math.random() * SHADY_QUOTES.length)]
   );
+
   const activeMoves = [
-    ...MOVE_CATEGORIES.map((cat) =>
-      resolveMove(cat, equipped[cat.id] ?? cat.variants[0].id)
-    ),
-    ...equippedCore.map((id) => resolveCoreMove(id))
+    ...equippedUpper.map((id) => resolveLineupMove(id)),
+    ...equippedLower.map((id) => resolveLineupMove(id)),
+    ...equippedCore.map((id) => resolveLineupMove(id))
   ];
 
   return (
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
-      <header className="flex justify-between items-center mb-8 gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+      <header className="relative flex justify-between items-center mb-8 gap-3">
+        <div className="flex items-center gap-2 min-w-0 pr-2 pointer-events-none select-none">
           <Skull size={32} strokeWidth={2.5} className="shrink-0" />
-          <h1 className="logo-brand text-3xl tracking-tighter text-[#00B2FF] normal-case truncate">
+          <h1 className="logo-brand text-3xl tracking-tighter text-[#00B2FF] normal-case whitespace-nowrap">
             2failure
           </h1>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <ThemeToggle isDark={isDark} onToggle={onToggleDark} />
+        <div className="relative z-10 flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={() => signOut()}
-            className="bg-white dark:bg-[#2a2a2a] text-black dark:text-white border-2 border-black dark:border-white p-2 brutal-shadow-sm brutal-shadow-hover transition-all"
-            aria-label="Sign out">
-            <LogOut size={20} strokeWidth={2.5} />
-          </button>
-          <button
             onClick={onOpenStore}
-            className="bg-white dark:bg-[#2a2a2a] text-black dark:text-white border-2 border-black dark:border-white p-2 brutal-shadow-sm brutal-shadow-hover transition-all"
+            className="bg-[#7CFC00] text-black border-2 border-black dark:border-white p-2 brutal-shadow-sm brutal-shadow-hover transition-all"
             aria-label="Open store">
             <ShoppingBag size={20} strokeWidth={2.5} />
+          </button>
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="bg-[#FFBA00] text-black border-2 border-black dark:border-white p-2 brutal-shadow-sm brutal-shadow-hover transition-all"
+            aria-label="Open settings">
+            <SettingsIcon size={20} strokeWidth={2.5} />
           </button>
 
           {profileLoading ? (
@@ -93,12 +88,7 @@ export function Dashboard({
               <Loader2 size={20} strokeWidth={2.5} className="animate-spin" />
             </div>
           ) : (
-            <div
-              className="flex items-center gap-2 bg-[#CCFF00] text-black px-3 py-1.5 border-2 border-black brutal-shadow-sm"
-              title="Coins">
-              <Coins size={20} strokeWidth={2.5} aria-hidden="true" />
-              <span className="font-bold tabular-nums">{coins}</span>
-            </div>
+            <CoinsBadge coins={coins} />
           )}
         </div>
       </header>
@@ -114,7 +104,7 @@ export function Dashboard({
       )}
 
       <section
-        className="mb-10 flex items-center gap-4 normal-case"
+        className="mb-6 flex items-center gap-4 normal-case"
         aria-label="Daily vibe check and streak">
         <div className="flex-1 min-w-0 bg-[#333333] dark:bg-[#2a2a2a] border-4 border-white dark:border-white p-5 pt-7 relative brutal-shadow-sm">
           <div className="absolute -top-3 left-4 bg-black text-white px-3 py-1 text-xs font-semibold normal-case">
@@ -142,9 +132,10 @@ export function Dashboard({
         </div>
       </section>
 
-      <div className="space-y-8">
-        <h2 className="text-2xl mb-4">PICK YOUR POISON</h2>
+      <div>
+        <h2 className="text-2xl mb-2">PICK YOUR POISON</h2>
 
+        <div className="flex flex-col gap-4">
         {activeMoves.map((move, i) => (
           <motion.button
             key={move.id}
@@ -160,12 +151,12 @@ export function Dashboard({
                 </h3>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs font-semibold text-black/75 normal-case">
-                    {move.muscleGroup}
+                    {move.displayGroup}
                   </span>
                   <span className="bg-black text-white px-2.5 py-1 text-xs font-bold tabular-nums rounded-md normal-case">
                     {setsLoading
                       ? '…'
-                      : `${setsCompleted[move.categoryId] ?? 0} / 3 sets`}
+                      : `${setsCompleted[move.categoryId] ?? 0} / ${dailySetGoal} sets`}
                   </span>
                 </div>
               </div>
@@ -177,6 +168,7 @@ export function Dashboard({
             </div>
           </motion.button>
         ))}
+        </div>
       </div>
     </div>
   );

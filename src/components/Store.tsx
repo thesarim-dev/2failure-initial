@@ -1,38 +1,39 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Coins, Check, Lock } from 'lucide-react';
+import { CoinsBadge } from './CoinsBadge';
 import {
-  CORE_EQUIP_COUNT,
-  CORE_STORE_CATEGORY,
-  MOVE_CATEGORIES,
+  LINEUP_EQUIP_COUNT,
   MoveCategory,
-  Variant
+  STORE_CATEGORIES,
+  Variant,
+  canEquipUpperExercise,
+  getUpperDisplayGroup,
+  hasBalancedUpperSelection
 } from './moves';
-import { ThemeToggle } from './ThemeToggle';
-
 interface StoreProps {
   coins: number;
   owned: string[];
-  equipped: Record<string, string>;
+  equippedUpper: string[];
+  equippedLower: string[];
   equippedCore: string[];
-  isDark: boolean;
-  onToggleDark: () => void;
   onBack: () => void;
   onBuy: (categoryId: string, variant: Variant) => void;
-  onEquip: (categoryId: string, variantId: string) => void;
+  onToggleEquipUpper: (exerciseId: string) => void;
+  onToggleEquipLower: (exerciseId: string) => void;
   onToggleEquipCore: (exerciseId: string) => void;
 }
 
 export function Store({
   coins,
   owned,
-  equipped,
+  equippedUpper,
+  equippedLower,
   equippedCore,
-  isDark,
-  onToggleDark,
   onBack,
   onBuy,
-  onEquip,
+  onToggleEquipUpper,
+  onToggleEquipLower,
   onToggleEquipCore
 }: StoreProps) {
   return (
@@ -45,76 +46,112 @@ export function Store({
           <ArrowLeft size={24} strokeWidth={3} />
         </button>
         <h1 className="text-3xl tracking-tighter">THE STORE</h1>
-        <div className="flex items-center gap-2">
-          <ThemeToggle isDark={isDark} onToggle={onToggleDark} />
-          <div className="flex items-center gap-2 bg-[#CCFF00] text-black dark:bg-[#1a5c14] dark:text-[#E6FF4D] dark:border-[#CCFF00] px-3 py-1.5 border-2 border-black brutal-shadow-sm">
-            <Coins size={20} strokeWidth={2.5} />
-            <span className="font-bold tabular-nums">{coins}</span>
-          </div>
-        </div>
+        <CoinsBadge coins={coins} />
       </header>
 
       <div className="bg-black text-white border-4 border-black p-4 mb-10 brutal-shadow">
         <p className="font-bold text-lg">
-          Buy variants. Equip them. Suffer in style.
+          Build your daily lineup: 2 Upper, 2 Lower, 2 Core.
         </p>
-        <p className="text-sm text-white/60 font-bold mt-1">
-          Core: equip {CORE_EQUIP_COUNT} exercises for your daily lineup.
+        <p className="text-sm text-white/60 font-bold mt-1 normal-case">
+          Upper body must include one Push and one Pull.
         </p>
       </div>
 
       <div className="space-y-12">
-        {MOVE_CATEGORIES.map((cat) => (
-          <CategorySection
-            key={cat.id}
-            category={cat}
-            coins={coins}
-            owned={owned}
-            equippedId={equipped[cat.id]}
-            onBuy={onBuy}
-            onEquip={onEquip}
-          />
-        ))}
-
-        <CoreSection
+        <LineupSection
+          category={STORE_CATEGORIES[0]}
           coins={coins}
           owned={owned}
-          equippedCore={equippedCore}
+          equipped={equippedUpper}
           onBuy={onBuy}
-          onToggleEquipCore={onToggleEquipCore}
+          onToggleEquip={onToggleEquipUpper}
+          canEquip={(id) => canEquipUpperExercise(equippedUpper, id)}
+          statusNote={
+            equippedUpper.length === LINEUP_EQUIP_COUNT &&
+            !hasBalancedUpperSelection(equippedUpper)
+              ? 'Need 1 Push + 1 Pull in your upper lineup.'
+              : undefined
+          }
+        />
+
+        <LineupSection
+          category={STORE_CATEGORIES[1]}
+          coins={coins}
+          owned={owned}
+          equipped={equippedLower}
+          onBuy={onBuy}
+          onToggleEquip={onToggleEquipLower}
+          canEquip={(id) =>
+            equippedLower.includes(id) ||
+            equippedLower.length < LINEUP_EQUIP_COUNT
+          }
+        />
+
+        <LineupSection
+          category={STORE_CATEGORIES[2]}
+          coins={coins}
+          owned={owned}
+          equipped={equippedCore}
+          onBuy={onBuy}
+          onToggleEquip={onToggleEquipCore}
+          canEquip={(id) =>
+            equippedCore.includes(id) ||
+            equippedCore.length < LINEUP_EQUIP_COUNT
+          }
         />
       </div>
     </div>
   );
 }
 
-function CategorySection({
+function LineupSection({
   category,
   coins,
   owned,
-  equippedId,
+  equipped,
   onBuy,
-  onEquip
+  onToggleEquip,
+  canEquip,
+  statusNote
 }: {
   category: MoveCategory;
   coins: number;
   owned: string[];
-  equippedId: string | undefined;
+  equipped: string[];
   onBuy: (categoryId: string, variant: Variant) => void;
-  onEquip: (categoryId: string, variantId: string) => void;
+  onToggleEquip: (exerciseId: string) => void;
+  canEquip: (exerciseId: string) => boolean;
+  statusNote?: string;
 }) {
+  const atCapacity = equipped.length >= LINEUP_EQUIP_COUNT;
+
   return (
     <section>
       <div
-        className={`${category.color} border-4 border-black dark:border-white px-4 py-2 inline-block brutal-shadow-sm mb-4 -rotate-1`}>
+        className={`${category.color} border-4 border-black dark:border-white px-4 py-2 inline-block brutal-shadow-sm mb-2 -rotate-1`}>
         <h2 className="text-2xl">{category.name.toUpperCase()}</h2>
       </div>
+      <p className="text-sm font-bold mb-1 normal-case opacity-70">
+        {category.equipHint} ({equipped.length}/{LINEUP_EQUIP_COUNT} active)
+      </p>
+      {statusNote && (
+        <p className="text-xs font-bold mb-4 normal-case text-[#FF4D00]">
+          {statusNote}
+        </p>
+      )}
+      {!statusNote && <div className="mb-4" />}
 
       <div className="space-y-4">
         {category.variants.map((variant, i) => {
           const isOwned = owned.includes(variant.id);
-          const isEquipped = equippedId === variant.id;
+          const isEquipped = equipped.includes(variant.id);
           const canAfford = coins >= variant.price;
+          const allowEquip = isOwned && (isEquipped || canEquip(variant.id));
+          const patternLabel =
+            category.id === 'upper' && variant.pattern
+              ? getUpperDisplayGroup(variant.pattern)
+              : category.name.toLowerCase();
 
           return (
             <motion.div
@@ -134,95 +171,9 @@ function CategorySection({
                     </span>
                   )}
                 </div>
-                <p className="font-medium text-black/70 dark:text-white/70 text-sm">
-                  {variant.description}
+                <p className="text-xs font-bold uppercase text-black/50 dark:text-white/50 mb-1">
+                  {patternLabel}
                 </p>
-              </div>
-
-              <div className="shrink-0">
-                {isEquipped ? (
-                  <div className="bg-[#CCFF00] text-black border-2 border-black dark:bg-[#d4d4d0] dark:text-black dark:border-white px-4 py-2 font-bold uppercase text-sm">
-                    Active
-                  </div>
-                ) : isOwned ? (
-                  <button
-                    onClick={() => onEquip(category.id, variant.id)}
-                    className="bg-black text-white border-2 border-black dark:border-white dark:bg-[#3d9a32] dark:text-black px-4 py-2 font-bold uppercase text-sm brutal-shadow-hover transition-all">
-                    Equip
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => canAfford && onBuy(category.id, variant)}
-                    disabled={!canAfford}
-                    className={`border-2 border-black dark:border-white px-4 py-2 font-bold uppercase text-sm flex items-center gap-1.5 transition-all ${canAfford ? 'bg-[#FF00FF] text-black brutal-shadow-hover dark:bg-[#5c1a5c] dark:text-[#FF99FF]' : 'bg-gray-200 dark:bg-gray-700 text-black/40 dark:text-white/40 cursor-not-allowed'}`}>
-                    {canAfford ? (
-                      <Coins size={14} strokeWidth={3} />
-                    ) : (
-                      <Lock size={14} strokeWidth={3} />
-                    )}
-                    {variant.price}
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function CoreSection({
-  coins,
-  owned,
-  equippedCore,
-  onBuy,
-  onToggleEquipCore
-}: {
-  coins: number;
-  owned: string[];
-  equippedCore: string[];
-  onToggleEquipCore: (exerciseId: string) => void;
-  onBuy: (categoryId: string, variant: Variant) => void;
-}) {
-  const atCapacity = equippedCore.length >= CORE_EQUIP_COUNT;
-
-  return (
-    <section>
-      <div
-        className={`${CORE_STORE_CATEGORY.color} border-4 border-black dark:border-white px-4 py-2 inline-block brutal-shadow-sm mb-2 -rotate-1`}>
-        <h2 className="text-2xl">{CORE_STORE_CATEGORY.name.toUpperCase()}</h2>
-      </div>
-      <p className="text-sm font-bold mb-4 normal-case opacity-70">
-        Equip {CORE_EQUIP_COUNT} for your home screen ({equippedCore.length}/
-        {CORE_EQUIP_COUNT} active)
-      </p>
-
-      <div className="space-y-4">
-        {CORE_STORE_CATEGORY.variants.map((variant, i) => {
-          const isOwned = owned.includes(variant.id);
-          const isEquipped = equippedCore.includes(variant.id);
-          const canAfford = coins >= variant.price;
-          const canEquip = isOwned && (isEquipped || !atCapacity);
-
-          return (
-            <motion.div
-              key={variant.id}
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-white dark:bg-[#2a2a2a] border-4 border-black dark:border-white p-4 brutal-shadow-sm flex items-center gap-4">
-              <div className="flex-1 min-w-0 dark:text-[#f4f4f0]">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 className="text-xl font-display uppercase">
-                    {variant.name}
-                  </h3>
-                  {isEquipped && (
-                    <span className="bg-black text-[#CCFF00] dark:bg-[#1a5c14] dark:text-[#E6FF4D] px-2 py-0.5 text-xs font-bold uppercase flex items-center gap-1">
-                      <Check size={12} strokeWidth={3} /> Equipped
-                    </span>
-                  )}
-                </div>
                 <p className="font-medium text-black/70 dark:text-white/70 text-sm">
                   {variant.description}
                 </p>
@@ -231,20 +182,27 @@ function CoreSection({
               <div className="shrink-0">
                 {isEquipped ? (
                   <button
-                    onClick={() => onToggleEquipCore(variant.id)}
+                    onClick={() => onToggleEquip(variant.id)}
                     className="bg-[#CCFF00] text-black border-2 border-black dark:bg-[#d4d4d0] dark:text-black dark:border-white px-4 py-2 font-bold uppercase text-sm brutal-shadow-hover transition-all">
                     Active
                   </button>
                 ) : isOwned ? (
                   <button
-                    onClick={() => canEquip && onToggleEquipCore(variant.id)}
-                    disabled={!canEquip}
+                    onClick={() => allowEquip && onToggleEquip(variant.id)}
+                    disabled={!allowEquip}
+                    title={
+                      !allowEquip && atCapacity
+                        ? 'Unequip one first'
+                        : !allowEquip
+                          ? 'Need opposite movement pattern'
+                          : undefined
+                    }
                     className="bg-black text-white border-2 border-black dark:border-white dark:bg-[#3d9a32] dark:text-black px-4 py-2 font-bold uppercase text-sm brutal-shadow-hover transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                     Equip
                   </button>
                 ) : (
                   <button
-                    onClick={() => canAfford && onBuy(CORE_STORE_CATEGORY.id, variant)}
+                    onClick={() => canAfford && onBuy(category.id, variant)}
                     disabled={!canAfford}
                     className={`border-2 border-black dark:border-white px-4 py-2 font-bold uppercase text-sm flex items-center gap-1.5 transition-all ${canAfford ? 'bg-[#FF00FF] text-black brutal-shadow-hover dark:bg-[#5c1a5c] dark:text-[#FF99FF]' : 'bg-gray-200 dark:bg-gray-700 text-black/40 dark:text-white/40 cursor-not-allowed'}`}>
                     {canAfford ? (

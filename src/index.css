@@ -26,6 +26,8 @@
     font-family: 'Archivo Black', sans-serif;
     text-transform: none;
     font-style: italic;
+    padding-right: 0.2em;
+    overflow: visible;
   }
 }
 @layer utilities {
@@ -50,5 +52,16 @@
     box-shadow:
       0 0 0 2px rgba(255, 255, 255, 0.4),
       0 0 28px 6px rgba(255, 255, 255, 0.2);
+  }
+  .coins-badge {
+    border-radius: 9999px;
+    background-color: #00b2ff;
+    color: #000000;
+    border: 2px solid #000000;
+  }
+  .dark .coins-badge {
+    background-color: #33c1ff;
+    border-color: #ffffff;
+    color: #000000;
   }
 }

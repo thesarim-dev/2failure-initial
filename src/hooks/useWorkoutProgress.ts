@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import type { DailySetGoal } from './useDailySetGoal';
 import {
   emptySetsMap,
   fetchSetsProgress,
   incrementSetProgress
 } from '../lib/workoutProgress';
 
-export function useWorkoutProgress() {
+export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
   const { user } = useAuth();
   const [setsCompleted, setSetsCompleted] =
     useState<Record<string, number>>(emptySetsMap);
@@ -24,7 +25,7 @@ export function useWorkoutProgress() {
     setError(null);
 
     try {
-      const progress = await fetchSetsProgress(user.id);
+      const progress = await fetchSetsProgress(user.id, dailySetGoal);
       setSetsCompleted(progress);
     } catch (err) {
       setError(
@@ -34,7 +35,7 @@ export function useWorkoutProgress() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, dailySetGoal]);
 
   useEffect(() => {
     void loadProgress();
@@ -47,7 +48,11 @@ export function useWorkoutProgress() {
       setError(null);
 
       try {
-        const updated = await incrementSetProgress(user.id, categoryId);
+        const updated = await incrementSetProgress(
+          user.id,
+          categoryId,
+          dailySetGoal
+        );
         setSetsCompleted(updated);
       } catch (err) {
         setError(
@@ -55,7 +60,7 @@ export function useWorkoutProgress() {
         );
       }
     },
-    [user]
+    [user, dailySetGoal]
   );
 
   return {

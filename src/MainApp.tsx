@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useScreenInit } from './useScreenInit';
 import { Dashboard } from './components/Dashboard';
@@ -8,34 +8,27 @@ import { useWorkoutProgress } from './hooks/useWorkoutProgress';
 import { Workout } from './components/Workout';
 import { Summary } from './components/Summary';
 import { Store } from './components/Store';
+import { Settings } from './components/Settings';
 import {
-  CORE_STORE_CATEGORY,
   Move,
-  MOVE_CATEGORIES,
   Variant,
   isRepLoggedCategory,
   resolveMoveById
 } from './components/moves';
-import { useEquippedCore } from './hooks/useEquippedCore';
+import { useEquippedLineup } from './hooks/useEquippedLineup';
+import { useDailySetGoal } from './hooks/useDailySetGoal';
 import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { RepPrompt } from './components/RepPrompt';
 import { recordSetReps } from './lib/repProgress';
 import { useAuth } from './context/AuthContext';
 import type { SetRepResult } from './types/repProgress';
 
-type AppState = 'HOME' | 'WORKOUT' | 'REP_PROMPT' | 'SUMMARY' | 'STORE';
-
-const DEFAULT_EQUIPPED = MOVE_CATEGORIES.reduce<Record<string, string>>(
-  (acc, cat) => {
-    acc[cat.id] = cat.variants[0].id;
-    return acc;
-  },
-  {}
-);
+type AppState = 'HOME' | 'WORKOUT' | 'REP_PROMPT' | 'SUMMARY' | 'STORE' | 'SETTINGS';
 
 export function MainApp() {
   const { user } = useAuth();
   const { isDark, toggle: toggleDark } = useDarkMode();
+  const { dailySetGoal, setDailySetGoal } = useDailySetGoal();
   const {
     coins,
     loading: profileLoading,
@@ -54,7 +47,7 @@ export function MainApp() {
     loading: setsLoading,
     error: setsError,
     incrementSet
-  } = useWorkoutProgress();
+  } = useWorkoutProgress(dailySetGoal);
   const screenInit = useScreenInit() as {
     appState?: AppState;
     currentMoveId?: string;
@@ -64,9 +57,14 @@ export function MainApp() {
     screenInit.appState ?? 'HOME'
   );
   const [owned, setOwned] = useState<string[]>(readStoredOwned);
-  const [equipped, setEquipped] =
-  useState<Record<string, string>>(DEFAULT_EQUIPPED);
-  const { equippedCore, toggleEquipCore } = useEquippedCore(user?.id);
+  const {
+    equippedUpper,
+    equippedLower,
+    equippedCore,
+    toggleEquipUpper,
+    toggleEquipLower,
+    toggleEquipCore
+  } = useEquippedLineup(user?.id);
 
   const initialMove: Move | null = screenInit.currentMoveId
     ? resolveMoveById(screenInit.currentMoveId)
@@ -138,7 +136,9 @@ export function MainApp() {
   };
   const handleOpenStore = () => setAppState('STORE');
   const handleCloseStore = () => setAppState('HOME');
-  const handleBuy = (categoryId: string, variant: Variant) => {
+  const handleOpenSettings = () => setAppState('SETTINGS');
+  const handleCloseSettings = () => setAppState('HOME');
+  const handleBuy = (_categoryId: string, variant: Variant) => {
     if (coins < variant.price || owned.includes(variant.id)) return;
     void setCoins((c) => c - variant.price);
     setOwned((o) => {
@@ -146,20 +146,16 @@ export function MainApp() {
       persistOwned(next);
       return next;
     });
-
-    if (categoryId === CORE_STORE_CATEGORY.id) return;
-
-    setEquipped((e) => ({
-      ...e,
-      [categoryId]: variant.id
-    }));
   };
-  const handleEquip = (categoryId: string, variantId: string) => {
-    if (!owned.includes(variantId)) return;
-    setEquipped((e) => ({
-      ...e,
-      [categoryId]: variantId
-    }));
+
+  const handleToggleEquipUpper = (exerciseId: string) => {
+    if (!owned.includes(exerciseId)) return;
+    toggleEquipUpper(exerciseId);
+  };
+
+  const handleToggleEquipLower = (exerciseId: string) => {
+    if (!owned.includes(exerciseId)) return;
+    toggleEquipLower(exerciseId);
   };
 
   const handleToggleEquipCore = (exerciseId: string) => {
@@ -180,13 +176,14 @@ export function MainApp() {
         statsError={statsError}
         setsError={setsError}
         setsLoading={setsLoading}
-        equipped={equipped}
+        equippedUpper={equippedUpper}
+        equippedLower={equippedLower}
         equippedCore={equippedCore}
         setsCompleted={setsCompleted}
-        isDark={isDark}
-        onToggleDark={toggleDark}
+        dailySetGoal={dailySetGoal}
         onSelectMove={handleSelectMove}
-        onOpenStore={handleOpenStore} />
+        onOpenStore={handleOpenStore}
+        onOpenSettings={handleOpenSettings} />
 
       }
 
@@ -194,14 +191,25 @@ export function MainApp() {
       <Store
         coins={coins}
         owned={owned}
-        equipped={equipped}
+        equippedUpper={equippedUpper}
+        equippedLower={equippedLower}
         equippedCore={equippedCore}
-        isDark={isDark}
-        onToggleDark={toggleDark}
         onBack={handleCloseStore}
         onBuy={handleBuy}
-        onEquip={handleEquip}
+        onToggleEquipUpper={handleToggleEquipUpper}
+        onToggleEquipLower={handleToggleEquipLower}
         onToggleEquipCore={handleToggleEquipCore} />
+
+      }
+
+      {appState === 'SETTINGS' &&
+      <Settings
+        coins={coins}
+        dailySetGoal={dailySetGoal}
+        isDark={isDark}
+        onDailySetGoalChange={setDailySetGoal}
+        onToggleDark={toggleDark}
+        onBack={handleCloseSettings} />
 
       }
 
