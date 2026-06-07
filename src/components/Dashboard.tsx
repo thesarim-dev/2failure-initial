@@ -145,7 +145,7 @@ export function Dashboard({
             onClick={() => onSelectMove(move)}
             className={`w-full text-left rounded-2xl ${move.color} ${move.glow} border-4 p-5 transition-all duration-200 group relative overflow-visible hover:brightness-[1.03]`}>
             <div className="relative z-10">
-              <div className="flex justify-between items-start gap-2 mb-2 min-w-0">
+              <div className="flex justify-between items-start gap-2 mb-0.5 min-w-0">
                 <h3 className="text-[clamp(0.95rem,4.5vw,1.875rem)] leading-none whitespace-nowrap min-w-0 flex-1">
                   {move.name}
                 </h3>
@@ -160,7 +160,7 @@ export function Dashboard({
                   </span>
                 </div>
               </div>
-              <p className="font-medium text-black/80">{move.description}</p>
+              <p className="font-medium text-black/80 leading-snug">{move.description}</p>
             </div>
 
             <div className="absolute -right-10 -bottom-10 opacity-0 group-hover:opacity-20 transition-opacity duration-300 transform group-hover:scale-150">
