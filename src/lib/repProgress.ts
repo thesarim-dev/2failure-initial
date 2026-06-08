@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { ensureUserWorkoutRow } from './workoutProgress';
 import type { PersonalBest, SetRepResult } from '../types/repProgress';
 
 export function formatPersonalBestDate(iso: string | null): string {
@@ -37,6 +38,8 @@ export async function recordSetReps(
   categoryId: string,
   reps: number
 ): Promise<SetRepResult> {
+  await ensureUserWorkoutRow(userId, categoryId);
+
   const completedAt = new Date().toISOString();
   const currentBest = await fetchPersonalBest(userId, categoryId);
   const isNewPersonalBest =

@@ -1,6 +1,55 @@
-import { getAllWorkoutCategoryIds } from '../components/moves';
+import {
+  DEFAULT_LINEUP,
+  getAllWorkoutCategoryIds,
+  getVariantById
+} from '../components/moves';
 import { supabase } from './supabase';
 import { fetchUserStats, toLocalDateString } from './userStats';
+
+function isDefaultEquipped(categoryId: string): boolean {
+  return (
+    (DEFAULT_LINEUP.upper as readonly string[]).includes(categoryId) ||
+    (DEFAULT_LINEUP.lower as readonly string[]).includes(categoryId) ||
+    (DEFAULT_LINEUP.core as readonly string[]).includes(categoryId)
+  );
+}
+
+/** Ensures a user_workouts row exists (e.g. superman-pulls for pre-migration accounts). */
+export async function ensureUserWorkoutRow(
+  userId: string,
+  categoryId: string
+): Promise<void> {
+  const variant = getVariantById(categoryId);
+  if (!variant) {
+    throw new Error(`Unknown workout category: ${categoryId}`);
+  }
+
+  const { data, error } = await supabase
+    .from('user_workouts')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('category_id', categoryId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (data) return;
+
+  const catalogIndex = getAllWorkoutCategoryIds().indexOf(categoryId);
+  const sortOrder = catalogIndex >= 0 ? catalogIndex + 1 : 99;
+
+  const { error: insertError } = await supabase.from('user_workouts').insert({
+    user_id: userId,
+    category_id: categoryId,
+    workout_name: variant.name,
+    variant_id: variant.id,
+    description: variant.description,
+    is_equipped: isDefaultEquipped(categoryId),
+    sets_completed: 0,
+    sort_order: sortOrder
+  });
+
+  if (insertError) throw insertError;
+}
 
 export const ABSOLUTE_MAX_DAILY_SETS = 3;
 
@@ -87,6 +136,8 @@ export async function incrementSetProgress(
   const current = await fetchSetsProgress(userId, maxSets);
   const prev = current[categoryId] ?? 0;
   const next = prev >= maxSets ? 0 : prev + 1;
+
+  await ensureUserWorkoutRow(userId, categoryId);
 
   const { error: workoutError } = await supabase
     .from('user_workouts')
