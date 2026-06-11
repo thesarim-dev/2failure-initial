@@ -210,7 +210,7 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
 
           <div className="mt-8 pt-4 border-t-4 border-black border-dashed text-center normal-case">
             <p className="text-sm font-medium leading-snug">
-              &ldquo;{quote.text}&rdquo;
+              {quote.text}
             </p>
             <p className="text-xs font-bold mt-1.5">
               — {quote.author}

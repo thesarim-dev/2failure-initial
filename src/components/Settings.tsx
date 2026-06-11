@@ -24,21 +24,24 @@ export function Settings({
 
   return (
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
-      <header className="flex justify-between items-center mb-8">
+      <header className="flex justify-between items-center mb-8 gap-3">
         <button
+          type="button"
           onClick={onBack}
-          className="bg-white dark:bg-[#2a2a2a] dark:text-white border-4 border-black dark:border-white p-2 brutal-shadow-sm brutal-shadow-hover transition-all"
+          className="cyber-icon-btn cyber-icon-btn--back"
           aria-label="Back">
-          <ArrowLeft size={24} strokeWidth={3} />
+          <ArrowLeft size={22} strokeWidth={2.5} />
         </button>
-        <h1 className="text-3xl tracking-tighter">SETTINGS</h1>
+        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00B2FF]">
+          SETTINGS
+        </h1>
         <CoinsBadge coins={coins} />
       </header>
 
       <div className="space-y-6">
-        <section className="bg-white dark:bg-[#2a2a2a] border-4 border-black dark:border-white p-5 brutal-shadow-sm">
-          <h2 className="text-lg font-bold mb-1 normal-case">daily set target</h2>
-          <p className="text-sm font-medium text-black/60 dark:text-white/60 mb-4 normal-case">
+        <section className="cyber-panel p-5 normal-case">
+          <h2 className="settings-section-title">daily set target</h2>
+          <p className="text-sm font-medium opacity-70 mb-4">
             How many sets you aim to hit per exercise each day.
           </p>
           <div className="flex gap-2">
@@ -47,10 +50,10 @@ export function Settings({
                 key={goal}
                 type="button"
                 onClick={() => onDailySetGoalChange(goal)}
-                className={`flex-1 py-3 font-bold text-sm border-2 border-black dark:border-white transition-all brutal-shadow-hover ${
+                className={`store-btn flex-1 justify-center ${
                   dailySetGoal === goal
-                    ? 'bg-[#00FF00] text-black'
-                    : 'bg-white dark:bg-[#1a1a1a] dark:text-white text-black/70'
+                    ? 'store-btn--active'
+                    : 'store-btn--equip'
                 }`}>
                 {goal} sets
               </button>
@@ -58,15 +61,15 @@ export function Settings({
           </div>
         </section>
 
-        <section className="bg-white dark:bg-[#2a2a2a] border-4 border-black dark:border-white p-5 brutal-shadow-sm">
-          <h2 className="text-lg font-bold mb-1 normal-case">appearance</h2>
-          <p className="text-sm font-medium text-black/60 dark:text-white/60 mb-4 normal-case">
+        <section className="cyber-panel p-5 normal-case">
+          <h2 className="settings-section-title">appearance</h2>
+          <p className="text-sm font-medium opacity-70 mb-4">
             {isDark ? 'night mode on' : 'day mode on'}
           </p>
           <button
             type="button"
             onClick={onToggleDark}
-            className="w-full bg-black text-white dark:bg-[#f4f4f0] dark:text-black border-2 border-black dark:border-white py-3 px-4 font-bold text-sm flex items-center justify-center gap-2 brutal-shadow-hover transition-all">
+            className="settings-action-btn settings-action-btn--theme">
             {isDark ? (
               <>
                 <Sun size={18} strokeWidth={2.5} />
@@ -81,15 +84,15 @@ export function Settings({
           </button>
         </section>
 
-        <section className="bg-white dark:bg-[#2a2a2a] border-4 border-black dark:border-white p-5 brutal-shadow-sm">
-          <h2 className="text-lg font-bold mb-1 normal-case">account</h2>
-          <p className="text-sm font-medium text-black/60 dark:text-white/60 mb-4 normal-case">
+        <section className="cyber-panel p-5 normal-case">
+          <h2 className="settings-section-title">account</h2>
+          <p className="text-sm font-medium opacity-70 mb-4">
             Leave the suffering. For now.
           </p>
           <button
             type="button"
             onClick={() => signOut()}
-            className="w-full bg-[#FF4D00] text-black border-2 border-black dark:border-white py-3 px-4 font-bold text-sm flex items-center justify-center gap-2 brutal-shadow-hover transition-all">
+            className="settings-action-btn settings-action-btn--signout">
             <LogOut size={18} strokeWidth={2.5} />
             sign out
           </button>

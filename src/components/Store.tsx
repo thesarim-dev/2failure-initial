@@ -4,6 +4,7 @@ import { ArrowLeft, Coins, Check, Lock } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import {
   LINEUP_EQUIP_COUNT,
+  LineupSlot,
   MoveCategory,
   STORE_CATEGORIES,
   Variant,
@@ -11,6 +12,7 @@ import {
   getUpperDisplayGroup,
   hasBalancedUpperSelection
 } from './moves';
+
 interface StoreProps {
   coins: number;
   owned: string[];
@@ -23,6 +25,12 @@ interface StoreProps {
   onToggleEquipLower: (exerciseId: string) => void;
   onToggleEquipCore: (exerciseId: string) => void;
 }
+
+const SECTION_HEADING_CLASS: Record<LineupSlot, string> = {
+  upper: 'store-section-heading store-section-heading--upper',
+  lower: 'store-section-heading store-section-heading--lower',
+  core: 'store-section-heading store-section-heading--core'
+};
 
 export function Store({
   coins,
@@ -38,27 +46,21 @@ export function Store({
 }: StoreProps) {
   return (
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
-      <header className="flex justify-between items-center mb-8">
+      <header className="flex justify-between items-center mb-8 gap-3">
         <button
+          type="button"
           onClick={onBack}
-          className="bg-white dark:bg-[#2a2a2a] dark:text-white border-4 border-black dark:border-white p-2 brutal-shadow-sm brutal-shadow-hover transition-all"
+          className="cyber-icon-btn cyber-icon-btn--back"
           aria-label="Back">
-          <ArrowLeft size={24} strokeWidth={3} />
+          <ArrowLeft size={22} strokeWidth={2.5} />
         </button>
-        <h1 className="text-3xl tracking-tighter">THE STORE</h1>
+        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00B2FF]">
+          THE STORE
+        </h1>
         <CoinsBadge coins={coins} />
       </header>
 
-      <div className="bg-black text-white border-4 border-black p-4 mb-10 brutal-shadow">
-        <p className="font-bold text-lg">
-          Build your daily lineup: 2 Upper, 2 Lower, 2 Core.
-        </p>
-        <p className="text-sm text-white/60 font-bold mt-1 normal-case">
-          Upper body must include one Push and one Pull.
-        </p>
-      </div>
-
-      <div className="space-y-12">
+      <div className="space-y-10">
         <LineupSection
           category={STORE_CATEGORIES[0]}
           coins={coins}
@@ -128,21 +130,20 @@ function LineupSection({
 
   return (
     <section>
-      <div
-        className={`${category.color} border-4 border-black dark:border-white px-4 py-2 inline-block brutal-shadow-sm mb-2 -rotate-1`}>
-        <h2 className="text-2xl">{category.name.toUpperCase()}</h2>
-      </div>
-      <p className="text-sm font-bold mb-1 normal-case opacity-70">
-        {category.equipHint} ({equipped.length}/{LINEUP_EQUIP_COUNT} active)
+      <h2 className={`${SECTION_HEADING_CLASS[category.id]} mb-1`}>
+        {category.name}{' '}
+        <span className="store-section-active-count normal-case">
+          ({equipped.length}/{LINEUP_EQUIP_COUNT} active)
+        </span>
+      </h2>
+      <p className="text-sm font-medium mb-3 normal-case opacity-70">
+        {category.equipHint}
       </p>
       {statusNote && (
-        <p className="text-xs font-bold mb-4 normal-case text-[#FF4D00]">
-          {statusNote}
-        </p>
+        <p className="store-status-note mb-4 normal-case">{statusNote}</p>
       )}
-      {!statusNote && <div className="mb-4" />}
 
-      <div className="space-y-4">
+      <div className="flex flex-col gap-3">
         {category.variants.map((variant, i) => {
           const isOwned = owned.includes(variant.id);
           const isEquipped = equipped.includes(variant.id);
@@ -159,22 +160,21 @@ function LineupSection({
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-white dark:bg-[#2a2a2a] border-4 border-black dark:border-white p-4 brutal-shadow-sm flex items-center gap-4">
-              <div className="flex-1 min-w-0 dark:text-[#f4f4f0]">
+              className="store-item-card">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 className="text-xl font-display uppercase">
+                  <h3 className="text-lg font-display uppercase tracking-tight">
                     {variant.name}
                   </h3>
                   {isEquipped && (
-                    <span className="bg-black text-[#CCFF00] dark:bg-[#1a5c14] dark:text-[#E6FF4D] px-2 py-0.5 text-xs font-bold uppercase flex items-center gap-1">
-                      <Check size={12} strokeWidth={3} /> Equipped
+                    <span className="store-equipped-badge">
+                      <Check size={12} strokeWidth={3} />
+                      Equipped
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-bold uppercase text-black/50 dark:text-white/50 mb-1">
-                  {patternLabel}
-                </p>
-                <p className="font-medium text-black/70 dark:text-white/70 text-sm">
+                <p className="store-type-pill mb-1">{patternLabel}</p>
+                <p className="font-medium opacity-70 text-sm normal-case leading-snug">
                   {variant.description}
                 </p>
               </div>
@@ -182,12 +182,14 @@ function LineupSection({
               <div className="shrink-0">
                 {isEquipped ? (
                   <button
+                    type="button"
                     onClick={() => onToggleEquip(variant.id)}
-                    className="bg-[#CCFF00] text-black border-2 border-black dark:bg-[#d4d4d0] dark:text-black dark:border-white px-4 py-2 font-bold uppercase text-sm brutal-shadow-hover transition-all">
+                    className="store-btn store-btn--active">
                     Active
                   </button>
                 ) : isOwned ? (
                   <button
+                    type="button"
                     onClick={() => allowEquip && onToggleEquip(variant.id)}
                     disabled={!allowEquip}
                     title={
@@ -197,14 +199,15 @@ function LineupSection({
                           ? 'Need opposite movement pattern'
                           : undefined
                     }
-                    className="bg-black text-white border-2 border-black dark:border-white dark:bg-[#3d9a32] dark:text-black px-4 py-2 font-bold uppercase text-sm brutal-shadow-hover transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    className="store-btn store-btn--equip">
                     Equip
                   </button>
                 ) : (
                   <button
+                    type="button"
                     onClick={() => canAfford && onBuy(category.id, variant)}
                     disabled={!canAfford}
-                    className={`border-2 border-black dark:border-white px-4 py-2 font-bold uppercase text-sm flex items-center gap-1.5 transition-all ${canAfford ? 'bg-[#FF00FF] text-black brutal-shadow-hover dark:bg-[#5c1a5c] dark:text-[#FF99FF]' : 'bg-gray-200 dark:bg-gray-700 text-black/40 dark:text-white/40 cursor-not-allowed'}`}>
+                    className={`store-btn ${canAfford ? 'store-btn--buy' : 'store-btn--locked'}`}>
                     {canAfford ? (
                       <Coins size={14} strokeWidth={3} />
                     ) : (

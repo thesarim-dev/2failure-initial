@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { Flame, Loader2, Settings as SettingsIcon, Skull, ShoppingBag } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import type { DailySetGoal } from '../hooks/useDailySetGoal';
-import { Move, SHADY_QUOTES, resolveLineupMove } from './moves';
+import { pickFunFact } from '../lib/funFacts';
+import { Move, resolveLineupMove } from './moves';
 
 interface DashboardProps {
   coins: number;
@@ -44,9 +45,7 @@ export function Dashboard({
   onOpenStore,
   onOpenSettings
 }: DashboardProps) {
-  const [quote] = useState(
-    () => SHADY_QUOTES[Math.floor(Math.random() * SHADY_QUOTES.length)]
-  );
+  const [funFact] = useState(() => pickFunFact());
 
   const activeMoves = [
     ...equippedUpper.map((id) => resolveLineupMove(id)),
@@ -58,8 +57,12 @@ export function Dashboard({
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
       <header className="relative flex justify-between items-center mb-8 gap-3">
         <div className="flex items-center gap-2 min-w-0 pr-2 pointer-events-none select-none">
-          <Skull size={32} strokeWidth={2.5} className="shrink-0" />
-          <h1 className="logo-brand text-3xl tracking-tighter text-[#00B2FF] normal-case whitespace-nowrap">
+          <Skull
+            size={32}
+            strokeWidth={2.5}
+            className="dashboard-skull-glow shrink-0 text-[#00B2FF]"
+          />
+          <h1 className="logo-brand text-3xl tracking-tighter text-[#00B2FF] normal-case whitespace-nowrap dashboard-logo-glow">
             2failure
           </h1>
         </div>
@@ -68,21 +71,21 @@ export function Dashboard({
           <button
             type="button"
             onClick={onOpenStore}
-            className="bg-[#7CFC00] text-black border-2 border-black dark:border-white p-2 brutal-shadow-sm brutal-shadow-hover transition-all"
+            className="cyber-icon-btn cyber-icon-btn--store"
             aria-label="Open store">
             <ShoppingBag size={20} strokeWidth={2.5} />
           </button>
           <button
             type="button"
             onClick={onOpenSettings}
-            className="bg-[#FFBA00] text-black border-2 border-black dark:border-white p-2 brutal-shadow-sm brutal-shadow-hover transition-all"
+            className="cyber-icon-btn cyber-icon-btn--settings"
             aria-label="Open settings">
             <SettingsIcon size={20} strokeWidth={2.5} />
           </button>
 
           {profileLoading ? (
             <div
-              className="flex items-center gap-2 bg-gray-200 dark:bg-gray-700 text-black dark:text-white px-3 py-1.5 border-2 border-black dark:border-white brutal-shadow-sm"
+              className="coins-badge flex items-center gap-2 px-4 py-2"
               aria-busy="true"
               aria-label="Loading coins">
               <Loader2 size={20} strokeWidth={2.5} className="animate-spin" />
@@ -105,28 +108,25 @@ export function Dashboard({
 
       <section
         className="mb-6 flex items-center gap-4 normal-case"
-        aria-label="Daily vibe check and streak">
-        <div className="flex-1 min-w-0 bg-[#333333] dark:bg-[#2a2a2a] border-4 border-white dark:border-white p-5 pt-7 relative brutal-shadow-sm">
-          <div className="absolute -top-3 left-4 bg-black text-white px-3 py-1 text-xs font-semibold normal-case">
-            daily vibe check
-          </div>
-          <p className="font-medium text-base leading-snug text-white/95 pr-1">
-            &ldquo;{quote}&rdquo;
+        aria-label="Fun fact and streak">
+        <div className="cyber-panel flex-1 min-w-0 p-5 normal-case">
+          <p className="font-medium text-base leading-snug opacity-90">
+            {funFact}
           </p>
         </div>
 
         <div
-          className="streak-badge shrink-0 w-24 h-24 rounded-full bg-[#FF4D00] dark:bg-[#FF6633] flex flex-col items-center justify-center text-black"
+          className="streak-badge shrink-0 w-[78px] h-[78px] rounded-full bg-[#FF4D00] dark:bg-[#FF6633] flex flex-col items-center justify-center text-black"
           aria-label={`Current streak: ${currentStreak} days`}>
           {statsLoading || statsCompleting ? (
-            <Loader2 size={22} className="animate-spin" aria-busy="true" />
+            <Loader2 size={18} className="animate-spin" aria-busy="true" />
           ) : (
             <>
               <div className="flex items-center gap-0.5 leading-none">
-                <Flame size={18} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
-                <span className="text-3xl font-bold tabular-nums">{currentStreak}</span>
+                <Flame size={15} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
+                <span className="text-2xl font-bold tabular-nums">{currentStreak}</span>
               </div>
-              <span className="text-xs font-semibold mt-0.5">streak</span>
+              <span className="text-[11px] font-semibold mt-0.5 leading-none">streak</span>
             </>
           )}
         </div>

@@ -7,6 +7,7 @@ import React, {
   useState
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
+import { formatOAuthError } from '../lib/authErrors';
 import { supabase } from '../lib/supabase';
 
 type AuthContextValue = {
@@ -50,9 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (oauthError) {
-          throw new Error(
-            decodeURIComponent(oauthError.replace(/\+/g, ' '))
-          );
+          const raw = decodeURIComponent(oauthError.replace(/\+/g, ' '));
+          throw new Error(formatOAuthError(raw));
         }
 
         if (code) {

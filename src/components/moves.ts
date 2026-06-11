@@ -358,15 +358,6 @@ export function resolveMoveById(moveId: string): Move | null {
   return resolveLineupMove(moveId);
 }
 
-export const SHADY_QUOTES = [
-  "The floor misses you. Don't let your streak rot.",
-  'Are pushups feeling mid? Level up or stay a loser.',
-  'You call that failure? My grandma fails harder.',
-  "I've seen more effort from a dead battery.",
-  "Wow, you actually showed up. I'm shocked.",
-  "Failure is the only option. And you're great at it."
-];
-
 export const BUTTON_LABELS = [
   "I'M COOKED",
   'LITERALLY DYING',
