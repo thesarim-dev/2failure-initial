@@ -39,6 +39,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const bootstrapAuth = async () => {
       try {
         setAuthError(null);
+
+        const params = new URLSearchParams(window.location.search);
+        const oauthError =
+          params.get('error_description') ?? params.get('error');
+        const code = params.get('code');
+
+        if (oauthError || code) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+
+        if (oauthError) {
+          throw new Error(
+            decodeURIComponent(oauthError.replace(/\+/g, ' '))
+          );
+        }
+
+        if (code) {
+          const { error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) throw exchangeError;
+        }
+
         const {
           data: { session: currentSession },
           error

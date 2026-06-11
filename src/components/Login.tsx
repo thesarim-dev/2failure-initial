@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Skull } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getAuthRedirectUrl } from '../lib/authRedirect';
 import { supabase } from '../lib/supabase';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -14,7 +15,9 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState<'signIn' | 'signUp' | null>(null);
+  const [submitting, setSubmitting] = useState<
+    'signIn' | 'signUp' | 'google' | null
+  >(null);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +35,25 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
         err instanceof Error ? err.message : 'Could not sign in.'
       );
     } finally {
+      setSubmitting(null);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setSubmitting('google');
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: getAuthRedirectUrl()
+        }
+      });
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Could not sign in with Gmail.'
+      );
       setSubmitting(null);
     }
   };
@@ -119,6 +141,14 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
               disabled={busy}
               className="w-full bg-[#00B2FF] text-black border-4 border-black dark:border-white p-4 font-bold text-lg brutal-shadow brutal-shadow-hover transition-all disabled:opacity-60 disabled:cursor-not-allowed">
               {submitting === 'signIn' ? 'Signing in…' : 'Sign In'}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={busy}
+              className="w-full bg-white dark:bg-[#f4f4f0] text-black border-4 border-black dark:border-white p-4 font-bold text-lg brutal-shadow brutal-shadow-hover transition-all disabled:opacity-60 disabled:cursor-not-allowed normal-case">
+              {submitting === 'google' ? 'Redirecting to Gmail…' : 'Sign in through Gmail'}
             </button>
 
             <button
