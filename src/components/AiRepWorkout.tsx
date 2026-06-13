@@ -4,7 +4,6 @@ import { Move, BUTTON_LABELS } from './moves';
 import {
   Camera,
   CameraOff,
-  RotateCcw,
   SwitchCamera,
   Timer,
   X
@@ -15,6 +14,7 @@ import {
   type PoseExerciseId
 } from '../lib/pose/repCounterFactory';
 import { TimedWorkout } from './TimedWorkout';
+import { WORKOUT_FINISH_BTN, WORKOUT_TIMER_GLOW } from './workoutUi';
 
 interface AiRepWorkoutProps {
   move: Move;
@@ -48,8 +48,7 @@ function AiRepTrackingView({
     facingMode,
     isMirrored,
     toggleCamera,
-    toggleFacingMode,
-    resetReps
+    toggleFacingMode
   } = usePoseRepTracker(true, poseExerciseId);
 
   const formatTime = (totalSeconds: number) => {
@@ -60,36 +59,38 @@ function AiRepTrackingView({
 
   const statusLabel =
     status === 'loading'
-      ? 'Loading AI...'
+      ? 'loading AI...'
       : status === 'tracking'
-        ? 'Tracking reps'
+        ? 'tracking reps'
         : status === 'ready'
-          ? 'Get in frame'
+          ? 'get in frame'
           : status === 'error'
-            ? 'Camera off'
-            : 'Camera paused';
+            ? 'camera off'
+            : 'camera paused';
 
   return (
     <div
-      className={`flex flex-col w-full min-h-screen ${move.color} p-4 md:p-8 transition-colors duration-200`}>
-      <header className="flex justify-between items-center mb-4">
+      className={`flex flex-col w-full min-h-screen ${move.color} p-3 md:p-5 transition-colors duration-200`}>
+      <header className="flex items-center gap-3 mb-2">
         <button
+          type="button"
           onClick={onCancel}
-          className="bg-white dark:bg-[#1a1a1a] dark:text-white border-4 border-black dark:border-white p-2 brutal-shadow-sm brutal-shadow-hover transition-all">
-          <X size={24} strokeWidth={3} />
+          className="cyber-icon-btn cyber-icon-btn--back shrink-0"
+          aria-label="Cancel workout">
+          <X size={22} strokeWidth={2.5} />
         </button>
-        <div className="bg-black text-white px-4 py-2 border-2 border-black dark:border-white font-bold uppercase tracking-widest text-sm">
-          AI rep tracking
-        </div>
+        <h2 className="workout-title flex-1 min-w-0 !mb-0 !text-[clamp(2rem,8vw,3.25rem)] leading-none text-center">
+          {move.name}
+        </h2>
+        <div className="w-10 shrink-0" aria-hidden="true" />
       </header>
 
-      <div className="flex-1 flex flex-col items-center w-full max-w-md mx-auto">
-        <h2 className="text-3xl md:text-4xl mb-2 text-center">{move.name}</h2>
-        <p className="text-sm font-bold mb-4 text-center opacity-80">
+      <div className="flex flex-col items-center w-full max-w-md mx-auto gap-2">
+        <p className="text-xs font-semibold opacity-75 mb-1 normal-case text-center leading-snug max-w-sm">
           {POSE_AI_HINTS[poseExerciseId]}
         </p>
 
-        <div className="relative w-full aspect-[3/4] max-h-[50vh] border-4 border-black brutal-shadow-sm overflow-hidden bg-black rounded-2xl mb-4">
+        <div className="relative w-full aspect-[9/16] max-h-[68vh] workout-camera-frame">
           <video
             ref={videoRef}
             className={`absolute inset-0 w-full h-full object-cover${isMirrored ? ' scale-x-[-1]' : ''}`}
@@ -100,93 +101,82 @@ function AiRepTrackingView({
           {(!cameraEnabled || status === 'loading' || status === 'error') && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 text-white p-4 text-center">
               {status === 'loading' && (
-                <p className="font-bold text-sm uppercase tracking-widest">
+                <p className="font-bold text-sm normal-case opacity-90">
                   Loading pose model...
                 </p>
               )}
               {status === 'error' && (
                 <>
-                  <p className="font-bold text-sm mb-2">Camera unavailable</p>
-                  <p className="text-xs opacity-80">{error}</p>
+                  <p className="font-bold text-sm mb-2 normal-case">
+                    Camera unavailable
+                  </p>
+                  <p className="text-xs opacity-80 normal-case">{error}</p>
                 </>
               )}
               {!cameraEnabled && status !== 'loading' && (
-                <p className="font-bold text-sm">Camera paused</p>
+                <p className="font-bold text-sm normal-case">Camera paused</p>
               )}
             </div>
           )}
 
-          <div className="absolute top-3 left-3 bg-black/80 text-white px-3 py-1 text-xs font-bold uppercase">
+          <div className="absolute top-3 left-3 workout-overlay-chip normal-case">
             {statusLabel}
           </div>
 
-          <div
-            className={`absolute bottom-3 right-3 ${move.color} border-2 border-black dark:border-white px-4 py-2`}>
-            <p className="text-[10px] font-bold uppercase tracking-widest">
-              Reps
+          <div className="absolute bottom-3 right-3 workout-rep-badge">
+            <p className="text-[10px] font-bold lowercase tracking-wide opacity-80">
+              reps
             </p>
-            <p className="font-display text-4xl leading-none tabular-nums">
-              {reps}
-            </p>
+            <p className="workout-rep-count">{reps}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full mb-4">
+        <div className="flex items-center gap-2 w-full">
           <button
             type="button"
             onClick={toggleCamera}
-            className="flex-1 bg-black text-white border-4 border-black p-3 flex items-center justify-center gap-2 font-bold text-sm brutal-shadow-sm brutal-shadow-hover transition-all">
+            className="workout-tool-btn normal-case">
             {cameraEnabled ? <Camera size={18} /> : <CameraOff size={18} />}
-            {cameraEnabled ? 'Pause cam' : 'Resume cam'}
+            {cameraEnabled ? 'pause cam' : 'resume cam'}
           </button>
           <button
             type="button"
             onClick={toggleFacingMode}
             disabled={!cameraEnabled}
-            className="flex-1 bg-white text-black border-4 border-black p-3 flex items-center justify-center gap-2 font-bold text-sm brutal-shadow-sm brutal-shadow-hover transition-all disabled:opacity-50">
+            className="workout-tool-btn workout-tool-btn--light normal-case">
             <SwitchCamera size={18} />
-            {facingMode === 'user' ? 'Front cam' : 'Back cam'}
-          </button>
-          <button
-            type="button"
-            onClick={resetReps}
-            className="bg-white text-black border-4 border-black p-3 brutal-shadow-sm brutal-shadow-hover transition-all"
-            aria-label="Reset rep count">
-            <RotateCcw size={18} />
+            {facingMode === 'user' ? 'front cam' : 'back cam'}
           </button>
         </div>
 
-        <div className="flex items-center justify-center w-full mb-4 gap-3">
-          <motion.div
-            className="font-display text-5xl tracking-tighter"
-            animate={{ scale: [1, 1.03, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}>
+        <div className="flex items-center justify-center w-full gap-2 flex-wrap">
+          <div
+            className={`workout-timer text-[clamp(2rem,8vw,3rem)] leading-none ${WORKOUT_TIMER_GLOW[move.lineupSlot]}`}>
             {formatTime(seconds)}
-          </motion.div>
+          </div>
 
           <button
             type="button"
             onClick={onUseTimerOnly}
-            className="bg-white/90 text-black border-2 border-black px-4 py-2 font-bold text-sm flex items-center gap-2 brutal-shadow-sm brutal-shadow-hover transition-all normal-case">
-            <Timer size={16} />
+            className="workout-secondary-btn normal-case !py-2 !px-3 !text-xs">
+            <Timer size={14} strokeWidth={2.5} />
             Use timer only
           </button>
         </div>
       </div>
 
       <motion.button
-        initial={{ y: 100, opacity: 0 }}
+        type="button"
+        initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ type: 'spring', bounce: 0.5 }}
+        transition={{ type: 'spring', bounce: 0.35 }}
         onClick={() =>
           onFinish(seconds, cameraEnabled && reps > 0 ? reps : undefined)
         }
-        className="w-full bg-black text-white border-4 border-black dark:border-white p-6 brutal-shadow brutal-shadow-hover transition-all duration-200 mb-4">
-        <span className="font-display text-3xl md:text-4xl block transform -skew-x-6">
-          {buttonLabel}
-        </span>
+        className={`${WORKOUT_FINISH_BTN} mt-3 mb-3 !py-3`}>
+        <span>{buttonLabel}</span>
         {reps > 0 && (
-          <span className="block text-sm font-bold mt-2 normal-case opacity-80">
+          <span className="block text-sm font-semibold mt-1 normal-case opacity-80">
             Logging {reps} tracked rep{reps === 1 ? '' : 's'}
           </span>
         )}

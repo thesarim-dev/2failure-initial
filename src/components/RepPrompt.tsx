@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Move } from './moves';
 import { ArrowRight } from 'lucide-react';
+import { WORKOUT_FINISH_BTN } from './workoutUi';
 
 interface RepPromptProps {
   move: Move;
@@ -30,7 +31,7 @@ export function RepPrompt({ move, onSubmit }: RepPromptProps) {
         <motion.h2
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-4xl md:text-5xl mb-4 text-center">
+          className="workout-title mb-3">
           {move.name}
         </motion.h2>
 
@@ -38,7 +39,7 @@ export function RepPrompt({ move, onSubmit }: RepPromptProps) {
           initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="text-lg md:text-xl font-bold mb-10 text-center max-w-sm">
+          className="workout-subtitle mb-10 normal-case">
           How many reps did you hit this set?
         </motion.p>
 
@@ -60,20 +61,17 @@ export function RepPrompt({ move, onSubmit }: RepPromptProps) {
               if (error) setError(null);
             }}
             placeholder="0"
-            className="w-full bg-white text-black border-4 border-black p-6 text-center font-display text-5xl md:text-6xl brutal-shadow-sm focus:outline-none focus:ring-4 focus:ring-black/20"
+            className="workout-rep-input"
+            aria-label="Reps completed"
           />
 
-          {error && (
-            <p className="text-center font-bold text-sm bg-black text-white px-3 py-2 border-2 border-black">
-              {error}
-            </p>
-          )}
+          {error && <p className="workout-error normal-case">{error}</p>}
 
           <button
             type="submit"
-            className="w-full bg-black text-white border-4 border-black p-6 brutal-shadow brutal-shadow-hover transition-all duration-200 flex items-center justify-center gap-2">
-            <span className="font-display text-2xl md:text-3xl">LOG IT</span>
-            <ArrowRight size={28} strokeWidth={3} />
+            className={`${WORKOUT_FINISH_BTN} flex items-center justify-center gap-2`}>
+            <span>log it</span>
+            <ArrowRight size={24} strokeWidth={2.5} />
           </button>
         </motion.form>
       </div>

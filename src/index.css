@@ -399,6 +399,246 @@
     color: #ffb899;
     box-shadow: 0 0 16px rgba(255, 77, 0, 0.35);
   }
+  .workout-title {
+    font-size: clamp(2.25rem, 9vw, 4rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    text-align: center;
+  }
+  .workout-subtitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    opacity: 0.8;
+    text-align: center;
+    max-width: 24rem;
+  }
+  .workout-timer {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(3.5rem, 16vw, 7rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .workout-timer-glow--upper {
+    text-shadow:
+      0 0 16px rgba(0, 0, 0, 0.12),
+      0 0 32px rgba(204, 255, 0, 0.45);
+  }
+  .workout-timer-glow--lower {
+    text-shadow:
+      0 0 16px rgba(0, 0, 0, 0.12),
+      0 0 32px rgba(255, 0, 255, 0.45);
+  }
+  .workout-timer-glow--core {
+    text-shadow:
+      0 0 16px rgba(0, 0, 0, 0.12),
+      0 0 32px rgba(0, 255, 255, 0.45);
+  }
+  .workout-finish-btn {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    width: 100%;
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    font-weight: 700;
+    font-size: clamp(1.35rem, 4.5vw, 2.25rem);
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    border: none;
+    background: rgba(0, 0, 0, 0.92);
+    color: #f4f4f0;
+    transition: transform 0.15s, filter 0.2s;
+  }
+  .workout-finish-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+  }
+  @keyframes workout-rainbow-border {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 300% 50%;
+    }
+  }
+  .workout-finish-btn--rainbow::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    z-index: -2;
+    border-radius: calc(1rem + 2px);
+    background: linear-gradient(
+      90deg,
+      #ff4d4d,
+      #ffba00,
+      #ccff00,
+      #00ffff,
+      #00b2ff,
+      #ff00ff,
+      #ff4d4d
+    );
+    background-size: 300% 100%;
+    animation: workout-rainbow-border 3.5s linear infinite;
+    box-shadow:
+      0 0 16px rgba(255, 0, 255, 0.45),
+      0 0 28px rgba(0, 255, 255, 0.35),
+      0 0 40px rgba(204, 255, 0, 0.25);
+  }
+  .workout-finish-btn--rainbow::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: calc(1rem - 2px);
+    background: rgba(0, 0, 0, 0.92);
+  }
+  .workout-finish-btn--rainbow:not(:disabled):hover::before {
+    box-shadow:
+      0 0 22px rgba(255, 0, 255, 0.6),
+      0 0 36px rgba(0, 255, 255, 0.45),
+      0 0 52px rgba(204, 255, 0, 0.35);
+  }
+  .workout-secondary-btn {
+    border-radius: 0.75rem;
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    background: rgba(255, 255, 255, 0.88);
+    color: #000;
+    box-shadow: 0 0 14px rgba(0, 178, 255, 0.18);
+    transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .workout-secondary-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+    box-shadow: 0 0 20px rgba(0, 178, 255, 0.28);
+  }
+  .workout-tool-btn {
+    flex: 1;
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.5rem;
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: lowercase;
+    background: rgba(0, 0, 0, 0.88);
+    color: #f4f4f0;
+    border: 1px solid rgba(0, 178, 255, 0.35);
+    box-shadow: 0 0 12px rgba(0, 178, 255, 0.2);
+    transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+  .workout-tool-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 0 18px rgba(0, 178, 255, 0.32);
+  }
+  .workout-tool-btn--light {
+    background: rgba(255, 255, 255, 0.92);
+    color: #000;
+    border-color: rgba(0, 0, 0, 0.18);
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+  }
+  .workout-tool-btn--light:not(:disabled):hover {
+    box-shadow: 0 0 18px rgba(0, 178, 255, 0.22);
+  }
+  .workout-tool-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .workout-camera-frame {
+    border-radius: 1rem;
+    border: 1px solid rgba(0, 178, 255, 0.45);
+    box-shadow:
+      0 0 24px rgba(0, 178, 255, 0.28),
+      0 0 48px rgba(0, 178, 255, 0.12);
+    overflow: hidden;
+    background: #000;
+  }
+  .workout-status-chip {
+    border-radius: 9999px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.82);
+    color: #f4f4f0;
+    box-shadow: 0 0 14px rgba(0, 178, 255, 0.25);
+  }
+  .workout-overlay-chip {
+    border-radius: 9999px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+    background: rgba(0, 0, 0, 0.78);
+    color: #b8ecff;
+    border: 1px solid rgba(0, 178, 255, 0.35);
+    box-shadow: 0 0 12px rgba(0, 178, 255, 0.2);
+  }
+  .workout-rep-badge {
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(4px);
+    padding: 0.45rem 0.7rem;
+    box-shadow: 0 0 16px rgba(0, 178, 255, 0.28);
+  }
+  .workout-rep-count {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 2.25rem;
+    line-height: 1;
+    color: #f4f4f0;
+    font-variant-numeric: tabular-nums;
+    text-shadow:
+      0 0 10px rgba(0, 178, 255, 0.55),
+      0 0 22px rgba(0, 178, 255, 0.3);
+  }
+  .workout-rep-input {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    background: rgba(255, 255, 255, 0.92);
+    padding: 1.25rem;
+    text-align: center;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(3rem, 12vw, 4.5rem);
+    line-height: 1;
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 178, 255, 0.15);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .workout-rep-input:focus {
+    outline: none;
+    border-color: rgba(0, 178, 255, 0.55);
+    box-shadow:
+      0 0 0 1px rgba(0, 178, 255, 0.4),
+      0 0 24px rgba(0, 178, 255, 0.3);
+  }
+  .workout-error {
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #c43d00;
+    border: 1px solid rgba(255, 77, 0, 0.4);
+    background: rgba(255, 77, 0, 0.1);
+    box-shadow: 0 0 12px rgba(255, 77, 0, 0.2);
+    text-align: center;
+  }
 
   .login-screen {
     position: relative;
