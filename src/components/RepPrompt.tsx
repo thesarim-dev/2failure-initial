@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Move } from './moves';
 import { ArrowRight } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 import { WORKOUT_FINISH_BTN } from './workoutUi';
 
 interface RepPromptProps {
@@ -10,6 +11,7 @@ interface RepPromptProps {
 }
 
 export function RepPrompt({ move, onSubmit }: RepPromptProps) {
+  const { t } = useLanguage();
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +19,7 @@ export function RepPrompt({ move, onSubmit }: RepPromptProps) {
     e.preventDefault();
     const reps = parseInt(value, 10);
     if (!Number.isFinite(reps) || reps < 1) {
-      setError('Enter at least 1 rep.');
+      setError(t.workout.repPromptError);
       return;
     }
     setError(null);
@@ -31,7 +33,7 @@ export function RepPrompt({ move, onSubmit }: RepPromptProps) {
         <motion.h2
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="workout-title mb-3">
+          className="workout-title mb-3 normal-case">
           {move.name}
         </motion.h2>
 
@@ -40,7 +42,7 @@ export function RepPrompt({ move, onSubmit }: RepPromptProps) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
           className="workout-subtitle mb-10 normal-case">
-          How many reps did you hit this set?
+          {t.workout.repPromptQuestion}
         </motion.p>
 
         <motion.form
@@ -60,17 +62,17 @@ export function RepPrompt({ move, onSubmit }: RepPromptProps) {
               setValue(e.target.value);
               if (error) setError(null);
             }}
-            placeholder="0"
+            placeholder={t.workout.repPromptPlaceholder}
             className="workout-rep-input"
-            aria-label="Reps completed"
+            aria-label={t.workout.repPromptAria}
           />
 
           {error && <p className="workout-error normal-case">{error}</p>}
 
           <button
             type="submit"
-            className={`${WORKOUT_FINISH_BTN} flex items-center justify-center gap-2`}>
-            <span>log it</span>
+            className={`${WORKOUT_FINISH_BTN} flex items-center justify-center gap-2 normal-case`}>
+            <span>{t.workout.repPromptSubmit}</span>
             <ArrowRight size={24} strokeWidth={2.5} />
           </button>
         </motion.form>

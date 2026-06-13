@@ -1,4 +1,8 @@
-export function formatOAuthError(message: string): string {
+import { useLanguage } from '../context/LanguageContext';
+import type { Language } from '../i18n/types';
+import { translations } from '../i18n/translations';
+
+export function formatOAuthError(message: string, language: Language): string {
   const lower = message.toLowerCase();
 
   if (
@@ -6,11 +10,7 @@ export function formatOAuthError(message: string): string {
     lower.includes('invalid_client') ||
     lower.includes('client secret is invalid')
   ) {
-    return (
-      'Google sign-in is misconfigured. In Supabase → Authentication → Providers → Google, ' +
-      're-enter the Client ID and Client Secret from Google Cloud Console (Web application OAuth client). ' +
-      'Google redirect URI must be: https://jfceueuzwzznbyjazhuu.supabase.co/auth/v1/callback'
-    );
+    return translations[language].login.errors.googleOAuth;
   }
 
   return message;

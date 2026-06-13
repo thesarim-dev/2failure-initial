@@ -269,13 +269,16 @@ export const FUN_FACTS = [
   'The first Guinness World Records book was published in 1955.'
 ];
 
-export function pickFunFact(): string {
-  if (FUN_FACTS.length === 0) {
-    return 'Fun facts are loading…';
+export function pickFunFact(
+  facts: string[] = FUN_FACTS,
+  loadingText = 'Fun facts are loading…'
+): string {
+  if (facts.length === 0) {
+    return loadingText;
   }
 
   if (typeof window === 'undefined') {
-    return FUN_FACTS[0];
+    return facts[0];
   }
 
   const lastRaw = localStorage.getItem(STORAGE_KEY);
@@ -284,14 +287,14 @@ export function pickFunFact(): string {
       ? Number(lastRaw)
       : -1;
 
-  let nextIndex = Math.floor(Math.random() * FUN_FACTS.length);
+  let nextIndex = Math.floor(Math.random() * facts.length);
 
-  if (FUN_FACTS.length > 1) {
+  if (facts.length > 1) {
     while (nextIndex === lastIndex) {
-      nextIndex = Math.floor(Math.random() * FUN_FACTS.length);
+      nextIndex = Math.floor(Math.random() * facts.length);
     }
   }
 
   localStorage.setItem(STORAGE_KEY, String(nextIndex));
-  return FUN_FACTS[nextIndex];
+  return facts[nextIndex];
 }

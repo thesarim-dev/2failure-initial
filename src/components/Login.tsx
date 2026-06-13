@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Moon, Skull, Sun } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { formatOAuthError } from '../lib/authErrors';
 import { getAuthRedirectUrl } from '../lib/authRedirect';
 import { supabase } from '../lib/supabase';
@@ -35,6 +36,7 @@ interface LoginProps {
 
 export function Login({ isDark, onToggleDark }: LoginProps) {
   const { authError, refreshSession } = useAuth();
+  const { language, t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -54,9 +56,7 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
       if (signInError) throw signInError;
       await refreshSession();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Could not sign in.'
-      );
+      setError(err instanceof Error ? err.message : t.login.errors.signIn);
     } finally {
       setSubmitting(null);
     }
@@ -75,8 +75,8 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
       if (oauthError) throw oauthError;
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Could not sign in with Gmail.';
-      setError(formatOAuthError(message));
+        err instanceof Error ? err.message : t.login.errors.signInGmail;
+      setError(formatOAuthError(message, language));
       setSubmitting(null);
     }
   };
@@ -101,9 +101,7 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
 
       await refreshSession();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Could not sign up.'
-      );
+      setError(err instanceof Error ? err.message : t.login.errors.signUp);
     } finally {
       setSubmitting(null);
     }
@@ -131,25 +129,27 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
             type="button"
             onClick={onToggleDark}
             className="login-pill login-theme-pill flex items-center gap-2 normal-case"
-            aria-label={isDark ? 'Switch to day mode' : 'Switch to night mode'}>
+            aria-label={
+              isDark ? t.login.aria.switchToDay : t.login.aria.switchToNight
+            }>
             {isDark ? (
               <Sun size={16} strokeWidth={2.5} />
             ) : (
               <Moon size={16} strokeWidth={2.5} />
             )}
-            {isDark ? 'switch to day mode' : 'switch to night mode'}
+            {isDark ? t.login.switchToDay : t.login.switchToNight}
           </button>
         </div>
 
         <div className="login-card w-full p-6 md:p-8">
-          <h2 className="text-2xl tracking-tight mb-3">LOG IN</h2>
+          <h2 className="text-2xl tracking-tight mb-3 normal-case">{t.login.title}</h2>
           <p className="font-semibold text-sm opacity-70 mb-6 normal-case leading-snug">
-            Sign in with your email to track your failures. No excuses.
+            {t.login.subtitle}
           </p>
 
           <form onSubmit={handleSignIn} className="space-y-4">
             <label className="block">
-              <span className="login-field-label block">Email</span>
+              <span className="login-field-label block">{t.login.email}</span>
               <input
                 type="email"
                 autoComplete="email"
@@ -162,7 +162,7 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
             </label>
 
             <label className="block">
-              <span className="login-field-label block">Password</span>
+              <span className="login-field-label block">{t.login.password}</span>
               <input
                 type="password"
                 autoComplete="current-password"
@@ -180,7 +180,7 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
                 type="submit"
                 disabled={busy}
                 className="login-btn login-btn--primary">
-                {submitting === 'signIn' ? 'Signing in…' : 'Sign In'}
+                {submitting === 'signIn' ? t.login.signingIn : t.login.signIn}
               </button>
 
               <button
@@ -191,8 +191,8 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
                 <span className="flex items-center justify-center gap-3">
                   <GoogleGIcon className="w-6 h-6 shrink-0" />
                   {submitting === 'google'
-                    ? 'Redirecting to Gmail…'
-                    : 'Sign in through Gmail'}
+                    ? t.login.redirectingGmail
+                    : t.login.signInGmail}
                 </span>
               </button>
 
@@ -201,7 +201,7 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
                 onClick={handleSignUp}
                 disabled={busy}
                 className="login-btn login-btn--ghost">
-                {submitting === 'signUp' ? 'Signing up…' : 'Sign Up'}
+                {submitting === 'signUp' ? t.login.signingUp : t.login.signUp}
               </button>
             </div>
           </form>

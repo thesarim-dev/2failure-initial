@@ -2,11 +2,22 @@ import { supabase } from './supabase';
 import { ensureUserWorkoutRow } from './workoutProgress';
 import type { PersonalBest, SetRepResult } from '../types/repProgress';
 
-export function formatPersonalBestDate(iso: string | null): string {
+import type { Language } from '../i18n/types';
+
+const LOCALE_BY_LANGUAGE: Record<Language, string> = {
+  en: 'en-US',
+  he: 'he-IL',
+  ar: 'ar'
+};
+
+export function formatPersonalBestDate(
+  iso: string | null,
+  language: Language = 'en'
+): string {
   if (!iso) return '—';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString(LOCALE_BY_LANGUAGE[language], {
     month: 'short',
     day: 'numeric',
     year: 'numeric'

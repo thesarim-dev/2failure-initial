@@ -49,7 +49,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'pushups',
       name: 'Pushups',
-      description: 'Floor. Down. Up. Repeat until death.',
+      description: "Floor. Down. Up. Repeat until you can't.",
       price: 0,
       tier: 'BASE',
       pattern: 'push'
@@ -57,7 +57,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'incline-pushups',
       name: 'Incline Pushups',
-      description: 'Easier than the floor. We see you, baby mode.',
+      description: 'Hands on something higher. Great for building up.',
       price: 100,
       tier: 'PRO',
       pattern: 'push'
@@ -65,7 +65,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'diamond-pushups',
       name: 'Diamond Pushups',
-      description: 'Hands together. Tricep destruction.',
+      description: 'Hands together. Super tricep workout.',
       price: 250,
       tier: 'PRO',
       pattern: 'push'
@@ -73,7 +73,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'superman-pulls',
       name: 'Superman Pulls',
-      description: "You're meant to be Clark anyway.",
+      description: 'Fly like Superman. Lift your chest off the floor.',
       price: 0,
       tier: 'BASE',
       pattern: 'pull'
@@ -112,35 +112,35 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'squats',
       name: 'Squats',
-      description: 'Drop it low. Stand up. Cry.',
+      description: 'Drop it low. Stand up. Keep going!',
       price: 0,
       tier: 'BASE'
     },
     {
       id: 'lunges',
       name: 'Lunges',
-      description: 'Step forward. Regret it. Step back.',
+      description: 'Step forward. Give it your best. Step back.',
       price: 0,
       tier: 'BASE'
     },
     {
       id: 'glute-bridges',
       name: 'Glute Bridges',
-      description: 'Back on the floor. Drive hips up. Squeeze. Lower with shame.',
+      description: 'Back on the floor. Drive hips up. Squeeze. Lower slowly.',
       price: 0,
       tier: 'BASE'
     },
     {
       id: 'jump-squats',
       name: 'Jump Squats',
-      description: 'Now with extra knee damage.',
+      description: 'Squat down and hop back up for extra power.',
       price: 150,
       tier: 'PRO'
     },
     {
       id: 'bulgarian-splits',
       name: 'Bulgarian Splits',
-      description: 'Back foot up. Soul down.',
+      description: 'Back foot up. Go as low as you can.',
       price: 350,
       tier: 'ELITE'
     }
@@ -160,42 +160,42 @@ export const CORE_STORE_CATEGORY: MoveCategory = {
     {
       id: 'planks',
       name: 'Planks',
-      description: 'Stare at the floor and think about life.',
+      description: 'Hold steady and stay strong.',
       price: 0,
       tier: 'BASE'
     },
     {
       id: 'crunches',
       name: 'Crunches',
-      description: 'Pretend you are getting out of bed.',
+      description: 'Curl up like a little sit-up.',
       price: 0,
       tier: 'BASE'
     },
     {
       id: 'l-sit',
       name: 'L-Sit',
-      description: 'Legs out. Hands down. Shake like a leaf.',
+      description: 'Legs out. Hands down. Hold steady.',
       price: 150,
       tier: 'PRO'
     },
     {
       id: 'side-planks',
       name: 'Side Planks',
-      description: 'Sideways suffering. Twice the fun.',
+      description: 'Hold on your side. Double the challenge.',
       price: 150,
       tier: 'PRO'
     },
     {
       id: 'leg-raises',
       name: 'Leg Raises',
-      description: 'Legs up. Ab cramps incoming.',
+      description: 'Legs up. Feel those core muscles work.',
       price: 150,
       tier: 'PRO'
     },
     {
       id: 'hollow-body',
       name: 'Hollow Body Hold',
-      description: 'Banana shape. Banana pain.',
+      description: 'Banana shape. Hold it strong.',
       price: 400,
       tier: 'ELITE'
     }
@@ -359,9 +359,9 @@ export function resolveMoveById(moveId: string): Move | null {
 }
 
 export const BUTTON_LABELS = [
-  "I'M COOKED",
-  'LITERALLY DYING',
-  "I CAN'T ANYMORE",
-  'MY SOUL LEFT',
-  'END MY SUFFERING'
+  "I'M DONE",
+  "CAN'T DO MORE",
+  'ALL TIRED OUT',
+  'NEED A BREAK',
+  'FINISH SET'
 ];

@@ -8,6 +8,8 @@ import React, {
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { formatOAuthError } from '../lib/authErrors';
+import { readStoredLanguage } from './LanguageContext';
+import { translations } from '../i18n/translations';
 import { supabase } from '../lib/supabase';
 
 type AuthContextValue = {
@@ -52,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (oauthError) {
           const raw = decodeURIComponent(oauthError.replace(/\+/g, ' '));
-          throw new Error(formatOAuthError(raw));
+          throw new Error(formatOAuthError(raw, readStoredLanguage()));
         }
 
         if (code) {
@@ -73,7 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         if (!mounted) return;
         setAuthError(
-          err instanceof Error ? err.message : 'Failed to restore session.'
+          err instanceof Error
+            ? err.message
+            : translations[readStoredLanguage()].login.errors.restoreSession
         );
         setSession(null);
       } finally {

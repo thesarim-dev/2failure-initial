@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Move, BUTTON_LABELS } from './moves';
+import { Move } from './moves';
 import { Camera, X } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 import { WORKOUT_FINISH_BTN, WORKOUT_TIMER_GLOW } from './workoutUi';
 
 interface TimedWorkoutProps {
@@ -19,9 +20,13 @@ export function TimedWorkout({
   seconds: externalSeconds,
   onEnableAiTracking
 }: TimedWorkoutProps) {
+  const { t } = useLanguage();
   const [internalSeconds, setInternalSeconds] = useState(0);
   const [buttonLabel] = useState(
-    () => BUTTON_LABELS[Math.floor(Math.random() * BUTTON_LABELS.length)]
+    () =>
+      t.moves.buttonLabels[
+        Math.floor(Math.random() * t.moves.buttonLabels.length)
+      ]
   );
   const seconds = externalSeconds ?? internalSeconds;
 
@@ -48,10 +53,12 @@ export function TimedWorkout({
           type="button"
           onClick={onCancel}
           className="cyber-icon-btn cyber-icon-btn--back"
-          aria-label="Cancel workout">
+          aria-label={t.workout.cancel}>
           <X size={22} strokeWidth={2.5} />
         </button>
-        <span className="workout-status-chip normal-case">failing in progress</span>
+        <span className="workout-status-chip normal-case">
+          {t.workout.failingInProgress}
+        </span>
         <div className="w-10" aria-hidden="true" />
       </header>
 
@@ -59,7 +66,7 @@ export function TimedWorkout({
         <motion.h2
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="workout-title mb-3">
+          className="workout-title mb-3 normal-case">
           {move.name}
         </motion.h2>
 
@@ -85,7 +92,7 @@ export function TimedWorkout({
             onClick={onEnableAiTracking}
             className="workout-secondary-btn normal-case">
             <Camera size={16} strokeWidth={2.5} />
-            Use AI tracking
+            {t.workout.useAiTracking}
           </button>
         )}
       </div>
@@ -96,7 +103,7 @@ export function TimedWorkout({
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', bounce: 0.4 }}
         onClick={() => onFinish(seconds)}
-        className={`${WORKOUT_FINISH_BTN} mb-6`}>
+        className={`${WORKOUT_FINISH_BTN} mb-6 normal-case`}>
         {buttonLabel}
       </motion.button>
     </div>

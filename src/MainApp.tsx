@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useScreenInit } from './useScreenInit';
+import { useLanguage } from './context/LanguageContext';
+import { localizeMove } from './i18n/localize';
 import { Dashboard } from './components/Dashboard';
 import { useProfile } from './hooks/useProfile';
 import { useUserStats } from './hooks/useUserStats';
@@ -27,6 +29,7 @@ type AppState = 'HOME' | 'WORKOUT' | 'REP_PROMPT' | 'SUMMARY' | 'STORE' | 'SETTI
 
 export function MainApp() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { isDark, toggle: toggleDark } = useDarkMode();
   const { dailySetGoal, setDailySetGoal } = useDailySetGoal();
   const {
@@ -74,6 +77,11 @@ export function MainApp() {
     screenInit.lastDuration ?? 0
   );
   const [lastSetResult, setLastSetResult] = useState<SetRepResult | null>(null);
+
+  const displayMove = useMemo(
+    () => (currentMove ? localizeMove(currentMove, t.moves) : null),
+    [currentMove, t.moves]
+  );
 
   const handleSelectMove = (move: Move) => {
     setCurrentMove(move);
@@ -213,9 +221,9 @@ export function MainApp() {
 
       }
 
-      {appState === 'WORKOUT' && currentMove &&
+      {appState === 'WORKOUT' && displayMove &&
       <Workout
-        move={currentMove}
+        move={displayMove}
         onFinish={(duration, trackedReps) =>
           void handleFinishWorkout(duration, trackedReps)
         }
@@ -223,14 +231,14 @@ export function MainApp() {
 
       }
 
-      {appState === 'REP_PROMPT' && currentMove &&
-      <RepPrompt move={currentMove} onSubmit={(reps) => void handleRepSubmit(reps)} />
+      {appState === 'REP_PROMPT' && displayMove &&
+      <RepPrompt move={displayMove} onSubmit={(reps) => void handleRepSubmit(reps)} />
 
       }
 
-      {appState === 'SUMMARY' && currentMove &&
+      {appState === 'SUMMARY' && displayMove &&
       <Summary
-        move={currentMove}
+        move={displayMove}
         duration={lastDuration}
         setResult={lastSetResult}
         onHome={handleGoHome} />

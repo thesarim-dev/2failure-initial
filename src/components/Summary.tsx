@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Move } from './moves';
 import { ArrowRight, Skull } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { SetRepResult } from '../types/repProgress';
 import { formatPersonalBestDate } from '../lib/repProgress';
+import { useLanguage } from '../context/LanguageContext';
 import {
   SUMMARY_ACCENT_TEXT,
   SUMMARY_CONFETTI,
@@ -12,41 +13,6 @@ import {
   SUMMARY_SKULL,
   SUMMARY_TITLE
 } from './workoutUi';
-
-const MOTIVATION_QUOTES = [
-  {
-    text: 'I have not failed. I’ve just found 10,000 ways that won’t work.',
-    author: 'Thomas Edison'
-  },
-  {
-    text: 'Genius is one percent inspiration and ninety-nine percent perspiration.',
-    author: 'Thomas Edison'
-  },
-  {
-    text: 'Whether you think you can, or you think you can’t — you’re right.',
-    author: 'Henry Ford'
-  },
-  {
-    text: 'Nothing in life is to be feared, it is only to be understood.',
-    author: 'Marie Curie'
-  },
-  {
-    text: 'Strive not to be a success, but rather to be of value.',
-    author: 'Albert Einstein'
-  },
-  {
-    text: 'The way to get started is to quit talking and begin doing.',
-    author: 'Walt Disney'
-  },
-  {
-    text: 'It always seems impossible until it’s done.',
-    author: 'Nelson Mandela'
-  },
-  {
-    text: 'The future belongs to those who believe in the beauty of their dreams.',
-    author: 'Eleanor Roosevelt'
-  }
-] as const;
 
 interface SummaryProps {
   move: Move;
@@ -56,8 +22,9 @@ interface SummaryProps {
 }
 
 export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
+  const { t, language } = useLanguage();
   const [quote] = useState(
-    () => MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)]
+    () => t.summary.quotes[Math.floor(Math.random() * t.summary.quotes.length)]
   );
   const slot = move.lineupSlot;
 
@@ -96,12 +63,12 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
     return `${secs}s`;
   };
 
-  const getSnarkyMessage = (seconds: number) => {
-    if (seconds < 15) return 'That was pathetic. But at least you tried.';
-    if (seconds < 45) return "Mid effort. We'll take it.";
-    if (seconds < 90) return 'Okay, try-hard. Go take a shower.';
-    return 'This is too easy for you. Move evolved next time.';
-  };
+  const snarkyMessage = useMemo(() => {
+    if (duration < 15) return t.summary.snarky.pathetic;
+    if (duration < 45) return t.summary.snarky.mid;
+    if (duration < 90) return t.summary.snarky.tryHard;
+    return t.summary.snarky.tooEasy;
+  }, [duration, t.summary.snarky]);
 
   return (
     <div className="flex flex-col w-full min-h-screen p-4 md:p-8 max-w-2xl mx-auto pb-24">
@@ -118,8 +85,8 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className={`${SUMMARY_TITLE[slot]} mb-2`}>
-          FAILURE LOGGED
+          className={`${SUMMARY_TITLE[slot]} mb-2 normal-case`}>
+          {t.summary.title}
         </motion.h1>
 
         <motion.p
@@ -127,7 +94,7 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
           className="text-base text-center mb-8 opacity-70 font-semibold normal-case max-w-sm">
-          {getSnarkyMessage(duration)}
+          {snarkyMessage}
         </motion.p>
 
         <motion.div
@@ -136,51 +103,56 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
           transition={{ delay: 0.5 }}
           className="w-full cyber-panel p-5 mb-8 normal-case">
           <div className="summary-receipt-divider">
-            <h3 className="text-xl font-bold uppercase tracking-wide text-center">
-              Official Receipt
+            <h3 className="text-xl font-bold uppercase tracking-wide text-center normal-case">
+              {t.summary.receiptTitle}
             </h3>
             <p className="text-center text-sm font-medium mt-1 opacity-70">
-              2failure — lose is improve
+              {t.summary.receiptTagline}
             </p>
           </div>
 
           <div className="space-y-3 font-semibold text-base">
             <div className="flex justify-between gap-3">
-              <span className="opacity-70">item</span>
-              <span className="uppercase text-right">{move.name}</span>
+              <span className="opacity-70">{t.summary.item}</span>
+              <span className="uppercase text-right normal-case">{move.name}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="opacity-70">duration</span>
+              <span className="opacity-70">{t.summary.duration}</span>
               <span>{formatTime(duration)}</span>
             </div>
             {setResult && (
               <>
                 <div className="flex justify-between gap-3">
-                  <span className="opacity-70">reps (this set)</span>
+                  <span className="opacity-70">{t.summary.repsThisSet}</span>
                   <span>{setResult.reps}</span>
                 </div>
                 <div className="flex justify-between items-start gap-4">
-                  <span className="opacity-70 shrink-0">personal best</span>
+                  <span className="opacity-70 shrink-0">{t.summary.personalBest}</span>
                   <span className="text-right">
-                    {setResult.personalBest.reps ?? '—'}
+                    {setResult.personalBest.reps ?? t.summary.emptyValue}
                     {setResult.personalBest.reps !== null && (
                       <span className="block text-sm font-medium opacity-70 normal-case">
-                        ({formatPersonalBestDate(setResult.personalBest.achievedAt)})
+                        (
+                        {formatPersonalBestDate(
+                          setResult.personalBest.achievedAt,
+                          language
+                        )}
+                        )
                       </span>
                     )}
                   </span>
                 </div>
                 {setResult.isNewPersonalBest && (
                   <p className={`summary-pb-badge ${SUMMARY_ACCENT_TEXT[slot]}`}>
-                    new personal best!
+                    {t.summary.newPersonalBest}
                   </p>
                 )}
               </>
             )}
             <div className="flex justify-between gap-3">
-              <span className="opacity-70">status</span>
-              <span className={`uppercase font-bold ${SUMMARY_ACCENT_TEXT[slot]}`}>
-                cooked
+              <span className="opacity-70">{t.summary.status}</span>
+              <span className={`uppercase font-bold ${SUMMARY_ACCENT_TEXT[slot]} normal-case`}>
+                {t.summary.statusCooked}
               </span>
             </div>
           </div>
@@ -201,8 +173,8 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
           onClick={onHome}
-          className={SUMMARY_HOME_BTN[slot]}>
-          back to suffering
+          className={`${SUMMARY_HOME_BTN[slot]} normal-case`}>
+          {t.summary.backHome}
           <ArrowRight size={22} strokeWidth={2.5} />
         </motion.button>
       </div>

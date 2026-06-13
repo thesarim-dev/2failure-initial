@@ -1,7 +1,11 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Coins, Check, Lock } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
+import { useLanguage } from '../context/LanguageContext';
+import {
+  getCategoryPatternLabel,
+  localizeVariant
+} from '../i18n/localize';
 import {
   LINEUP_EQUIP_COUNT,
   LineupSlot,
@@ -9,7 +13,6 @@ import {
   STORE_CATEGORIES,
   Variant,
   canEquipUpperExercise,
-  getUpperDisplayGroup,
   hasBalancedUpperSelection
 } from './moves';
 
@@ -44,6 +47,8 @@ export function Store({
   onToggleEquipLower,
   onToggleEquipCore
 }: StoreProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
       <header className="flex justify-between items-center mb-8 gap-3">
@@ -51,11 +56,11 @@ export function Store({
           type="button"
           onClick={onBack}
           className="cyber-icon-btn cyber-icon-btn--back"
-          aria-label="Back">
+          aria-label={t.store.back}>
           <ArrowLeft size={22} strokeWidth={2.5} />
         </button>
-        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00B2FF]">
-          THE STORE
+        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00B2FF] normal-case">
+          {t.store.title}
         </h1>
         <CoinsBadge coins={coins} />
       </header>
@@ -72,7 +77,7 @@ export function Store({
           statusNote={
             equippedUpper.length === LINEUP_EQUIP_COUNT &&
             !hasBalancedUpperSelection(equippedUpper)
-              ? 'Need 1 Push + 1 Pull in your upper lineup.'
+              ? t.store.needBalancedUpper
               : undefined
           }
         />
@@ -126,18 +131,20 @@ function LineupSection({
   canEquip: (exerciseId: string) => boolean;
   statusNote?: string;
 }) {
+  const { t } = useLanguage();
+  const categoryCopy = t.moves.categories[category.id];
   const atCapacity = equipped.length >= LINEUP_EQUIP_COUNT;
 
   return (
     <section>
-      <h2 className={`${SECTION_HEADING_CLASS[category.id]} mb-1`}>
-        {category.name}{' '}
+      <h2 className={`${SECTION_HEADING_CLASS[category.id]} mb-1 normal-case`}>
+        {categoryCopy.name}{' '}
         <span className="store-section-active-count normal-case">
-          ({equipped.length}/{LINEUP_EQUIP_COUNT} active)
+          {t.store.activeCount(equipped.length, LINEUP_EQUIP_COUNT)}
         </span>
       </h2>
       <p className="text-sm font-medium mb-3 normal-case opacity-70">
-        {category.equipHint}
+        {categoryCopy.equipHint}
       </p>
       {statusNote && (
         <p className="store-status-note mb-4 normal-case">{statusNote}</p>
@@ -145,14 +152,17 @@ function LineupSection({
 
       <div className="flex flex-col gap-3">
         {category.variants.map((variant, i) => {
+          const localized = localizeVariant(variant, t.moves);
           const isOwned = owned.includes(variant.id);
           const isEquipped = equipped.includes(variant.id);
           const canAfford = coins >= variant.price;
           const allowEquip = isOwned && (isEquipped || canEquip(variant.id));
-          const patternLabel =
-            category.id === 'upper' && variant.pattern
-              ? getUpperDisplayGroup(variant.pattern)
-              : category.name.toLowerCase();
+          const patternLabel = getCategoryPatternLabel(
+            category.id,
+            category.name,
+            variant.pattern,
+            t.moves
+          );
 
           return (
             <motion.div
@@ -163,19 +173,19 @@ function LineupSection({
               className="store-item-card">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 className="text-lg font-display uppercase tracking-tight">
-                    {variant.name}
+                  <h3 className="text-lg font-display uppercase tracking-tight normal-case">
+                    {localized.name}
                   </h3>
                   {isEquipped && (
                     <span className="store-equipped-badge">
                       <Check size={12} strokeWidth={3} />
-                      Equipped
+                      {t.store.equipped}
                     </span>
                   )}
                 </div>
                 <p className="store-type-pill mb-1">{patternLabel}</p>
                 <p className="font-medium opacity-70 text-sm normal-case leading-snug">
-                  {variant.description}
+                  {localized.description}
                 </p>
               </div>
 
@@ -185,7 +195,7 @@ function LineupSection({
                     type="button"
                     onClick={() => onToggleEquip(variant.id)}
                     className="store-btn store-btn--active">
-                    Active
+                    {t.store.active}
                   </button>
                 ) : isOwned ? (
                   <button
@@ -194,13 +204,13 @@ function LineupSection({
                     disabled={!allowEquip}
                     title={
                       !allowEquip && atCapacity
-                        ? 'Unequip one first'
+                        ? t.store.unequipFirst
                         : !allowEquip
-                          ? 'Need opposite movement pattern'
+                          ? t.store.needOppositePattern
                           : undefined
                     }
                     className="store-btn store-btn--equip">
-                    Equip
+                    {t.store.equip}
                   </button>
                 ) : (
                   <button

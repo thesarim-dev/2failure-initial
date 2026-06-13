@@ -12,7 +12,7 @@ export default defineConfig({
       manifest: {
         name: '2failure Workout Tracker',
         short_name: '2failure',
-        description: 'Track your failures. No excuses.',
+        description: 'Track your workouts. Get stronger every day.',
         theme_color: '#1a1a1a',
         background_color: '#f4f4f0',
         display: 'standalone',
