@@ -102,6 +102,8 @@ export interface AppTranslations {
     title: string;
     back: string;
     activeCount: (active: number, total: number) => string;
+    push: string;
+    pull: string;
     equipped: string;
     active: string;
     equip: string;

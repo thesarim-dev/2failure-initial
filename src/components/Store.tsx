@@ -2,13 +2,9 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Coins, Check, Lock } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
-import {
-  getCategoryPatternLabel,
-  localizeVariant
-} from '../i18n/localize';
+import { localizeVariant } from '../i18n/localize';
 import {
   LINEUP_EQUIP_COUNT,
-  LineupSlot,
   MoveCategory,
   STORE_CATEGORIES,
   Variant,
@@ -28,12 +24,6 @@ interface StoreProps {
   onToggleEquipLower: (exerciseId: string) => void;
   onToggleEquipCore: (exerciseId: string) => void;
 }
-
-const SECTION_HEADING_CLASS: Record<LineupSlot, string> = {
-  upper: 'store-section-heading store-section-heading--upper',
-  lower: 'store-section-heading store-section-heading--lower',
-  core: 'store-section-heading store-section-heading--core'
-};
 
 export function Store({
   coins,
@@ -137,12 +127,6 @@ function LineupSection({
 
   return (
     <section>
-      <h2 className={`${SECTION_HEADING_CLASS[category.id]} mb-1 normal-case`}>
-        {categoryCopy.name}{' '}
-        <span className="store-section-active-count normal-case">
-          {t.store.activeCount(equipped.length, LINEUP_EQUIP_COUNT)}
-        </span>
-      </h2>
       <p className="text-sm font-medium mb-3 normal-case opacity-70">
         {categoryCopy.equipHint}
       </p>
@@ -157,12 +141,12 @@ function LineupSection({
           const isEquipped = equipped.includes(variant.id);
           const canAfford = coins >= variant.price;
           const allowEquip = isOwned && (isEquipped || canEquip(variant.id));
-          const patternLabel = getCategoryPatternLabel(
-            category.id,
-            category.name,
-            variant.pattern,
-            t.moves
-          );
+          const patternLabel =
+            category.id === 'upper' && variant.pattern
+              ? variant.pattern === 'push'
+                ? t.store.push
+                : t.store.pull
+              : null;
 
           return (
             <motion.div
@@ -173,8 +157,11 @@ function LineupSection({
               className="store-item-card">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 className="text-lg font-display uppercase tracking-tight normal-case">
-                    {localized.name}
+                  <h3 className="text-lg font-display uppercase tracking-tight normal-case flex items-baseline gap-2 min-w-0">
+                    <span>{localized.name}</span>
+                    {patternLabel && (
+                      <span className="store-pattern-label">{patternLabel}</span>
+                    )}
                   </h3>
                   {isEquipped && (
                     <span className="store-equipped-badge">
@@ -183,7 +170,6 @@ function LineupSection({
                     </span>
                   )}
                 </div>
-                <p className="store-type-pill mb-1">{patternLabel}</p>
                 <p className="font-medium opacity-70 text-sm normal-case leading-snug">
                   {localized.description}
                 </p>

@@ -38,7 +38,7 @@ export function Settings({
           aria-label={s.back}>
           <ArrowLeft size={22} strokeWidth={2.5} />
         </button>
-        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00B2FF] normal-case">
+        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00B2FF] uppercase">
           {s.title}
         </h1>
         <CoinsBadge coins={coins} />

@@ -267,12 +267,15 @@
   .dark .store-equipped-badge {
     color: #e8ff66;
   }
-  .store-type-pill {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+  .store-pattern-label {
+    font-size: 0.75rem;
+    font-weight: 600;
     text-transform: lowercase;
-    opacity: 0.55;
+    color: rgba(0, 0, 0, 0.45);
+    white-space: nowrap;
+  }
+  .dark .store-pattern-label {
+    color: rgba(255, 255, 255, 0.45);
   }
   .store-btn {
     border-radius: 0.75rem;
@@ -514,6 +517,10 @@
   .dashboard-move-title {
     text-align: start;
     min-width: 0;
+  }
+  [dir='rtl'] .dashboard-move-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
   }
   .dashboard-move-desc {
     text-align: start;
