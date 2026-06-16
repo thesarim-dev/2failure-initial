@@ -25,7 +25,7 @@ export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
     setError(null);
 
     try {
-      const progress = await fetchSetsProgress(user.id, dailySetGoal);
+      const progress = await fetchSetsProgress(user.id);
       setSetsCompleted(progress);
     } catch (err) {
       setError(
@@ -48,11 +48,7 @@ export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
       setError(null);
 
       try {
-        const updated = await incrementSetProgress(
-          user.id,
-          categoryId,
-          dailySetGoal
-        );
+        const updated = await incrementSetProgress(user.id, categoryId);
         setSetsCompleted(updated);
       } catch (err) {
         setError(

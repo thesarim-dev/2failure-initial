@@ -79,8 +79,7 @@ async function markSetsProgressDate(userId: string, today: string): Promise<void
 }
 
 async function loadSetsFromWorkouts(
-  userId: string,
-  maxSets: number
+  userId: string
 ): Promise<Record<string, number>> {
   const { data, error } = await supabase
     .from('user_workouts')
@@ -93,9 +92,9 @@ async function loadSetsFromWorkouts(
   for (const row of data ?? []) {
     if (row.category_id in map) {
       const count = Number(row.sets_completed);
-      map[row.category_id] = Math.min(
-        maxSets,
-        Math.max(0, Number.isFinite(count) ? count : 0)
+      map[row.category_id] = Math.max(
+        0,
+        Number.isFinite(count) ? count : 0
       );
     }
   }
@@ -103,8 +102,7 @@ async function loadSetsFromWorkouts(
 }
 
 export async function fetchSetsProgress(
-  userId: string,
-  maxSets: number
+  userId: string
 ): Promise<Record<string, number>> {
   const today = toLocalDateString();
   const stats = await fetchUserStats(userId);
@@ -124,18 +122,17 @@ export async function fetchSetsProgress(
     }
   }
 
-  return loadSetsFromWorkouts(userId, maxSets);
+  return loadSetsFromWorkouts(userId);
 }
 
 export async function incrementSetProgress(
   userId: string,
-  categoryId: string,
-  maxSets: number
+  categoryId: string
 ): Promise<Record<string, number>> {
   const today = toLocalDateString();
-  const current = await fetchSetsProgress(userId, maxSets);
+  const current = await fetchSetsProgress(userId);
   const prev = current[categoryId] ?? 0;
-  const next = prev >= maxSets ? 0 : prev + 1;
+  const next = prev + 1;
 
   await ensureUserWorkoutRow(userId, categoryId);
 

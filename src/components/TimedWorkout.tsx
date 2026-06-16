@@ -62,7 +62,7 @@ export function TimedWorkout({
         <div className="w-10" aria-hidden="true" />
       </header>
 
-      <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-2">
         <motion.h2
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -74,38 +74,40 @@ export function TimedWorkout({
           initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="workout-subtitle mb-10 normal-case">
+          className="workout-subtitle mb-8 normal-case">
           {move.description}
         </motion.p>
 
-        <motion.div
-          className={`workout-timer mb-12 ${WORKOUT_TIMER_GLOW[move.lineupSlot]}`}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}>
-          {formatTime(seconds)}
-        </motion.div>
+        <div className="workout-timer-stack">
+          <motion.div
+            className={`workout-timer ${WORKOUT_TIMER_GLOW[move.lineupSlot]}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}>
+            {formatTime(seconds)}
+          </motion.div>
 
-        {onEnableAiTracking && (
-          <button
+          <motion.button
             type="button"
-            onClick={onEnableAiTracking}
-            className="workout-secondary-btn normal-case">
-            <Camera size={16} strokeWidth={2.5} />
-            {t.workout.useAiTracking}
-          </button>
-        )}
-      </div>
+            initial={{ y: 16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', bounce: 0.4, delay: 0.3 }}
+            onClick={() => onFinish(seconds)}
+            className={`${WORKOUT_FINISH_BTN} normal-case`}>
+            {buttonLabel}
+          </motion.button>
 
-      <motion.button
-        type="button"
-        initial={{ y: 40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: 'spring', bounce: 0.4 }}
-        onClick={() => onFinish(seconds)}
-        className={`${WORKOUT_FINISH_BTN} mb-6 normal-case`}>
-        {buttonLabel}
-      </motion.button>
+          {onEnableAiTracking && (
+            <button
+              type="button"
+              onClick={onEnableAiTracking}
+              className="workout-secondary-btn normal-case">
+              <Camera size={16} strokeWidth={2.5} />
+              {t.workout.useAiTracking}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
