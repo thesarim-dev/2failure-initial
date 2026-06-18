@@ -182,6 +182,28 @@
   .cyber-icon-btn--back:not(:disabled):hover {
     box-shadow: 0 0 22px rgba(0, 178, 255, 0.4);
   }
+  .cyber-icon-btn--program-day {
+    background: rgba(0, 178, 255, 0.28);
+    color: #00e5ff;
+    border: 2px solid rgba(0, 229, 255, 0.75);
+    box-shadow:
+      0 0 16px rgba(0, 178, 255, 0.45),
+      0 0 32px rgba(0, 178, 255, 0.22);
+    width: 3.25rem;
+    height: 3.25rem;
+    padding: 0;
+  }
+  .cyber-icon-btn--program-day:not(:disabled):hover {
+    background: rgba(0, 178, 255, 0.4);
+    box-shadow:
+      0 0 22px rgba(0, 178, 255, 0.65),
+      0 0 40px rgba(0, 178, 255, 0.35);
+    transform: translateY(-1px);
+  }
+  .program-day-nav {
+    width: 100%;
+    gap: 0.75rem;
+  }
   .store-section-heading {
     font-size: clamp(1.875rem, 7.5vw, 3rem);
     font-weight: 700;
@@ -361,6 +383,33 @@
     color: #5dd4ff;
     text-shadow: 0 0 12px rgba(0, 178, 255, 0.45);
   }
+  .settings-toggle-group .store-btn--equip {
+    opacity: 0.4;
+    filter: brightness(0.52) saturate(0.7);
+    box-shadow: none;
+  }
+  .settings-toggle-group .store-btn--equip:not(:disabled):hover {
+    opacity: 0.55;
+    filter: brightness(0.62) saturate(0.8);
+    transform: none;
+  }
+  .settings-toggle-group .store-btn--active {
+    opacity: 1;
+    filter: brightness(1.1);
+    box-shadow:
+      0 0 16px rgba(204, 255, 0, 0.5),
+      0 0 28px rgba(204, 255, 0, 0.25);
+  }
+  .dark .settings-toggle-group .store-btn--equip {
+    opacity: 0.35;
+    filter: brightness(0.45) saturate(0.65);
+  }
+  .dark .settings-toggle-group .store-btn--active {
+    filter: brightness(1.15);
+    box-shadow:
+      0 0 18px rgba(200, 232, 56, 0.55),
+      0 0 32px rgba(200, 232, 56, 0.28);
+  }
   .settings-action-btn {
     width: 100%;
     border-radius: 0.75rem;
@@ -501,6 +550,22 @@
     padding-left: 0;
     padding-right: 1.1rem;
   }
+  .program-training-guide .program-training-section + .program-training-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .dark .program-training-guide .program-training-section + .program-training-section {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+  .program-training-section-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+    opacity: 0.85;
+  }
   [dir='rtl'] .cyber-icon-btn--back svg {
     transform: scaleX(-1);
   }
@@ -511,12 +576,19 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 0.625rem;
   }
   .dashboard-move-title {
     text-align: start;
     min-width: 0;
+    flex: 1 1 auto;
+    font-size: clamp(0.9rem, 4vw, 1.45rem);
+    line-height: 1.15;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
   }
   [dir='rtl'] .dashboard-move-title {
     font-family: 'Space Grotesk', sans-serif;
@@ -528,6 +600,8 @@
   .dashboard-move-sets {
     direction: ltr;
     unicode-bidi: isolate;
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
   .dashboard-move-skull {
     bottom: -2.5rem;

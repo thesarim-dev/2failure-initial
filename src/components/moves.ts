@@ -1,6 +1,8 @@
 export type MovementPattern = 'push' | 'pull';
 
-export type LineupSlot = 'upper' | 'lower' | 'core';
+export type HomeGymEquipment = 'dumbbell' | 'barbell' | 'bench';
+
+export type LineupSlot = 'upper' | 'lower' | 'core' | 'recovery';
 
 export type Move = {
   id: string;
@@ -22,6 +24,7 @@ export type Variant = {
   price: number;
   tier: 'BASE' | 'PRO' | 'ELITE';
   pattern?: MovementPattern;
+  equipment?: readonly HomeGymEquipment[];
 };
 
 export type MoveCategory = {
@@ -49,7 +52,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'pushups',
       name: 'Pushups',
-      description: "Floor. Down. Up. Repeat until you can't.",
+      description: 'Work up to 100 total reps across your sets on push day.',
       price: 0,
       tier: 'BASE',
       pattern: 'push'
@@ -57,7 +60,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'incline-pushups',
       name: 'Incline Pushups',
-      description: 'Hands on something higher. Great for building up.',
+      description: 'Push up with your hands elevated on a bench or step.',
       price: 100,
       tier: 'PRO',
       pattern: 'push'
@@ -73,7 +76,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'superman-pulls',
       name: 'Superman Pulls',
-      description: 'Fly like Superman. Lift your chest off the floor.',
+      description: 'Lift your chest off the floor like Superman flying.',
       price: 0,
       tier: 'BASE',
       pattern: 'pull'
@@ -82,7 +85,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       id: 'inverted-floor-rows',
       name: 'Inverted Floor Rows',
       description:
-        'On your back, feet planted. Drive elbows into the floor and lift your upper back.',
+        'Row from the floor on your back with your feet planted.',
       price: 100,
       tier: 'PRO',
       pattern: 'pull'
@@ -90,10 +93,55 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'doorway-rows',
       name: 'Doorway Rows',
-      description:
-        'Grab a sturdy door frame, lean back, and pull your chest toward it.',
+      description: 'Row your chest to a sturdy door frame while leaning back.',
       price: 150,
       tier: 'PRO',
+      pattern: 'pull'
+    },
+    {
+      id: 'dumbbell-shoulder-press',
+      name: 'Dumbbell Shoulder Press',
+      description:
+        'Press both dumbbells overhead. Stop when your shoulders give out.',
+      price: 0,
+      tier: 'BASE',
+      pattern: 'push',
+      equipment: ['dumbbell']
+    },
+    {
+      id: 'dumbbell-row',
+      name: 'Dumbbell Row',
+      description:
+        'Hinge at the hips. Pull each dumbbell to your hip. Full stretch, full squeeze.',
+      price: 0,
+      tier: 'BASE',
+      pattern: 'pull',
+      equipment: ['dumbbell']
+    },
+    {
+      id: 'barbell-bench-press',
+      name: 'Barbell Bench Press',
+      description: 'Heavy 3x5 with the bar touching your chest each rep.',
+      price: 0,
+      tier: 'BASE',
+      pattern: 'push',
+      equipment: ['barbell', 'bench']
+    },
+    {
+      id: 'dips',
+      name: 'Dips',
+      description: 'Deep dip on bars or benches, then press up.',
+      price: 0,
+      tier: 'BASE',
+      pattern: 'push',
+      equipment: ['bench']
+    },
+    {
+      id: 'pull-ups',
+      name: 'Pull-Ups',
+      description: 'Hang from a bar and pull until your chin clears it.',
+      price: 0,
+      tier: 'BASE',
       pattern: 'pull'
     }
   ]
@@ -112,21 +160,21 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'squats',
       name: 'Squats',
-      description: 'Drop it low. Stand up. Keep going!',
+      description: 'Bodyweight air squats with a deep drop and steady pace.',
       price: 0,
       tier: 'BASE'
     },
     {
       id: 'lunges',
       name: 'Lunges',
-      description: 'Step forward. Give it your best. Step back.',
+      description: 'Step forward into a deep lunge, then return to standing.',
       price: 0,
       tier: 'BASE'
     },
     {
       id: 'glute-bridges',
       name: 'Glute Bridges',
-      description: 'Back on the floor. Drive hips up. Squeeze. Lower slowly.',
+      description: 'Drive hips up from the floor, squeeze glutes, and lower slowly.',
       price: 0,
       tier: 'BASE'
     },
@@ -140,9 +188,32 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'bulgarian-splits',
       name: 'Bulgarian Splits',
-      description: 'Back foot up. Go as low as you can.',
+      description: 'Rear foot elevated, squat as deep as you can with control.',
       price: 350,
       tier: 'ELITE'
+    },
+    {
+      id: 'barbell-deadlift',
+      name: 'Barbell Deadlift',
+      description: 'Hinge and lift the bar, then lower with control each rep.',
+      price: 0,
+      tier: 'BASE',
+      equipment: ['barbell']
+    },
+    {
+      id: 'barbell-squat',
+      name: 'Barbell Squat',
+      description: 'Heavy 3x5 squat breaking parallel each rep.',
+      price: 0,
+      tier: 'BASE',
+      equipment: ['barbell']
+    },
+    {
+      id: 'burpees',
+      name: 'Burpees',
+      description: 'Drop to the floor, kick back, and hop up in one crisp motion.',
+      price: 0,
+      tier: 'BASE'
     }
   ]
 };
@@ -160,7 +231,7 @@ export const CORE_STORE_CATEGORY: MoveCategory = {
     {
       id: 'planks',
       name: 'Planks',
-      description: 'Hold steady and stay strong.',
+      description: 'Hold 60–90 seconds with glutes and core braced tight.',
       price: 0,
       tier: 'BASE'
     },
@@ -174,30 +245,71 @@ export const CORE_STORE_CATEGORY: MoveCategory = {
     {
       id: 'l-sit',
       name: 'L-Sit',
-      description: 'Legs out. Hands down. Hold steady.',
-      price: 150,
-      tier: 'PRO'
+      description: 'Max hold with legs locked out and hips lifted off the floor.',
+      price: 0,
+      tier: 'BASE'
     },
     {
       id: 'side-planks',
       name: 'Side Planks',
-      description: 'Hold on your side. Double the challenge.',
+      description: 'Hold a strong plank on your side.',
       price: 150,
       tier: 'PRO'
     },
     {
       id: 'leg-raises',
       name: 'Leg Raises',
-      description: 'Legs up. Feel those core muscles work.',
-      price: 150,
-      tier: 'PRO'
+      description: 'Raise your legs slow and lower with control.',
+      price: 0,
+      tier: 'BASE'
     },
     {
       id: 'hollow-body',
       name: 'Hollow Body Hold',
-      description: 'Banana shape. Hold it strong.',
+      description: 'Hold a tight banana-shaped hollow body position.',
       price: 400,
       tier: 'ELITE'
+    }
+  ]
+};
+
+export const RECOVERY_STORE_CATEGORY: MoveCategory = {
+  id: 'recovery',
+  name: 'Recovery',
+  muscleGroup: 'recovery',
+  equipHint: 'Deep stretching on rest days — no lifting.',
+  color:
+    'bg-[#B8A9FF] text-black dark:bg-[#C4B8FF] dark:text-black',
+  glow:
+    'border-[#B8A9FF] shadow-[0_0_0_1px_#B8A9FF,0_0_14px_rgba(184,169,255,0.7),0_0_28px_rgba(184,169,255,0.35)] dark:border-[#C4B8FF] dark:shadow-[0_0_0_1px_#C4B8FF,0_0_18px_rgba(196,184,255,0.8),0_0_36px_rgba(196,184,255,0.45)]',
+  variants: [
+    {
+      id: 'cobra-stretch',
+      name: 'Cobra Stretch',
+      description: 'Hold 45 seconds to open the chest and abdominal wall.',
+      price: 0,
+      tier: 'BASE'
+    },
+    {
+      id: 'childs-pose',
+      name: "Child's Pose",
+      description: 'Hold 60 seconds to decompress the lower back and shoulders.',
+      price: 0,
+      tier: 'BASE'
+    },
+    {
+      id: 'couch-stretch',
+      name: 'Couch Stretch',
+      description: 'Hold 60 seconds per side to open hips and quads.',
+      price: 0,
+      tier: 'BASE'
+    },
+    {
+      id: 'seated-hamstring-stretch',
+      name: 'Seated Hamstring Stretch',
+      description: 'Hold 45 seconds per leg for hamstring length and squat depth.',
+      price: 0,
+      tier: 'BASE'
     }
   ]
 };
@@ -221,7 +333,10 @@ export const DEFAULT_LINEUP = {
   core: [...DEFAULT_EQUIPPED_CORE]
 } as const;
 
-const ALL_VARIANTS = STORE_CATEGORIES.flatMap((cat) => cat.variants);
+const ALL_VARIANTS = [
+  ...STORE_CATEGORIES.flatMap((cat) => cat.variants),
+  ...RECOVERY_STORE_CATEGORY.variants
+];
 
 export function getVariantById(id: string): Variant | undefined {
   return ALL_VARIANTS.find((variant) => variant.id === id);
@@ -239,10 +354,15 @@ export function isCoreExerciseId(id: string): boolean {
   return CORE_STORE_CATEGORY.variants.some((variant) => variant.id === id);
 }
 
+export function isRecoveryExerciseId(id: string): boolean {
+  return RECOVERY_STORE_CATEGORY.variants.some((variant) => variant.id === id);
+}
+
 export function getLineupSlot(id: string): LineupSlot | null {
   if (isUpperExerciseId(id)) return 'upper';
   if (isLowerExerciseId(id)) return 'lower';
   if (isCoreExerciseId(id)) return 'core';
+  if (isRecoveryExerciseId(id)) return 'recovery';
   return null;
 }
 
@@ -256,6 +376,7 @@ function getLineupDisplayGroup(
 ): string {
   if (slot === 'upper' && pattern) return getUpperDisplayGroup(pattern);
   if (slot === 'lower') return 'lowerbody';
+  if (slot === 'recovery') return 'stretching';
   return 'core';
 }
 
@@ -297,11 +418,19 @@ export const REP_LOGGED_CATEGORY_IDS = new Set([
   'diamond-pushups',
   'superman-pulls',
   'doorway-rows',
+  'dumbbell-shoulder-press',
+  'dumbbell-row',
+  'barbell-bench-press',
+  'dips',
+  'pull-ups',
   'squats',
   'jump-squats',
   'lunges',
   'glute-bridges',
   'bulgarian-splits',
+  'barbell-deadlift',
+  'barbell-squat',
+  'burpees',
   'crunches',
   'leg-raises'
 ]);
@@ -315,6 +444,7 @@ export function getAllWorkoutCategoryIds(): string[] {
 }
 
 function getStoreCategoryForExercise(id: string): MoveCategory | undefined {
+  if (isRecoveryExerciseId(id)) return RECOVERY_STORE_CATEGORY;
   return STORE_CATEGORIES.find((cat) =>
     cat.variants.some((variant) => variant.id === id)
   );

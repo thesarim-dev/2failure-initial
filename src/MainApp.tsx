@@ -19,6 +19,9 @@ import {
 } from './components/moves';
 import { useEquippedLineup } from './hooks/useEquippedLineup';
 import { useDailySetGoal } from './hooks/useDailySetGoal';
+import { usePushupDailyReps } from './hooks/usePushupDailyReps';
+import { useRotatingProgram } from './hooks/useRotatingProgram';
+import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { RepPrompt } from './components/RepPrompt';
 import { recordSetReps } from './lib/repProgress';
@@ -32,6 +35,14 @@ export function MainApp() {
   const { t } = useLanguage();
   const { isDark, toggle: toggleDark } = useDarkMode();
   const { dailySetGoal, setDailySetGoal } = useDailySetGoal();
+  const {
+    rotatingProgramEnabled,
+    setRotatingProgramEnabled,
+    rotatingProgramPhase,
+    rotatingProgramCycleDay,
+    canGoPreviousProgramDay,
+    shiftProgramDay
+  } = useRotatingProgram();
   const {
     coins,
     loading: profileLoading,
@@ -51,6 +62,12 @@ export function MainApp() {
     error: setsError,
     incrementSet
   } = useWorkoutProgress(dailySetGoal);
+  const {
+    pushupRepsToday,
+    loading: pushupRepsLoading,
+    refetch: refetchPushupReps,
+    addReps: addPushupReps
+  } = usePushupDailyReps();
   const screenInit = useScreenInit() as {
     appState?: AppState;
     currentMoveId?: string;
@@ -68,6 +85,26 @@ export function MainApp() {
     toggleEquipLower,
     toggleEquipCore
   } = useEquippedLineup(user?.id);
+
+  const lineupForToday = useMemo(() => {
+    if (rotatingProgramEnabled && rotatingProgramPhase) {
+      return resolveRotatingProgramLineup(rotatingProgramPhase);
+    }
+
+    return {
+      upper: equippedUpper,
+      lower: equippedLower,
+      core: equippedCore,
+      recovery: [] as string[],
+      setsToFailure: {} as Record<string, number>
+    };
+  }, [
+    rotatingProgramEnabled,
+    rotatingProgramPhase,
+    equippedUpper,
+    equippedLower,
+    equippedCore
+  ]);
 
   const initialMove: Move | null = screenInit.currentMoveId
     ? resolveMoveById(screenInit.currentMoveId)
@@ -87,8 +124,14 @@ export function MainApp() {
     setCurrentMove(move);
     setAppState('WORKOUT');
   };
-  const finishWorkoutSession = (duration: number) => {
+  const finishWorkoutSession = (
+    duration: number,
+    repsLogged?: number
+  ) => {
     if (!currentMove) return;
+    if (currentMove.categoryId === 'pushups' && repsLogged && repsLogged > 0) {
+      addPushupReps(repsLogged);
+    }
     void incrementSet(currentMove.categoryId);
     void setCoins((c) => c + Math.max(10, Math.floor(duration / 2)));
     void recordWorkoutComplete();
@@ -111,7 +154,7 @@ export function MainApp() {
             trackedReps
           );
           setLastSetResult(result);
-          finishWorkoutSession(duration);
+          finishWorkoutSession(duration, trackedReps);
           return;
         } catch {
           // Fall back to manual rep entry if auto-save fails.
@@ -130,7 +173,7 @@ export function MainApp() {
 
     const result = await recordSetReps(user.id, currentMove.categoryId, reps);
     setLastSetResult(result);
-    finishWorkoutSession(lastDuration);
+    finishWorkoutSession(lastDuration, reps);
   };
   const handleCancelWorkout = () => {
     setCurrentMove(null);
@@ -140,6 +183,7 @@ export function MainApp() {
     setCurrentMove(null);
     setLastDuration(0);
     setLastSetResult(null);
+    void refetchPushupReps();
     setAppState('HOME');
   };
   const handleOpenStore = () => setAppState('STORE');
@@ -184,11 +228,18 @@ export function MainApp() {
         statsError={statsError}
         setsError={setsError}
         setsLoading={setsLoading}
-        equippedUpper={equippedUpper}
-        equippedLower={equippedLower}
-        equippedCore={equippedCore}
+        equippedUpper={lineupForToday.upper}
+        equippedLower={lineupForToday.lower}
+        equippedCore={lineupForToday.core}
+        equippedRecovery={lineupForToday.recovery}
         setsCompleted={setsCompleted}
         dailySetGoal={dailySetGoal}
+        programSetsToFailure={lineupForToday.setsToFailure}
+        rotatingProgramEnabled={rotatingProgramEnabled}
+        rotatingProgramPhase={rotatingProgramPhase}
+        rotatingProgramCycleDay={rotatingProgramCycleDay}
+        pushupRepsToday={pushupRepsToday}
+        pushupRepsLoading={pushupRepsLoading}
         onSelectMove={handleSelectMove}
         onOpenStore={handleOpenStore}
         onOpenSettings={handleOpenSettings} />
@@ -214,8 +265,15 @@ export function MainApp() {
       <Settings
         coins={coins}
         dailySetGoal={dailySetGoal}
+        rotatingProgramEnabled={rotatingProgramEnabled}
+        rotatingProgramPhase={rotatingProgramPhase}
+        rotatingProgramCycleDay={rotatingProgramCycleDay}
+        canGoPreviousProgramDay={canGoPreviousProgramDay}
+        onPreviousProgramDay={() => shiftProgramDay(-1)}
+        onNextProgramDay={() => shiftProgramDay(1)}
         isDark={isDark}
         onDailySetGoalChange={setDailySetGoal}
+        onRotatingProgramEnabledChange={setRotatingProgramEnabled}
         onToggleDark={toggleDark}
         onBack={handleCloseSettings} />
 

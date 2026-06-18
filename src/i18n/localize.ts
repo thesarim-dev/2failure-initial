@@ -17,6 +17,8 @@ export function localizeMove(move: Move, moves: MovesTranslations): Move {
     displayGroup = moves.displayGroups.lowerbody;
   } else if (slot === 'core') {
     displayGroup = moves.displayGroups.core;
+  } else if (slot === 'recovery') {
+    displayGroup = moves.displayGroups.recovery;
   }
 
   return {

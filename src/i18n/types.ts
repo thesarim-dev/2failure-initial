@@ -1,6 +1,6 @@
 export type Language = 'en' | 'he' | 'ar';
 
-export type LineupSlot = 'upper' | 'lower' | 'core';
+export type LineupSlot = 'upper' | 'lower' | 'core' | 'recovery';
 
 export interface FaqListItem {
   label: string;
@@ -27,6 +27,7 @@ export interface MovesTranslations {
     upperPull: string;
     lowerbody: string;
     core: string;
+    recovery: string;
   };
   muscleGroups: {
     fullBody: string;
@@ -53,6 +54,23 @@ export interface AppTranslations {
       description: string;
       sets: (count: number) => string;
     };
+    rotatingProgram: {
+      title: string;
+      description: string;
+      off: string;
+      on: string;
+      trainingGuide: {
+        toggleLabel: string;
+        sections: Array<{
+          title: string;
+          items: Array<{ label: string; text: string }>;
+        }>;
+      };
+      phases: Record<
+        'push' | 'legs' | 'pull' | 'mixed' | 'recovery',
+        string
+      >;
+    };
     appearance: {
       title: string;
       nightOn: string;
@@ -78,8 +96,17 @@ export interface AppTranslations {
   };
   dashboard: {
     pickYourPoison: string;
+    rotatingProgramFocus: (
+      cycleDay: number,
+      cycleLength: number,
+      phaseLabel: string
+    ) => string;
+    programExerciseDone: string;
+    programEquipment: (gear: string) => string;
+    equipment: Record<'dumbbell' | 'barbell' | 'bench', string>;
     streak: string;
     setsProgress: (completed: number, goal: number) => string;
+    pushupDailyProgress: (completed: number, goal: number) => string;
     loading: string;
     errors: {
       sets: (msg: string) => string;
@@ -92,6 +119,8 @@ export interface AppTranslations {
       loadingCoins: string;
       funFactAndStreak: string;
       streakDays: (days: number) => string;
+      previousProgramDay: string;
+      nextProgramDay: string;
     };
     funFacts: {
       loading: string;

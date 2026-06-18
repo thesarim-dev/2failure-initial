@@ -5,8 +5,11 @@ import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeMove } from '../i18n/localize';
 import type { DailySetGoal } from '../hooks/useDailySetGoal';
+import type { RotatingProgramPhase } from '../lib/rotatingProgram';
+import { ROTATION_CYCLE_LENGTH } from '../lib/rotatingProgram';
 import { pickFunFact } from '../lib/funFacts';
-import { Move, resolveLineupMove } from './moves';
+import { PUSHUP_DAILY_GOAL } from '../lib/pushupDailyProgress';
+import { Move, getVariantById, resolveLineupMove } from './moves';
 
 interface DashboardProps {
   coins: number;
@@ -21,8 +24,15 @@ interface DashboardProps {
   equippedUpper: string[];
   equippedLower: string[];
   equippedCore: string[];
+  equippedRecovery: string[];
   setsCompleted: Record<string, number>;
   dailySetGoal: DailySetGoal;
+  programSetsToFailure: Record<string, number>;
+  rotatingProgramEnabled: boolean;
+  rotatingProgramPhase: RotatingProgramPhase | null;
+  rotatingProgramCycleDay: number | null;
+  pushupRepsToday: number;
+  pushupRepsLoading: boolean;
   onSelectMove: (move: Move) => void;
   onOpenStore: () => void;
   onOpenSettings: () => void;
@@ -41,8 +51,15 @@ export function Dashboard({
   equippedUpper,
   equippedLower,
   equippedCore,
+  equippedRecovery,
   setsCompleted,
   dailySetGoal,
+  programSetsToFailure,
+  rotatingProgramEnabled,
+  rotatingProgramPhase,
+  rotatingProgramCycleDay,
+  pushupRepsToday,
+  pushupRepsLoading,
   onSelectMove,
   onOpenStore,
   onOpenSettings
@@ -58,9 +75,10 @@ export function Dashboard({
       [
         ...equippedUpper.map((id) => resolveLineupMove(id)),
         ...equippedLower.map((id) => resolveLineupMove(id)),
-        ...equippedCore.map((id) => resolveLineupMove(id))
+        ...equippedCore.map((id) => resolveLineupMove(id)),
+        ...equippedRecovery.map((id) => resolveLineupMove(id))
       ].map((move) => localizeMove(move, t.moves)),
-    [equippedUpper, equippedLower, equippedCore, t.moves, language]
+    [equippedUpper, equippedLower, equippedCore, equippedRecovery, t.moves, language]
   );
 
   return (
@@ -145,33 +163,78 @@ export function Dashboard({
       </section>
 
       <div>
+        {rotatingProgramEnabled &&
+          rotatingProgramPhase !== null &&
+          rotatingProgramCycleDay !== null && (
+            <p className="text-sm font-semibold mb-2 text-[#00B2FF] normal-case text-start">
+              {t.dashboard.rotatingProgramFocus(
+                rotatingProgramCycleDay,
+                ROTATION_CYCLE_LENGTH,
+                t.settings.rotatingProgram.phases[rotatingProgramPhase]
+              )}
+            </p>
+          )}
         <h2 className="text-2xl mb-2 normal-case text-start">
           {t.dashboard.pickYourPoison}
         </h2>
 
         <div className="flex flex-col gap-4">
-          {activeMoves.map((move, i) => (
+          {activeMoves.map((move, i) => {
+            const completed = setsCompleted[move.categoryId] ?? 0;
+            const programGoal = programSetsToFailure[move.categoryId];
+            const isProgramMode =
+              rotatingProgramEnabled && programGoal !== undefined;
+            const isDone = isProgramMode && completed >= programGoal;
+            const variant = getVariantById(move.id);
+            const equipmentLabel =
+              isProgramMode && variant?.equipment?.length
+                ? t.dashboard.programEquipment(
+                    variant.equipment
+                      .map((item) => t.dashboard.equipment[item])
+                      .join(' + ')
+                  )
+                : null;
+
+            return (
             <motion.button
               key={move.id}
               initial={{ x: isRtl ? 50 : -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
+              animate={{ x: 0, opacity: isDone ? 0.55 : 1 }}
               transition={{ delay: i * 0.1 }}
               onClick={() => onSelectMove(move)}
-              className={`dashboard-move-card w-full text-start rounded-2xl ${move.color} ${move.glow} border-4 p-5 transition-all duration-200 group relative overflow-visible hover:brightness-[1.03]`}>
+              disabled={isDone}
+              className={`dashboard-move-card w-full text-start rounded-2xl ${move.color} ${move.glow} border-4 p-5 transition-all duration-200 group relative overflow-visible hover:brightness-[1.03] disabled:cursor-default disabled:hover:brightness-100`}>
               <div className="relative z-10">
                 <div className="dashboard-move-header mb-2 min-w-0">
-                  <h3 className="dashboard-move-title flex-1 text-[clamp(0.95rem,4.5vw,1.875rem)] leading-none whitespace-nowrap min-w-0 uppercase">
+                  <h3 className="dashboard-move-title flex-1 min-w-0 uppercase">
                     {move.name}
                   </h3>
                   <span className="dashboard-move-sets bg-black text-white px-2.5 py-1 text-xs font-bold tabular-nums rounded-md normal-case shrink-0">
                     {setsLoading
                       ? t.dashboard.loading
-                      : t.dashboard.setsProgress(
-                          setsCompleted[move.categoryId] ?? 0,
-                          dailySetGoal
-                        )}
+                      : isDone
+                        ? t.dashboard.programExerciseDone
+                        : t.dashboard.setsProgress(
+                              completed,
+                              isProgramMode ? programGoal : dailySetGoal
+                            )}
                   </span>
                 </div>
+                {equipmentLabel && (
+                  <p className="text-xs font-bold uppercase tracking-wide text-black/60 mb-1">
+                    {equipmentLabel}
+                  </p>
+                )}
+                {move.id === 'pushups' && (
+                  <p className="dashboard-pushup-progress text-xs font-bold tabular-nums text-black/70 mb-1">
+                    {pushupRepsLoading
+                      ? t.dashboard.loading
+                      : t.dashboard.pushupDailyProgress(
+                          pushupRepsToday,
+                          PUSHUP_DAILY_GOAL
+                        )}
+                  </p>
+                )}
                 <p className="dashboard-move-desc font-medium text-black/80 leading-snug">
                   {move.description}
                 </p>
@@ -181,7 +244,8 @@ export function Dashboard({
                 <Skull size={120} />
               </div>
             </motion.button>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

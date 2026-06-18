@@ -2,8 +2,17 @@ import type { Language } from './types';
 
 interface DashboardUiContent {
   pickYourPoison: string;
+  rotatingProgramFocus: (
+    cycleDay: number,
+    cycleLength: number,
+    phaseLabel: string
+  ) => string;
+  programExerciseDone: string;
+  programEquipment: (gear: string) => string;
+  equipment: Record<'dumbbell' | 'barbell' | 'bench', string>;
   streak: string;
   setsProgress: (completed: number, goal: number) => string;
+  pushupDailyProgress: (completed: number, goal: number) => string;
   loading: string;
   errors: {
     sets: (msg: string) => string;
@@ -16,6 +25,8 @@ interface DashboardUiContent {
     loadingCoins: string;
     funFactAndStreak: string;
     streakDays: (days: number) => string;
+    previousProgramDay: string;
+    nextProgramDay: string;
   };
   funFactsLoading: string;
 }
@@ -39,8 +50,18 @@ const en: UiContent = {
   },
   dashboard: {
     pickYourPoison: 'PICK YOUR WORKOUT',
+    rotatingProgramFocus: (cycleDay, cycleLength, phaseLabel) =>
+      `Program day ${cycleDay}/${cycleLength} — ${phaseLabel}`,
+    programExerciseDone: 'done',
+    programEquipment: (gear) => `equipment: ${gear}`,
+    equipment: {
+      dumbbell: 'dumbbell',
+      barbell: 'barbell',
+      bench: 'bench'
+    },
     streak: 'streak',
     setsProgress: (completed, goal) => `${completed} / ${goal} sets`,
+    pushupDailyProgress: (completed, goal) => `${completed} / ${goal} pushups`,
     loading: '…',
     errors: {
       sets: (msg) => `Could not load set progress: ${msg}`,
@@ -52,7 +73,9 @@ const en: UiContent = {
       openSettings: 'Open settings',
       loadingCoins: 'Loading coins',
       funFactAndStreak: 'Fun fact and streak',
-      streakDays: (days) => `Current streak: ${days} days`
+      streakDays: (days) => `Current streak: ${days} days`,
+      previousProgramDay: 'Previous program day',
+      nextProgramDay: 'Next program day'
     },
     funFactsLoading: 'Fun facts are loading…'
   },
@@ -195,8 +218,18 @@ const he: UiContent = {
   },
   dashboard: {
     pickYourPoison: 'בחר את האימון שלך',
+    rotatingProgramFocus: (cycleDay, cycleLength, phaseLabel) =>
+      `יום ${cycleDay}/${cycleLength} בתוכנית — ${phaseLabel}`,
+    programExerciseDone: 'בוצע',
+    programEquipment: (gear) => `ציוד: ${gear}`,
+    equipment: {
+      dumbbell: 'משקולות יד',
+      barbell: 'מוט',
+      bench: 'ספסל'
+    },
     streak: 'רצף',
     setsProgress: (completed, goal) => `${completed} / ${goal} סטים`,
+    pushupDailyProgress: (completed, goal) => `${completed} / ${goal} שכ״ס`,
     loading: '…',
     errors: {
       sets: (msg) => `לא ניתן לטעון התקדמות סטים: ${msg}`,
@@ -208,7 +241,9 @@ const he: UiContent = {
       openSettings: 'פתח הגדרות',
       loadingCoins: 'טוען מטבעות',
       funFactAndStreak: 'עובדה מעניינת ורצף',
-      streakDays: (days) => `רצף נוכחי: ${days} ימים`
+      streakDays: (days) => `רצף נוכחי: ${days} ימים`,
+      previousProgramDay: 'יום תוכנית קודם',
+      nextProgramDay: 'יום תוכנית הבא'
     },
     funFactsLoading: 'עובדות מעניינות בטעינה…'
   },
@@ -351,8 +386,18 @@ const ar: UiContent = {
   },
   dashboard: {
     pickYourPoison: 'اختر تمرينك',
+    rotatingProgramFocus: (cycleDay, cycleLength, phaseLabel) =>
+      `اليوم ${cycleDay}/${cycleLength} في البرنامج — ${phaseLabel}`,
+    programExerciseDone: 'تم',
+    programEquipment: (gear) => `معدات: ${gear}`,
+    equipment: {
+      dumbbell: 'دمبل',
+      barbell: 'بار',
+      bench: 'مقعد'
+    },
     streak: 'سلسلة',
     setsProgress: (completed, goal) => `${completed} / ${goal} مجموعات`,
+    pushupDailyProgress: (completed, goal) => `${completed} / ${goal} ضغط`,
     loading: '…',
     errors: {
       sets: (msg) => `تعذّر تحميل تقدم المجموعات: ${msg}`,
@@ -364,7 +409,9 @@ const ar: UiContent = {
       openSettings: 'فتح الإعدادات',
       loadingCoins: 'جارٍ تحميل العملات',
       funFactAndStreak: 'حقيقة ممتعة وسلسلة',
-      streakDays: (days) => `السلسلة الحالية: ${days} أيام`
+      streakDays: (days) => `السلسلة الحالية: ${days} أيام`,
+      previousProgramDay: 'اليوم السابق في البرنامج',
+      nextProgramDay: 'اليوم التالي في البرنامج'
     },
     funFactsLoading: 'جارٍ تحميل الحقائق الممتعة…'
   },

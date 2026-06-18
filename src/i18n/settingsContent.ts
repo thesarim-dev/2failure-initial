@@ -11,6 +11,56 @@ const en: SettingsContent = {
     description: 'How many sets you aim to hit per exercise each day.',
     sets: (count) => `${count} sets`
   },
+  rotatingProgram: {
+    title: 'rotating program',
+    description:
+      '7-day RIR plan: push, legs, pull, legs, mixed, then two pure recovery stretch days. Equipment exercises are 3 sets; bodyweight and core are 2 sets.',
+    off: 'Off',
+    on: 'On',
+    trainingGuide: {
+      toggleLabel: 'How hard should each set feel?',
+      sections: [
+        {
+          title: 'Equipment exercises — 3 sets',
+          items: [
+            { label: 'Set 1:', text: '1–2 reps left in the tank (RIR)' },
+            { label: 'Set 2:', text: '1–2 reps left in the tank (RIR)' },
+            { label: 'Set 3:', text: 'Go to absolute failure' }
+          ]
+        },
+        {
+          title: 'Bodyweight exercises — 2 sets',
+          items: [
+            { label: 'Set 1:', text: '1 rep left in the tank (RIR)' },
+            { label: 'Set 2:', text: 'Go to absolute failure' }
+          ]
+        },
+        {
+          title: 'Core — 2 sets',
+          items: [
+            { label: 'Set 1:', text: 'Controlled pace, or stop 1–2 reps early' },
+            { label: 'Set 2:', text: 'Max hold or failure' }
+          ]
+        },
+        {
+          title: 'Recovery days (days 6 & 7)',
+          items: [
+            {
+              label: 'Stretch only.',
+              text: 'No lifting and no core — deep static stretching'
+            }
+          ]
+        }
+      ]
+    },
+    phases: {
+      push: 'Push',
+      pull: 'Pull',
+      legs: 'Legs',
+      mixed: 'Mixed',
+      recovery: 'Recovery · Stretch'
+    }
+  },
   appearance: {
     title: 'appearance',
     nightOn: 'night mode on',
@@ -104,6 +154,56 @@ const he: SettingsContent = {
     description: 'כמה סטים אתה שואף להשלים לכל תרגיל ביום.',
     sets: (count) => `${count} סטים`
   },
+  rotatingProgram: {
+    title: 'תוכנית מתחלפת',
+    description:
+      'תוכנית RIR ל-7 ימים: דחיפה, רגליים, משיכה, רגליים, מעורב, ואז שני ימי מתיחות והתאוששות. תרגילי ציוד — 3 סטים; משקל גוף וליבה — 2 סטים.',
+    off: 'כבוי',
+    on: 'פעיל',
+    trainingGuide: {
+      toggleLabel: 'כמה קשה כל סט צריך להרגיש?',
+      sections: [
+        {
+          title: 'תרגילי ציוד — 3 סטים',
+          items: [
+            { label: 'סט 1:', text: '1–2 חזרות נשארו בטנק (RIR)' },
+            { label: 'סט 2:', text: '1–2 חזרות נשארו בטנק (RIR)' },
+            { label: 'סט 3:', text: 'כשלון מלא' }
+          ]
+        },
+        {
+          title: 'תרגילי משקל גוף — 2 סטים',
+          items: [
+            { label: 'סט 1:', text: 'חזרה אחת נשארה בטנק (RIR)' },
+            { label: 'סט 2:', text: 'כשלון מלא' }
+          ]
+        },
+        {
+          title: 'ליבה — 2 סטים',
+          items: [
+            { label: 'סט 1:', text: 'קצב בשליטה, או עצור 1–2 חזרות לפני המקסימום' },
+            { label: 'סט 2:', text: 'החזקה מקסימלית או כשלון' }
+          ]
+        },
+        {
+          title: 'ימי התאוששות (ימים 6 ו-7)',
+          items: [
+            {
+              label: 'מתיחות בלבד.',
+              text: 'בלי הרמות ובלי ליבה — מתיחות סטטיות עמוקות'
+            }
+          ]
+        }
+      ]
+    },
+    phases: {
+      push: 'דחיפה',
+      pull: 'משיכה',
+      legs: 'רגליים',
+      mixed: 'מעורב',
+      recovery: 'התאוששות · מתיחות'
+    }
+  },
   appearance: {
     title: 'מראה',
     nightOn: 'מצב לילה פעיל',
@@ -195,6 +295,56 @@ const ar: SettingsContent = {
     title: 'هدف المجموعات اليومي',
     description: 'عدد المجموعات التي تستهدف إكمالها لكل تمرين يوميًا.',
     sets: (count) => `${count} مجموعات`
+  },
+  rotatingProgram: {
+    title: 'برنامج متناوب',
+    description:
+      'خطة RIR لسبعة أيام: دفع، ساقين، سحب، ساقين، مختلط، ثم يومان للتعافي والتمدد فقط. تمارين المعدات 3 مجموعات؛ وزن الجسم واللبّ 2 مجموعات.',
+    off: 'إيقاف',
+    on: 'تشغيل',
+    trainingGuide: {
+      toggleLabel: 'ما مدى صعوبة كل مجموعة؟',
+      sections: [
+        {
+          title: 'تمارين بالمعدات — 3 مجموعات',
+          items: [
+            { label: 'المجموعة 1:', text: '1–2 تكرارات متبقية (RIR)' },
+            { label: 'المجموعة 2:', text: '1–2 تكرارات متبقية (RIR)' },
+            { label: 'المجموعة 3:', text: 'فشل كامل' }
+          ]
+        },
+        {
+          title: 'تمارين وزن الجسم — مجموعتان',
+          items: [
+            { label: 'المجموعة 1:', text: 'تكرار واحد متبقٍ (RIR)' },
+            { label: 'المجموعة 2:', text: 'فشل كامل' }
+          ]
+        },
+        {
+          title: 'اللبّ — مجموعتان',
+          items: [
+            { label: 'المجموعة 1:', text: 'إيقاع مضبوط، أو توقف قبل 1–2 تكرارات' },
+            { label: 'المجموعة 2:', text: 'أقصى ثبات أو فشل' }
+          ]
+        },
+        {
+          title: 'أيام التعافي (اليوم 6 و7)',
+          items: [
+            {
+              label: 'تمدد فقط.',
+              text: 'لا رفع ولا لبّ — تمدد ثابت عميق'
+            }
+          ]
+        }
+      ]
+    },
+    phases: {
+      push: 'دفع',
+      pull: 'سحب',
+      legs: 'ساقين',
+      mixed: 'مختلط',
+      recovery: 'تعافٍ · تمدد'
+    }
   },
   appearance: {
     title: 'المظهر',

@@ -1,14 +1,20 @@
-import { STORE_CATEGORIES } from '../components/moves';
+import { RECOVERY_STORE_CATEGORY, STORE_CATEGORIES } from '../components/moves';
 
 const STORAGE_KEY = '2failure-owned-variants';
 
-export const DEFAULT_OWNED = STORE_CATEGORIES.flatMap((cat) =>
-  cat.variants.filter((variant) => variant.price === 0).map((variant) => variant.id)
-);
+const PROGRAM_VARIANT_IDS = [
+  ...STORE_CATEGORIES.flatMap((cat) => cat.variants.map((v) => v.id)),
+  ...RECOVERY_STORE_CATEGORY.variants.map((v) => v.id)
+];
 
-const ALL_VARIANT_IDS = new Set(
-  STORE_CATEGORIES.flatMap((cat) => cat.variants.map((v) => v.id))
-);
+export const DEFAULT_OWNED = [
+  ...STORE_CATEGORIES.flatMap((cat) =>
+    cat.variants.filter((variant) => variant.price === 0).map((variant) => variant.id)
+  ),
+  ...RECOVERY_STORE_CATEGORY.variants.map((variant) => variant.id)
+];
+
+const ALL_VARIANT_IDS = new Set(PROGRAM_VARIANT_IDS);
 
 export function readStoredOwned(): string[] {
   const merged = new Set(DEFAULT_OWNED);
