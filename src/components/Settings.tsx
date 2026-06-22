@@ -1,14 +1,14 @@
-import { ArrowLeft, ChevronLeft, ChevronRight, LogOut, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, LogOut, Moon, Sun } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { SettingsFaq } from './SettingsFaq';
 import { ProgramTrainingGuide } from './ProgramTrainingGuide';
+import { ProgramDayCarousel } from './ProgramDayCarousel';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { LANGUAGE_OPTIONS } from '../i18n/translations';
 import type { DailySetGoal } from '../hooks/useDailySetGoal';
 import type { Language } from '../i18n/types';
 import type { RotatingProgramPhase } from '../lib/rotatingProgram';
-import { ROTATION_CYCLE_LENGTH } from '../lib/rotatingProgram';
 
 interface SettingsProps {
   coins: number;
@@ -16,9 +16,7 @@ interface SettingsProps {
   rotatingProgramEnabled: boolean;
   rotatingProgramPhase: RotatingProgramPhase | null;
   rotatingProgramCycleDay: number | null;
-  canGoPreviousProgramDay: boolean;
-  onPreviousProgramDay: () => void;
-  onNextProgramDay: () => void;
+  onSelectProgramCycleDay: (cycleDay: number) => void;
   isDark: boolean;
   onDailySetGoalChange: (goal: DailySetGoal) => void;
   onRotatingProgramEnabledChange: (enabled: boolean) => void;
@@ -32,9 +30,7 @@ export function Settings({
   rotatingProgramEnabled,
   rotatingProgramPhase,
   rotatingProgramCycleDay,
-  canGoPreviousProgramDay,
-  onPreviousProgramDay,
-  onNextProgramDay,
+  onSelectProgramCycleDay,
   isDark,
   onDailySetGoalChange,
   onRotatingProgramEnabledChange,
@@ -42,10 +38,8 @@ export function Settings({
   onBack
 }: SettingsProps) {
   const { signOut } = useAuth();
-  const { language, setLanguage, t, isRtl } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const s = t.settings;
-  const PrevDayIcon = isRtl ? ChevronRight : ChevronLeft;
-  const NextDayIcon = isRtl ? ChevronLeft : ChevronRight;
 
   return (
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
@@ -119,56 +113,52 @@ export function Settings({
             rotatingProgramPhase !== null &&
             rotatingProgramCycleDay !== null && (
               <>
-                <div className="program-day-nav mt-4 flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={onPreviousProgramDay}
-                    disabled={!canGoPreviousProgramDay}
-                    className="cyber-icon-btn cyber-icon-btn--program-day shrink-0 disabled:opacity-35 disabled:cursor-not-allowed"
-                    aria-label={t.dashboard.aria.previousProgramDay}>
-                    <PrevDayIcon size={30} strokeWidth={3} />
-                  </button>
-                  <p className="flex-1 min-w-0 text-sm font-semibold text-[#00B2FF] text-center leading-snug">
-                    {t.dashboard.rotatingProgramFocus(
-                      rotatingProgramCycleDay,
-                      ROTATION_CYCLE_LENGTH,
-                      s.rotatingProgram.phases[rotatingProgramPhase]
-                    )}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={onNextProgramDay}
-                    className="cyber-icon-btn cyber-icon-btn--program-day shrink-0"
-                    aria-label={t.dashboard.aria.nextProgramDay}>
-                    <NextDayIcon size={30} strokeWidth={3} />
-                  </button>
-                </div>
+                <ProgramDayCarousel
+                  cycleDay={rotatingProgramCycleDay}
+                  onSelectCycleDay={onSelectProgramCycleDay}
+                  getPhaseLabel={(phase) => s.rotatingProgram.phases[phase]}
+                  isDark={isDark}
+                />
                 <ProgramTrainingGuide />
               </>
             )}
         </section>
 
         <section className="cyber-panel p-5 normal-case">
-          <h2 className="settings-section-title">{s.appearance.title}</h2>
-          <p className="text-sm font-medium opacity-70 mb-4">
-            {isDark ? s.appearance.nightOn : s.appearance.dayOn}
-          </p>
-          <button
-            type="button"
-            onClick={onToggleDark}
-            className="settings-action-btn settings-action-btn--theme">
-            {isDark ? (
-              <>
-                <Sun size={18} strokeWidth={2.5} />
-                {s.appearance.switchToDay}
-              </>
-            ) : (
-              <>
-                <Moon size={18} strokeWidth={2.5} />
-                {s.appearance.switchToNight}
-              </>
-            )}
-          </button>
+          <div className="settings-appearance-row">
+            <div className="settings-appearance-copy">
+              <h2 className="settings-section-title">{s.appearance.title}</h2>
+              <p className="text-sm font-medium opacity-70">
+                {isDark ? s.appearance.nightOn : s.appearance.dayOn}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onToggleDark}
+              className="settings-theme-toggle"
+              aria-label={
+                isDark ? s.appearance.switchToDay : s.appearance.switchToNight
+              }
+              title={
+                isDark ? s.appearance.switchToDay : s.appearance.switchToNight
+              }>
+              {isDark ? (
+                <>
+                  <Sun size={18} strokeWidth={2.35} />
+                  <span className="settings-theme-toggle__label">
+                    {s.appearance.switchToDayButton}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Moon size={18} strokeWidth={2.35} />
+                  <span className="settings-theme-toggle__label">
+                    {s.appearance.switchToNightButton}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
         </section>
 
         <section className="cyber-panel p-5 normal-case">

@@ -40,8 +40,7 @@ export function MainApp() {
     setRotatingProgramEnabled,
     rotatingProgramPhase,
     rotatingProgramCycleDay,
-    canGoPreviousProgramDay,
-    shiftProgramDay
+    selectProgramCycleDay
   } = useRotatingProgram();
   const {
     coins,
@@ -201,17 +200,17 @@ export function MainApp() {
   };
 
   const handleToggleEquipUpper = (exerciseId: string) => {
-    if (!owned.includes(exerciseId)) return;
+    if (rotatingProgramEnabled || !owned.includes(exerciseId)) return;
     toggleEquipUpper(exerciseId);
   };
 
   const handleToggleEquipLower = (exerciseId: string) => {
-    if (!owned.includes(exerciseId)) return;
+    if (rotatingProgramEnabled || !owned.includes(exerciseId)) return;
     toggleEquipLower(exerciseId);
   };
 
   const handleToggleEquipCore = (exerciseId: string) => {
-    if (!owned.includes(exerciseId)) return;
+    if (rotatingProgramEnabled || !owned.includes(exerciseId)) return;
     toggleEquipCore(exerciseId);
   };
 
@@ -257,7 +256,8 @@ export function MainApp() {
         onBuy={handleBuy}
         onToggleEquipUpper={handleToggleEquipUpper}
         onToggleEquipLower={handleToggleEquipLower}
-        onToggleEquipCore={handleToggleEquipCore} />
+        onToggleEquipCore={handleToggleEquipCore}
+        rotatingProgramEnabled={rotatingProgramEnabled} />
 
       }
 
@@ -268,9 +268,7 @@ export function MainApp() {
         rotatingProgramEnabled={rotatingProgramEnabled}
         rotatingProgramPhase={rotatingProgramPhase}
         rotatingProgramCycleDay={rotatingProgramCycleDay}
-        canGoPreviousProgramDay={canGoPreviousProgramDay}
-        onPreviousProgramDay={() => shiftProgramDay(-1)}
-        onNextProgramDay={() => shiftProgramDay(1)}
+        onSelectProgramCycleDay={selectProgramCycleDay}
         isDark={isDark}
         onDailySetGoalChange={setDailySetGoal}
         onRotatingProgramEnabledChange={setRotatingProgramEnabled}

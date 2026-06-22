@@ -25,7 +25,7 @@ const PROGRAM_BY_PHASE: Record<
     { id: 'barbell-squat', setsToFailure: 3 },
     { id: 'bulgarian-splits', setsToFailure: 2 },
     { id: 'squats', setsToFailure: 2 },
-    { id: 'leg-raises', setsToFailure: 2 },
+    { id: 'hollow-body', setsToFailure: 2 },
     { id: 'planks', setsToFailure: 2 }
   ],
   pull: [

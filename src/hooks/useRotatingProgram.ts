@@ -1,52 +1,20 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
+  daysBetweenLocalDates,
   getRotatingProgramCycleDay,
   getRotatingProgramDayIndex,
   getRotatingProgramPhase,
+  ROTATION_CYCLE_LENGTH,
   type RotatingProgramPhase
 } from '../lib/rotatingProgram';
 import { toLocalDateString } from '../lib/userStats';
 
 const ENABLED_KEY = '2failure-rotating-program-enabled';
 const START_DATE_KEY = '2failure-rotating-program-start-date';
-const DAY_OFFSET_KEY = '2failure-rotating-program-day-offset';
-
-function readStoredDayOffset(): number {
-  if (typeof window === 'undefined') return 0;
-
-  try {
-    const raw = window.localStorage.getItem(DAY_OFFSET_KEY);
-    if (!raw) return 0;
-    const parsed = Number.parseInt(raw, 10);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-  } catch {
-    return 0;
-  }
-}
-
-function writeStoredDayOffset(offset: number): void {
-  if (typeof window === 'undefined') return;
-
-  try {
-    if (offset <= 0) {
-      window.localStorage.removeItem(DAY_OFFSET_KEY);
-    } else {
-      window.localStorage.setItem(DAY_OFFSET_KEY, String(offset));
-    }
-  } catch {
-    // Ignore storage failures.
-  }
-}
-
-function clearStoredDayOffset(): void {
-  if (typeof window === 'undefined') return;
-
-  try {
-    window.localStorage.removeItem(DAY_OFFSET_KEY);
-  } catch {
-    // Ignore storage failures.
-  }
-}
+const EFFECTIVE_INDEX_KEY = '2failure-rotating-program-effective-index';
+const EFFECTIVE_DATE_KEY = '2failure-rotating-program-effective-date';
+/** @deprecated migrated to effective index + date */
+const LEGACY_OFFSET_KEY = '2failure-rotating-program-day-offset';
 
 function readStoredEnabled(): boolean {
   if (typeof window === 'undefined') return false;
@@ -66,6 +34,43 @@ function readStoredStartDate(): string | null {
     return raw && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : null;
   } catch {
     return null;
+  }
+}
+
+function readStoredEffectiveIndex(): number | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.localStorage.getItem(EFFECTIVE_INDEX_KEY);
+    if (!raw) return null;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function readStoredEffectiveDate(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.localStorage.getItem(EFFECTIVE_DATE_KEY);
+    return raw && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+function readLegacyDayOffset(): number {
+  if (typeof window === 'undefined') return 0;
+
+  try {
+    const raw = window.localStorage.getItem(LEGACY_OFFSET_KEY);
+    if (!raw) return 0;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  } catch {
+    return 0;
   }
 }
 
@@ -103,48 +108,107 @@ function clearStoredStartDate(): void {
   }
 }
 
+function writeStoredEffectivePosition(index: number, date: string): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(EFFECTIVE_INDEX_KEY, String(index));
+    window.localStorage.setItem(EFFECTIVE_DATE_KEY, date);
+    window.localStorage.removeItem(LEGACY_OFFSET_KEY);
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+function clearStoredEffectivePosition(): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.removeItem(EFFECTIVE_INDEX_KEY);
+    window.localStorage.removeItem(EFFECTIVE_DATE_KEY);
+    window.localStorage.removeItem(LEGACY_OFFSET_KEY);
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+function resolveInitialEffectivePosition(
+  startDate: string,
+  today = toLocalDateString()
+): { index: number; date: string } {
+  const storedIndex = readStoredEffectiveIndex();
+  const storedDate = readStoredEffectiveDate();
+
+  if (storedIndex !== null && storedDate !== null) {
+    const elapsed = Math.max(0, daysBetweenLocalDates(storedDate, today));
+    return {
+      index: Math.max(0, storedIndex + elapsed),
+      date: today
+    };
+  }
+
+  const legacyOffset = readLegacyDayOffset();
+  const calendarIndex = getRotatingProgramDayIndex(startDate, today);
+  const index = Math.max(0, calendarIndex + legacyOffset);
+
+  return { index, date: today };
+}
+
 export function useRotatingProgram() {
+  const today = toLocalDateString();
+
   const [enabled, setEnabledState] = useState(readStoredEnabled);
   const [startDate, setStartDateState] = useState<string | null>(() => {
     const stored = readStoredStartDate();
     if (readStoredEnabled() && !stored) {
-      const today = toLocalDateString();
-      writeStoredStartDate(today);
-      return today;
+      const anchor = today;
+      writeStoredStartDate(anchor);
+      return anchor;
     }
     return stored;
   });
 
-  const [programDayOffset, setProgramDayOffsetState] = useState(readStoredDayOffset);
+  const [savedPosition, setSavedPositionState] = useState<{
+    index: number;
+    date: string;
+  } | null>(() => {
+    if (!readStoredEnabled() || !readStoredStartDate()) return null;
+    return resolveInitialEffectivePosition(readStoredStartDate()!, today);
+  });
 
-  const setRotatingProgramEnabled = useCallback((next: boolean) => {
-    setEnabledState(next);
-    writeStoredEnabled(next);
+  const setRotatingProgramEnabled = useCallback(
+    (next: boolean) => {
+      setEnabledState(next);
+      writeStoredEnabled(next);
 
-    if (next) {
-      const today = toLocalDateString();
-      setStartDateState(today);
-      writeStoredStartDate(today);
-      setProgramDayOffsetState(0);
-      clearStoredDayOffset();
-      return;
-    }
+      if (next) {
+        const anchor = toLocalDateString();
+        setStartDateState(anchor);
+        writeStoredStartDate(anchor);
+        const position = { index: 0, date: anchor };
+        setSavedPositionState(position);
+        writeStoredEffectivePosition(0, anchor);
+        return;
+      }
 
-    setStartDateState(null);
-    clearStoredStartDate();
-    setProgramDayOffsetState(0);
-    clearStoredDayOffset();
-  }, []);
-
-  const calendarDayIndex = useMemo(() => {
-    if (!enabled || !startDate) return null;
-    return getRotatingProgramDayIndex(startDate);
-  }, [enabled, startDate]);
+      setStartDateState(null);
+      setSavedPositionState(null);
+      clearStoredStartDate();
+      clearStoredEffectivePosition();
+    },
+    []
+  );
 
   const effectiveDayIndex = useMemo(() => {
-    if (calendarDayIndex === null) return null;
-    return calendarDayIndex + programDayOffset;
-  }, [calendarDayIndex, programDayOffset]);
+    if (!enabled || !startDate) return null;
+
+    if (savedPosition) {
+      const elapsed = Math.max(0, daysBetweenLocalDates(savedPosition.date, today));
+      return Math.max(0, savedPosition.index + elapsed);
+    }
+
+    return getRotatingProgramDayIndex(startDate, today);
+  }, [enabled, startDate, savedPosition, today]);
 
   const phase = useMemo((): RotatingProgramPhase | null => {
     if (effectiveDayIndex === null) return null;
@@ -156,25 +220,29 @@ export function useRotatingProgram() {
     return getRotatingProgramCycleDay(effectiveDayIndex);
   }, [effectiveDayIndex]);
 
-  const canGoPreviousProgramDay =
-    effectiveDayIndex !== null && effectiveDayIndex > 0;
+  const selectProgramCycleDay = useCallback(
+    (targetCycleDay: number) => {
+      if (effectiveDayIndex === null) return;
 
-  const shiftProgramDay = useCallback((delta: -1 | 1) => {
-    setProgramDayOffsetState((current) => {
-      const base = calendarDayIndex ?? 0;
-      const nextEffective = Math.max(0, base + current + delta);
-      const nextOffset = nextEffective - base;
-      writeStoredDayOffset(nextOffset);
-      return nextOffset;
-    });
-  }, [calendarDayIndex]);
+      const currentNorm =
+        ((effectiveDayIndex % ROTATION_CYCLE_LENGTH) + ROTATION_CYCLE_LENGTH) %
+        ROTATION_CYCLE_LENGTH;
+      const targetNorm = targetCycleDay - 1;
+      const delta = targetNorm - currentNorm;
+      const nextIndex = Math.max(0, effectiveDayIndex + delta);
+      const anchor = toLocalDateString();
+
+      setSavedPositionState({ index: nextIndex, date: anchor });
+      writeStoredEffectivePosition(nextIndex, anchor);
+    },
+    [effectiveDayIndex]
+  );
 
   return {
     rotatingProgramEnabled: enabled,
     setRotatingProgramEnabled,
     rotatingProgramPhase: phase,
     rotatingProgramCycleDay: cycleDay,
-    canGoPreviousProgramDay,
-    shiftProgramDay
+    selectProgramCycleDay
   };
 }

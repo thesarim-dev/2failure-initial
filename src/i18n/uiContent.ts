@@ -90,7 +90,9 @@ const en: UiContent = {
     equip: 'Equip',
     unequipFirst: 'Unequip one first',
     needOppositePattern: 'Need opposite movement pattern',
-    needBalancedUpper: 'Need 1 Push + 1 Pull in your upper lineup.'
+    needBalancedUpper: 'Need 1 Push + 1 Pull in your upper lineup.',
+    programEquipLocked:
+      'Rotating program is on — lineup changes are locked. Turn the program off in Settings to equip or unequip.'
   },
   login: {
     switchToDay: 'switch to day mode',
@@ -258,7 +260,9 @@ const he: UiContent = {
     equip: 'צייד',
     unequipFirst: 'הסר ציוד קודם',
     needOppositePattern: 'נדרש דפוס תנועה הפוך',
-    needBalancedUpper: 'נדרש תרגיל דחיפה אחד + משיכה אחת בפלג הגוף העליון.'
+    needBalancedUpper: 'נדרש תרגיל דחיפה אחד + משיכה אחת בפלג הגוף העליון.',
+    programEquipLocked:
+      'תוכנית הסיבוב פעילה — לא ניתן לשנות ציוד. כבה את התוכנית בהגדרות כדי לצייד או להסיר.'
   },
   login: {
     switchToDay: 'עבור למצב יום',
@@ -426,7 +430,9 @@ const ar: UiContent = {
     equip: 'تجهيز',
     unequipFirst: 'أزل التجهيز أولاً',
     needOppositePattern: 'يلزم نمط حركة معاكس',
-    needBalancedUpper: 'يلزم تمرين دفع واحد + سحب واحد في الجزء العلوي.'
+    needBalancedUpper: 'يلزم تمرين دفع واحد + سحب واحد في الجزء العلوي.',
+    programEquipLocked:
+      'برنامج الدوران مفعّل — تغيير التجهيز مقفل. أوقف البرنامج من الإعدادات للتجهيز أو الإزالة.'
   },
   login: {
     switchToDay: 'التبديل إلى الوضع النهاري',

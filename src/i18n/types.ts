@@ -77,6 +77,8 @@ export interface AppTranslations {
       dayOn: string;
       switchToDay: string;
       switchToNight: string;
+      switchToDayButton: string;
+      switchToNightButton: string;
     };
     language: {
       title: string;
@@ -139,6 +141,7 @@ export interface AppTranslations {
     unequipFirst: string;
     needOppositePattern: string;
     needBalancedUpper: string;
+    programEquipLocked: string;
   };
   login: {
     switchToDay: string;

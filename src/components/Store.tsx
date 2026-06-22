@@ -23,6 +23,7 @@ interface StoreProps {
   onToggleEquipUpper: (exerciseId: string) => void;
   onToggleEquipLower: (exerciseId: string) => void;
   onToggleEquipCore: (exerciseId: string) => void;
+  rotatingProgramEnabled: boolean;
 }
 
 export function Store({
@@ -35,9 +36,11 @@ export function Store({
   onBuy,
   onToggleEquipUpper,
   onToggleEquipLower,
-  onToggleEquipCore
+  onToggleEquipCore,
+  rotatingProgramEnabled
 }: StoreProps) {
   const { t } = useLanguage();
+  const equipLocked = rotatingProgramEnabled;
 
   return (
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
@@ -56,6 +59,10 @@ export function Store({
       </header>
 
       <div className="space-y-10">
+        {equipLocked && (
+          <p className="store-status-note normal-case">{t.store.programEquipLocked}</p>
+        )}
+
         <LineupSection
           category={STORE_CATEGORIES[0]}
           coins={coins}
@@ -63,6 +70,7 @@ export function Store({
           equipped={equippedUpper}
           onBuy={onBuy}
           onToggleEquip={onToggleEquipUpper}
+          equipLocked={equipLocked}
           canEquip={(id) => canEquipUpperExercise(equippedUpper, id)}
           statusNote={
             equippedUpper.length === LINEUP_EQUIP_COUNT &&
@@ -79,6 +87,7 @@ export function Store({
           equipped={equippedLower}
           onBuy={onBuy}
           onToggleEquip={onToggleEquipLower}
+          equipLocked={equipLocked}
           canEquip={(id) =>
             equippedLower.includes(id) ||
             equippedLower.length < LINEUP_EQUIP_COUNT
@@ -92,6 +101,7 @@ export function Store({
           equipped={equippedCore}
           onBuy={onBuy}
           onToggleEquip={onToggleEquipCore}
+          equipLocked={equipLocked}
           canEquip={(id) =>
             equippedCore.includes(id) ||
             equippedCore.length < LINEUP_EQUIP_COUNT
@@ -109,6 +119,7 @@ function LineupSection({
   equipped,
   onBuy,
   onToggleEquip,
+  equipLocked,
   canEquip,
   statusNote
 }: {
@@ -118,6 +129,7 @@ function LineupSection({
   equipped: string[];
   onBuy: (categoryId: string, variant: Variant) => void;
   onToggleEquip: (exerciseId: string) => void;
+  equipLocked: boolean;
   canEquip: (exerciseId: string) => boolean;
   statusNote?: string;
 }) {
@@ -140,7 +152,9 @@ function LineupSection({
           const isOwned = owned.includes(variant.id);
           const isEquipped = equipped.includes(variant.id);
           const canAfford = coins >= variant.price;
-          const allowEquip = isOwned && (isEquipped || canEquip(variant.id));
+          const allowEquip =
+            !equipLocked && isOwned && (isEquipped || canEquip(variant.id));
+          const equipLockTitle = equipLocked ? t.store.programEquipLocked : undefined;
           const patternLabel =
             category.id === 'upper' && variant.pattern
               ? variant.pattern === 'push'
@@ -179,7 +193,9 @@ function LineupSection({
                 {isEquipped ? (
                   <button
                     type="button"
-                    onClick={() => onToggleEquip(variant.id)}
+                    onClick={() => !equipLocked && onToggleEquip(variant.id)}
+                    disabled={equipLocked}
+                    title={equipLockTitle}
                     className="store-btn store-btn--active">
                     {t.store.active}
                   </button>
@@ -189,11 +205,12 @@ function LineupSection({
                     onClick={() => allowEquip && onToggleEquip(variant.id)}
                     disabled={!allowEquip}
                     title={
-                      !allowEquip && atCapacity
+                      equipLockTitle ??
+                      (!allowEquip && atCapacity
                         ? t.store.unequipFirst
                         : !allowEquip
                           ? t.store.needOppositePattern
-                          : undefined
+                          : undefined)
                     }
                     className="store-btn store-btn--equip">
                     {t.store.equip}

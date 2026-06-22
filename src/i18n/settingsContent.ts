@@ -54,11 +54,11 @@ const en: SettingsContent = {
       ]
     },
     phases: {
-      push: 'Push',
-      pull: 'Pull',
-      legs: 'Legs',
-      mixed: 'Mixed',
-      recovery: 'Recovery · Stretch'
+      push: 'push',
+      pull: 'pull',
+      legs: 'legs',
+      mixed: 'mixed',
+      recovery: 'stretch'
     }
   },
   appearance: {
@@ -66,7 +66,9 @@ const en: SettingsContent = {
     nightOn: 'night mode on',
     dayOn: 'day mode on',
     switchToDay: 'switch to day mode',
-    switchToNight: 'switch to night mode'
+    switchToNight: 'switch to night mode',
+    switchToDayButton: 'day mode',
+    switchToNightButton: 'night mode'
   },
   language: {
     title: 'language',
@@ -201,7 +203,7 @@ const he: SettingsContent = {
       pull: 'משיכה',
       legs: 'רגליים',
       mixed: 'מעורב',
-      recovery: 'התאוששות · מתיחות'
+      recovery: 'מתיחות'
     }
   },
   appearance: {
@@ -209,7 +211,9 @@ const he: SettingsContent = {
     nightOn: 'מצב לילה פעיל',
     dayOn: 'מצב יום פעיל',
     switchToDay: 'עבור למצב יום',
-    switchToNight: 'עבור למצב לילה'
+    switchToNight: 'עבור למצב לילה',
+    switchToDayButton: 'מצב יום',
+    switchToNightButton: 'מצב לילה'
   },
   language: {
     title: 'שפה',
@@ -343,7 +347,7 @@ const ar: SettingsContent = {
       pull: 'سحب',
       legs: 'ساقين',
       mixed: 'مختلط',
-      recovery: 'تعافٍ · تمدد'
+      recovery: 'تمدد'
     }
   },
   appearance: {
@@ -351,7 +355,9 @@ const ar: SettingsContent = {
     nightOn: 'الوضع الليلي مفعّل',
     dayOn: 'الوضع النهاري مفعّل',
     switchToDay: 'التبديل إلى الوضع النهاري',
-    switchToNight: 'التبديل إلى الوضع الليلي'
+    switchToNight: 'التبديل إلى الوضع الليلي',
+    switchToDayButton: 'نهار',
+    switchToNightButton: 'ليل'
   },
   language: {
     title: 'اللغة',
