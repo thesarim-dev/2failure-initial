@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Move } from './moves';
-import { ArrowRight, Skull } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { FailureLogo } from './FailureLogo';
 import confetti from 'canvas-confetti';
 import type { SetRepResult } from '../types/repProgress';
 import { formatPersonalBestDate } from '../lib/repProgress';
@@ -12,7 +13,7 @@ import {
   SUMMARY_ACCENT_TEXT,
   SUMMARY_CONFETTI,
   SUMMARY_HOME_BTN,
-  SUMMARY_SKULL,
+  SUMMARY_LOGO,
   SUMMARY_TITLE
 } from './workoutUi';
 
@@ -111,7 +112,7 @@ export function Summary({
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', damping: 15 }}
           className="mb-6">
-          <Skull size={72} strokeWidth={2.5} className={SUMMARY_SKULL[slot]} />
+          <FailureLogo size={72} className={SUMMARY_LOGO} />
         </motion.div>
 
         <motion.h1

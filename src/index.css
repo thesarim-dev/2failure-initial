@@ -173,6 +173,10 @@
       0 0 8px rgba(0, 178, 255, 0.45),
       0 0 18px rgba(0, 178, 255, 0.2);
   }
+  .failure-logo {
+    display: block;
+    flex-shrink: 0;
+  }
   .dashboard-skull-glow {
     filter: drop-shadow(0 0 6px rgba(0, 178, 255, 0.45));
   }
@@ -923,7 +927,7 @@
     flex: 0 0 auto;
     white-space: nowrap;
   }
-  .dashboard-move-skull {
+  .dashboard-move-logo {
     bottom: -2.5rem;
     inset-inline-end: -2.5rem;
   }

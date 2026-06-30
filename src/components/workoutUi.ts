@@ -8,11 +8,7 @@ export const WORKOUT_TIMER_GLOW: Record<LineupSlot, string> = {
 
 export const WORKOUT_FINISH_BTN = 'workout-finish-btn workout-finish-btn--rainbow';
 
-export const SUMMARY_SKULL: Record<LineupSlot, string> = {
-  upper: 'summary-skull summary-skull--upper',
-  lower: 'summary-skull summary-skull--lower',
-  core: 'summary-skull summary-skull--core'
-};
+export const SUMMARY_LOGO = 'failure-logo failure-logo--summary';
 
 export const SUMMARY_TITLE: Record<LineupSlot, string> = {
   upper: 'summary-title summary-title--upper',

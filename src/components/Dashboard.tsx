@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Loader2, Settings as SettingsIcon, Skull, ShoppingBag } from 'lucide-react';
+import { Flame, Loader2, Settings as SettingsIcon, ShoppingBag } from 'lucide-react';
+import { FailureLogo } from './FailureLogo';
 import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeMove } from '../i18n/localize';
@@ -85,11 +86,7 @@ export function Dashboard({
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
       <header className="relative flex justify-between items-center mb-8 gap-3">
         <div className="flex items-center gap-2 min-w-0 pe-2 pointer-events-none select-none">
-          <Skull
-            size={32}
-            strokeWidth={2.5}
-            className="dashboard-skull-glow shrink-0 text-[#00A8D8] dark:text-[#00B2FF]"
-          />
+          <FailureLogo size={32} className="failure-logo-glow shrink-0" />
           <h1 className="logo-brand text-3xl tracking-tighter text-[#00A8D8] dark:text-[#00B2FF] normal-case whitespace-nowrap dashboard-logo-glow">
             2failure
           </h1>
@@ -240,8 +237,8 @@ export function Dashboard({
                 </p>
               </div>
 
-              <div className="dashboard-move-skull absolute opacity-0 group-hover:opacity-20 transition-opacity duration-300 transform group-hover:scale-150">
-                <Skull size={120} />
+              <div className="dashboard-move-logo absolute opacity-0 group-hover:opacity-25 transition-opacity duration-300 transform group-hover:scale-150">
+                <FailureLogo size={120} />
               </div>
             </motion.button>
             );

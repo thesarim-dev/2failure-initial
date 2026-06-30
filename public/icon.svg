@@ -1,14 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="2failure">
-  <rect width="512" height="512" fill="#f4f4f0"/>
-  <rect x="32" y="32" width="448" height="448" fill="none" stroke="#000" stroke-width="24"/>
-  <text
-    x="256"
-    y="300"
-    text-anchor="middle"
-    font-family="Arial Black, sans-serif"
-    font-size="200"
-    font-style="italic"
-    fill="#00B2FF">2</text>
-  <ellipse cx="200" cy="360" rx="28" ry="36" fill="#000"/>
-  <ellipse cx="312" cy="360" rx="28" ry="36" fill="#000"/>
+  <rect width="512" height="512" fill="#1a1a1a" />
+  <g transform="translate(115 102) scale(3.25)">
+    <path
+      d="M 22 17 L 22 74 Q 22 91 44 91"
+      fill="none"
+      stroke="#ff4466"
+      stroke-width="7.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M 44 91 Q 66 91 66 74 L 66 47"
+      fill="none"
+      stroke="#22c55e"
+      stroke-width="7.5"
+      stroke-linecap="round"
+    />
+    <path d="M 66 9 L 48 47 L 84 47 Z" fill="#22c55e" />
+  </g>
 </svg>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Moon, Skull, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
+import { FailureLogo } from './FailureLogo';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatOAuthError } from '../lib/authErrors';
@@ -116,11 +117,7 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
         <div className="flex flex-col items-center gap-3 mb-8 w-full">
           <div className="flex items-center gap-3">
-            <Skull
-              size={44}
-              strokeWidth={2.5}
-              className="login-skull-glow shrink-0 text-[#00A8D8] dark:text-[#00B2FF]"
-            />
+            <FailureLogo size={44} className="failure-logo-glow shrink-0" />
             <h1 className="logo-brand text-4xl md:text-5xl tracking-tighter text-[#00A8D8] dark:text-[#00B2FF] normal-case login-logo-glow">
               2failure
             </h1>

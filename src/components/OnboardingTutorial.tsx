@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ArrowRight, ChevronLeft, Skull } from 'lucide-react';
+import { ArrowRight, ChevronLeft } from 'lucide-react';
+import { FailureLogo } from './FailureLogo';
 import { useLanguage } from '../context/LanguageContext';
 
 interface OnboardingTutorialProps {
@@ -40,12 +41,7 @@ export function OnboardingTutorial({ onComplete }: OnboardingTutorialProps) {
         aria-describedby="onboarding-body"
         onClick={(event) => event.stopPropagation()}>
         <div className="onboarding-header">
-          <Skull
-            size={28}
-            strokeWidth={2.5}
-            className="onboarding-skull shrink-0"
-            aria-hidden="true"
-          />
+          <FailureLogo size={28} className="failure-logo shrink-0" decorative />
           <p className="onboarding-kicker">
             {tutorial.stepLabel(stepIndex + 1, totalSteps)}
           </p>
