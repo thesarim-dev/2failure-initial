@@ -82,6 +82,11 @@ const en: UiContent = {
   store: {
     title: 'STORE',
     back: 'Back',
+    sectionLabels: {
+      upper: 'Upperbody',
+      lower: 'Lowerbody',
+      core: 'Core'
+    },
     activeCount: (active, total) => `(${active}/${total} active)`,
     push: 'push',
     pull: 'pull',
@@ -144,7 +149,33 @@ const en: UiContent = {
     repPromptPlaceholder: '0',
     repPromptError: 'Enter at least 1 rep.',
     repPromptSubmit: 'log it',
-    repPromptAria: 'Reps completed'
+    repPromptAria: 'Reps completed',
+    saving: 'Saving...',
+    weightPrompt: {
+      question: 'What weight and reps did you hit this set?',
+      setLabel: (current, total) => `Set ${current} of ${total}`,
+      rir_1_2: 'Leave 1–2 reps in the tank',
+      rir_1: 'Leave 1 rep in the tank',
+      to_failure: 'Go to absolute failure',
+      weightLabelKg: 'Weight (kg)',
+      weightLabelLb: 'Weight (lb)',
+      repsLabel: 'Reps',
+      weightPlaceholder: '0',
+      repsPlaceholder: '0',
+      weightAriaKg: 'Weight in kilograms',
+      weightAriaLb: 'Weight in pounds',
+      repsAria: 'Reps completed',
+      weightError: 'Enter a weight greater than 0.',
+      repsError: 'Enter at least 1 rep.',
+      decreaseWeight: 'Decrease weight one plate',
+      increaseWeight: 'Increase weight one plate',
+      decreaseReps: 'Decrease reps',
+      increaseReps: 'Increase reps',
+      submit: 'log set',
+      lastSession: (weight, reps) => `Last session: ${weight} × ${reps} reps`,
+      todaysSets: (summary) => `Today so far: ${summary}`,
+      saveError: 'Could not save this set. Check your connection and try again.'
+    }
   },
   summary: {
     title: 'WORKOUT DONE!',
@@ -153,8 +184,25 @@ const en: UiContent = {
     item: 'item',
     duration: 'duration',
     repsThisSet: 'reps (this set)',
-    personalBest: 'personal best',
-    newPersonalBest: 'new personal best!',
+    weightThisSet: 'load × reps',
+    personalBest: 'personal best (reps)',
+    weightPersonalBest: 'best set (load × reps)',
+    newPersonalBest: 'new rep personal best!',
+    newWeightPersonalBest: 'new weight PR!',
+    progression: {
+      increase: (weight) =>
+        `Strong set — try ${weight} next time for progressive overload.`,
+      maintain: (weight) =>
+        `Solid work — stay around ${weight} until reps climb again.`,
+      decrease: (weight) =>
+        `Grind was heavy — drop to ${weight} and rebuild your reps.`,
+      baseline: (weight) =>
+        `${weight} logged. We'll suggest adjustments as you train.`,
+      fatigue_maintain: (weight) =>
+        `Set 3 dropped hard vs set 1 — hold ${weight} next session instead of adding weight.`
+    },
+    setLogged: (current, total) => `Set ${current} of ${total} logged`,
+    nextSet: 'next set',
     status: 'status',
     statusCooked: 'done',
     emptyValue: '—',
@@ -252,6 +300,11 @@ const he: UiContent = {
   store: {
     title: 'החנות',
     back: 'חזרה',
+    sectionLabels: {
+      upper: 'פלג גוף עליון',
+      lower: 'פלג גוף תחתון',
+      core: 'ליבה'
+    },
     activeCount: (active, total) => `(${active}/${total} פעילים)`,
     push: 'דחיפה',
     pull: 'משיכה',
@@ -314,7 +367,33 @@ const he: UiContent = {
     repPromptPlaceholder: '0',
     repPromptError: 'הזן לפחות חזרה אחת.',
     repPromptSubmit: 'רשום',
-    repPromptAria: 'חזרות שהושלמו'
+    repPromptAria: 'חזרות שהושלמו',
+    saving: 'שומר...',
+    weightPrompt: {
+      question: 'איזה משקל וכמה חזרות עשית בסט הזה?',
+      setLabel: (current, total) => `סט ${current} מתוך ${total}`,
+      rir_1_2: 'השאר 1–2 חזרות בצנרת',
+      rir_1: 'השאר חזרה אחת בצנרת',
+      to_failure: 'לכישלון מוחלט',
+      weightLabelKg: 'משקל (ק"ג)',
+      weightLabelLb: 'משקל (lb)',
+      repsLabel: 'חזרות',
+      weightPlaceholder: '0',
+      repsPlaceholder: '0',
+      weightAriaKg: 'משקל בקילוגרמים',
+      weightAriaLb: 'משקל בליברות',
+      repsAria: 'חזרות שהושלמו',
+      weightError: 'הזן משקל גדול מ-0.',
+      repsError: 'הזן לפחות חזרה אחת.',
+      decreaseWeight: 'הפחת משקל בצלחת אחת',
+      increaseWeight: 'הוסף משקל בצלחת אחת',
+      decreaseReps: 'הפחת חזרות',
+      increaseReps: 'הוסף חזרות',
+      submit: 'רשום סט',
+      lastSession: (weight, reps) => `אימון קודם: ${weight} × ${reps} חזרות`,
+      todaysSets: (summary) => `היום עד כה: ${summary}`,
+      saveError: 'לא ניתן לשמור את הסט. בדוק את החיבור ונסה שוב.'
+    }
   },
   summary: {
     title: 'האימון הושלם!',
@@ -323,8 +402,25 @@ const he: UiContent = {
     item: 'פריט',
     duration: 'משך',
     repsThisSet: 'חזרות (סט זה)',
-    personalBest: 'שיא אישי',
-    newPersonalBest: 'שיא אישי חדש!',
+    weightThisSet: 'משקל × חזרות',
+    personalBest: 'שיא אישי (חזרות)',
+    weightPersonalBest: 'שיא משקל (משקל × חזרות)',
+    newPersonalBest: 'שיא חזרות חדש!',
+    newWeightPersonalBest: 'שיא משקל חדש!',
+    progression: {
+      increase: (weight) =>
+        `סט חזק — נסה ${weight} בפעם הבאה להתקדמות.`,
+      maintain: (weight) =>
+        `עבודה טובה — הישאר סביב ${weight} עד שהחזרות עולות.`,
+      decrease: (weight) =>
+        `הסט היה כבד — רד ל-${weight} ובנה מחדש את החזרות.`,
+      baseline: (weight) =>
+        `${weight} נרשם. נציע התאמות ככל שתתאמן.`,
+      fatigue_maintain: (weight) =>
+        `סט 3 ירד לעומת סט 1 — שמור על ${weight} באימון הבא במקום להוסיף משקל.`
+    },
+    setLogged: (current, total) => `סט ${current} מתוך ${total} נרשם`,
+    nextSet: 'סט הבא',
     status: 'סטטוס',
     statusCooked: 'סיימת',
     emptyValue: '—',
@@ -422,6 +518,11 @@ const ar: UiContent = {
   store: {
     title: 'المتجر',
     back: 'رجوع',
+    sectionLabels: {
+      upper: 'الجزء العلوي',
+      lower: 'الجزء السفلي',
+      core: 'الوسط'
+    },
     activeCount: (active, total) => `(${active}/${total} نشط)`,
     push: 'دفع',
     pull: 'سحب',
@@ -484,7 +585,34 @@ const ar: UiContent = {
     repPromptPlaceholder: '0',
     repPromptError: 'أدخل تكراراً واحداً على الأقل.',
     repPromptSubmit: 'سجّل',
-    repPromptAria: 'التكرارات المكتملة'
+    repPromptAria: 'التكرارات المكتملة',
+    saving: 'جارٍ الحفظ...',
+    weightPrompt: {
+      question: 'ما الوزن وعدد التكرارات في هذه المجموعة؟',
+      setLabel: (current, total) => `المجموعة ${current} من ${total}`,
+      rir_1_2: 'اترك 1–2 تكرارات في الاحتياط',
+      rir_1: 'اترك تكراراً واحداً في الاحتياط',
+      to_failure: 'إلى الفشل التام',
+      weightLabelKg: 'الوزن (كغ)',
+      weightLabelLb: 'الوزن (lb)',
+      repsLabel: 'التكرارات',
+      weightPlaceholder: '0',
+      repsPlaceholder: '0',
+      weightAriaKg: 'الوزن بالكيلوغرام',
+      weightAriaLb: 'الوزن بالرطل',
+      repsAria: 'التكرارات المكتملة',
+      weightError: 'أدخل وزناً أكبر من 0.',
+      repsError: 'أدخل تكراراً واحداً على الأقل.',
+      decreaseWeight: 'إنقاص الوزن بلوحة واحدة',
+      increaseWeight: 'زيادة الوزن بلوحة واحدة',
+      decreaseReps: 'إنقاص التكرارات',
+      increaseReps: 'زيادة التكرارات',
+      submit: 'سجّل المجموعة',
+      lastSession: (weight, reps) =>
+        `آخر جلسة: ${weight} × ${reps} تكرارات`,
+      todaysSets: (summary) => `اليوم حتى الآن: ${summary}`,
+      saveError: 'تعذّر حفظ المجموعة. تحقق من الاتصال وحاول مرة أخرى.'
+    }
   },
   summary: {
     title: 'اكتمل التمرين!',
@@ -493,8 +621,25 @@ const ar: UiContent = {
     item: 'البند',
     duration: 'المدة',
     repsThisSet: 'التكرارات (هذه المجموعة)',
-    personalBest: 'الرقم القياسي',
-    newPersonalBest: 'رقم قياسي جديد!',
+    weightThisSet: 'الحمل × التكرارات',
+    personalBest: 'أفضل تكرارات',
+    weightPersonalBest: 'أفضل مجموعة (حمل × تكرارات)',
+    newPersonalBest: 'رقم قياسي جديد للتكرارات!',
+    newWeightPersonalBest: 'رقم قياسي جديد للوزن!',
+    progression: {
+      increase: (weight) =>
+        `مجموعة قوية — جرّب ${weight} في المرة القادمة للتقدّم.`,
+      maintain: (weight) =>
+        `عمل جيد — ابقَ حول ${weight} حتى ترتفع التكرارات.`,
+      decrease: (weight) =>
+        `المجموعة كانت ثقيلة — انزل إلى ${weight} وأعد بناء التكرارات.`,
+      baseline: (weight) =>
+        `تم تسجيل ${weight}. سنقترح تعديلات مع تقدّمك.`,
+      fatigue_maintain: (weight) =>
+        `المجموعة 3 انخفضت مقارنة بالمجموعة 1 — ثبّت ${weight} في الجلسة القادمة بدلاً من زيادة الوزن.`
+    },
+    setLogged: (current, total) => `تم تسجيل المجموعة ${current} من ${total}`,
+    nextSet: 'المجموعة التالية',
     status: 'الحالة',
     statusCooked: 'انتهيت',
     emptyValue: '—',

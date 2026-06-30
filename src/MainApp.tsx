@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useScreenInit } from './useScreenInit';
 import { useLanguage } from './context/LanguageContext';
@@ -15,6 +15,7 @@ import {
   Move,
   Variant,
   isRepLoggedCategory,
+  isWeightedEquipmentCategory,
   resolveMoveById
 } from './components/moves';
 import { useEquippedLineup } from './hooks/useEquippedLineup';
@@ -24,11 +25,24 @@ import { useRotatingProgram } from './hooks/useRotatingProgram';
 import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { RepPrompt } from './components/RepPrompt';
+import { WeightRepPrompt } from './components/WeightRepPrompt';
 import { recordSetReps } from './lib/repProgress';
+import { recordWeightedSetReps } from './lib/weightProgress';
+import { resolveSetTargets } from './lib/setPrescription';
+import { useWeightUnit } from './hooks/useWeightUnit';
 import { useAuth } from './context/AuthContext';
 import type { SetRepResult } from './types/repProgress';
+import { useOnboarding } from './hooks/useOnboarding';
+import { OnboardingTutorial } from './components/OnboardingTutorial';
 
-type AppState = 'HOME' | 'WORKOUT' | 'REP_PROMPT' | 'SUMMARY' | 'STORE' | 'SETTINGS';
+type AppState =
+  | 'HOME'
+  | 'WORKOUT'
+  | 'REP_PROMPT'
+  | 'WEIGHT_REP_PROMPT'
+  | 'SUMMARY'
+  | 'STORE'
+  | 'SETTINGS';
 
 export function MainApp() {
   const { user } = useAuth();
@@ -84,6 +98,8 @@ export function MainApp() {
     toggleEquipLower,
     toggleEquipCore
   } = useEquippedLineup(user?.id);
+  const { showTutorial, dismissTutorial } = useOnboarding(user?.id);
+  const { weightUnit, setWeightUnit } = useWeightUnit();
 
   const lineupForToday = useMemo(() => {
     if (rotatingProgramEnabled && rotatingProgramPhase) {
@@ -113,6 +129,17 @@ export function MainApp() {
     screenInit.lastDuration ?? 0
   );
   const [lastSetResult, setLastSetResult] = useState<SetRepResult | null>(null);
+  const [pendingTrackedReps, setPendingTrackedReps] = useState<number | undefined>(
+    undefined
+  );
+  const [summarySetContext, setSummarySetContext] = useState<{
+    setNumber: number;
+    totalSets: number;
+    setsRemaining: number;
+  } | null>(null);
+  const [weightSaveError, setWeightSaveError] = useState<string | null>(null);
+  const finishingRef = useRef(false);
+  const [isFinishing, setIsFinishing] = useState(false);
 
   const displayMove = useMemo(
     () => (currentMove ? localizeMove(currentMove, t.moves) : null),
@@ -120,12 +147,34 @@ export function MainApp() {
   );
 
   const handleSelectMove = (move: Move) => {
+    finishingRef.current = false;
+    setIsFinishing(false);
+    setPendingTrackedReps(undefined);
     setCurrentMove(move);
     setAppState('WORKOUT');
   };
+  const getWeightedSetContext = (categoryId: string) => {
+    const completed = setsCompleted[categoryId] ?? 0;
+    const setNumber = completed + 1;
+    const { totalSets, rirKey } = resolveSetTargets(
+      categoryId,
+      setNumber,
+      dailySetGoal,
+      lineupForToday.setsToFailure,
+      rotatingProgramEnabled
+    );
+    return {
+      setNumber,
+      totalSets,
+      rirKey,
+      setsRemaining: Math.max(0, totalSets - setNumber)
+    };
+  };
+
   const finishWorkoutSession = (
     duration: number,
-    repsLogged?: number
+    repsLogged?: number,
+    options?: { recordComplete?: boolean; setContext?: typeof summarySetContext }
   ) => {
     if (!currentMove) return;
     if (currentMove.categoryId === 'pushups' && repsLogged && repsLogged > 0) {
@@ -133,7 +182,12 @@ export function MainApp() {
     }
     void incrementSet(currentMove.categoryId);
     void setCoins((c) => c + Math.max(10, Math.floor(duration / 2)));
-    void recordWorkoutComplete();
+    if (options?.recordComplete !== false) {
+      void recordWorkoutComplete();
+    }
+    setSummarySetContext(options?.setContext ?? null);
+    finishingRef.current = false;
+    setIsFinishing(false);
     setAppState('SUMMARY');
   };
 
@@ -141,8 +195,22 @@ export function MainApp() {
     duration: number,
     trackedReps?: number
   ) => {
+    if (finishingRef.current) return;
+    finishingRef.current = true;
+    setIsFinishing(true);
     setLastDuration(duration);
     setLastSetResult(null);
+
+    if (currentMove && isWeightedEquipmentCategory(currentMove.categoryId)) {
+      finishingRef.current = false;
+      setIsFinishing(false);
+      setPendingTrackedReps(
+        trackedReps && trackedReps > 0 ? trackedReps : undefined
+      );
+      setWeightSaveError(null);
+      setAppState('WEIGHT_REP_PROMPT');
+      return;
+    }
 
     if (currentMove && isRepLoggedCategory(currentMove.categoryId)) {
       if (trackedReps && trackedReps > 0 && user) {
@@ -160,6 +228,8 @@ export function MainApp() {
         }
       }
 
+      finishingRef.current = false;
+      setIsFinishing(false);
       setAppState('REP_PROMPT');
       return;
     }
@@ -168,20 +238,71 @@ export function MainApp() {
   };
 
   const handleRepSubmit = async (reps: number) => {
-    if (!currentMove || !user) return;
+    if (finishingRef.current || !currentMove || !user) return;
+    finishingRef.current = true;
+    setIsFinishing(true);
 
-    const result = await recordSetReps(user.id, currentMove.categoryId, reps);
-    setLastSetResult(result);
-    finishWorkoutSession(lastDuration, reps);
+    try {
+      const result = await recordSetReps(user.id, currentMove.categoryId, reps);
+      setLastSetResult(result);
+      finishWorkoutSession(lastDuration, reps);
+    } catch {
+      finishingRef.current = false;
+      setIsFinishing(false);
+    }
+  };
+  const handleWeightRepSubmit = async (weightKg: number, reps: number) => {
+    if (finishingRef.current || !currentMove || !user) return;
+    finishingRef.current = true;
+    setIsFinishing(true);
+    setWeightSaveError(null);
+
+    const setContext = getWeightedSetContext(currentMove.categoryId);
+    const isLastSet = setContext.setNumber >= setContext.totalSets;
+
+    try {
+      const result = await recordWeightedSetReps(
+        user.id,
+        currentMove.categoryId,
+        weightKg,
+        reps,
+        setContext.setNumber,
+        setContext.totalSets,
+        weightUnit
+      );
+      setLastSetResult(result);
+      finishWorkoutSession(lastDuration, reps, {
+        recordComplete: isLastSet,
+        setContext: {
+          setNumber: setContext.setNumber,
+          totalSets: setContext.totalSets,
+          setsRemaining: isLastSet ? 0 : setContext.setsRemaining
+        }
+      });
+    } catch (err) {
+      finishingRef.current = false;
+      setIsFinishing(false);
+      setWeightSaveError(
+        err instanceof Error ? err.message : t.workout.weightPrompt.saveError
+      );
+    }
   };
   const handleCancelWorkout = () => {
+    finishingRef.current = false;
+    setIsFinishing(false);
+    setPendingTrackedReps(undefined);
+    setSummarySetContext(null);
     setCurrentMove(null);
     setAppState('HOME');
   };
   const handleGoHome = () => {
+    finishingRef.current = false;
+    setIsFinishing(false);
     setCurrentMove(null);
     setLastDuration(0);
     setLastSetResult(null);
+    setPendingTrackedReps(undefined);
+    setSummarySetContext(null);
     void refetchPushupReps();
     setAppState('HOME');
   };
@@ -214,8 +335,13 @@ export function MainApp() {
     toggleEquipCore(exerciseId);
   };
 
+  const weightRepContext =
+    currentMove && appState === 'WEIGHT_REP_PROMPT'
+      ? getWeightedSetContext(currentMove.categoryId)
+      : null;
+
   return (
-    <div className="min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#CCFF00] selection:text-black">
+    <div className="min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#BEF028] selection:text-black">
       {appState === 'HOME' &&
       <Dashboard
         coins={coins}
@@ -273,6 +399,8 @@ export function MainApp() {
         onDailySetGoalChange={setDailySetGoal}
         onRotatingProgramEnabledChange={setRotatingProgramEnabled}
         onToggleDark={toggleDark}
+        weightUnit={weightUnit}
+        onWeightUnitChange={setWeightUnit}
         onBack={handleCloseSettings} />
 
       }
@@ -280,6 +408,7 @@ export function MainApp() {
       {appState === 'WORKOUT' && displayMove &&
       <Workout
         move={displayMove}
+        finishing={isFinishing}
         onFinish={(duration, trackedReps) =>
           void handleFinishWorkout(duration, trackedReps)
         }
@@ -288,7 +417,24 @@ export function MainApp() {
       }
 
       {appState === 'REP_PROMPT' && displayMove &&
-      <RepPrompt move={displayMove} onSubmit={(reps) => void handleRepSubmit(reps)} />
+      <RepPrompt
+        move={displayMove}
+        submitting={isFinishing}
+        onSubmit={(reps) => void handleRepSubmit(reps)} />
+
+      }
+
+      {appState === 'WEIGHT_REP_PROMPT' && displayMove && weightRepContext &&
+      <WeightRepPrompt
+        move={displayMove}
+        setNumber={weightRepContext.setNumber}
+        totalSets={weightRepContext.totalSets}
+        rirKey={weightRepContext.rirKey}
+        weightUnit={weightUnit}
+        submitting={isFinishing}
+        saveError={weightSaveError}
+        initialReps={pendingTrackedReps}
+        onSubmit={(weightKg, reps) => void handleWeightRepSubmit(weightKg, reps)} />
 
       }
 
@@ -297,9 +443,15 @@ export function MainApp() {
         move={displayMove}
         duration={lastDuration}
         setResult={lastSetResult}
+        weightUnit={weightUnit}
+        setNumber={summarySetContext?.setNumber}
+        totalSets={summarySetContext?.totalSets}
+        setsRemaining={summarySetContext?.setsRemaining ?? 0}
         onHome={handleGoHome} />
 
       }
+
+      {showTutorial && <OnboardingTutorial onComplete={dismissTutorial} />}
     </div>
   );
 }

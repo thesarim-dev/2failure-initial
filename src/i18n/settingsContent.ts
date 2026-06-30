@@ -75,6 +75,12 @@ const en: SettingsContent = {
     description: 'Choose your preferred language.',
     options: { en: 'English', he: 'עברית', ar: 'العربية' }
   },
+  weightUnit: {
+    title: 'weight units',
+    description: 'Log and track load in kilograms or pounds (2.5 kg / 5 lb plate jumps).',
+    kg: 'kg',
+    lb: 'lb'
+  },
   faq: {
     title: 'faq',
     description: 'Training basics for getting stronger with minimal equipment.',
@@ -220,6 +226,12 @@ const he: SettingsContent = {
     description: 'בחר את השפה המועדפת עליך.',
     options: { en: 'English', he: 'עברית', ar: 'العربية' }
   },
+  weightUnit: {
+    title: 'יחידות משקל',
+    description: 'רישום ומעקב בק"ג או בליברות (קפיצות של 2.5 ק"ג / 5 lb).',
+    kg: 'ק"ג',
+    lb: 'lb'
+  },
   faq: {
     title: 'שאלות נפוצות',
     description: 'יסודות אימון להתחזקות עם ציוד מינימלי.',
@@ -363,6 +375,12 @@ const ar: SettingsContent = {
     title: 'اللغة',
     description: 'اختر لغتك المفضلة.',
     options: { en: 'English', he: 'עברית', ar: 'العربية' }
+  },
+  weightUnit: {
+    title: 'وحدات الوزن',
+    description: 'سجّل وتتبّع الحمل بالكيلوغرام أو الرطل (زيادات 2.5 كغ / 5 lb).',
+    kg: 'كغ',
+    lb: 'lb'
   },
   faq: {
     title: 'الأسئلة الشائعة',

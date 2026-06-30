@@ -85,6 +85,12 @@ export interface AppTranslations {
       description: string;
       options: Record<Language, string>;
     };
+    weightUnit: {
+      title: string;
+      description: string;
+      kg: string;
+      lb: string;
+    };
     faq: {
       title: string;
       description: string;
@@ -132,6 +138,7 @@ export interface AppTranslations {
   store: {
     title: string;
     back: string;
+    sectionLabels: Record<'upper' | 'lower' | 'core', string>;
     activeCount: (active: number, total: number) => string;
     push: string;
     pull: string;
@@ -192,6 +199,32 @@ export interface AppTranslations {
     repPromptError: string;
     repPromptSubmit: string;
     repPromptAria: string;
+    saving: string;
+    weightPrompt: {
+      question: string;
+      setLabel: (current: number, total: number) => string;
+      rir_1_2: string;
+      rir_1: string;
+      to_failure: string;
+      weightLabelKg: string;
+      weightLabelLb: string;
+      repsLabel: string;
+      weightPlaceholder: string;
+      repsPlaceholder: string;
+      weightAriaKg: string;
+      weightAriaLb: string;
+      repsAria: string;
+      weightError: string;
+      repsError: string;
+      decreaseWeight: string;
+      increaseWeight: string;
+      decreaseReps: string;
+      increaseReps: string;
+      submit: string;
+      lastSession: (weight: string, reps: number) => string;
+      todaysSets: (summary: string) => string;
+      saveError: string;
+    };
   };
   summary: {
     title: string;
@@ -200,8 +233,20 @@ export interface AppTranslations {
     item: string;
     duration: string;
     repsThisSet: string;
+    weightThisSet: string;
     personalBest: string;
+    weightPersonalBest: string;
     newPersonalBest: string;
+    newWeightPersonalBest: string;
+    progression: {
+      increase: (weight: string) => string;
+      maintain: (weight: string) => string;
+      decrease: (weight: string) => string;
+      baseline: (weight: string) => string;
+      fatigue_maintain: (weight: string) => string;
+    };
+    setLogged: (current: number, total: number) => string;
+    nextSet: string;
     status: string;
     statusCooked: string;
     emptyValue: string;
@@ -229,5 +274,13 @@ export interface AppTranslations {
     cameraDenied: string;
     poseTrackingStart: string;
     cameraStart: string;
+  };
+  tutorial: {
+    skip: string;
+    back: string;
+    next: string;
+    finish: string;
+    stepLabel: (current: number, total: number) => string;
+    steps: Array<{ title: string; body: string }>;
   };
 }

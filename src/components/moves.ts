@@ -45,9 +45,9 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
   muscleGroup: 'upper body',
   equipHint: 'Equip 1 Push + 1 Pull for balanced upper body work.',
   color:
-    'bg-[#CCFF00] text-black dark:bg-[#C8E838] dark:text-black',
+    'bg-[#C8F032] text-black dark:bg-[#C8E838] dark:text-black',
   glow:
-    'border-[#CCFF00] shadow-[0_0_0_1px_#CCFF00,0_0_14px_rgba(204,255,0,0.7),0_0_28px_rgba(204,255,0,0.35)] dark:border-[#C8E838] dark:shadow-[0_0_0_1px_#C8E838,0_0_18px_rgba(200,232,56,0.85),0_0_36px_rgba(200,232,56,0.5)]',
+    'border-[#7AB800] shadow-[4px_4px_0_0_#7AB800,0_0_20px_rgba(200,240,50,0.45)] dark:border-[#C8E838] dark:shadow-[0_0_0_1px_#C8E838,0_0_18px_rgba(200,232,56,0.85),0_0_36px_rgba(200,232,56,0.5)]',
   variants: [
     {
       id: 'pushups',
@@ -153,9 +153,9 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
   muscleGroup: 'lower body',
   equipHint: 'Equip 2 lower body exercises for your daily lineup.',
   color:
-    'bg-[#FF00FF] text-black dark:bg-[#FF66FF] dark:text-black',
+    'bg-[#FF66EE] text-black dark:bg-[#FF66FF] dark:text-black',
   glow:
-    'border-[#FF00FF] shadow-[0_0_0_1px_#FF00FF,0_0_14px_rgba(255,0,255,0.7),0_0_28px_rgba(255,0,255,0.35)] dark:border-[#FF66FF] dark:shadow-[0_0_0_1px_#FF66FF,0_0_18px_rgba(255,102,255,0.8),0_0_36px_rgba(255,102,255,0.45)]',
+    'border-[#E040C8] shadow-[4px_4px_0_0_#E040C8,0_0_20px_rgba(255,102,238,0.45)] dark:border-[#FF66FF] dark:shadow-[0_0_0_1px_#FF66FF,0_0_18px_rgba(255,102,255,0.8),0_0_36px_rgba(255,102,255,0.45)]',
   variants: [
     {
       id: 'squats',
@@ -224,9 +224,9 @@ export const CORE_STORE_CATEGORY: MoveCategory = {
   muscleGroup: 'core',
   equipHint: 'Equip 2 core exercises for your daily lineup.',
   color:
-    'bg-[#00FFFF] text-black dark:bg-[#4DFFFF] dark:text-black',
+    'bg-[#38E8E8] text-black dark:bg-[#4DFFFF] dark:text-black',
   glow:
-    'border-[#00FFFF] shadow-[0_0_0_1px_#00FFFF,0_0_14px_rgba(0,255,255,0.7),0_0_28px_rgba(0,255,255,0.35)] dark:border-[#4DFFFF] dark:shadow-[0_0_0_1px_#4DFFFF,0_0_18px_rgba(77,255,255,0.8),0_0_36px_rgba(77,255,255,0.45)]',
+    'border-[#18C0C0] shadow-[4px_4px_0_0_#18C0C0,0_0_20px_rgba(56,232,232,0.45)] dark:border-[#4DFFFF] dark:shadow-[0_0_0_1px_#4DFFFF,0_0_18px_rgba(77,255,255,0.8),0_0_36px_rgba(77,255,255,0.45)]',
   variants: [
     {
       id: 'planks',
@@ -279,9 +279,9 @@ export const RECOVERY_STORE_CATEGORY: MoveCategory = {
   muscleGroup: 'recovery',
   equipHint: 'Deep stretching on rest days — no lifting.',
   color:
-    'bg-[#B8A9FF] text-black dark:bg-[#C4B8FF] dark:text-black',
+    'bg-[#C8B0FF] text-black dark:bg-[#C4B8FF] dark:text-black',
   glow:
-    'border-[#B8A9FF] shadow-[0_0_0_1px_#B8A9FF,0_0_14px_rgba(184,169,255,0.7),0_0_28px_rgba(184,169,255,0.35)] dark:border-[#C4B8FF] dark:shadow-[0_0_0_1px_#C4B8FF,0_0_18px_rgba(196,184,255,0.8),0_0_36px_rgba(196,184,255,0.45)]',
+    'border-[#9070E0] shadow-[4px_4px_0_0_#9070E0,0_0_20px_rgba(200,176,255,0.45)] dark:border-[#C4B8FF] dark:shadow-[0_0_0_1px_#C4B8FF,0_0_18px_rgba(196,184,255,0.8),0_0_36px_rgba(196,184,255,0.45)]',
   variants: [
     {
       id: 'cobra-stretch',
@@ -437,6 +437,15 @@ export const REP_LOGGED_CATEGORY_IDS = new Set([
 
 export function isRepLoggedCategory(categoryId: string): boolean {
   return REP_LOGGED_CATEGORY_IDS.has(categoryId);
+}
+
+/** Barbell or dumbbell exercises that should log weight after each set. */
+export function isWeightedEquipmentCategory(categoryId: string): boolean {
+  const variant = getVariantById(categoryId);
+  if (!variant?.equipment?.length) return false;
+  return variant.equipment.some(
+    (item) => item === 'barbell' || item === 'dumbbell'
+  );
 }
 
 export function getAllWorkoutCategoryIds(): string[] {

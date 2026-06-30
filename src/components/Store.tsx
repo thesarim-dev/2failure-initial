@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Coins, Check, Lock } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Coins, Check, Lock } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeVariant } from '../i18n/localize';
 import {
   LINEUP_EQUIP_COUNT,
+  LineupSlot,
   MoveCategory,
   STORE_CATEGORIES,
   Variant,
@@ -26,6 +28,20 @@ interface StoreProps {
   rotatingProgramEnabled: boolean;
 }
 
+type StoreSectionConfig = {
+  category: MoveCategory;
+  equipped: string[];
+  onToggleEquip: (exerciseId: string) => void;
+  canEquip: (exerciseId: string) => boolean;
+  statusNote?: string;
+};
+
+const DEFAULT_OPEN_SECTIONS: Record<LineupSlot, boolean> = {
+  upper: true,
+  lower: false,
+  core: false
+};
+
 export function Store({
   coins,
   owned,
@@ -41,6 +57,43 @@ export function Store({
 }: StoreProps) {
   const { t } = useLanguage();
   const equipLocked = rotatingProgramEnabled;
+  const [openSections, setOpenSections] = useState(DEFAULT_OPEN_SECTIONS);
+
+  const sections: StoreSectionConfig[] = [
+    {
+      category: STORE_CATEGORIES[0],
+      equipped: equippedUpper,
+      onToggleEquip: onToggleEquipUpper,
+      canEquip: (id) => canEquipUpperExercise(equippedUpper, id),
+      statusNote:
+        equippedUpper.length === LINEUP_EQUIP_COUNT &&
+        !hasBalancedUpperSelection(equippedUpper)
+          ? t.store.needBalancedUpper
+          : undefined
+    },
+    {
+      category: STORE_CATEGORIES[1],
+      equipped: equippedLower,
+      onToggleEquip: onToggleEquipLower,
+      canEquip: (id) =>
+        equippedLower.includes(id) ||
+        equippedLower.length < LINEUP_EQUIP_COUNT
+    },
+    {
+      category: STORE_CATEGORIES[2],
+      equipped: equippedCore,
+      onToggleEquip: onToggleEquipCore,
+      canEquip: (id) =>
+        equippedCore.includes(id) || equippedCore.length < LINEUP_EQUIP_COUNT
+    }
+  ];
+
+  const toggleSection = (slot: LineupSlot) => {
+    setOpenSections((current) => ({
+      ...current,
+      [slot]: !current[slot]
+    }));
+  };
 
   return (
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
@@ -52,63 +105,107 @@ export function Store({
           aria-label={t.store.back}>
           <ArrowLeft size={22} strokeWidth={2.5} />
         </button>
-        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00B2FF] normal-case">
+        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00A8D8] dark:text-[#00B2FF] normal-case">
           {t.store.title}
         </h1>
         <CoinsBadge coins={coins} />
       </header>
 
-      <div className="space-y-10">
+      <div className="space-y-4">
         {equipLocked && (
           <p className="store-status-note normal-case">{t.store.programEquipLocked}</p>
         )}
 
-        <LineupSection
-          category={STORE_CATEGORIES[0]}
-          coins={coins}
-          owned={owned}
-          equipped={equippedUpper}
-          onBuy={onBuy}
-          onToggleEquip={onToggleEquipUpper}
-          equipLocked={equipLocked}
-          canEquip={(id) => canEquipUpperExercise(equippedUpper, id)}
-          statusNote={
-            equippedUpper.length === LINEUP_EQUIP_COUNT &&
-            !hasBalancedUpperSelection(equippedUpper)
-              ? t.store.needBalancedUpper
-              : undefined
-          }
-        />
-
-        <LineupSection
-          category={STORE_CATEGORIES[1]}
-          coins={coins}
-          owned={owned}
-          equipped={equippedLower}
-          onBuy={onBuy}
-          onToggleEquip={onToggleEquipLower}
-          equipLocked={equipLocked}
-          canEquip={(id) =>
-            equippedLower.includes(id) ||
-            equippedLower.length < LINEUP_EQUIP_COUNT
-          }
-        />
-
-        <LineupSection
-          category={STORE_CATEGORIES[2]}
-          coins={coins}
-          owned={owned}
-          equipped={equippedCore}
-          onBuy={onBuy}
-          onToggleEquip={onToggleEquipCore}
-          equipLocked={equipLocked}
-          canEquip={(id) =>
-            equippedCore.includes(id) ||
-            equippedCore.length < LINEUP_EQUIP_COUNT
-          }
-        />
+        {sections.map(({ category, equipped, onToggleEquip, canEquip, statusNote }) => (
+          <CollapsibleLineupSection
+            key={category.id}
+            category={category}
+            label={t.store.sectionLabels[category.id]}
+            activeCount={t.store.activeCount(equipped.length, LINEUP_EQUIP_COUNT)}
+            isOpen={openSections[category.id]}
+            onToggle={() => toggleSection(category.id)}
+            coins={coins}
+            owned={owned}
+            equipped={equipped}
+            onBuy={onBuy}
+            onToggleEquip={onToggleEquip}
+            equipLocked={equipLocked}
+            canEquip={canEquip}
+            statusNote={statusNote}
+          />
+        ))}
       </div>
     </div>
+  );
+}
+
+function CollapsibleLineupSection({
+  category,
+  label,
+  activeCount,
+  isOpen,
+  onToggle,
+  coins,
+  owned,
+  equipped,
+  onBuy,
+  onToggleEquip,
+  equipLocked,
+  canEquip,
+  statusNote
+}: {
+  category: MoveCategory;
+  label: string;
+  activeCount: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  coins: number;
+  owned: string[];
+  equipped: string[];
+  onBuy: (categoryId: string, variant: Variant) => void;
+  onToggleEquip: (exerciseId: string) => void;
+  equipLocked: boolean;
+  canEquip: (exerciseId: string) => boolean;
+  statusNote?: string;
+}) {
+  const panelId = `store-section-${category.id}`;
+
+  return (
+    <section
+      className={`store-category-section ${isOpen ? 'store-category-section--open' : ''}`}>
+      <button
+        type="button"
+        className="store-category-toggle"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        aria-controls={panelId}>
+        <h2
+          className={`store-section-heading store-section-heading--${category.id} normal-case`}>
+          {label}
+          <span className="store-section-active-count">{activeCount}</span>
+        </h2>
+        <ChevronDown
+          size={22}
+          strokeWidth={2.5}
+          className="store-category-chevron shrink-0"
+          aria-hidden="true"
+        />
+      </button>
+
+      <div id={panelId} className="store-category-panel" hidden={!isOpen}>
+        <LineupSection
+          category={category}
+          coins={coins}
+          owned={owned}
+          equipped={equipped}
+          onBuy={onBuy}
+          onToggleEquip={onToggleEquip}
+          equipLocked={equipLocked}
+          canEquip={canEquip}
+          statusNote={statusNote}
+        />
+      </div>
+    </section>
   );
 }
 
@@ -138,7 +235,7 @@ function LineupSection({
   const atCapacity = equipped.length >= LINEUP_EQUIP_COUNT;
 
   return (
-    <section>
+    <div>
       <p className="text-sm font-medium mb-3 normal-case opacity-70">
         {categoryCopy.equipHint}
       </p>
@@ -234,6 +331,6 @@ function LineupSection({
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }

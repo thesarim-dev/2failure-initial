@@ -7,6 +7,7 @@ import { WORKOUT_FINISH_BTN, WORKOUT_TIMER_GLOW } from './workoutUi';
 
 interface TimedWorkoutProps {
   move: Move;
+  finishing?: boolean;
   onFinish: (duration: number, trackedReps?: number) => void;
   onCancel: () => void;
   seconds?: number;
@@ -15,6 +16,7 @@ interface TimedWorkoutProps {
 
 export function TimedWorkout({
   move,
+  finishing = false,
   onFinish,
   onCancel,
   seconds: externalSeconds,
@@ -92,9 +94,10 @@ export function TimedWorkout({
             initial={{ y: 16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: 'spring', bounce: 0.4, delay: 0.3 }}
+            disabled={finishing}
             onClick={() => onFinish(seconds)}
             className={`${WORKOUT_FINISH_BTN} normal-case`}>
-            {buttonLabel}
+            {finishing ? t.workout.saving : buttonLabel}
           </motion.button>
 
           {onEnableAiTracking && (

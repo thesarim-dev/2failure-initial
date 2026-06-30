@@ -7,16 +7,18 @@ import { WORKOUT_FINISH_BTN } from './workoutUi';
 
 interface RepPromptProps {
   move: Move;
+  submitting?: boolean;
   onSubmit: (reps: number) => void;
 }
 
-export function RepPrompt({ move, onSubmit }: RepPromptProps) {
+export function RepPrompt({ move, submitting = false, onSubmit }: RepPromptProps) {
   const { t } = useLanguage();
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     const reps = parseInt(value, 10);
     if (!Number.isFinite(reps) || reps < 1) {
       setError(t.workout.repPromptError);
@@ -71,8 +73,9 @@ export function RepPrompt({ move, onSubmit }: RepPromptProps) {
 
           <button
             type="submit"
+            disabled={submitting}
             className={`${WORKOUT_FINISH_BTN} flex items-center justify-center gap-2 normal-case`}>
-            <span>{t.workout.repPromptSubmit}</span>
+            <span>{submitting ? t.workout.saving : t.workout.repPromptSubmit}</span>
             <ArrowRight size={24} strokeWidth={2.5} />
           </button>
         </motion.form>

@@ -21,6 +21,8 @@ interface SettingsProps {
   onDailySetGoalChange: (goal: DailySetGoal) => void;
   onRotatingProgramEnabledChange: (enabled: boolean) => void;
   onToggleDark: () => void;
+  weightUnit: 'kg' | 'lb';
+  onWeightUnitChange: (unit: 'kg' | 'lb') => void;
   onBack: () => void;
 }
 
@@ -35,6 +37,8 @@ export function Settings({
   onDailySetGoalChange,
   onRotatingProgramEnabledChange,
   onToggleDark,
+  weightUnit,
+  onWeightUnitChange,
   onBack
 }: SettingsProps) {
   const { signOut } = useAuth();
@@ -51,37 +55,13 @@ export function Settings({
           aria-label={s.back}>
           <ArrowLeft size={22} strokeWidth={2.5} />
         </button>
-        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00B2FF] uppercase">
+        <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00A8D8] dark:text-[#00B2FF] uppercase">
           {s.title}
         </h1>
         <CoinsBadge coins={coins} />
       </header>
 
       <div className="space-y-6">
-        {!rotatingProgramEnabled && (
-          <section className="cyber-panel p-5 normal-case">
-            <h2 className="settings-section-title">{s.dailySetTarget.title}</h2>
-            <p className="text-sm font-medium opacity-70 mb-4">
-              {s.dailySetTarget.description}
-            </p>
-            <div className="settings-toggle-group flex gap-2">
-              {([2, 3] as const).map((goal) => (
-                <button
-                  key={goal}
-                  type="button"
-                  onClick={() => onDailySetGoalChange(goal)}
-                  className={`store-btn flex-1 justify-center ${
-                    dailySetGoal === goal
-                      ? 'store-btn--active'
-                      : 'store-btn--equip'
-                  }`}>
-                  {s.dailySetTarget.sets(goal)}
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
         <section className="cyber-panel p-5 normal-case">
           <h2 className="settings-section-title">{s.rotatingProgram.title}</h2>
           <p className="text-sm font-medium opacity-70 mb-4">
@@ -124,6 +104,30 @@ export function Settings({
             )}
         </section>
 
+        {!rotatingProgramEnabled && (
+          <section className="cyber-panel p-5 normal-case">
+            <h2 className="settings-section-title">{s.dailySetTarget.title}</h2>
+            <p className="text-sm font-medium opacity-70 mb-4">
+              {s.dailySetTarget.description}
+            </p>
+            <div className="settings-toggle-group flex gap-2">
+              {([2, 3] as const).map((goal) => (
+                <button
+                  key={goal}
+                  type="button"
+                  onClick={() => onDailySetGoalChange(goal)}
+                  className={`store-btn flex-1 justify-center ${
+                    dailySetGoal === goal
+                      ? 'store-btn--active'
+                      : 'store-btn--equip'
+                  }`}>
+                  {s.dailySetTarget.sets(goal)}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="cyber-panel p-5 normal-case">
           <div className="settings-appearance-row">
             <div className="settings-appearance-copy">
@@ -157,6 +161,31 @@ export function Settings({
                   </span>
                 </>
               )}
+            </button>
+          </div>
+        </section>
+
+        <section className="cyber-panel p-5 normal-case">
+          <h2 className="settings-section-title">{s.weightUnit.title}</h2>
+          <p className="text-sm font-medium opacity-70 mb-4">
+            {s.weightUnit.description}
+          </p>
+          <div className="settings-toggle-group flex gap-2">
+            <button
+              type="button"
+              onClick={() => onWeightUnitChange('kg')}
+              className={`store-btn flex-1 justify-center ${
+                weightUnit === 'kg' ? 'store-btn--active' : 'store-btn--equip'
+              }`}>
+              {s.weightUnit.kg}
+            </button>
+            <button
+              type="button"
+              onClick={() => onWeightUnitChange('lb')}
+              className={`store-btn flex-1 justify-center ${
+                weightUnit === 'lb' ? 'store-btn--active' : 'store-btn--equip'
+              }`}>
+              {s.weightUnit.lb}
             </button>
           </div>
         </section>

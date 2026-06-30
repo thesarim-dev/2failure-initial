@@ -7,15 +7,17 @@ import { TimedWorkout } from './TimedWorkout';
 
 export interface WorkoutProps {
   move: Move;
+  finishing?: boolean;
   onFinish: (duration: number, trackedReps?: number) => void;
   onCancel: () => void;
 }
 
-export function Workout({ move, onFinish, onCancel }: WorkoutProps) {
+export function Workout({ move, finishing = false, onFinish, onCancel }: WorkoutProps) {
   if (isPoseAiTrackingEnabled() && isPoseExerciseId(move.categoryId)) {
     return (
       <AiRepWorkout
         move={move}
+        finishing={finishing}
         poseExerciseId={move.categoryId}
         onFinish={onFinish}
         onCancel={onCancel}
@@ -24,6 +26,11 @@ export function Workout({ move, onFinish, onCancel }: WorkoutProps) {
   }
 
   return (
-    <TimedWorkout move={move} onFinish={onFinish} onCancel={onCancel} />
+    <TimedWorkout
+      move={move}
+      finishing={finishing}
+      onFinish={onFinish}
+      onCancel={onCancel}
+    />
   );
 }

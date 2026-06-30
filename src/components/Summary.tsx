@@ -6,6 +6,8 @@ import confetti from 'canvas-confetti';
 import type { SetRepResult } from '../types/repProgress';
 import { formatPersonalBestDate } from '../lib/repProgress';
 import { useLanguage } from '../context/LanguageContext';
+import type { WeightUnit } from '../lib/weightUnits';
+import { formatWeight } from '../lib/weightUnits';
 import {
   SUMMARY_ACCENT_TEXT,
   SUMMARY_CONFETTI,
@@ -18,17 +20,33 @@ interface SummaryProps {
   move: Move;
   duration: number;
   setResult: SetRepResult | null;
+  weightUnit: WeightUnit;
+  setNumber?: number;
+  totalSets?: number;
+  setsRemaining?: number;
   onHome: () => void;
 }
 
-export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
+export function Summary({
+  move,
+  duration,
+  setResult,
+  weightUnit,
+  setNumber,
+  totalSets,
+  setsRemaining = 0,
+  onHome
+}: SummaryProps) {
   const { t, language } = useLanguage();
   const [quote] = useState(
     () => t.summary.quotes[Math.floor(Math.random() * t.summary.quotes.length)]
   );
   const slot = move.lineupSlot;
+  const isMidExercise = setsRemaining > 0;
 
   useEffect(() => {
+    if (isMidExercise) return;
+
     const colors = SUMMARY_CONFETTI[slot];
     const end = Date.now() + 750;
 
@@ -54,7 +72,7 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
     };
 
     shower();
-  }, [slot]);
+  }, [slot, isMidExercise]);
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -69,6 +87,21 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
     if (duration < 90) return t.summary.snarky.tryHard;
     return t.summary.snarky.tooEasy;
   }, [duration, t.summary.snarky]);
+
+  const progressionMessage = useMemo(() => {
+    if (!setResult?.progression?.suggestedWeightKg) return null;
+    const weightLabel = formatWeight(
+      setResult.progression.suggestedWeightKg,
+      weightUnit
+    );
+    const { kind } = setResult.progression;
+    return t.summary.progression[kind](weightLabel);
+  }, [setResult, t.summary.progression, weightUnit]);
+
+  const headline =
+    isMidExercise && setNumber && totalSets
+      ? t.summary.setLogged(setNumber, totalSets)
+      : t.summary.title;
 
   return (
     <div className="flex flex-col w-full min-h-screen p-4 md:p-8 max-w-2xl mx-auto pb-24">
@@ -86,7 +119,7 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
           className={`${SUMMARY_TITLE[slot]} mb-2 normal-case`}>
-          {t.summary.title}
+          {headline}
         </motion.h1>
 
         <motion.p
@@ -122,29 +155,73 @@ export function Summary({ move, duration, setResult, onHome }: SummaryProps) {
             </div>
             {setResult && (
               <>
-                <div className="flex justify-between gap-3">
-                  <span className="opacity-70">{t.summary.repsThisSet}</span>
-                  <span>{setResult.reps}</span>
-                </div>
-                <div className="flex justify-between items-start gap-4">
-                  <span className="opacity-70 shrink-0">{t.summary.personalBest}</span>
-                  <span className="text-right">
-                    {setResult.personalBest.reps ?? t.summary.emptyValue}
-                    {setResult.personalBest.reps !== null && (
-                      <span className="block text-sm font-medium opacity-70 normal-case">
-                        (
-                        {formatPersonalBestDate(
-                          setResult.personalBest.achievedAt,
-                          language
-                        )}
-                        )
-                      </span>
-                    )}
-                  </span>
-                </div>
-                {setResult.isNewPersonalBest && (
+                {setResult.weightKg && setResult.weightKg > 0 ? (
+                  <div className="flex justify-between gap-3">
+                    <span className="opacity-70">{t.summary.weightThisSet}</span>
+                    <span>
+                      {formatWeight(setResult.weightKg, weightUnit)} ×{' '}
+                      {setResult.reps}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between gap-3">
+                    <span className="opacity-70">{t.summary.repsThisSet}</span>
+                    <span>{setResult.reps}</span>
+                  </div>
+                )}
+                {setResult.weightKg && setResult.weightKg > 0 ? (
+                  <div className="flex justify-between items-start gap-4">
+                    <span className="opacity-70 shrink-0">
+                      {t.summary.weightPersonalBest}
+                    </span>
+                    <span className="text-right">
+                      {setResult.weightPersonalBest?.weightKg &&
+                      setResult.weightPersonalBest.reps
+                        ? `${formatWeight(setResult.weightPersonalBest.weightKg, weightUnit)} × ${setResult.weightPersonalBest.reps}`
+                        : t.summary.emptyValue}
+                      {setResult.weightPersonalBest?.weightKg && (
+                        <span className="block text-sm font-medium opacity-70 normal-case">
+                          (
+                          {formatPersonalBestDate(
+                            setResult.weightPersonalBest.achievedAt,
+                            language
+                          )}
+                          )
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-start gap-4">
+                    <span className="opacity-70 shrink-0">{t.summary.personalBest}</span>
+                    <span className="text-right">
+                      {setResult.personalBest.reps ?? t.summary.emptyValue}
+                      {setResult.personalBest.reps !== null && (
+                        <span className="block text-sm font-medium opacity-70 normal-case">
+                          (
+                          {formatPersonalBestDate(
+                            setResult.personalBest.achievedAt,
+                            language
+                          )}
+                          )
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+                {setResult.isNewPersonalBest && !setResult.weightKg && (
                   <p className={`summary-pb-badge ${SUMMARY_ACCENT_TEXT[slot]}`}>
                     {t.summary.newPersonalBest}
+                  </p>
+                )}
+                {setResult.isNewWeightPersonalBest && (
+                  <p className={`summary-pb-badge ${SUMMARY_ACCENT_TEXT[slot]}`}>
+                    {t.summary.newWeightPersonalBest}
+                  </p>
+                )}
+                {progressionMessage && (
+                  <p className={`summary-progression-hint ${SUMMARY_ACCENT_TEXT[slot]}`}>
+                    {progressionMessage}
                   </p>
                 )}
               </>

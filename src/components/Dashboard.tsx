@@ -88,9 +88,9 @@ export function Dashboard({
           <Skull
             size={32}
             strokeWidth={2.5}
-            className="dashboard-skull-glow shrink-0 text-[#00B2FF]"
+            className="dashboard-skull-glow shrink-0 text-[#00A8D8] dark:text-[#00B2FF]"
           />
-          <h1 className="logo-brand text-3xl tracking-tighter text-[#00B2FF] normal-case whitespace-nowrap dashboard-logo-glow">
+          <h1 className="logo-brand text-3xl tracking-tighter text-[#00A8D8] dark:text-[#00B2FF] normal-case whitespace-nowrap dashboard-logo-glow">
             2failure
           </h1>
         </div>
@@ -125,7 +125,7 @@ export function Dashboard({
       </header>
 
       {(profileError || statsError || setsError) && (
-        <p className="mb-6 text-sm font-bold text-[#FF4D00]" role="alert">
+        <p className="mb-6 text-sm font-bold text-[#B83810]" role="alert">
           {setsError
             ? t.dashboard.errors.sets(setsError)
             : statsError
@@ -144,7 +144,7 @@ export function Dashboard({
         </div>
 
         <div
-          className="streak-badge shrink-0 w-[78px] h-[78px] rounded-full bg-[#FF4D00] dark:bg-[#FF6633] flex flex-col items-center justify-center text-black"
+          className="streak-badge shrink-0 w-[78px] h-[78px] rounded-full bg-[#E85520] dark:bg-[#FF6633] flex flex-col items-center justify-center text-black"
           aria-label={t.dashboard.aria.streakDays(currentStreak)}>
           {statsLoading || statsCompleting ? (
             <Loader2 size={18} className="animate-spin" aria-busy="true" />
@@ -166,7 +166,7 @@ export function Dashboard({
         {rotatingProgramEnabled &&
           rotatingProgramPhase !== null &&
           rotatingProgramCycleDay !== null && (
-            <p className="text-sm font-semibold mb-2 text-[#00B2FF] normal-case text-start">
+            <p className="text-sm font-semibold mb-2 text-[#00A8D8] dark:text-[#00B2FF] normal-case text-start">
               {t.dashboard.rotatingProgramFocus(
                 rotatingProgramCycleDay,
                 ROTATION_CYCLE_LENGTH,

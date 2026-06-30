@@ -17,6 +17,7 @@ import { WORKOUT_FINISH_BTN, WORKOUT_TIMER_GLOW } from './workoutUi';
 interface AiRepWorkoutProps {
   move: Move;
   poseExerciseId: PoseExerciseId;
+  finishing?: boolean;
   onFinish: (duration: number, trackedReps?: number) => void;
   onCancel: () => void;
 }
@@ -29,6 +30,7 @@ interface AiRepTrackingViewProps extends AiRepWorkoutProps {
 function AiRepTrackingView({
   move,
   poseExerciseId,
+  finishing = false,
   onFinish,
   onCancel,
   seconds,
@@ -174,11 +176,12 @@ function AiRepTrackingView({
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', bounce: 0.35 }}
+        disabled={finishing}
         onClick={() =>
           onFinish(seconds, cameraEnabled && reps > 0 ? reps : undefined)
         }
         className={`${WORKOUT_FINISH_BTN} mt-3 mb-3 !py-3 normal-case`}>
-        <span>{buttonLabel}</span>
+        <span>{finishing ? t.workout.saving : buttonLabel}</span>
         {reps > 0 && (
           <span className="block text-sm font-semibold mt-1 normal-case opacity-80">
             {t.workout.loggingReps(reps)}
@@ -192,6 +195,7 @@ function AiRepTrackingView({
 export function AiRepWorkout({
   move,
   poseExerciseId,
+  finishing = false,
   onFinish,
   onCancel
 }: AiRepWorkoutProps) {
@@ -209,6 +213,7 @@ export function AiRepWorkout({
     return (
       <TimedWorkout
         move={move}
+        finishing={finishing}
         onFinish={onFinish}
         onCancel={onCancel}
         seconds={seconds}
@@ -221,6 +226,7 @@ export function AiRepWorkout({
     <AiRepTrackingView
       move={move}
       poseExerciseId={poseExerciseId}
+      finishing={finishing}
       onFinish={onFinish}
       onCancel={onCancel}
       seconds={seconds}

@@ -119,9 +119,9 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
             <Skull
               size={44}
               strokeWidth={2.5}
-              className="login-skull-glow shrink-0 text-[#00B2FF]"
+              className="login-skull-glow shrink-0 text-[#00A8D8] dark:text-[#00B2FF]"
             />
-            <h1 className="logo-brand text-4xl md:text-5xl tracking-tighter text-[#00B2FF] normal-case login-logo-glow">
+            <h1 className="logo-brand text-4xl md:text-5xl tracking-tighter text-[#00A8D8] dark:text-[#00B2FF] normal-case login-logo-glow">
               2failure
             </h1>
           </div>
