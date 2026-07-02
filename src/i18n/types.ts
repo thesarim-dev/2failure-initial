@@ -183,8 +183,22 @@ export interface AppTranslations {
     statusLoading: string;
     statusTracking: string;
     statusReady: string;
+    statusPositioning: string;
+    statusCountdown: string;
     statusError: string;
     statusPaused: string;
+    countdownStart: string;
+    positionGuidance: {
+      no_pose: string;
+      too_dark: string;
+      too_bright: string;
+      blurry: string;
+      arms_not_visible: string;
+      legs_not_visible: string;
+      straighten_arms: string;
+      stand_up: string;
+      hold_still: string;
+    };
     loadingPoseModel: string;
     cameraUnavailable: string;
     cameraPaused: string;

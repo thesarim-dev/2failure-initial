@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Move } from './moves';
 import {
   Camera,
@@ -24,6 +24,7 @@ interface AiRepWorkoutProps {
 
 interface AiRepTrackingViewProps extends AiRepWorkoutProps {
   seconds: number;
+  setSeconds: Dispatch<SetStateAction<number>>;
   onUseTimerOnly: () => void;
 }
 
@@ -34,6 +35,7 @@ function AiRepTrackingView({
   onFinish,
   onCancel,
   seconds,
+  setSeconds,
   onUseTimerOnly
 }: AiRepTrackingViewProps) {
   const { t } = useLanguage();
@@ -47,6 +49,9 @@ function AiRepTrackingView({
     videoRef,
     reps,
     status,
+    sessionPhase,
+    positionGuidance,
+    countdownDisplay,
     error,
     cameraEnabled,
     facingMode,
@@ -54,6 +59,14 @@ function AiRepTrackingView({
     toggleCamera,
     toggleFacingMode
   } = usePoseRepTracker(true, poseExerciseId);
+
+  useEffect(() => {
+    if (sessionPhase !== 'active') return;
+    const interval = setInterval(() => {
+      setSeconds((s) => s + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [sessionPhase, setSeconds]);
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -64,13 +77,29 @@ function AiRepTrackingView({
   const statusLabel =
     status === 'loading'
       ? t.workout.statusLoading
-      : status === 'tracking'
+      : sessionPhase === 'active'
         ? t.workout.statusTracking
-        : status === 'ready'
-          ? t.workout.statusReady
-          : status === 'error'
-            ? t.workout.statusError
-            : t.workout.statusPaused;
+        : sessionPhase === 'countdown'
+          ? t.workout.statusCountdown
+          : sessionPhase === 'awaiting_position'
+            ? t.workout.statusPositioning
+            : status === 'ready'
+              ? t.workout.statusReady
+              : status === 'error'
+                ? t.workout.statusError
+                : t.workout.statusPaused;
+
+  const guidanceText = t.workout.positionGuidance[positionGuidance];
+  const showPositionGuidance =
+    cameraEnabled &&
+    status !== 'loading' &&
+    status !== 'error' &&
+    (sessionPhase === 'awaiting_position' || sessionPhase === 'countdown');
+  const trackingActive = sessionPhase === 'active';
+  const countdownLabel =
+    countdownDisplay === 'START'
+      ? t.workout.countdownStart
+      : countdownDisplay;
 
   return (
     <div
@@ -125,11 +154,33 @@ function AiRepTrackingView({
             </div>
           )}
 
+          <AnimatePresence>
+            {countdownDisplay && (
+              <motion.div
+                key={countdownDisplay}
+                initial={{ opacity: 0, y: -12, scale: 0.85 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.9 }}
+                transition={{ type: 'spring', bounce: 0.35, duration: 0.35 }}
+                className="workout-countdown-banner"
+                aria-live="assertive">
+                <p className="workout-countdown-value">{countdownLabel}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {showPositionGuidance && !countdownDisplay && (
+            <div className="workout-position-guidance" aria-live="polite">
+              <p className="workout-position-guidance-text">{guidanceText}</p>
+            </div>
+          )}
+
           <div className="absolute top-3 left-3 workout-overlay-chip normal-case">
             {statusLabel}
           </div>
 
-          <div className="absolute bottom-3 right-3 workout-rep-badge">
+          <div
+            className={`absolute bottom-3 right-3 workout-rep-badge transition-opacity duration-300${trackingActive ? '' : ' opacity-35'}`}>
             <p className="text-[10px] font-bold lowercase tracking-wide opacity-80">
               {t.workout.reps}
             </p>
@@ -157,7 +208,7 @@ function AiRepTrackingView({
 
         <div className="flex items-center justify-center w-full gap-2 flex-wrap">
           <div
-            className={`workout-timer text-[clamp(2rem,8vw,3rem)] leading-none ${WORKOUT_TIMER_GLOW[move.lineupSlot]}`}>
+            className={`workout-timer text-[clamp(2rem,8vw,3rem)] leading-none transition-opacity duration-300 ${WORKOUT_TIMER_GLOW[move.lineupSlot]}${trackingActive ? '' : ' opacity-40'}`}>
             {formatTime(seconds)}
           </div>
 
@@ -202,13 +253,6 @@ export function AiRepWorkout({
   const [useTimerOnly, setUseTimerOnly] = useState(false);
   const [seconds, setSeconds] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSeconds((s) => s + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
   if (useTimerOnly) {
     return (
       <TimedWorkout
@@ -230,6 +274,7 @@ export function AiRepWorkout({
       onFinish={onFinish}
       onCancel={onCancel}
       seconds={seconds}
+      setSeconds={setSeconds}
       onUseTimerOnly={() => setUseTimerOnly(true)}
     />
   );

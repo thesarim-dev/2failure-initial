@@ -196,11 +196,25 @@ export function Dashboard({
             <motion.button
               key={move.id}
               initial={{ x: isRtl ? 50 : -50, opacity: 0 }}
-              animate={{ x: 0, opacity: isDone ? 0.55 : 1 }}
-              transition={{ delay: i * 0.1 }}
+              animate={{ x: 0, opacity: isDone ? 0.55 : 1, scale: 1, y: 0 }}
+              whileHover={
+                isDone ? undefined : { scale: 1.03, y: -4 }
+              }
+              whileTap={isDone ? undefined : { scale: 0.98, y: 0 }}
+              whileFocus={isDone ? undefined : { scale: 1.02, y: -2 }}
+              transition={{
+                x: { delay: i * 0.1 },
+                opacity: { delay: i * 0.1 },
+                default: {
+                  type: 'spring',
+                  stiffness: 520,
+                  damping: 26,
+                  mass: 0.55
+                }
+              }}
               onClick={() => onSelectMove(move)}
               disabled={isDone}
-              className={`dashboard-move-card w-full text-start rounded-2xl ${move.color} ${move.glow} border-4 p-5 transition-all duration-200 group relative overflow-visible hover:brightness-[1.03] disabled:cursor-default disabled:hover:brightness-100`}>
+              className={`dashboard-move-card w-full text-start rounded-2xl ${move.color} ${move.glow} border-4 p-5 relative overflow-visible disabled:cursor-default`}>
               <div className="relative z-10">
                 <div className="dashboard-move-header mb-2 min-w-0">
                   <h3 className="dashboard-move-title flex-1 min-w-0 uppercase">
@@ -235,10 +249,6 @@ export function Dashboard({
                 <p className="dashboard-move-desc font-medium text-black/80 leading-snug">
                   {move.description}
                 </p>
-              </div>
-
-              <div className="dashboard-move-logo absolute opacity-0 group-hover:opacity-25 transition-opacity duration-300 transform group-hover:scale-150">
-                <FailureLogo size={120} />
               </div>
             </motion.button>
             );
