@@ -490,7 +490,3 @@ If the home screen shows a red error banner:
 │  Icons:  👜 Store   ⚙ Settings   🔥 Streak   🪙 Coins     │
 └─────────────────────────────────────────────────────────────┘
 ```
-
----
-
-*This guide documents 2failure Workout Tracker as of July 2026. For training theory beyond the in-app FAQ, consult a qualified coach or medical professional before starting a new program.*
