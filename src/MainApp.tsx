@@ -23,6 +23,7 @@ import { useDailySetGoal } from './hooks/useDailySetGoal';
 import { usePushupDailyReps } from './hooks/usePushupDailyReps';
 import { useRotatingProgram } from './hooks/useRotatingProgram';
 import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
+import { calculateCoinsEarned } from './lib/coinRewards';
 import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { RepPrompt } from './components/RepPrompt';
 import { WeightRepPrompt } from './components/WeightRepPrompt';
@@ -181,7 +182,7 @@ export function MainApp() {
       addPushupReps(repsLogged);
     }
     void incrementSet(currentMove.categoryId);
-    void setCoins((c) => c + Math.max(10, Math.floor(duration / 2)));
+    void setCoins((c) => c + calculateCoinsEarned(duration));
     if (options?.recordComplete !== false) {
       void recordWorkoutComplete();
     }

@@ -268,7 +268,7 @@ function LineupSection({
               className="store-item-card">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 className="text-lg font-display uppercase tracking-tight normal-case flex items-baseline gap-2 min-w-0">
+                  <h3 className="text-lg font-display uppercase tracking-tight normal-case flex items-baseline gap-2 min-w-0 flex-wrap">
                     <span>{localized.name}</span>
                     {patternLabel && (
                       <span className="store-pattern-label">{patternLabel}</span>
@@ -286,7 +286,7 @@ function LineupSection({
                 </p>
               </div>
 
-              <div className="shrink-0">
+              <div className="store-item-actions shrink-0">
                 {isEquipped ? (
                   <button
                     type="button"
@@ -326,6 +326,10 @@ function LineupSection({
                     {variant.price}
                   </button>
                 )}
+                <span
+                  className={`store-tier-label store-tier-label--${variant.tier.toLowerCase()}`}>
+                  {variant.tier}
+                </span>
               </div>
             </motion.div>
           );

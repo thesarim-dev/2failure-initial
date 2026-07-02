@@ -246,6 +246,8 @@ export interface AppTranslations {
     receiptTagline: string;
     item: string;
     duration: string;
+    coinsEarned: string;
+    coinsCapRecommendation: string;
     repsThisSet: string;
     weightThisSet: string;
     personalBest: string;

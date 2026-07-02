@@ -555,6 +555,16 @@
     align-items: center;
     gap: 1rem;
   }
+  .store-item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 5.5rem;
+  }
+  .store-item-actions .store-tier-label {
+    line-height: 1;
+  }
   .dark .store-item-card {
     border-color: rgba(0, 178, 255, 0.2);
     background: rgba(20, 20, 28, 0.75);
@@ -587,6 +597,30 @@
   }
   .dark .store-pattern-label {
     color: rgba(255, 255, 255, 0.45);
+  }
+  .store-tier-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: lowercase;
+    white-space: nowrap;
+  }
+  .store-tier-label--base {
+    color: rgba(0, 0, 0, 0.45);
+  }
+  .dark .store-tier-label--base {
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .store-tier-label--pro {
+    color: #d04098;
+  }
+  .dark .store-tier-label--pro {
+    color: #ff66cc;
+  }
+  .store-tier-label--elite {
+    color: #b8860b;
+  }
+  .dark .store-tier-label--elite {
+    color: #ffc933;
   }
   .store-btn {
     border-radius: 0.75rem;

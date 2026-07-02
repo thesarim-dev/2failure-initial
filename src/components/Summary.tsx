@@ -10,6 +10,10 @@ import { useLanguage } from '../context/LanguageContext';
 import type { WeightUnit } from '../lib/weightUnits';
 import { formatWeight } from '../lib/weightUnits';
 import {
+  calculateCoinsEarned,
+  isCoinEarningCapped
+} from '../lib/coinRewards';
+import {
   SUMMARY_ACCENT_TEXT,
   SUMMARY_CONFETTI,
   SUMMARY_HOME_BTN,
@@ -89,6 +93,12 @@ export function Summary({
     return t.summary.snarky.tooEasy;
   }, [duration, t.summary.snarky]);
 
+  const coinsEarned = useMemo(() => calculateCoinsEarned(duration), [duration]);
+  const showCoinsCapRecommendation = useMemo(
+    () => isCoinEarningCapped(duration),
+    [duration]
+  );
+
   const progressionMessage = useMemo(() => {
     if (!setResult?.progression?.suggestedWeightKg) return null;
     const weightLabel = formatWeight(
@@ -154,6 +164,17 @@ export function Summary({
               <span className="opacity-70">{t.summary.duration}</span>
               <span>{formatTime(duration)}</span>
             </div>
+            <div className="flex justify-between gap-3">
+              <span className="opacity-70">{t.summary.coinsEarned}</span>
+              <span className={`tabular-nums ${SUMMARY_ACCENT_TEXT[slot]}`}>
+                +{coinsEarned}
+              </span>
+            </div>
+            {showCoinsCapRecommendation && (
+              <p className={`summary-progression-hint ${SUMMARY_ACCENT_TEXT[slot]}`}>
+                {t.summary.coinsCapRecommendation}
+              </p>
+            )}
             {setResult && (
               <>
                 {setResult.weightKg && setResult.weightKg > 0 ? (

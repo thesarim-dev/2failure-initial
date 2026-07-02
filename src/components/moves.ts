@@ -62,7 +62,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       name: 'Incline Pushups',
       description: 'Push up with your hands elevated on a bench or step.',
       price: 100,
-      tier: 'PRO',
+      tier: 'BASE',
       pattern: 'push'
     },
     {
@@ -95,7 +95,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       name: 'Doorway Rows',
       description: 'Row your chest to a sturdy door frame while leaning back.',
       price: 150,
-      tier: 'PRO',
+      tier: 'BASE',
       pattern: 'pull'
     },
     {
@@ -104,7 +104,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       description:
         'Press both dumbbells overhead. Stop when your shoulders give out.',
       price: 0,
-      tier: 'BASE',
+      tier: 'PRO',
       pattern: 'push',
       equipment: ['dumbbell']
     },
@@ -114,7 +114,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       description:
         'Hinge at the hips. Pull each dumbbell to your hip. Full stretch, full squeeze.',
       price: 0,
-      tier: 'BASE',
+      tier: 'PRO',
       pattern: 'pull',
       equipment: ['dumbbell']
     },
@@ -123,7 +123,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       name: 'Barbell Bench Press',
       description: 'Heavy 3x5 with the bar touching your chest each rep.',
       price: 0,
-      tier: 'BASE',
+      tier: 'ELITE',
       pattern: 'push',
       equipment: ['barbell', 'bench']
     },
@@ -132,7 +132,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       name: 'Dips',
       description: 'Deep dip on bars or benches, then press up.',
       price: 0,
-      tier: 'BASE',
+      tier: 'PRO',
       pattern: 'push',
       equipment: ['bench']
     },
@@ -141,7 +141,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       name: 'Pull-Ups',
       description: 'Hang from a bar and pull until your chin clears it.',
       price: 0,
-      tier: 'BASE',
+      tier: 'PRO',
       pattern: 'pull'
     }
   ]
@@ -197,7 +197,7 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
       name: 'Barbell Deadlift',
       description: 'Hinge and lift the bar, then lower with control each rep.',
       price: 0,
-      tier: 'BASE',
+      tier: 'ELITE',
       equipment: ['barbell']
     },
     {
@@ -205,7 +205,7 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
       name: 'Barbell Squat',
       description: 'Heavy 3x5 squat breaking parallel each rep.',
       price: 0,
-      tier: 'BASE',
+      tier: 'ELITE',
       equipment: ['barbell']
     },
     {
@@ -213,7 +213,7 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
       name: 'Burpees',
       description: 'Drop to the floor, kick back, and hop up in one crisp motion.',
       price: 0,
-      tier: 'BASE'
+      tier: 'PRO'
     }
   ]
 };
@@ -247,7 +247,7 @@ export const CORE_STORE_CATEGORY: MoveCategory = {
       name: 'L-Sit',
       description: 'Max hold with legs locked out and hips lifted off the floor.',
       price: 0,
-      tier: 'BASE'
+      tier: 'PRO'
     },
     {
       id: 'side-planks',
@@ -261,7 +261,7 @@ export const CORE_STORE_CATEGORY: MoveCategory = {
       name: 'Leg Raises',
       description: 'Raise your legs slow and lower with control.',
       price: 0,
-      tier: 'BASE'
+      tier: 'PRO'
     },
     {
       id: 'hollow-body',
