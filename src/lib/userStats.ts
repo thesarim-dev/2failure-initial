@@ -2,17 +2,29 @@ import { supabase } from './supabase';
 import type { UserStats } from '../types/userStats';
 import { USER_STATS_COLUMNS } from '../types/userStats';
 
-export function toLocalDateString(date: Date = new Date()): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
+const DAY_RESET_HOUR = 3;
+
+function getDayBucket(date: Date): string {
+  const adjustedDate = new Date(date);
+
+  if (adjustedDate.getHours() < DAY_RESET_HOUR) {
+    adjustedDate.setDate(adjustedDate.getDate() - 1);
+  }
+
+  const y = adjustedDate.getFullYear();
+  const m = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+  const d = String(adjustedDate.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+}
+
+export function toLocalDateString(date: Date = new Date()): string {
+  return getDayBucket(date);
 }
 
 function yesterdayLocalDateString(): string {
   const d = new Date();
   d.setDate(d.getDate() - 1);
-  return toLocalDateString(d);
+  return getDayBucket(d);
 }
 
 function normalizeStats(row: UserStats): UserStats {
