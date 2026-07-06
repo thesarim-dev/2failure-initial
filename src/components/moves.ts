@@ -13,6 +13,7 @@ export type Move = {
   displayGroup: string;
   lineupSlot: LineupSlot;
   pattern?: MovementPattern;
+  tier?: 'BASE' | 'PRO' | 'ELITE';
   color: string;
   glow: string;
 };
@@ -477,6 +478,7 @@ export function resolveLineupMove(exerciseId: string): Move {
     displayGroup,
     lineupSlot: slot,
     pattern: variant.pattern,
+    tier: variant.tier,
     color: category?.color ?? UPPER_STORE_CATEGORY.color,
     glow: category?.glow ?? UPPER_STORE_CATEGORY.glow
   };

@@ -182,7 +182,7 @@ export function MainApp() {
       addPushupReps(repsLogged);
     }
     void incrementSet(currentMove.categoryId);
-    void setCoins((c) => c + calculateCoinsEarned(duration));
+    void setCoins((c) => c + calculateCoinsEarned(duration, currentMove.tier ?? 'BASE'));
     if (options?.recordComplete !== false) {
       void recordWorkoutComplete();
     }

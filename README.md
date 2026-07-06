@@ -389,18 +389,24 @@ Tap **sign out** to end your session. Your progress remains saved and restores o
 
 ### Coins
 
-You earn coins after every completed set. Rewards are based on how long the set lasted, but cap at 2 minutes:
+You earn coins after every completed set. Rewards are based on the exercise tier and the set duration, with a hard cap at 2 minutes:
 
-> **Coins earned = max(10, floor(min(duration in seconds, 120) ÷ 2))**
+> **Coins earned = min(max points for tier, ceil(min(duration in seconds, 120) / 120 × max points for tier))**
 
-| Set length | Coins earned |
-|---|---|
-| 20 seconds | 10 (minimum) |
-| 1 minute | 30 |
-| 2 minutes | 60 (maximum) |
-| 3+ minutes | 60 (no extra coins) |
+| Exercise tier | Max coins at 2 minutes |
+|---|---:|
+| Base | 10 |
+| Pro | 20 |
+| Elite | 30 |
 
-Spend coins in the store to unlock exercise variations. Your balance appears in the header on the home screen, store, and settings.
+Examples:
+
+- A 1-minute Base exercise earns 5 coins.
+- A 1-minute Pro exercise earns 10 coins.
+- A 2-minute Elite exercise earns 30 coins.
+- Any set longer than 2 minutes still earns the same maximum coins for that tier.
+
+If a set goes over 2 minutes, the receipt recommends switching to a harder exercise in the Store or making the current move harder by adding weight. Spend coins in the store to unlock exercise variations. Your balance appears in the header on the home screen, store, and settings.
 
 ### Streaks
 

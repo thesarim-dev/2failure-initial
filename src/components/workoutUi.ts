@@ -3,7 +3,8 @@ import type { LineupSlot } from './moves';
 export const WORKOUT_TIMER_GLOW: Record<LineupSlot, string> = {
   upper: 'workout-timer-glow--upper',
   lower: 'workout-timer-glow--lower',
-  core: 'workout-timer-glow--core'
+  core: 'workout-timer-glow--core',
+  recovery: 'workout-timer-glow--recovery'
 };
 
 export const WORKOUT_FINISH_BTN = 'workout-finish-btn workout-finish-btn--rainbow';
@@ -13,23 +14,27 @@ export const SUMMARY_LOGO = 'failure-logo failure-logo--summary';
 export const SUMMARY_TITLE: Record<LineupSlot, string> = {
   upper: 'summary-title summary-title--upper',
   lower: 'summary-title summary-title--lower',
-  core: 'summary-title summary-title--core'
+  core: 'summary-title summary-title--core',
+  recovery: 'summary-title summary-title--recovery'
 };
 
 export const SUMMARY_HOME_BTN: Record<LineupSlot, string> = {
   upper: 'summary-home-btn summary-home-btn--upper',
   lower: 'summary-home-btn summary-home-btn--lower',
-  core: 'summary-home-btn summary-home-btn--core'
+  core: 'summary-home-btn summary-home-btn--core',
+  recovery: 'summary-home-btn summary-home-btn--recovery'
 };
 
 export const SUMMARY_CONFETTI: Record<LineupSlot, string[]> = {
   upper: ['#CCFF00', '#C8E838', '#5f9100'],
   lower: ['#FF00FF', '#FF66FF', '#e600e6'],
-  core: ['#00FFFF', '#4DFFFF', '#00d9d9']
+  core: ['#00FFFF', '#4DFFFF', '#00d9d9'],
+  recovery: ['#C8B0FF', '#C4B8FF', '#9070E0']
 };
 
 export const SUMMARY_ACCENT_TEXT: Record<LineupSlot, string> = {
   upper: 'summary-accent-text--upper',
   lower: 'summary-accent-text--lower',
-  core: 'summary-accent-text--core'
+  core: 'summary-accent-text--core',
+  recovery: 'summary-accent-text--recovery'
 };

@@ -93,7 +93,10 @@ export function Summary({
     return t.summary.snarky.tooEasy;
   }, [duration, t.summary.snarky]);
 
-  const coinsEarned = useMemo(() => calculateCoinsEarned(duration), [duration]);
+  const coinsEarned = useMemo(
+    () => calculateCoinsEarned(duration, move.tier ?? 'BASE'),
+    [duration, move.tier]
+  );
   const showCoinsCapRecommendation = useMemo(
     () => isCoinEarningCapped(duration),
     [duration]

@@ -199,7 +199,7 @@ const en: UiContent = {
     duration: 'duration',
     coinsEarned: 'coins earned',
     coinsCapRecommendation:
-      'Coin rewards stop after 2 minutes. Try a harder exercise in the Store, or make this move harder by adding weight.',
+      'Coin rewards stop after 2 minutes. If you go over that, switch to a harder exercise or make this move harder by adding weight.',
     repsThisSet: 'reps (this set)',
     weightThisSet: 'load × reps',
     personalBest: 'personal best (reps)',
@@ -434,7 +434,7 @@ const he: UiContent = {
     duration: 'משך',
     coinsEarned: 'מטבעות שנצברו',
     coinsCapRecommendation:
-      'תגמול מטבעות נעצר אחרי 2 דקות. נסה תרגיל קשה יותר בחנות, או הקשה על התרגיל עם משקל.',
+      'תגמול מטבעות נעצר אחרי 2 דקות. אם אתה עובר את זה, עבור לתרגיל קשה יותר או הקש על התרגיל עם משקל.',
     repsThisSet: 'חזרות (סט זה)',
     weightThisSet: 'משקל × חזרות',
     personalBest: 'שיא אישי (חזרות)',
@@ -670,7 +670,7 @@ const ar: UiContent = {
     duration: 'المدة',
     coinsEarned: 'العملات المكتسبة',
     coinsCapRecommendation:
-      'تتوقف مكافآت العملات بعد دقيقتين. جرّب تمريناً أصعب من المتجر، أو زِد صعوبة الحركة بإضافة وزن.',
+      'تتوقف مكافآت العملات بعد دقيقتين. إذا تجاوزت هذه المدة، فغيّر إلى تمرين أصعب أو زِد صعوبة الحركة بإضافة وزن.',
     repsThisSet: 'التكرارات (هذه المجموعة)',
     weightThisSet: 'الحمل × التكرارات',
     personalBest: 'أفضل تكرارات',

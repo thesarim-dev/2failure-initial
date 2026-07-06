@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { formatOAuthError } from '../lib/authErrors';
 import { getAuthRedirectUrl } from '../lib/authRedirect';
 import { supabase } from '../lib/supabase';
+import { ensureUserProfileAndWorkouts } from '../lib/userOnboarding';
 
 function GoogleGIcon({ className }: { className?: string }) {
   return (
@@ -98,6 +99,11 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
           password
         });
         if (signInError) throw signInError;
+      }
+
+      const signedInUser = data.user ?? (await supabase.auth.getUser()).data.user;
+      if (signedInUser) {
+        await ensureUserProfileAndWorkouts(signedInUser.id, signedInUser.user_metadata?.full_name ?? signedInUser.email);
       }
 
       await refreshSession();
