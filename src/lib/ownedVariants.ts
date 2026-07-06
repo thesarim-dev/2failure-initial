@@ -1,6 +1,8 @@
 import { RECOVERY_STORE_CATEGORY, STORE_CATEGORIES } from '../components/moves';
 
-const STORAGE_KEY = '2failure-owned-variants';
+import { storageKeyFor } from './persistedSettings';
+
+const STORAGE_KEY_BASE = 'owned-variants';
 
 const PROGRAM_VARIANT_IDS = [
   ...STORE_CATEGORIES.flatMap((cat) => cat.variants.map((v) => v.id)),
@@ -16,7 +18,7 @@ export const DEFAULT_OWNED = [
 
 const ALL_VARIANT_IDS = new Set(PROGRAM_VARIANT_IDS);
 
-export function readStoredOwned(): string[] {
+export function readStoredOwned(userId?: string | null): string[] {
   const merged = new Set(DEFAULT_OWNED);
 
   if (typeof window === 'undefined') {
@@ -24,7 +26,8 @@ export function readStoredOwned(): string[] {
   }
 
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const key = storageKeyFor(userId ?? undefined, STORAGE_KEY_BASE);
+    const raw = window.localStorage.getItem(key);
     if (!raw) return [...merged];
 
     const parsed = JSON.parse(raw) as unknown;
@@ -42,12 +45,13 @@ export function readStoredOwned(): string[] {
   return [...merged];
 }
 
-export function persistOwned(ids: string[]): void {
+export function persistOwned(ids: string[], userId?: string | null): void {
   if (typeof window === 'undefined') return;
 
   try {
     const unique = [...new Set(ids.filter((id) => ALL_VARIANT_IDS.has(id)))];
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
+    const key = storageKeyFor(userId ?? undefined, STORAGE_KEY_BASE);
+    window.localStorage.setItem(key, JSON.stringify(unique));
   } catch {
     // Ignore storage failures.
   }

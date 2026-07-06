@@ -1,26 +1,18 @@
 import { useCallback, useState } from 'react';
 import type { WeightUnit } from '../lib/weightUnits';
-
-const STORAGE_KEY = '2failure-weight-unit';
+import { useAuth } from '../context/AuthContext';
+import { storageKeyFor } from '../lib/persistedSettings';
 
 function defaultWeightUnit(): WeightUnit {
-  if (typeof window === 'undefined') return 'kg';
-
-  try {
-    const locale = navigator.language;
-    if (locale === 'en-US' || locale.startsWith('en-US')) return 'lb';
-  } catch {
-    // Ignore locale read failures.
-  }
-
+  // New users default to kg per requirements.
   return 'kg';
 }
 
-function readStoredUnit(): WeightUnit {
+function readStoredUnit(key: string): WeightUnit {
   if (typeof window === 'undefined') return 'kg';
 
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(key);
     if (raw === 'kg' || raw === 'lb') return raw;
   } catch {
     // Ignore storage failures.
@@ -30,16 +22,24 @@ function readStoredUnit(): WeightUnit {
 }
 
 export function useWeightUnit() {
-  const [weightUnit, setWeightUnitState] = useState<WeightUnit>(readStoredUnit);
+  const { user } = useAuth();
+  const key = storageKeyFor(user?.id, 'weight-unit');
 
-  const setWeightUnit = useCallback((unit: WeightUnit) => {
-    setWeightUnitState(unit);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, unit);
-    } catch {
-      // Ignore storage failures.
-    }
-  }, []);
+  const [weightUnit, setWeightUnitState] = useState<WeightUnit>(() =>
+    readStoredUnit(key)
+  );
+
+  const setWeightUnit = useCallback(
+    (unit: WeightUnit) => {
+      setWeightUnitState(unit);
+      try {
+        window.localStorage.setItem(key, unit);
+      } catch {
+        // Ignore storage failures.
+      }
+    },
+    [key]
+  );
 
   return { weightUnit, setWeightUnit };
 }

@@ -90,7 +90,7 @@ export function MainApp() {
   const [appState, setAppState] = useState<AppState>(
     screenInit.appState ?? 'HOME'
   );
-  const [owned, setOwned] = useState<string[]>(readStoredOwned);
+  const [owned, setOwned] = useState<string[]>(() => readStoredOwned(user?.id));
   const {
     equippedUpper,
     equippedLower,
@@ -316,7 +316,7 @@ export function MainApp() {
     void setCoins((c) => c - variant.price);
     setOwned((o) => {
       const next = [...o, variant.id];
-      persistOwned(next);
+      persistOwned(next, user?.id);
       return next;
     });
   };

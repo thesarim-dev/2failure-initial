@@ -16,10 +16,12 @@ import {
   saveEquippedLineup
 } from '../lib/lineupEquipProgress';
 
+import { storageKeyFor } from '../lib/persistedSettings';
+
 const STORAGE_KEYS: Record<LineupSlot, string> = {
-  upper: '2failure-equipped-upper',
-  lower: '2failure-equipped-lower',
-  core: '2failure-equipped-core'
+  upper: 'equipped-upper',
+  lower: 'equipped-lower',
+  core: 'equipped-core'
 };
 
 const DEFAULTS: Record<LineupSlot, readonly string[]> = {
@@ -94,17 +96,18 @@ export function sanitizeEquippedSlot(slot: LineupSlot, ids: string[]): string[] 
   ].slice(0, LINEUP_EQUIP_COUNT);
 }
 
-function writeStored(slot: LineupSlot, ids: string[]): void {
+function writeStored(slot: LineupSlot, ids: string[], userId?: string | null): void {
   if (typeof window === 'undefined') return;
 
   try {
-    window.localStorage.setItem(STORAGE_KEYS[slot], JSON.stringify(ids));
+    const key = storageKeyFor(userId ?? undefined, STORAGE_KEYS[slot]);
+    window.localStorage.setItem(key, JSON.stringify(ids));
   } catch {
     // Ignore storage failures.
   }
 }
 
-function readStored(slot: LineupSlot): string[] {
+function readStored(slot: LineupSlot, userId?: string | null): string[] {
   const fallback = [...DEFAULTS[slot]];
 
   if (typeof window === 'undefined') {
@@ -112,7 +115,8 @@ function readStored(slot: LineupSlot): string[] {
   }
 
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEYS[slot]);
+    const key = storageKeyFor(userId ?? undefined, STORAGE_KEYS[slot]);
+    const raw = window.localStorage.getItem(key);
     if (!raw) return fallback;
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return fallback;
@@ -127,7 +131,7 @@ function readStored(slot: LineupSlot): string[] {
 }
 
 function useEquippedSlot(slot: LineupSlot, userId?: string | null) {
-  const [equipped, setEquipped] = useState<string[]>(() => readStored(slot));
+  const [equipped, setEquipped] = useState<string[]>(() => readStored(slot, userId));
 
   useEffect(() => {
     if (!userId) return;
@@ -142,16 +146,16 @@ function useEquippedSlot(slot: LineupSlot, userId?: string | null) {
         if (remote && remote.length > 0) {
           const normalized = resolveLineupForSlot(slot, remote);
           setEquipped(normalized);
-          writeStored(slot, normalized);
+          writeStored(slot, normalized, userId);
           void saveEquippedLineup(userId, slot, normalized).catch(() => {});
         } else {
-          const local = readStored(slot);
+          const local = readStored(slot, userId);
           setEquipped(local);
           void saveEquippedLineup(userId, slot, local).catch(() => {});
         }
       } catch {
         if (!cancelled) {
-          setEquipped(readStored(slot));
+          setEquipped(readStored(slot, userId));
         }
       }
     };
@@ -167,7 +171,7 @@ function useEquippedSlot(slot: LineupSlot, userId?: string | null) {
     (next: string[]) => {
       const normalized = sanitizeEquippedSlot(slot, next);
       setEquipped(normalized);
-      writeStored(slot, normalized);
+      writeStored(slot, normalized, userId);
 
       if (userId) {
         void saveEquippedLineup(userId, slot, normalized).catch(() => {});

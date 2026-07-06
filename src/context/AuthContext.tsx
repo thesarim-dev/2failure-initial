@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { formatOAuthError } from '../lib/authErrors';
-import { readStoredLanguage } from './LanguageContext';
+import { readStoredLanguage } from '../lib/persistedSettings';
 import { translations } from '../i18n/translations';
 import { supabase } from '../lib/supabase';
 

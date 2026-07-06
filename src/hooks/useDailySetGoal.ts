@@ -1,15 +1,16 @@
 import { useCallback, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { storageKeyFor } from '../lib/persistedSettings';
 
 export type DailySetGoal = 2 | 3;
 
-const STORAGE_KEY = '2failure-daily-set-goal';
 export const DEFAULT_DAILY_SET_GOAL: DailySetGoal = 3;
 
-function readStoredGoal(): DailySetGoal {
+function readStoredGoal(key: string): DailySetGoal {
   if (typeof window === 'undefined') return DEFAULT_DAILY_SET_GOAL;
 
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(key);
     if (raw === '2') return 2;
     if (raw === '3') return 3;
   } catch {
@@ -20,18 +21,24 @@ function readStoredGoal(): DailySetGoal {
 }
 
 export function useDailySetGoal() {
-  const [dailySetGoal, setDailySetGoalState] = useState<DailySetGoal>(
-    readStoredGoal
+  const { user } = useAuth();
+  const key = storageKeyFor(user?.id, 'daily-set-goal');
+
+  const [dailySetGoal, setDailySetGoalState] = useState<DailySetGoal>(() =>
+    readStoredGoal(key)
   );
 
-  const setDailySetGoal = useCallback((goal: DailySetGoal) => {
-    setDailySetGoalState(goal);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, String(goal));
-    } catch {
-      // Ignore storage failures.
-    }
-  }, []);
+  const setDailySetGoal = useCallback(
+    (goal: DailySetGoal) => {
+      setDailySetGoalState(goal);
+      try {
+        window.localStorage.setItem(key, String(goal));
+      } catch {
+        // Ignore storage failures.
+      }
+    },
+    [key]
+  );
 
   return { dailySetGoal, setDailySetGoal };
 }

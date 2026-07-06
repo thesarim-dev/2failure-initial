@@ -9,22 +9,8 @@ import {
 } from 'react';
 import { RTL_LANGUAGES, translations } from '../i18n/translations';
 import type { AppTranslations, Language } from '../i18n/types';
-
-const STORAGE_KEY = '2failure-language';
-const DEFAULT_LANGUAGE: Language = 'en';
-
-export function readStoredLanguage(): Language {
-  if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw === 'en' || raw === 'he' || raw === 'ar') return raw;
-  } catch {
-    // Ignore storage failures.
-  }
-
-  return DEFAULT_LANGUAGE;
-}
+import { readStoredLanguage, storageKeyFor, DEFAULT_LANGUAGE } from '../lib/persistedSettings';
+import { useAuth } from './AuthContext';
 
 type LanguageContextValue = {
   language: Language;
@@ -36,7 +22,15 @@ type LanguageContextValue = {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(readStoredLanguage);
+  const { user } = useAuth();
+  const userId = user?.id;
+
+  const storageKey = storageKeyFor(userId, 'language');
+
+  const [language, setLanguageState] = useState<Language>(() =>
+    readStoredLanguage(userId)
+  );
+
   const isRtl = RTL_LANGUAGES.includes(language);
   const t = translations[language];
 
@@ -51,11 +45,25 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      window.localStorage.setItem(STORAGE_KEY, language);
+      window.localStorage.setItem(storageKey, language);
     } catch {
       // Ignore storage failures.
     }
-  }, [language, isRtl, t.meta.description, t.meta.title]);
+  }, [language, isRtl, t.meta.description, t.meta.title, storageKey]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw === 'en' || raw === 'he' || raw === 'ar') {
+        setLanguageState(raw);
+      } else {
+        setLanguageState(DEFAULT_LANGUAGE);
+      }
+    } catch {
+      setLanguageState(DEFAULT_LANGUAGE);
+    }
+  }, [storageKey]);
 
   const setLanguage = useCallback((next: Language) => {
     setLanguageState(next);
