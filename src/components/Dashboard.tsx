@@ -10,6 +10,7 @@ import type { RotatingProgramPhase } from '../lib/rotatingProgram';
 import { ROTATION_CYCLE_LENGTH } from '../lib/rotatingProgram';
 import { pickFunFact } from '../lib/funFacts';
 import { PUSHUP_DAILY_GOAL } from '../lib/pushupDailyProgress';
+import { STREAK_RESTORE_MIN_LENGTH, toLocalDateString } from '../lib/userStats';
 import { Move, getVariantById, resolveLineupMove } from './moves';
 
 interface DashboardProps {
@@ -17,6 +18,10 @@ interface DashboardProps {
   currentStreak: number;
   statsLoading: boolean;
   statsCompleting: boolean;
+  restoringStreak: boolean;
+  lastWorkoutDate: string | null;
+  restoreStreakCost: number;
+  onRestoreStreak: () => void;
   profileLoading: boolean;
   profileError: string | null;
   statsError: string | null;
@@ -44,6 +49,10 @@ export function Dashboard({
   currentStreak,
   statsLoading,
   statsCompleting,
+  restoringStreak,
+  lastWorkoutDate,
+  restoreStreakCost,
+  onRestoreStreak,
   profileLoading,
   profileError,
   statsError,
@@ -70,6 +79,11 @@ export function Dashboard({
     () => pickFunFact(t.dashboard.funFacts.facts, t.dashboard.funFacts.loading),
     [language, t.dashboard.funFacts.facts, t.dashboard.funFacts.loading]
   );
+
+  const canRestoreStreak =
+    currentStreak >= STREAK_RESTORE_MIN_LENGTH &&
+    lastWorkoutDate !== null &&
+    lastWorkoutDate !== toLocalDateString();
 
   const activeMoves = useMemo(
     () =>
@@ -140,21 +154,34 @@ export function Dashboard({
           </p>
         </div>
 
-        <div
-          className="streak-badge shrink-0 w-[78px] h-[78px] rounded-full bg-[#E85520] dark:bg-[#FF6633] flex flex-col items-center justify-center text-black"
-          aria-label={t.dashboard.aria.streakDays(currentStreak)}>
-          {statsLoading || statsCompleting ? (
-            <Loader2 size={18} className="animate-spin" aria-busy="true" />
-          ) : (
-            <>
-              <div className="flex items-center gap-0.5 leading-none">
-                <Flame size={15} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
-                <span className="text-2xl font-bold tabular-nums">{currentStreak}</span>
-              </div>
-              <span className="text-[11px] font-semibold mt-0.5 leading-none">
-                {t.dashboard.streak}
-              </span>
-            </>
+        <div className="flex flex-col items-end gap-2">
+          <div
+            className="streak-badge shrink-0 w-[78px] h-[78px] rounded-full bg-[#E85520] dark:bg-[#FF6633] flex flex-col items-center justify-center text-black"
+            aria-label={t.dashboard.aria.streakDays(currentStreak)}>
+            {statsLoading || statsCompleting ? (
+              <Loader2 size={18} className="animate-spin" aria-busy="true" />
+            ) : (
+              <>
+                <div className="flex items-center gap-0.5 leading-none">
+                  <Flame size={15} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
+                  <span className="text-2xl font-bold tabular-nums">{currentStreak}</span>
+                </div>
+                <span className="text-[11px] font-semibold mt-0.5 leading-none">
+                  {t.dashboard.streak}
+                </span>
+              </>
+            )}
+          </div>
+
+          {canRestoreStreak && (
+            <button
+              type="button"
+              onClick={onRestoreStreak}
+              disabled={restoringStreak || coins < restoreStreakCost}
+              className="rounded-full border border-[#E85520] dark:border-[#FF6633] bg-white/80 dark:bg-[#2a2a2a]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#B83810] dark:text-[#FFB38A] disabled:cursor-not-allowed disabled:opacity-60">
+              {restoringStreak ? t.dashboard.streakRestore.loading : t.dashboard.streakRestore.label}
+              <span className="ml-1">{t.dashboard.streakRestore.cost(restoreStreakCost)}</span>
+            </button>
           )}
         </div>
       </section>

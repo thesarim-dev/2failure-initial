@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   completeWorkout,
   fetchUserStats,
+  restoreStreak,
   toLocalDateString
 } from '../lib/userStats';
 import type { UserStats } from '../types/userStats';
@@ -13,6 +14,7 @@ export function useUserStats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [completing, setCompleting] = useState(false);
+  const [restoringStreak, setRestoringStreak] = useState(false);
   const [todayFailures, setTodayFailures] = useState(0);
 
   const loadStats = useCallback(async () => {
@@ -79,6 +81,26 @@ export function useUserStats() {
     }
   }, [user]);
 
+  const restoreUserStreak = useCallback(async () => {
+    if (!user) return null;
+
+    setRestoringStreak(true);
+    setError(null);
+
+    try {
+      const updated = await restoreStreak(user.id);
+      setStats(updated);
+      return updated;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Could not restore streak.'
+      );
+      return null;
+    } finally {
+      setRestoringStreak(false);
+    }
+  }, [user]);
+
   return {
     stats,
     currentStreak: stats?.current_streak ?? 0,
@@ -88,8 +110,10 @@ export function useUserStats() {
     lastWorkoutDate: stats?.last_workout_date ?? null,
     loading,
     completing,
+    restoringStreak,
     error,
     refetch: loadStats,
-    recordWorkoutComplete
+    recordWorkoutComplete,
+    restoreStreak: restoreUserStreak
   };
 }

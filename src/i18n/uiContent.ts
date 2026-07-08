@@ -60,6 +60,11 @@ const en: UiContent = {
       bench: 'bench'
     },
     streak: 'streak',
+    streakRestore: {
+      label: 'Restore streak',
+      cost: (coins) => `Restore for ${coins} coins`,
+      loading: 'Restoring…'
+    },
     setsProgress: (completed, goal) => `${completed} / ${goal} sets`,
     pushupDailyProgress: (completed, goal) => `${completed} / ${goal} pushups`,
     loading: '…',
@@ -295,6 +300,11 @@ const he: UiContent = {
       bench: 'ספסל'
     },
     streak: 'רצף',
+    streakRestore: {
+      label: 'שחזר רצף',
+      cost: (coins) => `לשחזר ב-${coins} מטבעות`,
+      loading: 'שוחזר…'
+    },
     setsProgress: (completed, goal) => `${completed} / ${goal} סטים`,
     pushupDailyProgress: (completed, goal) => `${completed} / ${goal} שכ״ס`,
     loading: '…',
@@ -530,6 +540,11 @@ const ar: UiContent = {
       bench: 'مقعد'
     },
     streak: 'سلسلة',
+    streakRestore: {
+      label: 'استعادة السلسلة',
+      cost: (coins) => `استعادة مقابل ${coins} عملة`,
+      loading: 'جارٍ الاستعادة…'
+    },
     setsProgress: (completed, goal) => `${completed} / ${goal} مجموعات`,
     pushupDailyProgress: (completed, goal) => `${completed} / ${goal} ضغط`,
     loading: '…',

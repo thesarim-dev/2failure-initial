@@ -1,8 +1,12 @@
 import { supabase } from './supabase';
 import type { UserStats } from '../types/userStats';
 import { USER_STATS_COLUMNS } from '../types/userStats';
+import { storageKeyFor } from './persistedSettings';
 
 const DAY_RESET_HOUR = 3;
+export const STREAK_RESTORE_COST = 150;
+export const STREAK_RESTORE_MIN_LENGTH = 14;
+export const STREAK_RESTORE_LIMIT_PER_MONTH = 2;
 
 function getDayBucket(date: Date): string {
   const adjustedDate = new Date(date);
@@ -106,6 +110,104 @@ export async function fetchUserStats(userId: string): Promise<UserStats> {
 export async function completeWorkout(userId: string): Promise<UserStats> {
   const stats = await fetchUserStats(userId);
   const next = computeStreakAfterWorkout(stats);
+
+  const { data, error } = await supabase
+    .from('user_stats')
+    .update(next)
+    .eq('user_id', userId)
+    .select(USER_STATS_COLUMNS)
+    .single();
+
+  if (error) throw error;
+  return normalizeStats(data as UserStats);
+}
+
+function readRestoreUsage(userId: string): number {
+  if (typeof window === 'undefined') return 0;
+
+  try {
+    const raw = window.localStorage.getItem(storageKeyFor(userId, 'streak-restore-usage'));
+    const value = Number(raw);
+    return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeRestoreUsage(userId: string, usage: number): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(storageKeyFor(userId, 'streak-restore-usage'), String(usage));
+  } catch {
+    // ignore
+  }
+}
+
+function getRestoreMonthKey(date: Date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
+function readRestoreMonth(userId: string): string {
+  if (typeof window === 'undefined') return getRestoreMonthKey();
+
+  try {
+    return window.localStorage.getItem(storageKeyFor(userId, 'streak-restore-month')) ?? getRestoreMonthKey();
+  } catch {
+    return getRestoreMonthKey();
+  }
+}
+
+function writeRestoreMonth(userId: string, monthKey: string): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(storageKeyFor(userId, 'streak-restore-month'), monthKey);
+  } catch {
+    // ignore
+  }
+}
+
+export async function restoreStreak(userId: string): Promise<UserStats> {
+  const stats = await fetchUserStats(userId);
+  const today = toLocalDateString(new Date());
+
+  if (stats.current_streak <= 0) {
+    throw new Error('No streak to restore.');
+  }
+
+  if (stats.current_streak < STREAK_RESTORE_MIN_LENGTH) {
+    throw new Error('Only longer streaks can be restored.');
+  }
+
+  if (stats.last_workout_date === today) {
+    return stats;
+  }
+
+  const monthKey = getRestoreMonthKey();
+  const storedMonth = readRestoreMonth(userId);
+  let usage = readRestoreUsage(userId);
+
+  if (storedMonth !== monthKey) {
+    usage = 0;
+    writeRestoreMonth(userId, monthKey);
+  }
+
+  if (usage >= STREAK_RESTORE_LIMIT_PER_MONTH) {
+    throw new Error('Streak restore limit reached for this month.');
+  }
+
+  usage += 1;
+  writeRestoreUsage(userId, usage);
+
+  const next = {
+    current_streak: Math.max(stats.current_streak, stats.longest_streak),
+    longest_streak: Math.max(stats.longest_streak, stats.current_streak),
+    total_workouts: stats.total_workouts,
+    last_workout_date: today
+  };
 
   const { data, error } = await supabase
     .from('user_stats')

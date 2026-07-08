@@ -113,6 +113,11 @@ export interface AppTranslations {
     programEquipment: (gear: string) => string;
     equipment: Record<'dumbbell' | 'barbell' | 'bench', string>;
     streak: string;
+    streakRestore: {
+      label: string;
+      cost: (coins: number) => string;
+      loading: string;
+    };
     setsProgress: (completed: number, goal: number) => string;
     pushupDailyProgress: (completed: number, goal: number) => string;
     loading: string;
