@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { motion } from 'framer-motion';
 import { Move } from './moves';
 import { Camera, X } from 'lucide-react';
@@ -11,6 +11,7 @@ interface TimedWorkoutProps {
   onFinish: (duration: number, trackedReps?: number) => void;
   onCancel: () => void;
   seconds?: number;
+  setSeconds?: Dispatch<SetStateAction<number>>;
   onEnableAiTracking?: () => void;
 }
 
@@ -20,6 +21,7 @@ export function TimedWorkout({
   onFinish,
   onCancel,
   seconds: externalSeconds,
+  setSeconds,
   onEnableAiTracking
 }: TimedWorkoutProps) {
   const { t } = useLanguage();
@@ -33,13 +35,21 @@ export function TimedWorkout({
   const seconds = externalSeconds ?? internalSeconds;
 
   useEffect(() => {
-    if (externalSeconds !== undefined) return;
+    if (externalSeconds === undefined) {
+      const interval = setInterval(() => {
+        setInternalSeconds((s) => s + 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+
+    if (!setSeconds) return;
 
     const interval = setInterval(() => {
-      setInternalSeconds((s) => s + 1);
+      setSeconds((s) => s + 1);
     }, 1000);
+
     return () => clearInterval(interval);
-  }, [externalSeconds]);
+  }, [externalSeconds, setSeconds]);
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);

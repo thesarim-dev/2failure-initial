@@ -261,6 +261,7 @@ export function AiRepWorkout({
         onFinish={onFinish}
         onCancel={onCancel}
         seconds={seconds}
+        setSeconds={setSeconds}
         onEnableAiTracking={() => setUseTimerOnly(false)}
       />
     );
