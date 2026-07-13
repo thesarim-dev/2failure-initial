@@ -58,18 +58,7 @@ function resolveLineupForSlot(slot: LineupSlot, ids: string[]): string[] {
   }
 
   if (slot === 'upper') {
-    if (sanitized.length === LINEUP_EQUIP_COUNT && hasBalancedUpperSelection(sanitized)) {
-      return sanitized;
-    }
-
-    if (sanitized.length < LINEUP_EQUIP_COUNT) {
-      const padded = [...sanitized];
-      for (const id of DEFAULTS.upper) {
-        if (!padded.includes(id)) padded.push(id);
-        if (padded.length >= LINEUP_EQUIP_COUNT) break;
-      }
-      return sanitizeEquippedSlot(slot, padded);
-    }
+    return sanitized;
   }
 
   if (sanitized.length < LINEUP_EQUIP_COUNT && isDefaultLineup(slot, sanitized)) {

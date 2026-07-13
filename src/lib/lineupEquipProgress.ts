@@ -52,7 +52,7 @@ export async function fetchEquippedLineup(
 
   const lineup = equipped.slice(0, LINEUP_EQUIP_COUNT);
 
-  if (slot === 'upper' && !hasBalancedUpperSelection(lineup)) {
+  if (slot === 'upper' && lineup.length === 0) {
     return [...DEFAULT_LINEUP.upper];
   }
 
