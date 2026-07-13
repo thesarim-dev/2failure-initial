@@ -215,6 +215,9 @@ export function useEquippedLineup(userId?: string | null) {
     equippedUpper: upper.equipped,
     equippedLower: lower.equipped,
     equippedCore: core.equipped,
+    setEquippedUpper: upper.setEquipped,
+    setEquippedLower: lower.setEquipped,
+    setEquippedCore: core.setEquipped,
     toggleEquipUpper: upper.toggle,
     toggleEquipLower: lower.toggle,
     toggleEquipCore: core.toggle

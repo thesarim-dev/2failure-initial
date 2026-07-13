@@ -594,6 +594,8 @@
     text-transform: lowercase;
     color: rgba(0, 0, 0, 0.45);
     white-space: nowrap;
+    display: block;
+    text-align: center;
   }
   .dark .store-pattern-label {
     color: rgba(255, 255, 255, 0.45);

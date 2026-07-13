@@ -64,7 +64,14 @@ export function Store({
       category: STORE_CATEGORIES[0],
       equipped: equippedUpper,
       onToggleEquip: onToggleEquipUpper,
-      canEquip: (id) => canEquipUpperExercise(equippedUpper, id),
+      canEquip: (id) => {
+        if (equipLocked) return false;
+        if (equippedUpper.includes(id)) return true;
+        if (equippedUpper.length < LINEUP_EQUIP_COUNT) {
+          return canEquipUpperExercise(equippedUpper, id);
+        }
+        return true;
+      },
       statusNote:
         equippedUpper.length === LINEUP_EQUIP_COUNT &&
         !hasBalancedUpperSelection(equippedUpper)
@@ -270,9 +277,6 @@ function LineupSection({
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h3 className="text-lg font-display uppercase tracking-tight normal-case flex items-baseline gap-2 min-w-0 flex-wrap">
                     <span>{localized.name}</span>
-                    {patternLabel && (
-                      <span className="store-pattern-label">{patternLabel}</span>
-                    )}
                   </h3>
                   {isEquipped && (
                     <span className="store-equipped-badge">
@@ -326,10 +330,15 @@ function LineupSection({
                     {variant.price}
                   </button>
                 )}
-                <span
-                  className={`store-tier-label store-tier-label--${variant.tier.toLowerCase()}`}>
-                  {variant.tier}
-                </span>
+                <div className="flex flex-col items-center gap-1">
+                  <span
+                    className={`store-tier-label store-tier-label--${variant.tier.toLowerCase()}`}>
+                    {variant.tier}
+                  </span>
+                  {patternLabel && (
+                    <span className="store-pattern-label">{patternLabel}</span>
+                  )}
+                </div>
               </div>
             </motion.div>
           );

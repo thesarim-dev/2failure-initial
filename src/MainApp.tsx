@@ -12,6 +12,7 @@ import { Summary } from './components/Summary';
 import { Store } from './components/Store';
 import { Settings } from './components/Settings';
 import {
+  LINEUP_EQUIP_COUNT,
   Move,
   Variant,
   isRepLoggedCategory,
@@ -99,6 +100,7 @@ export function MainApp() {
     equippedUpper,
     equippedLower,
     equippedCore,
+    setEquippedUpper,
     toggleEquipUpper,
     toggleEquipLower,
     toggleEquipCore
@@ -336,6 +338,19 @@ export function MainApp() {
 
   const handleToggleEquipUpper = (exerciseId: string) => {
     if (rotatingProgramEnabled || !owned.includes(exerciseId)) return;
+
+    if (equippedUpper.includes(exerciseId)) {
+      toggleEquipUpper(exerciseId);
+      return;
+    }
+
+    if (equippedUpper.length >= LINEUP_EQUIP_COUNT) {
+      const nextUpper = [...equippedUpper];
+      nextUpper.splice(0, 1, exerciseId);
+      setEquippedUpper(nextUpper);
+      return;
+    }
+
     toggleEquipUpper(exerciseId);
   };
 
