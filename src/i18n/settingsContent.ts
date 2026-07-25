@@ -14,7 +14,7 @@ const en: SettingsContent = {
   rotatingProgram: {
     title: 'rotating program',
     description:
-      '7-day RIR plan: push, legs, pull, legs, mixed, then two pure recovery stretch days. Equipment exercises are 3 sets; bodyweight and core are 2 sets.',
+      '5-day RIR plan: push, legs, pull, legs, mixed. Take up to 2 rest (stretch) days per week from the home screen — those push the program back one day. Equipment exercises are 3 sets; bodyweight and core are 2 sets.',
     off: 'Off',
     on: 'On',
     trainingGuide: {
@@ -43,11 +43,11 @@ const en: SettingsContent = {
           ]
         },
         {
-          title: 'Recovery days (days 6 & 7)',
+          title: 'Rest days (player-chosen)',
           items: [
             {
               label: 'Stretch only.',
-              text: 'No lifting and no core — deep static stretching'
+              text: 'No lifting and no core — deep static stretching. Up to 2 per week; today’s workout moves to tomorrow.'
             }
           ]
         }
@@ -59,6 +59,10 @@ const en: SettingsContent = {
       legs: 'legs',
       mixed: 'mixed',
       recovery: 'stretch'
+    },
+    restDay: {
+      carouselTitle: 'REST',
+      carouselKicker: 'today'
     }
   },
   appearance: {
@@ -165,7 +169,7 @@ const he: SettingsContent = {
   rotatingProgram: {
     title: 'תוכנית מתחלפת',
     description:
-      'תוכנית RIR ל-7 ימים: דחיפה, רגליים, משיכה, רגליים, מעורב, ואז שני ימי מתיחות והתאוששות. תרגילי ציוד — 3 סטים; משקל גוף וליבה — 2 סטים.',
+      'תוכנית RIR ל-5 ימים: דחיפה, רגליים, משיכה, רגליים, מעורב. אפשר לקחת עד 2 ימי מנוחה (מתיחות) בשבוע ממסך הבית — זה דוחה את התוכנית ביום. תרגילי ציוד — 3 סטים; משקל גוף וליבה — 2 סטים.',
     off: 'כבוי',
     on: 'פעיל',
     trainingGuide: {
@@ -194,11 +198,11 @@ const he: SettingsContent = {
           ]
         },
         {
-          title: 'ימי התאוששות (ימים 6 ו-7)',
+          title: 'ימי מנוחה (נבחרים על ידי השחקן)',
           items: [
             {
               label: 'מתיחות בלבד.',
-              text: 'בלי הרמות ובלי ליבה — מתיחות סטטיות עמוקות'
+              text: 'בלי הרמות ובלי ליבה — מתיחות סטטיות עמוקות. עד 2 בשבוע; האימון של היום עובר למחר.'
             }
           ]
         }
@@ -210,6 +214,10 @@ const he: SettingsContent = {
       legs: 'רגליים',
       mixed: 'מעורב',
       recovery: 'מתיחות'
+    },
+    restDay: {
+      carouselTitle: 'מנוחה',
+      carouselKicker: 'היום'
     }
   },
   appearance: {
@@ -315,7 +323,7 @@ const ar: SettingsContent = {
   rotatingProgram: {
     title: 'برنامج متناوب',
     description:
-      'خطة RIR لسبعة أيام: دفع، ساقين، سحب، ساقين، مختلط، ثم يومان للتعافي والتمدد فقط. تمارين المعدات 3 مجموعات؛ وزن الجسم واللبّ 2 مجموعات.',
+      'خطة RIR لخمسة أيام: دفع، ساقين، سحب، ساقين، مختلط. يمكنك أخذ حتى يومَي راحة (تمدد) في الأسبوع من الشاشة الرئيسية — وهذا يؤجل البرنامج يومًا واحدًا. تمارين المعدات 3 مجموعات؛ وزن الجسم واللبّ 2 مجموعات.',
     off: 'إيقاف',
     on: 'تشغيل',
     trainingGuide: {
@@ -344,11 +352,11 @@ const ar: SettingsContent = {
           ]
         },
         {
-          title: 'أيام التعافي (اليوم 6 و7)',
+          title: 'أيام الراحة (يختارها اللاعب)',
           items: [
             {
               label: 'تمدد فقط.',
-              text: 'لا رفع ولا لبّ — تمدد ثابت عميق'
+              text: 'لا رفع ولا لبّ — تمدد ثابت عميق. حتى يومين في الأسبوع؛ ينتقل تمرين اليوم إلى الغد.'
             }
           ]
         }
@@ -360,6 +368,10 @@ const ar: SettingsContent = {
       legs: 'ساقين',
       mixed: 'مختلط',
       recovery: 'تمدد'
+    },
+    restDay: {
+      carouselTitle: 'راحة',
+      carouselKicker: 'اليوم'
     }
   },
   appearance: {

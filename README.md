@@ -22,7 +22,7 @@
 7. [Log reps and weight](#7-log-reps-and-weight)
 8. [Review your set summary](#8-review-your-set-summary)
 9. [Use the store and build your lineup](#9-use-the-store-and-build-your-lineup)
-10. [Follow the rotating 7-day program](#10-follow-the-rotating-7-day-program)
+10. [Follow the rotating 5-day program](#10-follow-the-rotating-5-day-program)
 11. [Adjust settings](#11-adjust-settings)
 12. [Track progress over time](#12-track-progress-over-time)
 13. [Troubleshooting](#13-troubleshooting)
@@ -131,7 +131,7 @@ The home screen is your command center. Everything you need for today's session 
 
 ### Streak badge
 
-The orange flame badge shows your **current streak**: the number of consecutive days you have completed at least one set. The count updates after you finish a workout.
+The orange flame badge shows your **current streak**: the number of consecutive days you have completed at least two sets of the same exercise. The count updates after you finish your second set of a workout for the day.
 
 If your streak has been running for more than 14 days, you may see a **Restore streak** action on the dashboard when a streak is at risk. It costs **150 coins** and can be used **up to twice per month**.
 
@@ -152,9 +152,9 @@ Tap a card to start that exercise. Cards marked **done** are dimmed and cannot b
 
 ### Rotating program banner
 
-When the 7-day program is enabled, a line above the exercise list shows your current program day and focus, for example:
+When the 5-day program is enabled, a line above the exercise list shows your current program day and focus, for example:
 
-> Program day 3/7 — pull
+> Program day 3/5 — pull
 
 ---
 
@@ -305,9 +305,9 @@ When the rotating program is on, lineup changes are **locked**. The program assi
 
 ---
 
-## 10. Follow the rotating 7-day program
+## 10. Follow the rotating 5-day program
 
-The rotating program is an optional and balanced 7-day training plan built around **RIR** (reps in reserve), stopping just short of failure on early sets and going all-out on the final set.
+The rotating program is an optional and balanced 5-day training plan built around **RIR** (reps in reserve), stopping just short of failure on early sets and going all-out on the final set. Rest (stretch) days are not fixed in the cycle — you choose them when you need them.
 
 ### Enable the program
 
@@ -315,7 +315,7 @@ The rotating program is an optional and balanced 7-day training plan built aroun
 2. Find **rotating program**.
 3. Toggle it **On**.
 
-### 7-day cycle
+### 5-day cycle
 
 | Day | Focus | Exercises |
 |---|---|---|
@@ -324,10 +324,8 @@ The rotating program is an optional and balanced 7-day training plan built aroun
 | 3 | Pull | Upper pull + supporting work |
 | 4 | Legs | Lower body |
 | 5 | Mixed | Combined training day |
-| 6 | Stretch | Recovery stretching only |
-| 7 | Stretch | Recovery stretching only |
 
-The home screen banner shows **Program day X/7** and the current focus.
+The home screen banner shows **Program day X/5** and the current focus.
 
 ### Set prescriptions
 
@@ -336,13 +334,22 @@ The home screen banner shows **Program day X/7** and the current focus.
 | **Equipment** (dumbbell, barbell, bench) | 3 | Sets 1–2: leave 1–2 reps in reserve. Set 3: go to failure. |
 | **Bodyweight** | 2 | Set 1: leave 1 rep in reserve. Set 2: go to failure. |
 | **Core** | 2 | Set 1: controlled pace. Set 2: max hold or failure. |
-| **Recovery days** | Stretch only | No lifting or core work |
+| **Recovery / rest days** | Stretch only | No lifting or core work — only when you take a rest day |
 
 Tap **How hard should each set feel?** in Settings for the full breakdown.
 
 ### Browse program days
 
 In Settings, use the program day carousel to preview upcoming days without changing today's workout.
+
+### Rest (stretch) days
+
+Need a break? While the rotating program is on, a **Rest day** button appears next to the program banner on the home screen. Tapping it:
+
+- Creates a stretch day for today (the home screen shows the recovery stretches).
+- Pushes the whole program back by one day, so today's planned workouts move to tomorrow.
+
+You can take **up to 2 rest days per rolling 7-day week**. When the limit is reached, the button disappears until a used rest day falls out of the window. Rest days are never auto-scheduled — only you decide when to take them.
 
 ---
 
@@ -356,7 +363,7 @@ Choose how many sets you aim to complete per exercise each day (when the rotatin
 
 ### Rotating program
 
-Toggle the 7-day plan on or off. When on, set targets and exercise selection are managed by the program.
+Toggle the 5-day plan on or off. When on, set targets and exercise selection are managed by the program. Use the home-screen **Rest day** button (up to 2 per week) when you want a stretch day.
 
 ### Appearance
 
@@ -412,7 +419,7 @@ If a set goes over 2 minutes, the receipt recommends switching to a harder exerc
 
 ### Streaks
 
-Complete at least one set on a given day to keep your streak alive. The flame badge on the home screen shows your current count. Missing a day resets the streak to zero.
+Complete at least two sets of the same exercise on a given day to keep your streak alive. The flame badge on the home screen shows your current count. Missing a day resets the streak to zero.
 
 For longer-running streaks, the app offers a paid recovery option: a **Restore streak** button appears for streaks over **14 days**, costs **150 coins**, and is limited to **2 uses per month**.
 
@@ -478,7 +485,7 @@ If the home screen shows a red error banner:
 | **Set** | One continuous bout of an exercise, from start to finish. |
 | **Lineup** | The exercises you have equipped and see on the home screen each day. |
 | **Personal best (PR)** | Your highest recorded performance for an exercise — reps for bodyweight, load × reps for weighted moves. |
-| **Rotating program** | The built-in 7-day RIR training cycle that auto-selects exercises and set targets. |
+| **Rotating program** | The built-in 5-day RIR training cycle that auto-selects exercises and set targets. Rest days are player-chosen. |
 | **Progressive overload** | Gradually increasing training stress (more weight, reps, or difficulty) to keep getting stronger. |
 | **Tier** | Exercise difficulty rating in the store: base, pro, or elite. |
 

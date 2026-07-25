@@ -70,6 +70,10 @@ export interface AppTranslations {
         'push' | 'legs' | 'pull' | 'mixed' | 'recovery',
         string
       >;
+      restDay: {
+        carouselTitle: string;
+        carouselKicker: string;
+      };
     };
     appearance: {
       title: string;
@@ -117,6 +121,11 @@ export interface AppTranslations {
       label: string;
       cost: (coins: number) => string;
       loading: string;
+    };
+    restDay: {
+      button: string;
+      remaining: (count: number) => string;
+      active: string;
     };
     setsProgress: (completed: number, goal: number) => string;
     pushupDailyProgress: (completed: number, goal: number) => string;

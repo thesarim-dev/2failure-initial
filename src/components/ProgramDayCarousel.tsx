@@ -8,6 +8,9 @@ interface ProgramDayCarouselProps {
   onSelectCycleDay: (cycleDay: number) => void;
   getPhaseLabel: (phase: (typeof ROTATION_CYCLE)[number]) => string;
   isDark: boolean;
+  isRestDay?: boolean;
+  restTitle: string;
+  restKicker: string;
 }
 
 const SWIPE_THRESHOLD = 56;
@@ -17,7 +20,23 @@ const CAROUSEL_TRANSITION = {
   ease: [0.22, 1, 0.36, 1] as [number, number, number, number]
 };
 
-function getCardColors(isActive: boolean, isDark: boolean) {
+function getCardColors(isActive: boolean, isDark: boolean, isRest: boolean) {
+  if (isRest && isActive) {
+    return isDark
+      ? {
+          borderColor: '#c8b0ff',
+          backgroundColor: '#2a2438',
+          boxShadow:
+            '0 0 0 1px rgba(200, 176, 255, 0.45), 0 0 18px rgba(160, 120, 255, 0.4), 0 0 36px rgba(140, 100, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+        }
+      : {
+          borderColor: '#9070e0',
+          backgroundColor: '#ffffff',
+          boxShadow:
+            '0 0 0 1px rgba(144, 112, 224, 0.35), 0 0 14px rgba(144, 112, 224, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9)'
+        };
+  }
+
   if (isActive) {
     return isDark
       ? {
@@ -79,17 +98,23 @@ function ProgramDayCard({
   isDark,
   direction,
   isRtl,
+  isRest = false,
+  restTitle = 'REST',
+  restKicker = 'today',
   onClick
 }: {
-  day: number;
+  day: number | null;
   isActive: boolean;
   phaseLabel: string;
   isDark: boolean;
   direction: number;
   isRtl: boolean;
+  isRest?: boolean;
+  restTitle?: string;
+  restKicker?: string;
   onClick?: () => void;
 }) {
-  const colors = getCardColors(isActive, isDark);
+  const colors = getCardColors(isActive, isDark, isRest);
   const motionState = getSlotMotion(isActive, direction, isRtl);
   const CardTag = onClick ? motion.button : motion.div;
 
@@ -99,7 +124,9 @@ function ProgramDayCard({
       role="tab"
       aria-selected={isActive}
       tabIndex={isActive ? 0 : -1}
-      className={`program-day-card ${isActive ? 'program-day-card--active' : 'program-day-card--side'}`}
+      className={`program-day-card ${isActive ? 'program-day-card--active' : 'program-day-card--side'}${
+        isRest ? ' program-day-card--rest' : ''
+      }`}
       onClick={onClick}
       initial={motionState.initial}
       animate={{
@@ -118,14 +145,22 @@ function ProgramDayCard({
             }
           : undefined
       }>
-      {isActive ? (
+          {isActive ? (
         <>
           <span className="program-day-card-kicker">
-            day {day}
-            <span className="program-day-card-kicker-sep">/</span>
-            {ROTATION_CYCLE_LENGTH}
+            {isRest ? (
+              restKicker
+            ) : (
+              <>
+                day {day}
+                <span className="program-day-card-kicker-sep">/</span>
+                {ROTATION_CYCLE_LENGTH}
+              </>
+            )}
           </span>
-          <span className="program-day-card-title">{phaseLabel}</span>
+          <span className="program-day-card-title">
+            {isRest ? restTitle : phaseLabel}
+          </span>
         </>
       ) : (
         <>
@@ -137,13 +172,20 @@ function ProgramDayCard({
   );
 }
 
-function ProgramDayDots({ cycleDay }: { cycleDay: number }) {
+function ProgramDayDots({
+  cycleDay,
+  isRestDay
+}: {
+  cycleDay: number;
+  isRestDay: boolean;
+}) {
   return (
     <LayoutGroup id="program-day-dots">
       <div className="program-day-dots">
         {Array.from({ length: ROTATION_CYCLE_LENGTH }, (_, index) => {
           const day = index + 1;
-          const isActive = day === cycleDay;
+          // On a rest day, highlight tomorrow's deferred training day as upcoming.
+          const isActive = !isRestDay && day === cycleDay;
 
           return (
             <div key={day} className="program-day-dot-slot">
@@ -158,6 +200,11 @@ function ProgramDayDots({ cycleDay }: { cycleDay: number }) {
             </div>
           );
         })}
+        {isRestDay ? (
+          <div className="program-day-dot-slot" aria-hidden="true">
+            <span className="program-day-dot program-day-dot--rest" />
+          </div>
+        ) : null}
       </div>
     </LayoutGroup>
   );
@@ -167,15 +214,30 @@ export function ProgramDayCarousel({
   cycleDay,
   onSelectCycleDay,
   getPhaseLabel,
-  isDark
+  isDark,
+  isRestDay = false,
+  restTitle,
+  restKicker
 }: ProgramDayCarouselProps) {
   const { isRtl } = useLanguage();
   const pointerStartX = useRef<number | null>(null);
   const prevCycleDayRef = useRef(cycleDay);
   const [direction, setDirection] = useState(0);
 
-  const prevDay = cycleDay > 1 ? cycleDay - 1 : null;
-  const nextDay = cycleDay < ROTATION_CYCLE_LENGTH ? cycleDay + 1 : null;
+  // On rest day, cycleDay is the deferred (tomorrow) training day.
+  const prevDay = isRestDay
+    ? cycleDay > 1
+      ? cycleDay - 1
+      : null
+    : cycleDay > 1
+      ? cycleDay - 1
+      : null;
+  const nextDay = isRestDay
+    ? null
+    : cycleDay < ROTATION_CYCLE_LENGTH
+      ? cycleDay + 1
+      : null;
+  const deferredDay = isRestDay ? cycleDay : null;
 
   const phaseLabel = useMemo(
     () => getPhaseLabel(ROTATION_CYCLE[cycleDay - 1]),
@@ -184,8 +246,11 @@ export function ProgramDayCarousel({
 
   const prevPhaseLabel =
     prevDay !== null ? getPhaseLabel(ROTATION_CYCLE[prevDay - 1]) : '';
-  const nextPhaseLabel =
-    nextDay !== null ? getPhaseLabel(ROTATION_CYCLE[nextDay - 1]) : '';
+  const nextPhaseLabel = isRestDay
+    ? getPhaseLabel(ROTATION_CYCLE[cycleDay - 1])
+    : nextDay !== null
+      ? getPhaseLabel(ROTATION_CYCLE[nextDay - 1])
+      : '';
 
   useEffect(() => {
     const previousDay = prevCycleDayRef.current;
@@ -196,19 +261,22 @@ export function ProgramDayCarousel({
   }, [cycleDay]);
 
   const goNext = useCallback(() => {
-    if (nextDay !== null) onSelectCycleDay(nextDay);
-  }, [nextDay, onSelectCycleDay]);
+    if (isRestDay || nextDay === null) return;
+    onSelectCycleDay(nextDay);
+  }, [isRestDay, nextDay, onSelectCycleDay]);
 
   const goPrev = useCallback(() => {
-    if (prevDay !== null) onSelectCycleDay(prevDay);
-  }, [prevDay, onSelectCycleDay]);
+    if (isRestDay || prevDay === null) return;
+    onSelectCycleDay(prevDay);
+  }, [isRestDay, prevDay, onSelectCycleDay]);
 
   const handlePointerDown = (clientX: number) => {
+    if (isRestDay) return;
     pointerStartX.current = clientX;
   };
 
   const handlePointerUp = (clientX: number) => {
-    if (pointerStartX.current === null) return;
+    if (isRestDay || pointerStartX.current === null) return;
 
     const rawDelta = clientX - pointerStartX.current;
     const delta = isRtl ? -rawDelta : rawDelta;
@@ -253,7 +321,7 @@ export function ProgramDayCarousel({
                 isDark={isDark}
                 direction={direction}
                 isRtl={isRtl}
-                onClick={goPrev}
+                onClick={isRestDay ? undefined : goPrev}
               />
             </AnimatePresence>
           ) : (
@@ -263,20 +331,47 @@ export function ProgramDayCarousel({
 
         <div className="program-day-slot program-day-slot--center">
           <AnimatePresence mode="sync" initial={false}>
-            <ProgramDayCard
-              key={cycleDay}
-              day={cycleDay}
-              isActive
-              phaseLabel={phaseLabel}
-              isDark={isDark}
-              direction={direction}
-              isRtl={isRtl}
-            />
+            {isRestDay ? (
+              <ProgramDayCard
+                key="rest"
+                day={null}
+                isActive
+                isRest
+                phaseLabel={restTitle}
+                restTitle={restTitle}
+                restKicker={restKicker}
+                isDark={isDark}
+                direction={direction}
+                isRtl={isRtl}
+              />
+            ) : (
+              <ProgramDayCard
+                key={cycleDay}
+                day={cycleDay}
+                isActive
+                phaseLabel={phaseLabel}
+                isDark={isDark}
+                direction={direction}
+                isRtl={isRtl}
+              />
+            )}
           </AnimatePresence>
         </div>
 
         <div className="program-day-slot program-day-slot--next">
-          {nextDay !== null ? (
+          {isRestDay && deferredDay !== null ? (
+            <AnimatePresence mode="sync" initial={false}>
+              <ProgramDayCard
+                key={`deferred-${deferredDay}`}
+                day={deferredDay}
+                isActive={false}
+                phaseLabel={nextPhaseLabel}
+                isDark={isDark}
+                direction={direction}
+                isRtl={isRtl}
+              />
+            </AnimatePresence>
+          ) : nextDay !== null ? (
             <AnimatePresence mode="sync" initial={false}>
               <ProgramDayCard
                 key={nextDay}
@@ -295,7 +390,7 @@ export function ProgramDayCarousel({
         </div>
       </div>
 
-      <ProgramDayDots cycleDay={cycleDay} />
+      <ProgramDayDots cycleDay={cycleDay} isRestDay={isRestDay} />
     </div>
   );
 }

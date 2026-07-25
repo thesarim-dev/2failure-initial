@@ -4,6 +4,7 @@ import {
   getRotatingProgramCycleDay,
   getRotatingProgramDayIndex,
   getRotatingProgramPhase,
+  MAX_REST_DAYS_PER_WEEK,
   ROTATION_CYCLE_LENGTH,
   type RotatingProgramPhase
 } from '../lib/rotatingProgram';
@@ -22,6 +23,7 @@ export function useRotatingProgram() {
   const START_DATE_KEY = storageKeyFor(userId, 'rotating-program-start-date');
   const EFFECTIVE_INDEX_KEY = storageKeyFor(userId, 'rotating-program-effective-index');
   const EFFECTIVE_DATE_KEY = storageKeyFor(userId, 'rotating-program-effective-date');
+  const REST_DAYS_KEY = storageKeyFor(userId, 'rotating-program-rest-days');
   /** @deprecated migrated to effective index + date */
   const LEGACY_OFFSET_KEY = storageKeyFor(userId, 'rotating-program-day-offset');
 
@@ -53,9 +55,47 @@ export function useRotatingProgram() {
       const raw = window.localStorage.getItem(EFFECTIVE_INDEX_KEY);
       if (!raw) return null;
       const parsed = Number.parseInt(raw, 10);
-      return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+      // Negative values are valid: rest days can shift the index below zero.
+      return Number.isFinite(parsed) ? parsed : null;
     } catch {
       return null;
+    }
+  }
+
+  function readStoredRestDays(): string[] {
+    if (typeof window === 'undefined') return [];
+
+    try {
+      const raw = window.localStorage.getItem(REST_DAYS_KEY);
+      if (!raw) return [];
+      const parsed: unknown = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(
+        (value): value is string =>
+          typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+      );
+    } catch {
+      return [];
+    }
+  }
+
+  function writeStoredRestDays(days: string[]): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      window.localStorage.setItem(REST_DAYS_KEY, JSON.stringify(days));
+    } catch {
+      // Ignore storage failures.
+    }
+  }
+
+  function clearStoredRestDays(): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      window.localStorage.removeItem(REST_DAYS_KEY);
+    } catch {
+      // Ignore storage failures.
     }
   }
 
@@ -150,8 +190,9 @@ export function useRotatingProgram() {
 
     if (storedIndex !== null && storedDate !== null) {
       const elapsed = Math.max(0, daysBetweenLocalDates(storedDate, today));
+      // Keep the raw (possibly negative) index; display logic clamps to 0.
       return {
-        index: Math.max(0, storedIndex + elapsed),
+        index: storedIndex + elapsed,
         date: today
       };
     }
@@ -182,10 +223,15 @@ export function useRotatingProgram() {
     return resolveInitialEffectivePosition(readStoredStartDate()!, today);
   });
 
+  const [restDays, setRestDaysState] = useState<string[]>(readStoredRestDays);
+
   const setRotatingProgramEnabled = useCallback(
     (next: boolean) => {
       setEnabledState(next);
       writeStoredEnabled(next);
+
+      setRestDaysState([]);
+      clearStoredRestDays();
 
       if (next) {
         const anchor = toLocalDateString();
@@ -205,30 +251,83 @@ export function useRotatingProgram() {
     []
   );
 
-  const effectiveDayIndex = useMemo(() => {
+  const rawDayIndex = useMemo(() => {
     if (!enabled || !startDate) return null;
 
     if (savedPosition) {
       const elapsed = Math.max(0, daysBetweenLocalDates(savedPosition.date, today));
-      return Math.max(0, savedPosition.index + elapsed);
+      // May be negative after a rest day taken on cycle day 1.
+      return savedPosition.index + elapsed;
     }
 
     return getRotatingProgramDayIndex(startDate, today);
   }, [enabled, startDate, savedPosition, today]);
 
+  const effectiveDayIndex = useMemo(() => {
+    if (rawDayIndex === null) return null;
+    return Math.max(0, rawDayIndex);
+  }, [rawDayIndex]);
+
+  const isRestDayToday = enabled && restDays.includes(today);
+
+  const restDaysUsedThisWeek = useMemo(
+    () =>
+      restDays.filter((day) => {
+        const elapsed = daysBetweenLocalDates(day, today);
+        return elapsed >= 0 && elapsed < 7;
+      }).length,
+    [restDays, today]
+  );
+
+  const canTakeRestDay =
+    enabled && !isRestDayToday && restDaysUsedThisWeek < MAX_REST_DAYS_PER_WEEK;
+
+  const markTodayAsRestDay = useCallback(() => {
+    if (!enabled || effectiveDayIndex === null) return;
+    if (restDays.includes(today)) return;
+
+    const usedThisWeek = restDays.filter((day) => {
+      const elapsed = daysBetweenLocalDates(day, today);
+      return elapsed >= 0 && elapsed < 7;
+    }).length;
+    if (usedThisWeek >= MAX_REST_DAYS_PER_WEEK) return;
+
+    // Drop entries older than the rolling window before adding today.
+    const nextRestDays = [
+      ...restDays.filter((day) => daysBetweenLocalDates(day, today) < 7),
+      today
+    ];
+    setRestDaysState(nextRestDays);
+    writeStoredRestDays(nextRestDays);
+
+    // Freeze today's training day: store index - 1 so tomorrow advances to
+    // the canceled workout (elapsed +1 brings it back to today's original index).
+    const nextIndex = effectiveDayIndex - 1;
+    setSavedPositionState({ index: nextIndex, date: today });
+    writeStoredEffectivePosition(nextIndex, today);
+  }, [enabled, effectiveDayIndex, restDays, today]);
+
   const phase = useMemo((): RotatingProgramPhase | null => {
     if (effectiveDayIndex === null) return null;
+    // A declared rest day creates the stretch plan for today.
+    if (isRestDayToday) return 'recovery';
     return getRotatingProgramPhase(effectiveDayIndex);
-  }, [effectiveDayIndex]);
+  }, [effectiveDayIndex, isRestDayToday]);
 
   const cycleDay = useMemo(() => {
     if (effectiveDayIndex === null) return null;
+    // On a rest day the carousel centers on REST; cycleDay stays the deferred
+    // training day so side cards / dots can preview tomorrow's workouts.
+    if (isRestDayToday && rawDayIndex !== null) {
+      return getRotatingProgramCycleDay(rawDayIndex + 1);
+    }
     return getRotatingProgramCycleDay(effectiveDayIndex);
-  }, [effectiveDayIndex]);
+  }, [effectiveDayIndex, isRestDayToday, rawDayIndex]);
 
   const selectProgramCycleDay = useCallback(
     (targetCycleDay: number) => {
-      if (effectiveDayIndex === null) return;
+      // Don't jump days while today is locked as a player rest day.
+      if (isRestDayToday || effectiveDayIndex === null) return;
 
       const currentNorm =
         ((effectiveDayIndex % ROTATION_CYCLE_LENGTH) + ROTATION_CYCLE_LENGTH) %
@@ -241,7 +340,7 @@ export function useRotatingProgram() {
       setSavedPositionState({ index: nextIndex, date: anchor });
       writeStoredEffectivePosition(nextIndex, anchor);
     },
-    [effectiveDayIndex]
+    [effectiveDayIndex, isRestDayToday]
   );
 
   return {
@@ -249,6 +348,13 @@ export function useRotatingProgram() {
     setRotatingProgramEnabled,
     rotatingProgramPhase: phase,
     rotatingProgramCycleDay: cycleDay,
-    selectProgramCycleDay
+    selectProgramCycleDay,
+    isRestDayToday,
+    canTakeRestDay,
+    restDaysRemainingThisWeek: Math.max(
+      0,
+      MAX_REST_DAYS_PER_WEEK - restDaysUsedThisWeek
+    ),
+    markTodayAsRestDay
   };
 }

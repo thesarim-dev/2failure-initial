@@ -23,7 +23,7 @@ const en: TutorialContent = {
     },
     {
       title: 'Settings',
-      body: 'The gear icon opens settings. Try the rotating 7-day program or set your own daily set target. Switch day/night mode and language there too.'
+      body: 'The gear icon opens settings. Try the rotating 5-day program or set your own daily set target. Switch day/night mode and language there too.'
     },
     {
       title: 'Coins & streak',
@@ -53,7 +53,7 @@ const he: TutorialContent = {
     },
     {
       title: 'הגדרות',
-      body: 'אייקון ההגדרות פותח את ההגדרות. הפעילו את תוכנית ה-7 ימים או קבעו יעד סטים יומי. שם גם מחליפים מצב יום/לילה ושפה.'
+      body: 'אייקון ההגדרות פותח את ההגדרות. הפעילו את תוכנית ה-5 ימים או קבעו יעד סטים יומי. שם גם מחליפים מצב יום/לילה ושפה.'
     },
     {
       title: 'מטבעות ורצף',
@@ -83,7 +83,7 @@ const ar: TutorialContent = {
     },
     {
       title: 'الإعدادات',
-      body: 'أيقونة الإعدادات تفتح الإعدادات. جرّب برنامج الـ7 أيام أو حدّد هدف المجموعات اليومي. بدّل وضع النهار/الليل واللغة من هناك أيضاً.'
+      body: 'أيقونة الإعدادات تفتح الإعدادات. جرّب برنامج الـ5 أيام أو حدّد هدف المجموعات اليومي. بدّل وضع النهار/الليل واللغة من هناك أيضاً.'
     },
     {
       title: 'العملات والسلسلة',

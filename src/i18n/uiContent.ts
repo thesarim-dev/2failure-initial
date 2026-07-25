@@ -11,6 +11,16 @@ interface DashboardUiContent {
   programEquipment: (gear: string) => string;
   equipment: Record<'dumbbell' | 'barbell' | 'bench', string>;
   streak: string;
+  streakRestore: {
+    label: string;
+    cost: (coins: number) => string;
+    loading: string;
+  };
+  restDay: {
+    button: string;
+    remaining: (count: number) => string;
+    active: string;
+  };
   setsProgress: (completed: number, goal: number) => string;
   pushupDailyProgress: (completed: number, goal: number) => string;
   loading: string;
@@ -64,6 +74,11 @@ const en: UiContent = {
       label: 'Restore streak',
       cost: (coins) => `Restore for ${coins} coins`,
       loading: 'Restoring…'
+    },
+    restDay: {
+      button: 'Rest day',
+      remaining: (count) => `(${count} left this week)`,
+      active: 'Rest day — today\'s workouts moved to tomorrow. Stretch it out.'
     },
     setsProgress: (completed, goal) => `${completed} / ${goal} sets`,
     pushupDailyProgress: (completed, goal) => `${completed} / ${goal} pushups`,
@@ -305,6 +320,11 @@ const he: UiContent = {
       cost: (coins) => `לשחזר ב-${coins} מטבעות`,
       loading: 'שוחזר…'
     },
+    restDay: {
+      button: 'יום מנוחה',
+      remaining: (count) => `(נותרו ${count} השבוע)`,
+      active: 'יום מנוחה — האימונים של היום הועברו למחר. זמן למתיחות.'
+    },
     setsProgress: (completed, goal) => `${completed} / ${goal} סטים`,
     pushupDailyProgress: (completed, goal) => `${completed} / ${goal} שכ״ס`,
     loading: '…',
@@ -544,6 +564,11 @@ const ar: UiContent = {
       label: 'استعادة السلسلة',
       cost: (coins) => `استعادة مقابل ${coins} عملة`,
       loading: 'جارٍ الاستعادة…'
+    },
+    restDay: {
+      button: 'يوم راحة',
+      remaining: (count) => `(متبقٍ ${count} هذا الأسبوع)`,
+      active: 'يوم راحة — تم نقل تمارين اليوم إلى الغد. وقت التمدد.'
     },
     setsProgress: (completed, goal) => `${completed} / ${goal} مجموعات`,
     pushupDailyProgress: (completed, goal) => `${completed} / ${goal} ضغط`,

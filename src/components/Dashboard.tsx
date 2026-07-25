@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Loader2, Settings as SettingsIcon, ShoppingBag } from 'lucide-react';
+import { BedDouble, Flame, Loader2, Settings as SettingsIcon, ShoppingBag } from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
 import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
@@ -37,6 +37,10 @@ interface DashboardProps {
   rotatingProgramEnabled: boolean;
   rotatingProgramPhase: RotatingProgramPhase | null;
   rotatingProgramCycleDay: number | null;
+  isRestDayToday: boolean;
+  canTakeRestDay: boolean;
+  restDaysRemainingThisWeek: number;
+  onTakeRestDay: () => void;
   pushupRepsToday: number;
   pushupRepsLoading: boolean;
   onSelectMove: (move: Move) => void;
@@ -68,6 +72,10 @@ export function Dashboard({
   rotatingProgramEnabled,
   rotatingProgramPhase,
   rotatingProgramCycleDay,
+  isRestDayToday,
+  canTakeRestDay,
+  restDaysRemainingThisWeek,
+  onTakeRestDay,
   pushupRepsToday,
   pushupRepsLoading,
   onSelectMove,
@@ -190,13 +198,31 @@ export function Dashboard({
         {rotatingProgramEnabled &&
           rotatingProgramPhase !== null &&
           rotatingProgramCycleDay !== null && (
-            <p className="text-sm font-semibold mb-2 text-[#00A8D8] dark:text-[#00B2FF] normal-case text-start">
-              {t.dashboard.rotatingProgramFocus(
-                rotatingProgramCycleDay,
-                ROTATION_CYCLE_LENGTH,
-                t.settings.rotatingProgram.phases[rotatingProgramPhase]
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-[#00A8D8] dark:text-[#00B2FF] normal-case text-start">
+                {isRestDayToday
+                  ? t.dashboard.restDay.active
+                  : t.dashboard.rotatingProgramFocus(
+                      rotatingProgramCycleDay,
+                      ROTATION_CYCLE_LENGTH,
+                      t.settings.rotatingProgram.phases[rotatingProgramPhase]
+                    )}
+              </p>
+              {!isRestDayToday && canTakeRestDay && (
+                <button
+                  type="button"
+                  onClick={onTakeRestDay}
+                  className="rest-day-btn rounded-full border border-[#00A8D8] dark:border-[#00B2FF] bg-white/80 dark:bg-[#2a2a2a]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#007A9E] dark:text-[#7ADCFF] normal-case">
+                  <span className="flex items-center gap-1.5">
+                    <BedDouble size={13} strokeWidth={2.5} aria-hidden="true" />
+                    {t.dashboard.restDay.button}
+                    <span className="opacity-70">
+                      {t.dashboard.restDay.remaining(restDaysRemainingThisWeek)}
+                    </span>
+                  </span>
+                </button>
               )}
-            </p>
+            </div>
           )}
         <h2 className="text-2xl mb-2 normal-case text-start">
           {t.dashboard.pickYourPoison}

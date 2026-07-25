@@ -7,7 +7,8 @@ export type ProgramExercisePrescription = {
 };
 
 /**
- * 7-day RIR program: push, legs, pull, legs, mixed, then two recovery stretch days.
+ * 5-day RIR program: push, legs, pull, legs, mixed.
+ * Stretch (rest) days are not in the cycle — the player creates them on demand.
  * Home-gym anchors use 3 sets; workday accessories and core use 2 sets each.
  */
 const PROGRAM_BY_PHASE: Record<

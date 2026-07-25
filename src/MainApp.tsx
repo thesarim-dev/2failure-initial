@@ -25,7 +25,7 @@ import { usePushupDailyReps } from './hooks/usePushupDailyReps';
 import { useRotatingProgram } from './hooks/useRotatingProgram';
 import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { calculateCoinsEarned } from './lib/coinRewards';
-import { STREAK_RESTORE_COST } from './lib/userStats';
+import { shouldCountStreakForDay, STREAK_RESTORE_COST } from './lib/userStats';
 import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { RepPrompt } from './components/RepPrompt';
 import { WeightRepPrompt } from './components/WeightRepPrompt';
@@ -57,7 +57,11 @@ export function MainApp() {
     setRotatingProgramEnabled,
     rotatingProgramPhase,
     rotatingProgramCycleDay,
-    selectProgramCycleDay
+    selectProgramCycleDay,
+    isRestDayToday,
+    canTakeRestDay,
+    restDaysRemainingThisWeek,
+    markTodayAsRestDay
   } = useRotatingProgram();
   const {
     coins,
@@ -181,17 +185,23 @@ export function MainApp() {
   const finishWorkoutSession = (
     duration: number,
     repsLogged?: number,
-    options?: { recordComplete?: boolean; setContext?: typeof summarySetContext }
+    options?: { setContext?: typeof summarySetContext }
   ) => {
     if (!currentMove) return;
-    if (currentMove.categoryId === 'pushups' && repsLogged && repsLogged > 0) {
+    const categoryId = currentMove.categoryId;
+    if (categoryId === 'pushups' && repsLogged && repsLogged > 0) {
       addPushupReps(repsLogged);
     }
-    void incrementSet(currentMove.categoryId);
+    void (async () => {
+      const setCount = await incrementSet(categoryId);
+      if (
+        setCount !== null &&
+        shouldCountStreakForDay(setCount, lastWorkoutDate)
+      ) {
+        await recordWorkoutComplete();
+      }
+    })();
     void setCoins((c) => c + calculateCoinsEarned(duration, currentMove.tier ?? 'BASE'));
-    if (options?.recordComplete !== false) {
-      void recordWorkoutComplete();
-    }
     setSummarySetContext(options?.setContext ?? null);
     finishingRef.current = false;
     setIsFinishing(false);
@@ -279,7 +289,6 @@ export function MainApp() {
       );
       setLastSetResult(result);
       finishWorkoutSession(lastDuration, reps, {
-        recordComplete: isLastSet,
         setContext: {
           setNumber: setContext.setNumber,
           totalSets: setContext.totalSets,
@@ -396,6 +405,10 @@ export function MainApp() {
         rotatingProgramEnabled={rotatingProgramEnabled}
         rotatingProgramPhase={rotatingProgramPhase}
         rotatingProgramCycleDay={rotatingProgramCycleDay}
+        isRestDayToday={isRestDayToday}
+        canTakeRestDay={canTakeRestDay}
+        restDaysRemainingThisWeek={restDaysRemainingThisWeek}
+        onTakeRestDay={markTodayAsRestDay}
         pushupRepsToday={pushupRepsToday}
         pushupRepsLoading={pushupRepsLoading}
         onSelectMove={handleSelectMove}
@@ -427,6 +440,7 @@ export function MainApp() {
         rotatingProgramEnabled={rotatingProgramEnabled}
         rotatingProgramPhase={rotatingProgramPhase}
         rotatingProgramCycleDay={rotatingProgramCycleDay}
+        isRestDayToday={isRestDayToday}
         onSelectProgramCycleDay={selectProgramCycleDay}
         isDark={isDark}
         onDailySetGoalChange={setDailySetGoal}

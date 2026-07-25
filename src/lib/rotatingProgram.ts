@@ -11,17 +11,19 @@ export type RotatingProgramPhase =
   | 'mixed'
   | 'recovery';
 
+/** Training days only — stretch (rest) days are created when the player opts in. */
 export const ROTATION_CYCLE: readonly RotatingProgramPhase[] = [
   'push',
   'legs',
   'pull',
   'legs',
-  'mixed',
-  'recovery',
-  'recovery'
+  'mixed'
 ];
 
 export const ROTATION_CYCLE_LENGTH = ROTATION_CYCLE.length;
+
+/** User-declared stretch (rest) days allowed per rolling 7-day window. */
+export const MAX_REST_DAYS_PER_WEEK = 2;
 
 function parseLocalDateString(value: string): Date {
   const [year, month, day] = value.split('-').map(Number);

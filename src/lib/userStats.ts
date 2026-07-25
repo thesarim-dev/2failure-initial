@@ -7,6 +7,18 @@ const DAY_RESET_HOUR = 3;
 export const STREAK_RESTORE_COST = 150;
 export const STREAK_RESTORE_MIN_LENGTH = 14;
 export const STREAK_RESTORE_LIMIT_PER_MONTH = 2;
+export const STREAK_MIN_SETS_PER_EXERCISE = 2;
+
+export function shouldCountStreakForDay(
+  exerciseSetsAfterCompletion: number,
+  lastWorkoutDate: string | null,
+  today = toLocalDateString()
+): boolean {
+  return (
+    exerciseSetsAfterCompletion >= STREAK_MIN_SETS_PER_EXERCISE &&
+    lastWorkoutDate !== today
+  );
+}
 
 function getDayBucket(date: Date): string {
   const adjustedDate = new Date(date);
@@ -23,6 +35,18 @@ function getDayBucket(date: Date): string {
 
 export function toLocalDateString(date: Date = new Date()): string {
   return getDayBucket(date);
+}
+
+/** Local ISO timestamp when the current app day started (same 3am boundary as streaks). */
+export function toLocalDayStartIso(date: Date = new Date()): string {
+  const start = new Date(date);
+
+  if (start.getHours() < DAY_RESET_HOUR) {
+    start.setDate(start.getDate() - 1);
+  }
+
+  start.setHours(DAY_RESET_HOUR, 0, 0, 0);
+  return start.toISOString();
 }
 
 function yesterdayLocalDateString(): string {

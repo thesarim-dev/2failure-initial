@@ -16,6 +16,7 @@ interface SettingsProps {
   rotatingProgramEnabled: boolean;
   rotatingProgramPhase: RotatingProgramPhase | null;
   rotatingProgramCycleDay: number | null;
+  isRestDayToday: boolean;
   onSelectProgramCycleDay: (cycleDay: number) => void;
   isDark: boolean;
   onDailySetGoalChange: (goal: DailySetGoal) => void;
@@ -32,6 +33,7 @@ export function Settings({
   rotatingProgramEnabled,
   rotatingProgramPhase,
   rotatingProgramCycleDay,
+  isRestDayToday,
   onSelectProgramCycleDay,
   isDark,
   onDailySetGoalChange,
@@ -98,6 +100,9 @@ export function Settings({
                   onSelectCycleDay={onSelectProgramCycleDay}
                   getPhaseLabel={(phase) => s.rotatingProgram.phases[phase]}
                   isDark={isDark}
+                  isRestDay={isRestDayToday}
+                  restTitle={s.rotatingProgram.restDay.carouselTitle}
+                  restKicker={s.rotatingProgram.restDay.carouselKicker}
                 />
                 <ProgramTrainingGuide />
               </>

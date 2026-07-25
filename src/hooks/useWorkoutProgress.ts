@@ -42,18 +42,20 @@ export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
   }, [loadProgress]);
 
   const incrementSet = useCallback(
-    async (categoryId: string) => {
-      if (!user) return;
+    async (categoryId: string): Promise<number | null> => {
+      if (!user) return null;
 
       setError(null);
 
       try {
         const updated = await incrementSetProgress(user.id, categoryId);
         setSetsCompleted(updated);
+        return updated[categoryId] ?? 0;
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Could not save set progress.'
         );
+        return null;
       }
     },
     [user, dailySetGoal]
