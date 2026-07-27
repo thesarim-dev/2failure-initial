@@ -131,7 +131,7 @@ The home screen is your command center. Everything you need for today's session 
 
 ### Streak badge
 
-The orange flame badge shows your **current streak**: the number of consecutive days you have completed at least two sets of the same exercise. The count updates after you finish your second set of a workout for the day.
+The orange flame badge shows your **current streak**: the number of consecutive days you have completed at least two sets (any exercises). The count updates after your second set of the day.
 
 If your streak has been running for more than 14 days, you may see a **Restore streak** action on the dashboard when a streak is at risk. It costs **150 coins**.
 
@@ -419,7 +419,7 @@ If a set goes over 2 minutes, the receipt recommends switching to a harder exerc
 
 ### Streaks
 
-Complete at least two sets of the same exercise on a given day to keep your streak alive. The flame badge on the home screen shows your current count. Missing a day resets the streak to zero.
+Complete at least two sets on a given day — they can be any exercises — to keep your streak alive. The flame badge on the home screen shows your current count. Missing a day resets the streak to zero.
 
 For longer-running streaks, the app offers a paid recovery option: a **Restore streak** button appears for streaks over **14 days** and costs **150 coins**.
 

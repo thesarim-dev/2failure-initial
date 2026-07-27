@@ -5,15 +5,15 @@ import { USER_STATS_COLUMNS } from '../types/userStats';
 const DAY_RESET_HOUR = 3;
 export const STREAK_RESTORE_COST = 150;
 export const STREAK_RESTORE_MIN_LENGTH = 14;
-export const STREAK_MIN_SETS_PER_EXERCISE = 2;
+export const STREAK_MIN_SETS_PER_DAY = 2;
 
 export function shouldCountStreakForDay(
-  exerciseSetsAfterCompletion: number,
+  totalSetsCompletedToday: number,
   lastWorkoutDate: string | null,
   today = toLocalDateString()
 ): boolean {
   return (
-    exerciseSetsAfterCompletion >= STREAK_MIN_SETS_PER_EXERCISE &&
+    totalSetsCompletedToday >= STREAK_MIN_SETS_PER_DAY &&
     lastWorkoutDate !== today
   );
 }
@@ -47,10 +47,15 @@ export function toLocalDayStartIso(date: Date = new Date()): string {
   return start.toISOString();
 }
 
-function yesterdayLocalDateString(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return getDayBucket(d);
+function previousLocalDateString(today = toLocalDateString()): string {
+  const [year, month, day] = today.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() - 1);
+
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function normalizeStats(row: UserStats): UserStats {
@@ -82,7 +87,7 @@ export function computeStreakAfterWorkout(
 
   if (last === today) {
     // Already worked out today — streak unchanged
-  } else if (last === yesterdayLocalDateString()) {
+  } else if (last === previousLocalDateString(today)) {
     currentStreak = stats.current_streak + 1;
   } else {
     currentStreak = 1;
@@ -131,7 +136,13 @@ export async function fetchUserStats(userId: string): Promise<UserStats> {
 
 export async function completeWorkout(userId: string): Promise<UserStats> {
   const stats = await fetchUserStats(userId);
-  const next = computeStreakAfterWorkout(stats);
+  const today = toLocalDateString();
+
+  if (stats.last_workout_date === today) {
+    return stats;
+  }
+
+  const next = computeStreakAfterWorkout(stats, today);
 
   const { data, error } = await supabase
     .from('user_stats')

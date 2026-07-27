@@ -193,10 +193,10 @@ export function MainApp() {
       addPushupReps(repsLogged);
     }
     void (async () => {
-      const setCount = await incrementSet(categoryId);
+      const totalSetsToday = await incrementSet(categoryId);
       if (
-        setCount !== null &&
-        shouldCountStreakForDay(setCount, lastWorkoutDate)
+        totalSetsToday !== null &&
+        shouldCountStreakForDay(totalSetsToday, lastWorkoutDate)
       ) {
         await recordWorkoutComplete();
       }

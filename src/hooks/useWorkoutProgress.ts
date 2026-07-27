@@ -50,7 +50,10 @@ export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
       try {
         const updated = await incrementSetProgress(user.id, categoryId);
         setSetsCompleted(updated);
-        return updated[categoryId] ?? 0;
+        return Object.values(updated).reduce(
+          (sum, count) => sum + (Number.isFinite(count) ? count : 0),
+          0
+        );
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Could not save set progress.'
