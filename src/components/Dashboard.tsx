@@ -10,7 +10,7 @@ import type { RotatingProgramPhase } from '../lib/rotatingProgram';
 import { ROTATION_CYCLE_LENGTH } from '../lib/rotatingProgram';
 import { pickFunFact } from '../lib/funFacts';
 import { PUSHUP_DAILY_GOAL } from '../lib/pushupDailyProgress';
-import { STREAK_RESTORE_MIN_LENGTH, toLocalDateString } from '../lib/userStats';
+import { STREAK_RESTORE_MIN_LENGTH, isStreakBroken } from '../lib/userStats';
 import { Move, getVariantById, resolveLineupMove } from './moves';
 
 interface DashboardProps {
@@ -89,9 +89,7 @@ export function Dashboard({
   );
 
   const canRestoreStreak =
-    currentStreak >= STREAK_RESTORE_MIN_LENGTH &&
-    lastWorkoutDate !== null &&
-    lastWorkoutDate !== toLocalDateString();
+    currentStreak >= STREAK_RESTORE_MIN_LENGTH && isStreakBroken(lastWorkoutDate);
 
   const activeMoves = useMemo(
     () =>

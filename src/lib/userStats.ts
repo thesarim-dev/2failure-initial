@@ -47,7 +47,7 @@ export function toLocalDayStartIso(date: Date = new Date()): string {
   return start.toISOString();
 }
 
-function previousLocalDateString(today = toLocalDateString()): string {
+export function previousLocalDateString(today = toLocalDateString()): string {
   const [year, month, day] = today.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   date.setDate(date.getDate() - 1);
@@ -77,6 +77,21 @@ const DEFAULT_STATS = (userId: string): UserStats => ({
   last_workout_date: null,
   sets_progress_date: null
 });
+
+/**
+ * True only when a full day was missed, meaning the next workout would reset
+ * the streak. Not having trained *yet* today does not put the streak at risk.
+ */
+export function isStreakBroken(
+  lastWorkoutDate: string | null,
+  today = toLocalDateString()
+): boolean {
+  if (!lastWorkoutDate) return false;
+  return (
+    lastWorkoutDate !== today &&
+    lastWorkoutDate !== previousLocalDateString(today)
+  );
+}
 
 export function computeStreakAfterWorkout(
   stats: UserStats,
@@ -169,6 +184,10 @@ export async function restoreStreak(userId: string): Promise<UserStats> {
 
   if (stats.last_workout_date === today) {
     return stats;
+  }
+
+  if (!isStreakBroken(stats.last_workout_date, today)) {
+    throw new Error('Streak is not broken — just train today to keep it going.');
   }
 
   const next = {
