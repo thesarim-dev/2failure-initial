@@ -70,6 +70,11 @@ export interface AppTranslations {
         'push' | 'legs' | 'pull' | 'mixed' | 'recovery',
         string
       >;
+      template: {
+        title: string;
+        options: Record<'ppl3' | 'balanced4' | 'classic5', string>;
+        descriptions: Record<'ppl3' | 'balanced4' | 'classic5', string>;
+      };
       restDay: {
         carouselTitle: string;
         carouselKicker: string;

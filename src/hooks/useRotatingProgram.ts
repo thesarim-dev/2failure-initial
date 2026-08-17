@@ -1,12 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   daysBetweenLocalDates,
+  DEFAULT_ROTATION_TEMPLATE,
+  getMaxRestDaysPerWeek,
   getRotatingProgramCycleDay,
   getRotatingProgramDayIndex,
   getRotatingProgramPhase,
-  MAX_REST_DAYS_PER_WEEK,
-  ROTATION_CYCLE_LENGTH,
-  type RotatingProgramPhase
+  ROTATION_TEMPLATES,
+  type RotatingProgramPhase,
+  type RotatingProgramTemplateId
 } from '../lib/rotatingProgram';
 import { toLocalDateString } from '../lib/userStats';
 import { useAuth } from '../context/AuthContext';
@@ -24,6 +26,7 @@ export function useRotatingProgram() {
   const EFFECTIVE_INDEX_KEY = storageKeyFor(userId, 'rotating-program-effective-index');
   const EFFECTIVE_DATE_KEY = storageKeyFor(userId, 'rotating-program-effective-date');
   const REST_DAYS_KEY = storageKeyFor(userId, 'rotating-program-rest-days');
+  const TEMPLATE_KEY = storageKeyFor(userId, 'rotating-program-template');
   /** @deprecated migrated to effective index + date */
   const LEGACY_OFFSET_KEY = storageKeyFor(userId, 'rotating-program-day-offset');
 
@@ -94,6 +97,29 @@ export function useRotatingProgram() {
 
     try {
       window.localStorage.removeItem(REST_DAYS_KEY);
+    } catch {
+      // Ignore storage failures.
+    }
+  }
+
+  function readStoredTemplate(): RotatingProgramTemplateId {
+    if (typeof window === 'undefined') return DEFAULT_ROTATION_TEMPLATE;
+
+    try {
+      const raw = window.localStorage.getItem(TEMPLATE_KEY);
+      return raw && raw in ROTATION_TEMPLATES
+        ? (raw as RotatingProgramTemplateId)
+        : DEFAULT_ROTATION_TEMPLATE;
+    } catch {
+      return DEFAULT_ROTATION_TEMPLATE;
+    }
+  }
+
+  function writeStoredTemplate(template: RotatingProgramTemplateId): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      window.localStorage.setItem(TEMPLATE_KEY, template);
     } catch {
       // Ignore storage failures.
     }
@@ -224,6 +250,23 @@ export function useRotatingProgram() {
   });
 
   const [restDays, setRestDaysState] = useState<string[]>(readStoredRestDays);
+  const [template, setTemplateState] =
+    useState<RotatingProgramTemplateId>(readStoredTemplate);
+
+  const rotationCycle = ROTATION_TEMPLATES[template];
+
+  const setRotatingProgramTemplate = useCallback(
+    (next: RotatingProgramTemplateId) => {
+      setTemplateState(next);
+      writeStoredTemplate(next);
+
+      // Restart the cycle from day 1 so the new split begins cleanly.
+      const anchor = toLocalDateString();
+      setSavedPositionState({ index: 0, date: anchor });
+      writeStoredEffectivePosition(0, anchor);
+    },
+    []
+  );
 
   const setRotatingProgramEnabled = useCallback(
     (next: boolean) => {
@@ -279,8 +322,10 @@ export function useRotatingProgram() {
     [restDays, today]
   );
 
+  const maxRestDaysPerWeek = getMaxRestDaysPerWeek(rotationCycle);
+
   const canTakeRestDay =
-    enabled && !isRestDayToday && restDaysUsedThisWeek < MAX_REST_DAYS_PER_WEEK;
+    enabled && !isRestDayToday && restDaysUsedThisWeek < maxRestDaysPerWeek;
 
   const markTodayAsRestDay = useCallback(() => {
     if (!enabled || effectiveDayIndex === null) return;
@@ -290,7 +335,7 @@ export function useRotatingProgram() {
       const elapsed = daysBetweenLocalDates(day, today);
       return elapsed >= 0 && elapsed < 7;
     }).length;
-    if (usedThisWeek >= MAX_REST_DAYS_PER_WEEK) return;
+    if (usedThisWeek >= maxRestDaysPerWeek) return;
 
     // Drop entries older than the rolling window before adding today.
     const nextRestDays = [
@@ -305,33 +350,33 @@ export function useRotatingProgram() {
     const nextIndex = effectiveDayIndex - 1;
     setSavedPositionState({ index: nextIndex, date: today });
     writeStoredEffectivePosition(nextIndex, today);
-  }, [enabled, effectiveDayIndex, restDays, today]);
+  }, [enabled, effectiveDayIndex, restDays, today, maxRestDaysPerWeek]);
 
   const phase = useMemo((): RotatingProgramPhase | null => {
     if (effectiveDayIndex === null) return null;
     // A declared rest day creates the stretch plan for today.
     if (isRestDayToday) return 'recovery';
-    return getRotatingProgramPhase(effectiveDayIndex);
-  }, [effectiveDayIndex, isRestDayToday]);
+    return getRotatingProgramPhase(effectiveDayIndex, rotationCycle);
+  }, [effectiveDayIndex, isRestDayToday, rotationCycle]);
 
   const cycleDay = useMemo(() => {
     if (effectiveDayIndex === null) return null;
     // On a rest day the carousel centers on REST; cycleDay stays the deferred
     // training day so side cards / dots can preview tomorrow's workouts.
     if (isRestDayToday && rawDayIndex !== null) {
-      return getRotatingProgramCycleDay(rawDayIndex + 1);
+      return getRotatingProgramCycleDay(rawDayIndex + 1, rotationCycle);
     }
-    return getRotatingProgramCycleDay(effectiveDayIndex);
-  }, [effectiveDayIndex, isRestDayToday, rawDayIndex]);
+    return getRotatingProgramCycleDay(effectiveDayIndex, rotationCycle);
+  }, [effectiveDayIndex, isRestDayToday, rawDayIndex, rotationCycle]);
 
   const selectProgramCycleDay = useCallback(
     (targetCycleDay: number) => {
       // Don't jump days while today is locked as a player rest day.
       if (isRestDayToday || effectiveDayIndex === null) return;
 
+      const length = rotationCycle.length;
       const currentNorm =
-        ((effectiveDayIndex % ROTATION_CYCLE_LENGTH) + ROTATION_CYCLE_LENGTH) %
-        ROTATION_CYCLE_LENGTH;
+        ((effectiveDayIndex % length) + length) % length;
       const targetNorm = targetCycleDay - 1;
       const delta = targetNorm - currentNorm;
       const nextIndex = Math.max(0, effectiveDayIndex + delta);
@@ -340,7 +385,7 @@ export function useRotatingProgram() {
       setSavedPositionState({ index: nextIndex, date: anchor });
       writeStoredEffectivePosition(nextIndex, anchor);
     },
-    [effectiveDayIndex, isRestDayToday]
+    [effectiveDayIndex, isRestDayToday, rotationCycle]
   );
 
   return {
@@ -348,12 +393,15 @@ export function useRotatingProgram() {
     setRotatingProgramEnabled,
     rotatingProgramPhase: phase,
     rotatingProgramCycleDay: cycleDay,
+    rotatingProgramTemplate: template,
+    setRotatingProgramTemplate,
+    rotationCycle,
     selectProgramCycleDay,
     isRestDayToday,
     canTakeRestDay,
     restDaysRemainingThisWeek: Math.max(
       0,
-      MAX_REST_DAYS_PER_WEEK - restDaysUsedThisWeek
+      maxRestDaysPerWeek - restDaysUsedThisWeek
     ),
     markTodayAsRestDay
   };

@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
-import { ROTATION_CYCLE, ROTATION_CYCLE_LENGTH } from '../lib/rotatingProgram';
+import type { RotatingProgramPhase } from '../lib/rotatingProgram';
 
 interface ProgramDayCarouselProps {
+  cycle: readonly RotatingProgramPhase[];
   cycleDay: number;
   onSelectCycleDay: (cycleDay: number) => void;
-  getPhaseLabel: (phase: (typeof ROTATION_CYCLE)[number]) => string;
+  getPhaseLabel: (phase: RotatingProgramPhase) => string;
   isDark: boolean;
   isRestDay?: boolean;
   restTitle: string;
@@ -93,6 +94,7 @@ function getSlotMotion(isActive: boolean, direction: number, isRtl: boolean) {
 
 function ProgramDayCard({
   day,
+  cycleLength,
   isActive,
   phaseLabel,
   isDark,
@@ -104,6 +106,7 @@ function ProgramDayCard({
   onClick
 }: {
   day: number | null;
+  cycleLength: number;
   isActive: boolean;
   phaseLabel: string;
   isDark: boolean;
@@ -154,7 +157,7 @@ function ProgramDayCard({
               <>
                 day {day}
                 <span className="program-day-card-kicker-sep">/</span>
-                {ROTATION_CYCLE_LENGTH}
+                {cycleLength}
               </>
             )}
           </span>
@@ -174,15 +177,17 @@ function ProgramDayCard({
 
 function ProgramDayDots({
   cycleDay,
+  cycleLength,
   isRestDay
 }: {
   cycleDay: number;
+  cycleLength: number;
   isRestDay: boolean;
 }) {
   return (
     <LayoutGroup id="program-day-dots">
       <div className="program-day-dots">
-        {Array.from({ length: ROTATION_CYCLE_LENGTH }, (_, index) => {
+        {Array.from({ length: cycleLength }, (_, index) => {
           const day = index + 1;
           // On a rest day, highlight tomorrow's deferred training day as upcoming.
           const isActive = !isRestDay && day === cycleDay;
@@ -211,6 +216,7 @@ function ProgramDayDots({
 }
 
 export function ProgramDayCarousel({
+  cycle,
   cycleDay,
   onSelectCycleDay,
   getPhaseLabel,
@@ -224,41 +230,39 @@ export function ProgramDayCarousel({
   const prevCycleDayRef = useRef(cycleDay);
   const [direction, setDirection] = useState(0);
 
+  const cycleLength = cycle.length;
+  // A template switch can leave cycleDay above the new cycle length briefly.
+  const safeCycleDay = Math.min(Math.max(cycleDay, 1), cycleLength);
+
   // On rest day, cycleDay is the deferred (tomorrow) training day.
-  const prevDay = isRestDay
-    ? cycleDay > 1
-      ? cycleDay - 1
-      : null
-    : cycleDay > 1
-      ? cycleDay - 1
-      : null;
+  const prevDay = safeCycleDay > 1 ? safeCycleDay - 1 : null;
   const nextDay = isRestDay
     ? null
-    : cycleDay < ROTATION_CYCLE_LENGTH
-      ? cycleDay + 1
+    : safeCycleDay < cycleLength
+      ? safeCycleDay + 1
       : null;
-  const deferredDay = isRestDay ? cycleDay : null;
+  const deferredDay = isRestDay ? safeCycleDay : null;
 
   const phaseLabel = useMemo(
-    () => getPhaseLabel(ROTATION_CYCLE[cycleDay - 1]),
-    [cycleDay, getPhaseLabel]
+    () => getPhaseLabel(cycle[safeCycleDay - 1]),
+    [cycle, safeCycleDay, getPhaseLabel]
   );
 
   const prevPhaseLabel =
-    prevDay !== null ? getPhaseLabel(ROTATION_CYCLE[prevDay - 1]) : '';
+    prevDay !== null ? getPhaseLabel(cycle[prevDay - 1]) : '';
   const nextPhaseLabel = isRestDay
-    ? getPhaseLabel(ROTATION_CYCLE[cycleDay - 1])
+    ? getPhaseLabel(cycle[safeCycleDay - 1])
     : nextDay !== null
-      ? getPhaseLabel(ROTATION_CYCLE[nextDay - 1])
+      ? getPhaseLabel(cycle[nextDay - 1])
       : '';
 
   useEffect(() => {
     const previousDay = prevCycleDayRef.current;
-    if (cycleDay === previousDay) return;
+    if (safeCycleDay === previousDay) return;
 
-    setDirection(cycleDay > previousDay ? 1 : -1);
-    prevCycleDayRef.current = cycleDay;
-  }, [cycleDay]);
+    setDirection(safeCycleDay > previousDay ? 1 : -1);
+    prevCycleDayRef.current = safeCycleDay;
+  }, [safeCycleDay]);
 
   const goNext = useCallback(() => {
     if (isRestDay || nextDay === null) return;
@@ -316,6 +320,7 @@ export function ProgramDayCarousel({
               <ProgramDayCard
                 key={prevDay}
                 day={prevDay}
+                cycleLength={cycleLength}
                 isActive={false}
                 phaseLabel={prevPhaseLabel}
                 isDark={isDark}
@@ -335,6 +340,7 @@ export function ProgramDayCarousel({
               <ProgramDayCard
                 key="rest"
                 day={null}
+                cycleLength={cycleLength}
                 isActive
                 isRest
                 phaseLabel={restTitle}
@@ -346,8 +352,9 @@ export function ProgramDayCarousel({
               />
             ) : (
               <ProgramDayCard
-                key={cycleDay}
-                day={cycleDay}
+                key={safeCycleDay}
+                day={safeCycleDay}
+                cycleLength={cycleLength}
                 isActive
                 phaseLabel={phaseLabel}
                 isDark={isDark}
@@ -364,6 +371,7 @@ export function ProgramDayCarousel({
               <ProgramDayCard
                 key={`deferred-${deferredDay}`}
                 day={deferredDay}
+                cycleLength={cycleLength}
                 isActive={false}
                 phaseLabel={nextPhaseLabel}
                 isDark={isDark}
@@ -376,6 +384,7 @@ export function ProgramDayCarousel({
               <ProgramDayCard
                 key={nextDay}
                 day={nextDay}
+                cycleLength={cycleLength}
                 isActive={false}
                 phaseLabel={nextPhaseLabel}
                 isDark={isDark}
@@ -390,7 +399,11 @@ export function ProgramDayCarousel({
         </div>
       </div>
 
-      <ProgramDayDots cycleDay={cycleDay} isRestDay={isRestDay} />
+      <ProgramDayDots
+        cycleDay={safeCycleDay}
+        cycleLength={cycleLength}
+        isRestDay={isRestDay}
+      />
     </div>
   );
 }

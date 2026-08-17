@@ -57,6 +57,9 @@ export function MainApp() {
     setRotatingProgramEnabled,
     rotatingProgramPhase,
     rotatingProgramCycleDay,
+    rotatingProgramTemplate,
+    setRotatingProgramTemplate,
+    rotationCycle,
     selectProgramCycleDay,
     isRestDayToday,
     canTakeRestDay,
@@ -405,6 +408,7 @@ export function MainApp() {
         rotatingProgramEnabled={rotatingProgramEnabled}
         rotatingProgramPhase={rotatingProgramPhase}
         rotatingProgramCycleDay={rotatingProgramCycleDay}
+        rotationCycleLength={rotationCycle.length}
         isRestDayToday={isRestDayToday}
         canTakeRestDay={canTakeRestDay}
         restDaysRemainingThisWeek={restDaysRemainingThisWeek}
@@ -440,6 +444,9 @@ export function MainApp() {
         rotatingProgramEnabled={rotatingProgramEnabled}
         rotatingProgramPhase={rotatingProgramPhase}
         rotatingProgramCycleDay={rotatingProgramCycleDay}
+        rotatingProgramTemplate={rotatingProgramTemplate}
+        onSelectProgramTemplate={setRotatingProgramTemplate}
+        rotationCycle={rotationCycle}
         isRestDayToday={isRestDayToday}
         onSelectProgramCycleDay={selectProgramCycleDay}
         isDark={isDark}

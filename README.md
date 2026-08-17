@@ -22,7 +22,7 @@
 7. [Log reps and weight](#7-log-reps-and-weight)
 8. [Review your set summary](#8-review-your-set-summary)
 9. [Use the store and build your lineup](#9-use-the-store-and-build-your-lineup)
-10. [Follow the rotating 5-day program](#10-follow-the-rotating-5-day-program)
+10. [Follow the rotating program](#10-follow-the-rotating-program)
 11. [Adjust settings](#11-adjust-settings)
 12. [Track progress over time](#12-track-progress-over-time)
 13. [Troubleshooting](#13-troubleshooting)
@@ -152,7 +152,7 @@ Tap a card to start that exercise. Cards marked **done** are dimmed and cannot b
 
 ### Rotating program banner
 
-When the 5-day program is enabled, a line above the exercise list shows your current program day and focus, for example:
+When the rotating program is enabled, a line above the exercise list shows your current program day and focus, for example:
 
 > Program day 3/5 — pull
 
@@ -305,9 +305,9 @@ When the rotating program is on, lineup changes are **locked**. The program assi
 
 ---
 
-## 10. Follow the rotating 5-day program
+## 10. Follow the rotating program
 
-The rotating program is an optional and balanced 5-day training plan built around **RIR** (reps in reserve), stopping just short of failure on early sets and going all-out on the final set. Rest (stretch) days are not fixed in the cycle — you choose them when you need them.
+The rotating program is an optional training plan built around **RIR** (reps in reserve), stopping just short of failure on early sets and going all-out on the final set. Pick the split that fits your week; rest (stretch) days are not fixed in the cycle — you choose them when you need them.
 
 ### Enable the program
 
@@ -315,17 +315,17 @@ The rotating program is an optional and balanced 5-day training plan built aroun
 2. Find **rotating program**.
 3. Toggle it **On**.
 
-### 5-day cycle
+### Training splits
 
-| Day | Focus | Exercises |
-|---|---|---|
-| 1 | Push | Upper push + supporting work |
-| 2 | Legs | Lower body |
-| 3 | Pull | Upper pull + supporting work |
-| 4 | Legs | Lower body |
-| 5 | Mixed | Combined training day |
+Choose a split in Settings (under **training split**). Changing the split restarts the cycle from day 1.
 
-The home screen banner shows **Program day X/5** and the current focus.
+| Split | Cycle |
+|---|---|
+| **3-day** | Push → Pull → Legs (classic PPL, highest frequency) |
+| **4-day** | Push → Legs → Pull → Mixed (balanced, one combined day) |
+| **5-day** | Push → Legs → Pull → Legs → Mixed (extra leg volume, default) |
+
+The home screen banner shows **Program day X/N** and the current focus.
 
 ### Set prescriptions
 
@@ -349,7 +349,15 @@ Need a break? While the rotating program is on, a **Rest day** button appears ne
 - Creates a stretch day for today (the home screen shows the recovery stretches).
 - Pushes the whole program back by one day, so today's planned workouts move to tomorrow.
 
-You can take **up to 2 rest days per rolling 7-day week**. When the limit is reached, the button disappears until a used rest day falls out of the window. Rest days are never auto-scheduled — only you decide when to take them.
+Your weekly rest-day allowance depends on your training split, so training days plus rest days fill a real week (rolling 7-day window):
+
+| Split | Rest days per week |
+|---|---|
+| 3-day | up to 4 |
+| 4-day | up to 3 |
+| 5-day | up to 2 |
+
+When the limit is reached, the button disappears until a used rest day falls out of the window. Rest days are never auto-scheduled — only you decide when to take them.
 
 ---
 
@@ -363,7 +371,7 @@ Choose how many sets you aim to complete per exercise each day (when the rotatin
 
 ### Rotating program
 
-Toggle the 5-day plan on or off. When on, set targets and exercise selection are managed by the program. Use the home-screen **Rest day** button (up to 2 per week) when you want a stretch day.
+Toggle the plan on or off and pick your **training split** (3, 4, or 5 days). When on, set targets and exercise selection are managed by the program. Use the home-screen **Rest day** button when you want a stretch day — your split decides how many you get per week.
 
 ### Appearance
 
@@ -485,7 +493,7 @@ If the home screen shows a red error banner:
 | **Set** | One continuous bout of an exercise, from start to finish. |
 | **Lineup** | The exercises you have equipped and see on the home screen each day. |
 | **Personal best (PR)** | Your highest recorded performance for an exercise — reps for bodyweight, load × reps for weighted moves. |
-| **Rotating program** | The built-in 5-day RIR training cycle that auto-selects exercises and set targets. Rest days are player-chosen. |
+| **Rotating program** | The built-in RIR training cycle (3, 4, or 5-day split) that auto-selects exercises and set targets. Rest days are player-chosen. |
 | **Progressive overload** | Gradually increasing training stress (more weight, reps, or difficulty) to keep getting stronger. |
 | **Tier** | Exercise difficulty rating in the store: base, pro, or elite. |
 

@@ -7,7 +7,6 @@ import { useLanguage } from '../context/LanguageContext';
 import { localizeMove } from '../i18n/localize';
 import type { DailySetGoal } from '../hooks/useDailySetGoal';
 import type { RotatingProgramPhase } from '../lib/rotatingProgram';
-import { ROTATION_CYCLE_LENGTH } from '../lib/rotatingProgram';
 import { pickFunFact } from '../lib/funFacts';
 import { PUSHUP_DAILY_GOAL } from '../lib/pushupDailyProgress';
 import { STREAK_RESTORE_MIN_LENGTH, isStreakBroken } from '../lib/userStats';
@@ -37,6 +36,7 @@ interface DashboardProps {
   rotatingProgramEnabled: boolean;
   rotatingProgramPhase: RotatingProgramPhase | null;
   rotatingProgramCycleDay: number | null;
+  rotationCycleLength: number;
   isRestDayToday: boolean;
   canTakeRestDay: boolean;
   restDaysRemainingThisWeek: number;
@@ -72,6 +72,7 @@ export function Dashboard({
   rotatingProgramEnabled,
   rotatingProgramPhase,
   rotatingProgramCycleDay,
+  rotationCycleLength,
   isRestDayToday,
   canTakeRestDay,
   restDaysRemainingThisWeek,
@@ -202,7 +203,7 @@ export function Dashboard({
                   ? t.dashboard.restDay.active
                   : t.dashboard.rotatingProgramFocus(
                       rotatingProgramCycleDay,
-                      ROTATION_CYCLE_LENGTH,
+                      rotationCycleLength,
                       t.settings.rotatingProgram.phases[rotatingProgramPhase]
                     )}
               </p>

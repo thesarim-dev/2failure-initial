@@ -8,7 +8,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { LANGUAGE_OPTIONS } from '../i18n/translations';
 import type { DailySetGoal } from '../hooks/useDailySetGoal';
 import type { Language } from '../i18n/types';
-import type { RotatingProgramPhase } from '../lib/rotatingProgram';
+import {
+  ROTATION_TEMPLATE_IDS,
+  type RotatingProgramPhase,
+  type RotatingProgramTemplateId
+} from '../lib/rotatingProgram';
 
 interface SettingsProps {
   coins: number;
@@ -16,6 +20,9 @@ interface SettingsProps {
   rotatingProgramEnabled: boolean;
   rotatingProgramPhase: RotatingProgramPhase | null;
   rotatingProgramCycleDay: number | null;
+  rotatingProgramTemplate: RotatingProgramTemplateId;
+  onSelectProgramTemplate: (template: RotatingProgramTemplateId) => void;
+  rotationCycle: readonly RotatingProgramPhase[];
   isRestDayToday: boolean;
   onSelectProgramCycleDay: (cycleDay: number) => void;
   isDark: boolean;
@@ -33,6 +40,9 @@ export function Settings({
   rotatingProgramEnabled,
   rotatingProgramPhase,
   rotatingProgramCycleDay,
+  rotatingProgramTemplate,
+  onSelectProgramTemplate,
+  rotationCycle,
   isRestDayToday,
   onSelectProgramCycleDay,
   isDark,
@@ -95,7 +105,31 @@ export function Settings({
             rotatingProgramPhase !== null &&
             rotatingProgramCycleDay !== null && (
               <>
+                <div className="mt-4">
+                  <h3 className="text-sm font-bold uppercase tracking-wide opacity-80 mb-2">
+                    {s.rotatingProgram.template.title}
+                  </h3>
+                  <div className="settings-toggle-group flex gap-2">
+                    {ROTATION_TEMPLATE_IDS.map((templateId) => (
+                      <button
+                        key={templateId}
+                        type="button"
+                        onClick={() => onSelectProgramTemplate(templateId)}
+                        className={`store-btn flex-1 justify-center ${
+                          rotatingProgramTemplate === templateId
+                            ? 'store-btn--active'
+                            : 'store-btn--equip'
+                        }`}>
+                        {s.rotatingProgram.template.options[templateId]}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs font-medium opacity-60 mt-2">
+                    {s.rotatingProgram.template.descriptions[rotatingProgramTemplate]}
+                  </p>
+                </div>
                 <ProgramDayCarousel
+                  cycle={rotationCycle}
                   cycleDay={rotatingProgramCycleDay}
                   onSelectCycleDay={onSelectProgramCycleDay}
                   getPhaseLabel={(phase) => s.rotatingProgram.phases[phase]}

@@ -14,7 +14,7 @@ const en: SettingsContent = {
   rotatingProgram: {
     title: 'rotating program',
     description:
-      '5-day RIR plan: push, legs, pull, legs, mixed. Take up to 2 rest (stretch) days per week from the home screen — those push the program back one day. Equipment exercises are 3 sets; bodyweight and core are 2 sets.',
+      'RIR training plan with a selectable split (3, 4, or 5 days). Take rest (stretch) days from the home screen — they push the program back one day, and your split decides how many you get per week. Equipment exercises are 3 sets; bodyweight and core are 2 sets.',
     off: 'Off',
     on: 'On',
     trainingGuide: {
@@ -47,7 +47,7 @@ const en: SettingsContent = {
           items: [
             {
               label: 'Stretch only.',
-              text: 'No lifting and no core — deep static stretching. Up to 2 per week; today’s workout moves to tomorrow.'
+              text: 'No lifting and no core — deep static stretching. Your split decides how many per week; today’s workout moves to tomorrow.'
             }
           ]
         }
@@ -59,6 +59,19 @@ const en: SettingsContent = {
       legs: 'legs',
       mixed: 'mixed',
       recovery: 'stretch'
+    },
+    template: {
+      title: 'training split',
+      options: {
+        ppl3: '3-day',
+        balanced4: '4-day',
+        classic5: '5-day'
+      },
+      descriptions: {
+        ppl3: 'Push / pull / legs — the classic high-frequency split. Up to 4 rest days a week.',
+        balanced4: 'Push / legs / pull / mixed — balanced with one combined day. Up to 3 rest days a week.',
+        classic5: 'Push / legs / pull / legs / mixed — extra leg volume. Up to 2 rest days a week.'
+      }
     },
     restDay: {
       carouselTitle: 'REST',
@@ -169,7 +182,7 @@ const he: SettingsContent = {
   rotatingProgram: {
     title: 'תוכנית מתחלפת',
     description:
-      'תוכנית RIR ל-5 ימים: דחיפה, רגליים, משיכה, רגליים, מעורב. אפשר לקחת עד 2 ימי מנוחה (מתיחות) בשבוע ממסך הבית — זה דוחה את התוכנית ביום. תרגילי ציוד — 3 סטים; משקל גוף וליבה — 2 סטים.',
+      'תוכנית RIR עם פיצול לבחירה (3, 4 או 5 ימים). אפשר לקחת ימי מנוחה (מתיחות) ממסך הבית — הם דוחים את התוכנית ביום, והפיצול קובע כמה מגיעים בשבוע. תרגילי ציוד — 3 סטים; משקל גוף וליבה — 2 סטים.',
     off: 'כבוי',
     on: 'פעיל',
     trainingGuide: {
@@ -202,7 +215,7 @@ const he: SettingsContent = {
           items: [
             {
               label: 'מתיחות בלבד.',
-              text: 'בלי הרמות ובלי ליבה — מתיחות סטטיות עמוקות. עד 2 בשבוע; האימון של היום עובר למחר.'
+              text: 'בלי הרמות ובלי ליבה — מתיחות סטטיות עמוקות. הפיצול קובע כמה בשבוע; האימון של היום עובר למחר.'
             }
           ]
         }
@@ -214,6 +227,19 @@ const he: SettingsContent = {
       legs: 'רגליים',
       mixed: 'מעורב',
       recovery: 'מתיחות'
+    },
+    template: {
+      title: 'פיצול אימונים',
+      options: {
+        ppl3: '3 ימים',
+        balanced4: '4 ימים',
+        classic5: '5 ימים'
+      },
+      descriptions: {
+        ppl3: 'דחיפה / משיכה / רגליים — הפיצול הקלאסי בתדירות גבוהה. עד 4 ימי מנוחה בשבוע.',
+        balanced4: 'דחיפה / רגליים / משיכה / מעורב — מאוזן עם יום משולב אחד. עד 3 ימי מנוחה בשבוע.',
+        classic5: 'דחיפה / רגליים / משיכה / רגליים / מעורב — נפח רגליים נוסף. עד 2 ימי מנוחה בשבוע.'
+      }
     },
     restDay: {
       carouselTitle: 'מנוחה',
@@ -323,7 +349,7 @@ const ar: SettingsContent = {
   rotatingProgram: {
     title: 'برنامج متناوب',
     description:
-      'خطة RIR لخمسة أيام: دفع، ساقين، سحب، ساقين، مختلط. يمكنك أخذ حتى يومَي راحة (تمدد) في الأسبوع من الشاشة الرئيسية — وهذا يؤجل البرنامج يومًا واحدًا. تمارين المعدات 3 مجموعات؛ وزن الجسم واللبّ 2 مجموعات.',
+      'خطة RIR بتقسيم قابل للاختيار (3 أو 4 أو 5 أيام). يمكنك أخذ أيام راحة (تمدد) من الشاشة الرئيسية — وهي تؤجل البرنامج يومًا واحدًا، والتقسيم يحدد عددها في الأسبوع. تمارين المعدات 3 مجموعات؛ وزن الجسم واللبّ 2 مجموعات.',
     off: 'إيقاف',
     on: 'تشغيل',
     trainingGuide: {
@@ -356,7 +382,7 @@ const ar: SettingsContent = {
           items: [
             {
               label: 'تمدد فقط.',
-              text: 'لا رفع ولا لبّ — تمدد ثابت عميق. حتى يومين في الأسبوع؛ ينتقل تمرين اليوم إلى الغد.'
+              text: 'لا رفع ولا لبّ — تمدد ثابت عميق. التقسيم يحدد العدد في الأسبوع؛ ينتقل تمرين اليوم إلى الغد.'
             }
           ]
         }
@@ -368,6 +394,19 @@ const ar: SettingsContent = {
       legs: 'ساقين',
       mixed: 'مختلط',
       recovery: 'تمدد'
+    },
+    template: {
+      title: 'تقسيم التدريب',
+      options: {
+        ppl3: '3 أيام',
+        balanced4: '4 أيام',
+        classic5: '5 أيام'
+      },
+      descriptions: {
+        ppl3: 'دفع / سحب / ساقين — التقسيم الكلاسيكي عالي التكرار. حتى 4 أيام راحة في الأسبوع.',
+        balanced4: 'دفع / ساقين / سحب / مختلط — متوازن مع يوم مشترك واحد. حتى 3 أيام راحة في الأسبوع.',
+        classic5: 'دفع / ساقين / سحب / ساقين / مختلط — حجم إضافي للساقين. حتى يومَي راحة في الأسبوع.'
+      }
     },
     restDay: {
       carouselTitle: 'راحة',
