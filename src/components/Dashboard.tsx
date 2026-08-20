@@ -9,17 +9,17 @@ import type { DailySetGoal } from '../hooks/useDailySetGoal';
 import type { RotatingProgramPhase } from '../lib/rotatingProgram';
 import { pickFunFact } from '../lib/funFacts';
 import { PUSHUP_DAILY_GOAL } from '../lib/pushupDailyProgress';
-import { STREAK_RESTORE_MIN_LENGTH, isStreakBroken } from '../lib/userStats';
+import { toLocalDateString } from '../lib/userStats';
 import { Move, getVariantById, resolveLineupMove } from './moves';
 
 interface DashboardProps {
   coins: number;
   currentStreak: number;
+  longestStreak: number;
   statsLoading: boolean;
   statsCompleting: boolean;
   restoringStreak: boolean;
   lastWorkoutDate: string | null;
-  restoreStreakCost: number;
   onRestoreStreak: () => void;
   profileLoading: boolean;
   profileError: string | null;
@@ -51,11 +51,11 @@ interface DashboardProps {
 export function Dashboard({
   coins,
   currentStreak,
+  longestStreak,
   statsLoading,
   statsCompleting,
   restoringStreak,
   lastWorkoutDate,
-  restoreStreakCost,
   onRestoreStreak,
   profileLoading,
   profileError,
@@ -89,8 +89,10 @@ export function Dashboard({
     [language, t.dashboard.funFacts.facts, t.dashboard.funFacts.loading]
   );
 
+  const restoredStreak = Math.max(currentStreak, longestStreak);
   const canRestoreStreak =
-    currentStreak >= STREAK_RESTORE_MIN_LENGTH && isStreakBroken(lastWorkoutDate);
+    restoredStreak > 0 &&
+    (lastWorkoutDate !== toLocalDateString() || currentStreak < restoredStreak);
 
   const activeMoves = useMemo(
     () =>
@@ -184,10 +186,9 @@ export function Dashboard({
             <button
               type="button"
               onClick={onRestoreStreak}
-              disabled={restoringStreak || coins < restoreStreakCost}
+              disabled={restoringStreak}
               className="rounded-full border border-[#E85520] dark:border-[#FF6633] bg-white/80 dark:bg-[#2a2a2a]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#B83810] dark:text-[#FFB38A] disabled:cursor-not-allowed disabled:opacity-60">
               {restoringStreak ? t.dashboard.streakRestore.loading : t.dashboard.streakRestore.label}
-              <span className="ml-1">{t.dashboard.streakRestore.cost(restoreStreakCost)}</span>
             </button>
           )}
         </div>

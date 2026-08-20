@@ -3,8 +3,6 @@ import type { UserStats } from '../types/userStats';
 import { USER_STATS_COLUMNS } from '../types/userStats';
 
 const DAY_RESET_HOUR = 3;
-export const STREAK_RESTORE_COST = 150;
-export const STREAK_RESTORE_MIN_LENGTH = 14;
 export const STREAK_MIN_SETS_PER_DAY = 2;
 
 export function shouldCountStreakForDay(
@@ -173,26 +171,22 @@ export async function completeWorkout(userId: string): Promise<UserStats> {
 export async function restoreStreak(userId: string): Promise<UserStats> {
   const stats = await fetchUserStats(userId);
   const today = toLocalDateString(new Date());
+  const restoredStreak = Math.max(stats.current_streak, stats.longest_streak);
 
-  if (stats.current_streak <= 0) {
+  if (restoredStreak <= 0) {
     throw new Error('No streak to restore.');
   }
 
-  if (stats.current_streak < STREAK_RESTORE_MIN_LENGTH) {
-    throw new Error('Only longer streaks can be restored.');
-  }
-
-  if (stats.last_workout_date === today) {
+  if (
+    stats.last_workout_date === today &&
+    stats.current_streak >= restoredStreak
+  ) {
     return stats;
   }
 
-  if (!isStreakBroken(stats.last_workout_date, today)) {
-    throw new Error('Streak is not broken — just train today to keep it going.');
-  }
-
   const next = {
-    current_streak: Math.max(stats.current_streak, stats.longest_streak),
-    longest_streak: Math.max(stats.longest_streak, stats.current_streak),
+    current_streak: restoredStreak,
+    longest_streak: restoredStreak,
     total_workouts: stats.total_workouts,
     last_workout_date: today
   };

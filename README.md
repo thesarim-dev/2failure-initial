@@ -133,7 +133,7 @@ The home screen is your command center. Everything you need for today's session 
 
 The orange flame badge shows your **current streak**: the number of consecutive days you have completed at least two sets (any exercises). The count updates after your second set of the day.
 
-If a streak of 14+ days actually breaks (you missed a full day), a **Restore streak** action appears on the dashboard. It costs **150 coins**. It never appears just because you haven't trained yet today.
+If a streak is at risk or already broken, a **Restore streak** action appears on the dashboard. Restore is always available at no cost and with no minimum streak length.
 
 ### Fun fact panel
 
@@ -429,7 +429,7 @@ If a set goes over 2 minutes, the receipt recommends switching to a harder exerc
 
 Complete at least two sets on a given day — they can be any exercises — to keep your streak alive. The flame badge on the home screen shows your current count. Missing a day resets the streak to zero.
 
-For longer-running streaks, the app offers a paid recovery option: a **Restore streak** button appears when a streak over **14 days** breaks (a full missed day) and costs **150 coins**.
+If you miss a day, a **Restore streak** button appears on the home screen. Restore is always free, has no minimum streak length, and can bring the current streak back to your longest streak.
 
 ### Pushup daily goal
 

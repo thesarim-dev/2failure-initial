@@ -25,7 +25,7 @@ import { usePushupDailyReps } from './hooks/usePushupDailyReps';
 import { useRotatingProgram } from './hooks/useRotatingProgram';
 import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { calculateCoinsEarned } from './lib/coinRewards';
-import { shouldCountStreakForDay, STREAK_RESTORE_COST } from './lib/userStats';
+import { shouldCountStreakForDay } from './lib/userStats';
 import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { RepPrompt } from './components/RepPrompt';
 import { WeightRepPrompt } from './components/WeightRepPrompt';
@@ -74,6 +74,7 @@ export function MainApp() {
   } = useProfile();
   const {
     currentStreak,
+    longestStreak,
     loading: statsLoading,
     completing: statsCompleting,
     restoringStreak,
@@ -326,12 +327,8 @@ export function MainApp() {
     setAppState('HOME');
   };
   const handleRestoreStreak = async () => {
-    if (!user || coins < STREAK_RESTORE_COST || restoringStreak) return;
-
-    const updated = await restoreUserStreak();
-    if (updated) {
-      void setCoins((current) => Math.max(0, current - STREAK_RESTORE_COST));
-    }
+    if (!user || restoringStreak) return;
+    await restoreUserStreak();
   };
 
   const handleOpenStore = () => setAppState('STORE');
@@ -387,11 +384,11 @@ export function MainApp() {
       <Dashboard
         coins={coins}
         currentStreak={currentStreak}
+        longestStreak={longestStreak}
         statsLoading={statsLoading}
         statsCompleting={statsCompleting}
         restoringStreak={restoringStreak}
         lastWorkoutDate={lastWorkoutDate}
-        restoreStreakCost={STREAK_RESTORE_COST}
         onRestoreStreak={handleRestoreStreak}
         profileLoading={profileLoading}
         profileError={profileError}
