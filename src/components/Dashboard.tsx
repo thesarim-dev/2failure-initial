@@ -20,6 +20,7 @@ interface DashboardProps {
   statsCompleting: boolean;
   restoringStreak: boolean;
   lastWorkoutDate: string | null;
+  restoreStreakCost: number;
   onRestoreStreak: () => void;
   profileLoading: boolean;
   profileError: string | null;
@@ -56,6 +57,7 @@ export function Dashboard({
   statsCompleting,
   restoringStreak,
   lastWorkoutDate,
+  restoreStreakCost,
   onRestoreStreak,
   profileLoading,
   profileError,
@@ -186,9 +188,10 @@ export function Dashboard({
             <button
               type="button"
               onClick={onRestoreStreak}
-              disabled={restoringStreak}
+              disabled={restoringStreak || coins < restoreStreakCost}
               className="rounded-full border border-[#E85520] dark:border-[#FF6633] bg-white/80 dark:bg-[#2a2a2a]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#B83810] dark:text-[#FFB38A] disabled:cursor-not-allowed disabled:opacity-60">
               {restoringStreak ? t.dashboard.streakRestore.loading : t.dashboard.streakRestore.label}
+              <span className="ml-1">{t.dashboard.streakRestore.cost(restoreStreakCost)}</span>
             </button>
           )}
         </div>

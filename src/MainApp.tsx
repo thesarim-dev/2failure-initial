@@ -80,6 +80,7 @@ export function MainApp() {
     restoringStreak,
     error: statsError,
     lastWorkoutDate,
+    restoreStreakCost,
     recordWorkoutComplete,
     restoreStreak: restoreUserStreak
   } = useUserStats();
@@ -327,8 +328,12 @@ export function MainApp() {
     setAppState('HOME');
   };
   const handleRestoreStreak = async () => {
-    if (!user || restoringStreak) return;
-    await restoreUserStreak();
+    if (!user || restoringStreak || coins < restoreStreakCost) return;
+
+    const result = await restoreUserStreak();
+    if (result?.cost) {
+      void setCoins((current) => Math.max(0, current - result.cost));
+    }
   };
 
   const handleOpenStore = () => setAppState('STORE');
@@ -389,6 +394,7 @@ export function MainApp() {
         statsCompleting={statsCompleting}
         restoringStreak={restoringStreak}
         lastWorkoutDate={lastWorkoutDate}
+        restoreStreakCost={restoreStreakCost}
         onRestoreStreak={handleRestoreStreak}
         profileLoading={profileLoading}
         profileError={profileError}

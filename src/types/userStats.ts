@@ -5,7 +5,9 @@ export type UserStats = {
   total_workouts: number;
   last_workout_date: string | null;
   sets_progress_date: string | null;
+  streak_restore_month: string | null;
+  streak_restore_count: number;
 };
 
 export const USER_STATS_COLUMNS =
-  'user_id, current_streak, longest_streak, total_workouts, last_workout_date, sets_progress_date';
+  'user_id, current_streak, longest_streak, total_workouts, last_workout_date, sets_progress_date, streak_restore_month, streak_restore_count';

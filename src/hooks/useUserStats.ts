@@ -3,7 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import {
   completeWorkout,
   fetchUserStats,
+  getStreakRestoreCost,
   restoreStreak,
+  restoresThisMonth,
   toLocalDateString
 } from '../lib/userStats';
 import type { UserStats } from '../types/userStats';
@@ -88,9 +90,9 @@ export function useUserStats() {
     setError(null);
 
     try {
-      const updated = await restoreStreak(user.id);
-      setStats(updated);
-      return updated;
+      const result = await restoreStreak(user.id);
+      setStats(result.stats);
+      return result;
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Could not restore streak.'
@@ -108,6 +110,7 @@ export function useUserStats() {
     totalWorkouts: stats?.total_workouts ?? 0,
     todayFailures,
     lastWorkoutDate: stats?.last_workout_date ?? null,
+    restoreStreakCost: stats ? getStreakRestoreCost(restoresThisMonth(stats)) : getStreakRestoreCost(0),
     loading,
     completing,
     restoringStreak,
