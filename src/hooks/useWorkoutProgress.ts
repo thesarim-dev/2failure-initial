@@ -4,7 +4,8 @@ import type { DailySetGoal } from './useDailySetGoal';
 import {
   emptySetsMap,
   fetchSetsProgress,
-  incrementSetProgress
+  incrementSetProgress,
+  sumDailySets
 } from '../lib/workoutProgress';
 
 export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
@@ -50,10 +51,7 @@ export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
       try {
         const updated = await incrementSetProgress(user.id, categoryId);
         setSetsCompleted(updated);
-        return Object.values(updated).reduce(
-          (sum, count) => sum + (Number.isFinite(count) ? count : 0),
-          0
-        );
+        return sumDailySets(updated);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Could not save set progress.'

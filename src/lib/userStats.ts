@@ -117,6 +117,19 @@ export function isStreakBroken(
   );
 }
 
+export function canOfferStreakRestore(
+  stats: Pick<UserStats, 'current_streak' | 'longest_streak' | 'last_workout_date'>,
+  totalSetsCompletedToday: number,
+  today = toLocalDateString()
+): boolean {
+  const restoredStreak = Math.max(stats.current_streak, stats.longest_streak);
+  return (
+    restoredStreak > 0 &&
+    isStreakBroken(stats.last_workout_date, today) &&
+    totalSetsCompletedToday < STREAK_MIN_SETS_PER_DAY
+  );
+}
+
 export function computeStreakAfterWorkout(
   stats: UserStats,
   today = toLocalDateString(new Date())

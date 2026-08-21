@@ -21,7 +21,7 @@ export const ROTATION_TEMPLATES: Record<
   RotatingProgramTemplateId,
   readonly RotatingProgramPhase[]
 > = {
-  ppl3: ['push', 'pull', 'legs'],
+  ppl3: ['push', 'legs', 'pull'],
   balanced4: ['push', 'legs', 'pull', 'mixed'],
   classic5: ['push', 'legs', 'pull', 'legs', 'mixed']
 };

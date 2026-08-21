@@ -9,7 +9,8 @@ import type { DailySetGoal } from '../hooks/useDailySetGoal';
 import type { RotatingProgramPhase } from '../lib/rotatingProgram';
 import { pickFunFact } from '../lib/funFacts';
 import { PUSHUP_DAILY_GOAL } from '../lib/pushupDailyProgress';
-import { toLocalDateString } from '../lib/userStats';
+import { canOfferStreakRestore } from '../lib/userStats';
+import { sumDailySets } from '../lib/workoutProgress';
 import { Move, getVariantById, resolveLineupMove } from './moves';
 
 interface DashboardProps {
@@ -91,10 +92,21 @@ export function Dashboard({
     [language, t.dashboard.funFacts.facts, t.dashboard.funFacts.loading]
   );
 
-  const restoredStreak = Math.max(currentStreak, longestStreak);
+  const totalSetsToday = useMemo(
+    () => sumDailySets(setsCompleted),
+    [setsCompleted]
+  );
   const canRestoreStreak =
-    restoredStreak > 0 &&
-    (lastWorkoutDate !== toLocalDateString() || currentStreak < restoredStreak);
+    !statsLoading &&
+    !setsLoading &&
+    canOfferStreakRestore(
+      {
+        current_streak: currentStreak,
+        longest_streak: longestStreak,
+        last_workout_date: lastWorkoutDate
+      },
+      totalSetsToday
+    );
 
   const activeMoves = useMemo(
     () =>

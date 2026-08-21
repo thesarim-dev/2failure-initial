@@ -4,7 +4,12 @@ import {
   getVariantById
 } from '../components/moves';
 import { supabase } from './supabase';
-import { fetchUserStats, toLocalDateString } from './userStats';
+import {
+  completeWorkout,
+  fetchUserStats,
+  STREAK_MIN_SETS_PER_DAY,
+  toLocalDateString
+} from './userStats';
 
 function isDefaultEquipped(categoryId: string): boolean {
   return (
@@ -58,6 +63,13 @@ export function emptySetsMap(): Record<string, number> {
     acc[id] = 0;
     return acc;
   }, {});
+}
+
+export function sumDailySets(setsCompleted: Record<string, number>): number {
+  return Object.values(setsCompleted).reduce(
+    (sum, count) => sum + (Number.isFinite(count) ? count : 0),
+    0
+  );
 }
 
 async function resetDailySets(userId: string): Promise<void> {
@@ -146,7 +158,16 @@ export async function incrementSetProgress(
 
   await markSetsProgressDate(userId, today);
 
-  return { ...current, [categoryId]: next };
+  const updated = { ...current, [categoryId]: next };
+  if (sumDailySets(updated) >= STREAK_MIN_SETS_PER_DAY) {
+    try {
+      await completeWorkout(userId);
+    } catch {
+      // Set is saved; streak is reconciled when stats/sets reload.
+    }
+  }
+
+  return updated;
 }
 
 /** @deprecated Use ABSOLUTE_MAX_DAILY_SETS or dailySetGoal from settings */

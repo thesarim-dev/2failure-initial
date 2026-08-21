@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useScreenInit } from './useScreenInit';
 import { useLanguage } from './context/LanguageContext';
@@ -27,6 +27,7 @@ import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { calculateCoinsEarned } from './lib/coinRewards';
 import { shouldCountStreakForDay } from './lib/userStats';
 import { persistOwned, readStoredOwned } from './lib/ownedVariants';
+import { sumDailySets } from './lib/workoutProgress';
 import { RepPrompt } from './components/RepPrompt';
 import { WeightRepPrompt } from './components/WeightRepPrompt';
 import { recordSetReps } from './lib/repProgress';
@@ -116,6 +117,21 @@ export function MainApp() {
   } = useEquippedLineup(user?.id);
   const { showTutorial, dismissTutorial } = useOnboarding(user?.id);
   const { weightUnit, setWeightUnit } = useWeightUnit();
+
+  useEffect(() => {
+    if (statsLoading || setsLoading) return;
+    if (
+      shouldCountStreakForDay(sumDailySets(setsCompleted), lastWorkoutDate)
+    ) {
+      void recordWorkoutComplete();
+    }
+  }, [
+    statsLoading,
+    setsLoading,
+    setsCompleted,
+    lastWorkoutDate,
+    recordWorkoutComplete
+  ]);
 
   const lineupForToday = useMemo(() => {
     if (rotatingProgramEnabled && rotatingProgramPhase) {

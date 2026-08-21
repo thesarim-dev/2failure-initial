@@ -133,7 +133,7 @@ The home screen is your command center. Everything you need for today's session 
 
 The orange flame badge shows your **current streak**: the number of consecutive days you have completed at least two sets (any exercises). The count updates after your second set of the day.
 
-If a streak is at risk or already broken, a **Restore streak** action appears on the dashboard. Restore is unlimited. The first restore each month costs **50 coins**, then the price doubles with each use (**100**, **200**, **400**) and caps at **800**. The price resets to 50 at the start of each month.
+If you miss a day (a full day with fewer than two sets), a **Restore streak** action appears on the dashboard. It does not appear just because you have not trained yet today, or because your current streak is below your longest. Restore is unlimited. The first restore each month costs **50 coins**, then the price doubles with each use (**100**, **200**, **400**) and caps at **800**. The price resets to 50 at the start of each month.
 
 ### Fun fact panel
 
@@ -321,7 +321,7 @@ Choose a split in Settings (under **training split**). Changing the split restar
 
 | Split | Cycle |
 |---|---|
-| **3-day** | Push → Pull → Legs (classic PPL, highest frequency) |
+| **3-day** | Push → Legs → Pull (balanced, highest frequency) |
 | **4-day** | Push → Legs → Pull → Mixed (balanced, one combined day) |
 | **5-day** | Push → Legs → Pull → Legs → Mixed (extra leg volume, default) |
 
@@ -429,7 +429,7 @@ If a set goes over 2 minutes, the receipt recommends switching to a harder exerc
 
 Complete at least two sets on a given day — they can be any exercises — to keep your streak alive. The flame badge on the home screen shows your current count. Missing a day resets the streak to zero.
 
-If you miss a day, a **Restore streak** button appears on the home screen. You can restore as many times as you want. Cost starts at **50 coins** each month and doubles after every restore until it reaches **800**, then stays there until the next month.
+If you miss a day, a **Restore streak** button appears on the home screen until you log two sets that day. You can restore as many times as you want. Cost starts at **50 coins** each month and doubles after every restore until it reaches **800**, then stays there until the next month.
 
 ### Pushup daily goal
 

@@ -68,7 +68,7 @@ const en: SettingsContent = {
         classic5: '5-day'
       },
       descriptions: {
-        ppl3: 'Push / pull / legs — the classic high-frequency split. Up to 4 rest days a week.',
+        ppl3: 'Push / legs / pull — balanced high-frequency split. Up to 4 rest days a week.',
         balanced4: 'Push / legs / pull / mixed — balanced with one combined day. Up to 3 rest days a week.',
         classic5: 'Push / legs / pull / legs / mixed — extra leg volume. Up to 2 rest days a week.'
       }
@@ -236,7 +236,7 @@ const he: SettingsContent = {
         classic5: '5 ימים'
       },
       descriptions: {
-        ppl3: 'דחיפה / משיכה / רגליים — הפיצול הקלאסי בתדירות גבוהה. עד 4 ימי מנוחה בשבוע.',
+        ppl3: 'דחיפה / רגליים / משיכה — פיצול מאוזן בתדירות גבוהה. עד 4 ימי מנוחה בשבוע.',
         balanced4: 'דחיפה / רגליים / משיכה / מעורב — מאוזן עם יום משולב אחד. עד 3 ימי מנוחה בשבוע.',
         classic5: 'דחיפה / רגליים / משיכה / רגליים / מעורב — נפח רגליים נוסף. עד 2 ימי מנוחה בשבוע.'
       }
@@ -403,7 +403,7 @@ const ar: SettingsContent = {
         classic5: '5 أيام'
       },
       descriptions: {
-        ppl3: 'دفع / سحب / ساقين — التقسيم الكلاسيكي عالي التكرار. حتى 4 أيام راحة في الأسبوع.',
+        ppl3: 'دفع / ساقين / سحب — تقسيم متوازن عالي التكرار. حتى 4 أيام راحة في الأسبوع.',
         balanced4: 'دفع / ساقين / سحب / مختلط — متوازن مع يوم مشترك واحد. حتى 3 أيام راحة في الأسبوع.',
         classic5: 'دفع / ساقين / سحب / ساقين / مختلط — حجم إضافي للساقين. حتى يومَي راحة في الأسبوع.'
       }
