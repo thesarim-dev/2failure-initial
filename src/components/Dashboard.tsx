@@ -133,6 +133,7 @@ export function Dashboard({
           <button
             type="button"
             onClick={onOpenStore}
+            data-tour="store"
             className="cyber-icon-btn cyber-icon-btn--store"
             aria-label={t.dashboard.aria.openStore}>
             <ShoppingBag size={20} strokeWidth={2.5} />
@@ -140,6 +141,7 @@ export function Dashboard({
           <button
             type="button"
             onClick={onOpenSettings}
+            data-tour="settings"
             className="cyber-icon-btn cyber-icon-btn--settings"
             aria-label={t.dashboard.aria.openSettings}>
             <SettingsIcon size={20} strokeWidth={2.5} />
@@ -147,13 +149,16 @@ export function Dashboard({
 
           {profileLoading ? (
             <div
+              data-tour="coins"
               className="coins-badge flex items-center gap-2 px-4 py-2"
               aria-busy="true"
               aria-label={t.dashboard.aria.loadingCoins}>
               <Loader2 size={20} strokeWidth={2.5} className="animate-spin" />
             </div>
           ) : (
-            <CoinsBadge coins={coins} />
+            <span data-tour="coins" className="inline-flex rounded-full">
+              <CoinsBadge coins={coins} />
+            </span>
           )}
         </div>
       </header>
@@ -179,6 +184,7 @@ export function Dashboard({
 
         <div className="flex flex-col items-end gap-2">
           <div
+            data-tour="streak"
             className="streak-badge shrink-0 w-[78px] h-[78px] rounded-full bg-[#E85520] dark:bg-[#FF6633] flex flex-col items-center justify-center text-black"
             aria-label={t.dashboard.aria.streakDays(currentStreak)}>
             {statsLoading || statsCompleting ? (
@@ -213,7 +219,9 @@ export function Dashboard({
         {rotatingProgramEnabled &&
           rotatingProgramPhase !== null &&
           rotatingProgramCycleDay !== null && (
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div
+              data-tour="program"
+              className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-xl">
               <p className="text-sm font-semibold text-[#00A8D8] dark:text-[#00B2FF] normal-case text-start">
                 {isRestDayToday
                   ? t.dashboard.restDay.active
@@ -282,13 +290,17 @@ export function Dashboard({
               }}
               onClick={() => onSelectMove(move)}
               disabled={isDone}
+              data-tour="move"
+              data-tour-name={move.name}
               className={`dashboard-move-card w-full text-start rounded-2xl ${move.color} ${move.glow} border-4 p-5 relative overflow-visible disabled:cursor-default`}>
               <div className="relative z-10">
                 <div className="dashboard-move-header mb-2 min-w-0">
                   <h3 className="dashboard-move-title flex-1 min-w-0 uppercase">
                     {move.name}
                   </h3>
-                  <span className="dashboard-move-sets bg-black text-white px-2.5 py-1 text-xs font-bold tabular-nums rounded-md normal-case shrink-0">
+                  <span
+                    data-tour={i === 0 ? 'lineup' : undefined}
+                    className="dashboard-move-sets bg-black text-white px-2.5 py-1 text-xs font-bold tabular-nums rounded-md normal-case shrink-0">
                     {setsLoading
                       ? t.dashboard.loading
                       : isDone

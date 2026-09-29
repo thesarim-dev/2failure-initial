@@ -1,4 +1,4 @@
-import { ArrowLeft, LogOut, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, Compass, LogOut, Moon, Sun } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { SettingsFaq } from './SettingsFaq';
 import { ProgramTrainingGuide } from './ProgramTrainingGuide';
@@ -31,6 +31,7 @@ interface SettingsProps {
   onToggleDark: () => void;
   weightUnit: 'kg' | 'lb';
   onWeightUnitChange: (unit: 'kg' | 'lb') => void;
+  onReplayTour?: () => void;
   onBack: () => void;
 }
 
@@ -51,6 +52,7 @@ export function Settings({
   onToggleDark,
   weightUnit,
   onWeightUnitChange,
+  onReplayTour,
   onBack
 }: SettingsProps) {
   const { signOut } = useAuth();
@@ -248,6 +250,22 @@ export function Settings({
             ))}
           </div>
         </section>
+
+        {onReplayTour && (
+          <section className="cyber-panel p-5 normal-case">
+            <h2 className="settings-section-title">{t.tutorial.replay.title}</h2>
+            <p className="text-sm font-medium opacity-70 mb-4">
+              {t.tutorial.replay.description}
+            </p>
+            <button
+              type="button"
+              onClick={onReplayTour}
+              className="settings-action-btn settings-action-btn--tour">
+              <Compass size={18} strokeWidth={2.5} aria-hidden="true" />
+              {t.tutorial.replay.button}
+            </button>
+          </section>
+        )}
 
         <SettingsFaq />
 

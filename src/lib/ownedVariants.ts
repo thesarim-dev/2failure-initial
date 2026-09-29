@@ -1,6 +1,7 @@
 import { RECOVERY_STORE_CATEGORY, STORE_CATEGORIES } from '../components/moves';
 
 import { storageKeyFor } from './persistedSettings';
+import { hasSeenOnboarding } from './onboarding';
 
 const STORAGE_KEY_BASE = 'owned-variants';
 
@@ -18,6 +19,32 @@ export const DEFAULT_OWNED = [
 
 const ALL_VARIANT_IDS = new Set(PROGRAM_VARIANT_IDS);
 
+/**
+ * These were free before the anywhere-training catalogue and now cost coins.
+ * Players who joined before the change keep them.
+ */
+const LEGACY_FREE_IDS = ['dips', 'pull-ups', 'burpees', 'l-sit', 'leg-raises'];
+const CATALOG_MIGRATION_KEY = 'catalog-v2';
+
+function migrateOwnedForCatalogV2(userId?: string | null): void {
+  if (!userId) return;
+  const markerKey = storageKeyFor(userId, CATALOG_MIGRATION_KEY);
+  if (window.localStorage.getItem(markerKey)) return;
+  window.localStorage.setItem(markerKey, '1');
+  // Onboarding already seen on first load means this player predates the change.
+  if (!hasSeenOnboarding(userId)) return;
+
+  const key = storageKeyFor(userId, STORAGE_KEY_BASE);
+  let stored: unknown = [];
+  try {
+    stored = JSON.parse(window.localStorage.getItem(key) ?? '[]');
+  } catch {
+    stored = [];
+  }
+  const ids = Array.isArray(stored) ? stored.filter((id) => typeof id === 'string') : [];
+  window.localStorage.setItem(key, JSON.stringify([...new Set([...ids, ...LEGACY_FREE_IDS])]));
+}
+
 export function readStoredOwned(userId?: string | null): string[] {
   const merged = new Set(DEFAULT_OWNED);
 
@@ -26,6 +53,7 @@ export function readStoredOwned(userId?: string | null): string[] {
   }
 
   try {
+    migrateOwnedForCatalogV2(userId);
     const key = storageKeyFor(userId ?? undefined, STORAGE_KEY_BASE);
     const raw = window.localStorage.getItem(key);
     if (!raw) return [...merged];

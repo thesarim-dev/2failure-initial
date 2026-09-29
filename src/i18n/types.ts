@@ -120,7 +120,7 @@ export interface AppTranslations {
     ) => string;
     programExerciseDone: string;
     programEquipment: (gear: string) => string;
-    equipment: Record<'dumbbell' | 'barbell' | 'bench', string>;
+    equipment: Record<import('../components/moves').AnywhereEquipment, string>;
     streak: string;
     streakRestore: {
       label: string;
@@ -168,6 +168,9 @@ export interface AppTranslations {
     needOppositePattern: string;
     needBalancedUpper: string;
     programEquipLocked: string;
+    intro: string;
+    noGear: string;
+    nextStep: (names: string) => string;
   };
   login: {
     switchToDay: string;
@@ -280,6 +283,14 @@ export interface AppTranslations {
       baseline: (weight: string) => string;
       fatigue_maintain: (weight: string) => string;
     };
+    levelUp: {
+      title: string;
+      reps: (reps: number) => string;
+      hold: (seconds: number) => string;
+      tryNext: (names: string) => string;
+      topOfLadderReps: string;
+      topOfLadderHold: string;
+    };
     setLogged: (current: number, total: number) => string;
     nextSet: string;
     status: string;
@@ -314,8 +325,33 @@ export interface AppTranslations {
     skip: string;
     back: string;
     next: string;
+    begin: string;
     finish: string;
     stepLabel: (current: number, total: number) => string;
-    steps: Array<{ title: string; body: string }>;
+    startCta: (exerciseName: string) => string;
+    steps: {
+      welcome: TutorialStepCopy;
+      lineup: TutorialStepCopy;
+      streak: TutorialStepCopy;
+      coins: TutorialStepCopy;
+      store: TutorialStepCopy;
+      settings: TutorialStepCopy;
+      program: TutorialStepCopy;
+      start: { title: string; body: (exerciseName: string) => string };
+    };
+    firstSet: {
+      workout: string;
+      repPrompt: string;
+      weightPrompt: string;
+      summary: string;
+      dismiss: string;
+    };
+    replay: {
+      title: string;
+      description: string;
+      button: string;
+    };
   };
 }
+
+export type TutorialStepCopy = { title: string; body: string };

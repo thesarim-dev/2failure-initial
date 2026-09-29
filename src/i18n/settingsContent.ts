@@ -14,14 +14,14 @@ const en: SettingsContent = {
   rotatingProgram: {
     title: 'rotating program',
     description:
-      'RIR training plan with a selectable split (3, 4, or 5 days). Take rest (stretch) days from the home screen — they push the program back one day, and your split decides how many you get per week. Equipment exercises are 3 sets; bodyweight and core are 2 sets.',
+      'RIR training plan with a selectable split (3, 4, or 5 days). Take rest (stretch) days from the home screen — they push the program back one day, and your split decides how many you get per week. The main lift of each day is 3 sets; everything else is 2 sets.',
     off: 'Off',
     on: 'On',
     trainingGuide: {
       toggleLabel: 'How hard should each set feel?',
       sections: [
         {
-          title: 'Equipment exercises — 3 sets',
+          title: 'Main lift of the day — 3 sets',
           items: [
             { label: 'Set 1:', text: '1–2 reps left in the tank (RIR)' },
             { label: 'Set 2:', text: '1–2 reps left in the tank (RIR)' },
@@ -105,7 +105,7 @@ const en: SettingsContent = {
       {
         question: 'Do I need fancy gym equipment to start?',
         paragraphs: [
-          'No. You only need a chair, a bar (or an improvised pull-up surface like a table or door frame), and the floor.'
+          'No. You need the floor, a bench or sturdy chair, and a pull-up bar (most public parks have one). When bodyweight gets easy, a backpack filled with books or water bottles adds weight.'
         ]
       },
       {
@@ -182,14 +182,14 @@ const he: SettingsContent = {
   rotatingProgram: {
     title: 'תוכנית מתחלפת',
     description:
-      'תוכנית RIR עם פיצול לבחירה (3, 4 או 5 ימים). אפשר לקחת ימי מנוחה (מתיחות) ממסך הבית — הם דוחים את התוכנית ביום, והפיצול קובע כמה מגיעים בשבוע. תרגילי ציוד — 3 סטים; משקל גוף וליבה — 2 סטים.',
+      'תוכנית RIR עם פיצול לבחירה (3, 4 או 5 ימים). אפשר לקחת ימי מנוחה (מתיחות) ממסך הבית — הם דוחים את התוכנית ביום, והפיצול קובע כמה מגיעים בשבוע. התרגיל המרכזי של כל יום — 3 סטים; כל השאר — 2 סטים.',
     off: 'כבוי',
     on: 'פעיל',
     trainingGuide: {
       toggleLabel: 'כמה קשה כל סט צריך להרגיש?',
       sections: [
         {
-          title: 'תרגילי ציוד — 3 סטים',
+          title: 'התרגיל המרכזי של היום — 3 סטים',
           items: [
             { label: 'סט 1:', text: '1–2 חזרות נשארו בטנק (RIR)' },
             { label: 'סט 2:', text: '1–2 חזרות נשארו בטנק (RIR)' },
@@ -273,7 +273,7 @@ const he: SettingsContent = {
       {
         question: 'האם אני צריך ציוד כושר יקר כדי להתחיל?',
         paragraphs: [
-          'לא. אתה צריך רק כיסא, מוט (או משטח משיכה מאולתר כמו שולחן או משקוף דלת), והרצפה.'
+          'לא. אתה צריך רצפה, ספסל או כיסא יציב, ומוט מתח (ברוב הפארקים הציבוריים יש). כשמשקל הגוף נהיה קל, תיק גב עם ספרים או בקבוקי מים מוסיף משקל.'
         ]
       },
       {
@@ -349,14 +349,14 @@ const ar: SettingsContent = {
   rotatingProgram: {
     title: 'برنامج متناوب',
     description:
-      'خطة RIR بتقسيم قابل للاختيار (3 أو 4 أو 5 أيام). يمكنك أخذ أيام راحة (تمدد) من الشاشة الرئيسية — وهي تؤجل البرنامج يومًا واحدًا، والتقسيم يحدد عددها في الأسبوع. تمارين المعدات 3 مجموعات؛ وزن الجسم واللبّ 2 مجموعات.',
+      'خطة RIR بتقسيم قابل للاختيار (3 أو 4 أو 5 أيام). يمكنك أخذ أيام راحة (تمدد) من الشاشة الرئيسية — وهي تؤجل البرنامج يومًا واحدًا، والتقسيم يحدد عددها في الأسبوع. التمرين الرئيسي لكل يوم 3 مجموعات؛ وكل ما عداه مجموعتان.',
     off: 'إيقاف',
     on: 'تشغيل',
     trainingGuide: {
       toggleLabel: 'ما مدى صعوبة كل مجموعة؟',
       sections: [
         {
-          title: 'تمارين بالمعدات — 3 مجموعات',
+          title: 'التمرين الرئيسي لليوم — 3 مجموعات',
           items: [
             { label: 'المجموعة 1:', text: '1–2 تكرارات متبقية (RIR)' },
             { label: 'المجموعة 2:', text: '1–2 تكرارات متبقية (RIR)' },
@@ -440,7 +440,7 @@ const ar: SettingsContent = {
       {
         question: 'هل أحتاج إلى معدات رياضية باهظة للبدء؟',
         paragraphs: [
-          'لا. تحتاج فقط إلى كرسي، وعمود (أو سطح سحب مرتجل مثل طاولة أو إطار باب)، والأرض.'
+          'لا. تحتاج إلى الأرض، ومقعد أو كرسي متين، وعقلة (معظم الحدائق العامة فيها واحدة). عندما يصبح وزن الجسم سهلاً، تضيف حقيبة ظهر مليئة بالكتب أو زجاجات الماء وزناً إضافياً.'
         ]
       },
       {

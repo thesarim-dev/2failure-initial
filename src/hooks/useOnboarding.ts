@@ -20,5 +20,7 @@ export function useOnboarding(userId: string | undefined) {
     setShowTutorial(false);
   }, [userId]);
 
-  return { showTutorial, dismissTutorial };
+  const replayTutorial = useCallback(() => setShowTutorial(true), []);
+
+  return { showTutorial, dismissTutorial, replayTutorial };
 }

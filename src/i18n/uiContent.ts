@@ -9,7 +9,7 @@ interface DashboardUiContent {
   ) => string;
   programExerciseDone: string;
   programEquipment: (gear: string) => string;
-  equipment: Record<'dumbbell' | 'barbell' | 'bench', string>;
+  equipment: Record<import('../components/moves').AnywhereEquipment, string>;
   streak: string;
   streakRestore: {
     label: string;
@@ -65,9 +65,10 @@ const en: UiContent = {
     programExerciseDone: 'done',
     programEquipment: (gear) => `equipment: ${gear}`,
     equipment: {
-      dumbbell: 'dumbbell',
-      barbell: 'barbell',
-      bench: 'bench'
+      bar: 'pull-up bar',
+      dipBars: 'dip bars',
+      bench: 'bench or step',
+      backpack: 'backpack'
     },
     streak: 'streak',
     streakRestore: {
@@ -117,7 +118,11 @@ const en: UiContent = {
     needOppositePattern: 'Need opposite movement pattern',
     needBalancedUpper: 'Need 1 Push + 1 Pull in your upper lineup.',
     programEquipLocked:
-      'Rotating program is on — lineup changes are locked. Turn the program off in Settings to equip or unequip.'
+      'Rotating program is on — lineup changes are locked. Turn the program off in Settings to equip or unequip.',
+    intro:
+      "Every move here works at a park, at home, or anywhere with floor space. When a move gets easy, unlock its next step.",
+    noGear: 'no gear',
+    nextStep: (names) => `Next step: ${names}`
   },
   login: {
     switchToDay: 'switch to day mode',
@@ -238,6 +243,18 @@ const en: UiContent = {
       fatigue_maintain: (weight) =>
         `Set 3 dropped hard vs set 1 — hold ${weight} next session instead of adding weight.`
     },
+    levelUp: {
+      title: 'Time to level up',
+      reps: (reps) =>
+        `${reps} reps is past this move's sweet spot. Pick a harder version so you reach failure in fewer, tougher reps.`,
+      hold: (seconds) =>
+        `A ${seconds}-second hold is past this move's sweet spot. Pick a harder version so the hold gets tough sooner.`,
+      tryNext: (names) => `Try next: ${names}`,
+      topOfLadderReps:
+        "You're at the top of this ladder. Lower for 3 slow seconds and pause at the bottom, or wear a loaded backpack.",
+      topOfLadderHold:
+        "That's an elite hold. Keep it hard with perfect form and add a few seconds each week."
+    },
     setLogged: (current, total) => `Set ${current} of ${total} logged`,
     nextSet: 'next set',
     status: 'status',
@@ -310,9 +327,10 @@ const he: UiContent = {
     programExerciseDone: 'בוצע',
     programEquipment: (gear) => `ציוד: ${gear}`,
     equipment: {
-      dumbbell: 'משקולות יד',
-      barbell: 'מוט',
-      bench: 'ספסל'
+      bar: 'מוט מתח',
+      dipBars: 'מקבילים',
+      bench: 'ספסל או מדרגה',
+      backpack: 'תיק גב'
     },
     streak: 'רצף',
     streakRestore: {
@@ -362,7 +380,11 @@ const he: UiContent = {
     needOppositePattern: 'נדרש דפוס תנועה הפוך',
     needBalancedUpper: 'נדרש תרגיל דחיפה אחד + משיכה אחת בפלג הגוף העליון.',
     programEquipLocked:
-      'תוכנית הסיבוב פעילה — לא ניתן לשנות ציוד. כבה את התוכנית בהגדרות כדי לצייד או להסיר.'
+      'תוכנית הסיבוב פעילה — לא ניתן לשנות ציוד. כבה את התוכנית בהגדרות כדי לצייד או להסיר.',
+    intro:
+      'כל תרגיל כאן עובד בפארק, בבית או בכל מקום עם קצת רצפה. כשתרגיל נהיה קל, פתח את השלב הבא שלו.',
+    noGear: 'בלי ציוד',
+    nextStep: (names) => `השלב הבא: ${names}`
   },
   login: {
     switchToDay: 'עבור למצב יום',
@@ -483,6 +505,18 @@ const he: UiContent = {
       fatigue_maintain: (weight) =>
         `סט 3 ירד לעומת סט 1 — שמור על ${weight} באימון הבא במקום להוסיף משקל.`
     },
+    levelUp: {
+      title: 'הגיע הזמן לעלות רמה',
+      reps: (reps) =>
+        `${reps} חזרות זה מעבר לטווח האידיאלי של התרגיל הזה. בחר גרסה קשה יותר כדי להגיע לכשל בפחות חזרות, וקשות יותר.`,
+      hold: (seconds) =>
+        `החזקה של ${seconds} שניות זה מעבר לטווח האידיאלי. בחר גרסה קשה יותר כדי שההחזקה תהיה קשה מוקדם יותר.`,
+      tryNext: (names) => `נסה בפעם הבאה: ${names}`,
+      topOfLadderReps:
+        'אתה בראש הסולם של התרגיל הזה. רד לאט במשך 3 שניות ועצור בתחתית, או לבש תיק גב טעון.',
+      topOfLadderHold:
+        'זו החזקה ברמה גבוהה. שמור על קושי עם טכניקה מושלמת והוסף כמה שניות כל שבוע.'
+    },
     setLogged: (current, total) => `סט ${current} מתוך ${total} נרשם`,
     nextSet: 'סט הבא',
     status: 'סטטוס',
@@ -555,9 +589,10 @@ const ar: UiContent = {
     programExerciseDone: 'تم',
     programEquipment: (gear) => `معدات: ${gear}`,
     equipment: {
-      dumbbell: 'دمبل',
-      barbell: 'بار',
-      bench: 'مقعد'
+      bar: 'عقلة',
+      dipBars: 'متوازي',
+      bench: 'مقعد أو درجة',
+      backpack: 'حقيبة ظهر'
     },
     streak: 'سلسلة',
     streakRestore: {
@@ -607,7 +642,11 @@ const ar: UiContent = {
     needOppositePattern: 'يلزم نمط حركة معاكس',
     needBalancedUpper: 'يلزم تمرين دفع واحد + سحب واحد في الجزء العلوي.',
     programEquipLocked:
-      'برنامج الدوران مفعّل — تغيير التجهيز مقفل. أوقف البرنامج من الإعدادات للتجهيز أو الإزالة.'
+      'برنامج الدوران مفعّل — تغيير التجهيز مقفل. أوقف البرنامج من الإعدادات للتجهيز أو الإزالة.',
+    intro:
+      'كل تمرين هنا يصلح في الحديقة أو المنزل أو أي مكان فيه مساحة على الأرض. عندما يصبح التمرين سهلاً، افتح خطوته التالية.',
+    noGear: 'بدون معدات',
+    nextStep: (names) => `الخطوة التالية: ${names}`
   },
   login: {
     switchToDay: 'التبديل إلى الوضع النهاري',
@@ -728,6 +767,18 @@ const ar: UiContent = {
         `تم تسجيل ${weight}. سنقترح تعديلات مع تقدّمك.`,
       fatigue_maintain: (weight) =>
         `المجموعة 3 انخفضت مقارنة بالمجموعة 1 — ثبّت ${weight} في الجلسة القادمة بدلاً من زيادة الوزن.`
+    },
+    levelUp: {
+      title: 'حان وقت رفع المستوى',
+      reps: (reps) =>
+        `${reps} تكراراً يتجاوز النطاق المثالي لهذا التمرين. اختر نسخة أصعب لتصل إلى الفشل بتكرارات أقل وأصعب.`,
+      hold: (seconds) =>
+        `ثبات لمدة ${seconds} ثانية يتجاوز النطاق المثالي. اختر نسخة أصعب ليصبح الثبات صعباً أسرع.`,
+      tryNext: (names) => `جرّب في المرة القادمة: ${names}`,
+      topOfLadderReps:
+        'أنت في قمة سُلّم هذا التمرين. انزل ببطء لمدة 3 ثوانٍ وتوقف في الأسفل، أو ارتدِ حقيبة ظهر محمّلة.',
+      topOfLadderHold:
+        'هذا ثبات بمستوى متقدم. حافظ على الصعوبة بأداء مثالي وأضف بضع ثوانٍ كل أسبوع.'
     },
     setLogged: (current, total) => `تم تسجيل المجموعة ${current} من ${total}`,
     nextSet: 'المجموعة التالية',

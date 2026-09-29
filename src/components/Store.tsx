@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronDown, Coins, Check, Lock } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Coins, Check, Lock, TrendingUp } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeVariant } from '../i18n/localize';
@@ -11,6 +11,7 @@ import {
   STORE_CATEGORIES,
   Variant,
   canEquipUpperExercise,
+  getVariantById,
   hasBalancedUpperSelection
 } from './moves';
 
@@ -117,6 +118,8 @@ export function Store({
         </h1>
         <CoinsBadge coins={coins} />
       </header>
+
+      <p className="store-intro normal-case">{t.store.intro}</p>
 
       <div className="space-y-4">
         {equipLocked && (
@@ -253,22 +256,34 @@ function LineupSection({
       <div className="flex flex-col gap-3">
         {category.variants.map((variant, i) => {
           const localized = localizeVariant(variant, t.moves);
+          // Upper body lists the push ladder, then the pull ladder.
+          const startsPatternGroup =
+            category.id === 'upper' &&
+            variant.pattern !== undefined &&
+            variant.pattern !== category.variants[i - 1]?.pattern;
+          const gearLabel = variant.equipment?.length
+            ? variant.equipment.map((item) => t.dashboard.equipment[item]).join(' + ')
+            : t.store.noGear;
+          const nextNames = (variant.levelUp ?? [])
+            .map((id) => getVariantById(id))
+            .filter((next): next is Variant => next !== undefined)
+            .map((next) => localizeVariant(next, t.moves).name)
+            .join(', ');
           const isOwned = owned.includes(variant.id);
           const isEquipped = equipped.includes(variant.id);
           const canAfford = coins >= variant.price;
           const allowEquip =
             !equipLocked && isOwned && (isEquipped || canEquip(variant.id));
           const equipLockTitle = equipLocked ? t.store.programEquipLocked : undefined;
-          const patternLabel =
-            category.id === 'upper' && variant.pattern
-              ? variant.pattern === 'push'
-                ? t.store.push
-                : t.store.pull
-              : null;
 
           return (
+            <div key={variant.id} className="contents">
+            {startsPatternGroup && (
+              <h3 className="store-ladder-heading normal-case">
+                {variant.pattern === 'push' ? t.store.push : t.store.pull}
+              </h3>
+            )}
             <motion.div
-              key={variant.id}
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: i * 0.05 }}
@@ -288,6 +303,13 @@ function LineupSection({
                 <p className="font-medium opacity-70 text-sm normal-case leading-snug">
                   {localized.description}
                 </p>
+                <p className="store-gear normal-case">{gearLabel}</p>
+                {isOwned && nextNames && (
+                  <p className="store-next-step normal-case">
+                    <TrendingUp size={13} strokeWidth={2.5} aria-hidden="true" />
+                    {t.store.nextStep(nextNames)}
+                  </p>
+                )}
               </div>
 
               <div className="store-item-actions shrink-0">
@@ -335,12 +357,10 @@ function LineupSection({
                     className={`store-tier-label store-tier-label--${variant.tier.toLowerCase()}`}>
                     {variant.tier}
                   </span>
-                  {patternLabel && (
-                    <span className="store-pattern-label">{patternLabel}</span>
-                  )}
                 </div>
               </div>
             </motion.div>
+            </div>
           );
         })}
       </div>

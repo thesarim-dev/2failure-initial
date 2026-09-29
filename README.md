@@ -6,7 +6,7 @@
 |---|---|
 | **Product** | 2failure Workout Tracker |
 | **Audience** | New and returning users |
-| **Last updated** | July 2026 |
+| **Last updated** | September 2026 |
 | **Languages** | English, עברית (Hebrew), العربية (Arabic) |
 
 ---
@@ -53,7 +53,7 @@ This guide walks through every screen and action in that loop, step by step.
 | **Device** | Smartphone, tablet, or computer with a modern web browser |
 | **Internet** | Required to sign in and sync progress |
 | **Camera** | Optional — used only for AI rep tracking on supported exercises |
-| **Equipment** | None required to start. A chair, pull-up bar at a public park (or sturdy door frame), and floor space are enough for the base exercise library. Dumbbells and a barbell unlock additional moves. |
+| **Equipment** | None required to start. Floor space covers the starter moves. A bench or stairs, a pull-up bar and dip bars (found in most public parks), and a backpack you can load with books or water bottles unlock the rest. No gym needed. |
 
 ### What 2failure tracks
 
@@ -95,24 +95,32 @@ The sun/moon icon on the login screen toggles between **day mode** and **night m
 
 ## 4. Take the welcome tour
 
-The first time you sign in, 2failure shows a short onboarding tour. It covers the four areas you will use most:
+The first time you sign in, 2failure dims the home screen and walks you through it, highlighting each real button as it explains it. The tour ends by starting your first workout.
 
-| Step | Topic | What you learn |
+| Step | What's highlighted | What you learn |
 |---|---|---|
-| 1 | Welcome | App purpose: train, log sets, build streaks |
-| 2 | Pick a workout | How to start an exercise from the home screen |
-| 3 | Store & lineup | How to unlock and equip exercises |
-| 4 | Settings | Daily set targets, rotating program, language |
-| 5 | Coins & streak | How rewards and streaks work |
+| 1 | — | Welcome and what the tour covers |
+| 2 | Set counter on the first card | Each card is one of today's exercises; the counter shows sets done out of today's goal |
+| 3 | Streak badge | 2 sets a day keeps your streak alive |
+| 4 | Coins badge | Every finished set earns coins |
+| 5 | Store (bag icon) | Unlock harder exercises and choose your lineup |
+| 6 | Settings (gear icon) | Program, daily set target, language, units, night mode |
+| 7 | Program banner | Only shown when the rotating program is on; explains rest days |
+| 8 | First exercise card | Tap **Start** to begin your first set |
 
 **Navigation**
 
-- Tap **Next** to advance.
-- Tap **Back** to revisit a step.
-- Tap **Skip tour** or click outside the panel to dismiss the tour and go straight to the home screen.
-- On the final step, tap **Let's go** to finish.
+- Tap **Next** (or press the right arrow key) to advance, and **Back** to revisit a step.
+- Tap **Skip tour** (or press Escape) to go straight to the home screen.
+- On the last step, tap the glowing card or **Start [exercise]** to begin your first workout.
 
-You can complete your first workout immediately after the tour.
+**Your first set**
+
+During the set the tour started, a small tip appears on each screen: when to tap the finish button, how to log your reps, and, on the receipt, that one more set today starts your streak. Tap **×** to hide a tip.
+
+**Replay the tour**
+
+Open **Settings** → **App tour** → **Replay tour**.
 
 ---
 
@@ -210,13 +218,13 @@ You must enter at least **1 rep** to continue.
 
 ### Weighted exercise logging
 
-For dumbbell, barbell, and bench exercises:
+For backpack exercises (backpack pushups, squats and pull-ups), log how heavy your loaded backpack was:
 
 1. Review the set label (e.g., **Set 2 of 3**) and the intensity cue:
    - **Leave 1–2 reps in the tank** — stop before failure (RIR 1–2)
    - **Leave 1 rep in the tank** — stop one rep short of failure
    - **Go to absolute failure** — final set; push to your limit
-2. Enter **weight** using the stepper buttons (increments match standard plate sizes: 2.5 kg or 5 lb).
+2. Enter the **backpack weight** using the stepper buttons (2.5 kg or 5 lb steps). A bathroom scale works: weigh yourself with and without the backpack.
 3. Enter **reps**.
 4. Reference lines show your **last session** load and **today's sets so far**.
 5. Tap **log set**.
@@ -241,14 +249,28 @@ The summary screen confirms what you logged and celebrates milestones.
 | **Coins earned** | How many coins you received this set |
 | **Reps / load × reps** | What you logged this set |
 | **Personal best** | Your all-time best for this exercise |
-| **Progression tip** | Suggested weight adjustment for next session (weighted moves) |
+| **Progression tip** | Suggested weight adjustment for next session (backpack moves) |
+| **Time to level up** | Shown when a bodyweight set goes past the move's useful range (see below) |
 
-If your set ran longer than 2 minutes, the receipt also reminds you that coin rewards stop at 2 minutes and recommends trying a harder exercise in the Store or adding weight.
+If your set ran longer than 2 minutes, the receipt also reminds you that coin rewards stop at 2 minutes and recommends trying a harder exercise in the Store or adding weight. This note is skipped when the level-up card already appears.
 
 ### Personal bests and progression
 
 - A **new rep personal best** or **new weight PR** badge appears when you beat a previous record.
 - For weighted exercises, 2failure may suggest increasing, maintaining, or decreasing load based on your performance — including fatigue detection when your last set drops significantly compared to your first.
+
+### Level up when a move gets easy
+
+Doing 50 pushups in a set means pushups have become endurance work. Strength and muscle grow faster when a set ends near failure in fewer, harder reps. Every bodyweight move has a rep ceiling (holds have a time ceiling). When you pass it, the receipt shows **Time to level up** and names the next harder moves to try.
+
+| Example move | Level up after | Try next |
+|---|---|---|
+| Pushups | 20 reps | Diamond pushups, backpack pushups |
+| Squats | 25 reps | Bulgarian splits, backpack squats |
+| Pull-ups | 12 reps | Backpack pull-ups |
+| Planks | 90 seconds | Hollow body hold, side planks |
+
+At the top of a ladder, the receipt suggests slowing each rep down (3 seconds lowering, pause at the bottom) or wearing a loaded backpack instead. Backpack moves progress by adding weight, using the progression tip.
 
 ### Celebration
 
@@ -266,20 +288,34 @@ Tap the **bag icon** in the home screen header.
 
 ### Buy an exercise
 
-1. Browse sections: **Upperbody**, **Lowerbody**, and **Core**.
+Every exercise in the store works at a park, at home, or anywhere with floor space. There is no gym equipment.
+
+1. Browse sections: **Upperbody** (a push ladder, then a pull ladder), **Lowerbody**, and **Core**. Within each section, moves are ordered easiest to hardest.
 2. Locked exercises show a price in coins. Tap the price button to purchase.
 3. You must have enough coins. Earn coins by completing sets (see [Track progress](#12-track-progress-over-time)).
 4. Exercises priced at **0** are free and available immediately.
+5. Each card shows the gear it needs (**no gear**, **bench or step**, **pull-up bar**, **dip bars**, **backpack**). Moves you own also show their **Next step**.
 
 ### Exercise tiers
 
 Exercises in the Store are labeled by difficulty under the **equip** or **buy** button:
 
-- **base** — starter moves (e.g. pushups, squats, planks)
-- **pro** — intermediate (e.g. pull-ups, dips, jump squats)
-- **elite** — advanced (e.g. barbell compounds, hollow body, Bulgarian splits)
+- **base** — starter moves (e.g. incline pushups, pushups, squats, planks)
+- **pro** — intermediate (e.g. dips, inverted rows, chin-ups, Bulgarian splits, backpack moves)
+- **elite** — advanced (e.g. pull-ups, archer pushups, pistol squats, L-sit, hanging leg raises)
 
-Upper-body exercises also show **push** or **pull** beside the name. Unlock harder variations with coins as you progress.
+Unlock harder variations with coins as you progress.
+
+### Progression ladders
+
+| Ladder | Easiest → hardest |
+|---|---|
+| **Push** | Incline pushups → Pushups → Pike pushups → Diamond pushups → Dips → Backpack pushups → Archer pushups |
+| **Pull** | Superman pulls → Doorway rows → Inverted floor rows → Inverted rows → Negative pull-ups → Chin-ups → Pull-ups → Backpack pull-ups |
+| **Legs** | Squats / Lunges / Glute bridges → Step-ups → Single-leg bridges → Jump squats → Burpees → Bulgarian splits → Backpack squats → Pistol squats |
+| **Core** | Planks / Crunches → Side planks → Leg raises → Hollow body hold → Hanging knee raises → L-sit → Hanging leg raises |
+
+Players who joined before this store update keep dips, pull-ups, burpees, L-sit and leg raises, which used to be free.
 
 ### Equip exercises for your daily lineup
 
@@ -307,7 +343,7 @@ When the rotating program is on, lineup changes are **locked**. The program assi
 
 ## 10. Follow the rotating program
 
-The rotating program is an optional training plan built around **RIR** (reps in reserve), stopping just short of failure on early sets and going all-out on the final set. Pick the split that fits your week; rest (stretch) days are not fixed in the cycle — you choose them when you need them.
+The rotating program is an optional training plan built around **RIR** (reps in reserve), stopping just short of failure on early sets and going all-out on the final set. It needs only what a public park has: a pull-up bar, dip bars and a bench, plus a backpack for load. Pick the split that fits your week; rest (stretch) days are not fixed in the cycle — you choose them when you need them.
 
 ### Enable the program
 
@@ -331,12 +367,19 @@ The home screen banner shows **Program day X/N** and the current focus.
 
 | Exercise type | Sets per day | Intensity |
 |---|---|---|
-| **Equipment** (dumbbell, barbell, bench) | 3 | Sets 1–2: leave 1–2 reps in reserve. Set 3: go to failure. |
+| **Main lift of the day** (backpack pushups, backpack squats, pull-ups, backpack pull-ups) | 3 | Sets 1–2: leave 1–2 reps in reserve. Set 3: go to failure. |
 | **Bodyweight** | 2 | Set 1: leave 1 rep in reserve. Set 2: go to failure. |
 | **Core** | 2 | Set 1: controlled pace. Set 2: max hold or failure. |
 | **Recovery / rest days** | Stretch only | No lifting or core work — only when you take a rest day |
 
 Tap **How hard should each set feel?** in Settings for the full breakdown.
+
+| Day | Main lift (3 sets) | Accessories (2 sets each) |
+|---|---|---|
+| **Push** | Backpack pushups | Dips, pike pushups, L-sit, planks |
+| **Legs** | Backpack squats | Bulgarian splits, single-leg bridges, hollow body, planks |
+| **Pull** | Pull-ups | Inverted rows, chin-ups, hanging knee raises, planks |
+| **Mixed** | Backpack pull-ups | Burpees, pushups, lunges, L-sit, planks |
 
 ### Browse program days
 
@@ -383,7 +426,7 @@ Choose **English**, **עברית**, or **العربية**. The entire interface 
 
 ### Weight units
 
-Select **kg** or **lb** for logging and displaying load on weighted exercises. Plate increments adjust automatically (2.5 kg / 5 lb).
+Select **kg** or **lb** for logging and displaying backpack load. Steps adjust automatically (2.5 kg / 5 lb).
 
 ### FAQ
 
@@ -395,6 +438,10 @@ The FAQ section answers common training questions:
 - When to progress to harder variations
 - Weekly volume targets
 - Nutrition and sleep basics
+
+### App tour
+
+Tap **Replay tour** to walk through the home screen again.
 
 ### Account
 
@@ -474,6 +521,7 @@ Rep and weight personal bests are recorded automatically when you log sets. The 
 | Cannot afford an exercise | Complete more sets to earn coins. |
 | Cannot equip upper exercise | You need 1 push + 1 pull equipped. Unequip one first if slots are full. |
 | Equip buttons disabled | Turn off the rotating program in Settings to edit your lineup. |
+| An exercise I had equipped is gone | Barbell and dumbbell moves were removed. They are replaced in your lineup by the closest free move. |
 
 ### Data loading errors
 
@@ -496,6 +544,8 @@ If the home screen shows a red error banner:
 | **Rotating program** | The built-in RIR training cycle (3, 4, or 5-day split) that auto-selects exercises and set targets. Rest days are player-chosen. |
 | **Progressive overload** | Gradually increasing training stress (more weight, reps, or difficulty) to keep getting stronger. |
 | **Tier** | Exercise difficulty rating in the store: base, pro, or elite. |
+| **Ladder** | A sequence of versions of one movement, from easiest to hardest. Move up a rung when you pass the rep ceiling. |
+| **Rep ceiling** | The top of a move's useful rep range. Past it, the receipt suggests leveling up. |
 
 ---
 

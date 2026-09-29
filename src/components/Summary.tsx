@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Move } from './moves';
-import { ArrowRight } from 'lucide-react';
+import { Move, getLevelUpAdvice, getVariantById } from './moves';
+import { ArrowRight, TrendingUp } from 'lucide-react';
+import { localizeVariant } from '../i18n/localize';
 import { FailureLogo } from './FailureLogo';
 import confetti from 'canvas-confetti';
 import type { SetRepResult } from '../types/repProgress';
@@ -97,9 +98,32 @@ export function Summary({
     () => calculateCoinsEarned(duration, move.tier ?? 'BASE'),
     [duration, move.tier]
   );
+  // Past the top of a move's useful range (e.g. 50 pushups), point to a harder version.
+  const levelUp = useMemo(() => {
+    const advice = getLevelUpAdvice(move.id, setResult?.reps, duration);
+    if (!advice) return null;
+    const names = advice.nextIds
+      .map((id) => getVariantById(id))
+      .filter((variant): variant is NonNullable<typeof variant> => variant !== undefined)
+      .map((variant) => localizeVariant(variant, t.moves).name)
+      .join(', ');
+    const copy = t.summary.levelUp;
+    return {
+      why:
+        advice.kind === 'reps'
+          ? copy.reps(setResult?.reps ?? 0)
+          : copy.hold(duration),
+      next: names
+        ? copy.tryNext(names)
+        : advice.kind === 'reps'
+          ? copy.topOfLadderReps
+          : copy.topOfLadderHold
+    };
+  }, [move.id, setResult?.reps, duration, t.moves, t.summary.levelUp]);
+  // The level-up card already says "make it harder", so skip the coin-cap note then.
   const showCoinsCapRecommendation = useMemo(
-    () => isCoinEarningCapped(duration),
-    [duration]
+    () => isCoinEarningCapped(duration) && !levelUp,
+    [duration, levelUp]
   );
 
   const progressionMessage = useMemo(() => {
@@ -250,6 +274,16 @@ export function Summary({
                   </p>
                 )}
               </>
+            )}
+            {levelUp && (
+              <div className="summary-level-up normal-case" role="note">
+                <p className={`summary-level-up-title ${SUMMARY_ACCENT_TEXT[slot]}`}>
+                  <TrendingUp size={16} strokeWidth={2.75} aria-hidden="true" />
+                  {t.summary.levelUp.title}
+                </p>
+                <p className="summary-level-up-body">{levelUp.why}</p>
+                <p className="summary-level-up-next">{levelUp.next}</p>
+              </div>
             )}
             <div className="flex justify-between gap-3">
               <span className="opacity-70">{t.summary.status}</span>

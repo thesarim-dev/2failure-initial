@@ -37,7 +37,10 @@ import { useWeightUnit } from './hooks/useWeightUnit';
 import { useAuth } from './context/AuthContext';
 import type { SetRepResult } from './types/repProgress';
 import { useOnboarding } from './hooks/useOnboarding';
-import { OnboardingTutorial } from './components/OnboardingTutorial';
+import { GuidedTour } from './components/GuidedTour';
+import { FirstSetCoach, type FirstSetStage } from './components/FirstSetCoach';
+import { isPoseAiTrackingEnabled } from './config/features';
+import { isPoseExerciseId } from './lib/pose/repCounterFactory';
 
 type AppState =
   | 'HOME'
@@ -115,7 +118,9 @@ export function MainApp() {
     toggleEquipLower,
     toggleEquipCore
   } = useEquippedLineup(user?.id);
-  const { showTutorial, dismissTutorial } = useOnboarding(user?.id);
+  const { showTutorial, dismissTutorial, replayTutorial } = useOnboarding(user?.id);
+  // True from the moment the tour starts the first workout until the user is back home.
+  const [guidingFirstSet, setGuidingFirstSet] = useState(false);
   const { weightUnit, setWeightUnit } = useWeightUnit();
 
   useEffect(() => {
@@ -325,6 +330,7 @@ export function MainApp() {
     }
   };
   const handleCancelWorkout = () => {
+    setGuidingFirstSet(false);
     finishingRef.current = false;
     setIsFinishing(false);
     setPendingTrackedReps(undefined);
@@ -333,6 +339,7 @@ export function MainApp() {
     setAppState('HOME');
   };
   const handleGoHome = () => {
+    setGuidingFirstSet(false);
     finishingRef.current = false;
     setIsFinishing(false);
     setCurrentMove(null);
@@ -356,6 +363,15 @@ export function MainApp() {
   const handleCloseStore = () => setAppState('HOME');
   const handleOpenSettings = () => setAppState('SETTINGS');
   const handleCloseSettings = () => setAppState('HOME');
+  const handleReplayTour = () => {
+    setAppState('HOME');
+    window.scrollTo({ top: 0 });
+    replayTutorial();
+  };
+  const handleTourClose = (started: boolean) => {
+    dismissTutorial();
+    if (started) setGuidingFirstSet(true);
+  };
   const handleBuy = (_categoryId: string, variant: Variant) => {
     if (coins < variant.price || owned.includes(variant.id)) return;
     void setCoins((c) => c - variant.price);
@@ -393,6 +409,20 @@ export function MainApp() {
     if (rotatingProgramEnabled || !owned.includes(exerciseId)) return;
     toggleEquipCore(exerciseId);
   };
+
+  const firstSetStage: FirstSetStage | null = (() => {
+    if (!guidingFirstSet || !currentMove) return null;
+    if (appState === 'WORKOUT') {
+      // The AI camera screen has its own positioning guidance.
+      const usesCamera =
+        isPoseAiTrackingEnabled() && isPoseExerciseId(currentMove.categoryId);
+      return usesCamera ? null : 'workout';
+    }
+    if (appState === 'REP_PROMPT') return 'repPrompt';
+    if (appState === 'WEIGHT_REP_PROMPT') return 'weightPrompt';
+    if (appState === 'SUMMARY') return 'summary';
+    return null;
+  })();
 
   const weightRepContext =
     currentMove && appState === 'WEIGHT_REP_PROMPT'
@@ -474,6 +504,7 @@ export function MainApp() {
         onToggleDark={toggleDark}
         weightUnit={weightUnit}
         onWeightUnitChange={setWeightUnit}
+        onReplayTour={handleReplayTour}
         onBack={handleCloseSettings} />
 
       }
@@ -524,7 +555,9 @@ export function MainApp() {
 
       }
 
-      {showTutorial && <OnboardingTutorial onComplete={dismissTutorial} />}
+      {showTutorial && appState === 'HOME' && <GuidedTour onClose={handleTourClose} />}
+
+      {firstSetStage && <FirstSetCoach stage={firstSetStage} />}
     </div>
   );
 }

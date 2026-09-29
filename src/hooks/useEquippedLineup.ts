@@ -30,12 +30,14 @@ const DEFAULTS: Record<LineupSlot, readonly string[]> = {
   core: DEFAULT_EQUIPPED_CORE
 };
 
+/** Exercises that left the catalogue, mapped to the closest free move in the same slot. */
 const LEGACY_LINEUP_IDS: Record<string, string> = {
-  'pull-ups': 'superman-pulls',
-  'inverted-rows': 'inverted-floor-rows',
-  'chin-ups': 'doorway-rows',
   'archer-pull-ups': 'superman-pulls',
-  'archer-pushups': 'diamond-pushups'
+  'dumbbell-shoulder-press': 'pushups',
+  'barbell-bench-press': 'pushups',
+  'dumbbell-row': 'doorway-rows',
+  'barbell-squat': 'squats',
+  'barbell-deadlift': 'glute-bridges'
 };
 
 function remapLegacyLineupIds(ids: string[]): string[] {
