@@ -1,3 +1,4 @@
+import { TRAINING_DAY_OPTIONS, type TrainingDaysPerWeek } from '../hooks/useTrainingDaysPerWeek';
 import { ArrowLeft, Compass, LogOut, Moon, Sun } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { SettingsFaq } from './SettingsFaq';
@@ -27,6 +28,8 @@ interface SettingsProps {
   onSelectProgramCycleDay: (cycleDay: number) => void;
   isDark: boolean;
   onDailySetGoalChange: (goal: DailySetGoal) => void;
+  trainingDaysPerWeek: number;
+  onTrainingDaysChange: (days: TrainingDaysPerWeek) => void;
   onRotatingProgramEnabledChange: (enabled: boolean) => void;
   onToggleDark: () => void;
   weightUnit: 'kg' | 'lb';
@@ -48,6 +51,8 @@ export function Settings({
   onSelectProgramCycleDay,
   isDark,
   onDailySetGoalChange,
+  trainingDaysPerWeek,
+  onTrainingDaysChange,
   onRotatingProgramEnabledChange,
   onToggleDark,
   weightUnit,
@@ -163,6 +168,29 @@ export function Settings({
                       : 'store-btn--equip'
                   }`}>
                   {s.dailySetTarget.sets(goal)}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!rotatingProgramEnabled && (
+          <section className="cyber-panel p-5 normal-case">
+            <h2 className="settings-section-title">{t.game.trainingDays.title}</h2>
+            <p className="text-sm font-medium opacity-70 mb-4">
+              {t.game.trainingDays.description(trainingDaysPerWeek)}
+            </p>
+            <div className="settings-toggle-group flex gap-2">
+              {TRAINING_DAY_OPTIONS.map((days) => (
+                <button
+                  key={days}
+                  type="button"
+                  aria-pressed={trainingDaysPerWeek === days}
+                  onClick={() => onTrainingDaysChange(days)}
+                  className={`store-btn flex-1 justify-center ${
+                    trainingDaysPerWeek === days ? 'store-btn--active' : 'store-btn--equip'
+                  }`}>
+                  {days}
                 </button>
               ))}
             </div>

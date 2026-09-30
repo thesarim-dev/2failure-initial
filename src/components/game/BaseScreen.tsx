@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Hammer, Move as MoveIcon, ShieldCheck, Trophy, X } from 'lucide-react';
+import { Check, Hammer, Move as MoveIcon, ShieldCheck, Trophy, X } from 'lucide-react';
+import { getVariantById } from '../moves';
+import { localizeVariant } from '../../i18n/localize';
 import { useLanguage } from '../../context/LanguageContext';
 import {
   DECOR,
   GRID_SIZE,
+  HQ_WEEKS_REQUIRED,
   MAX_HQ_LEVEL,
   RESOURCE_IDS,
   STRUCTURES,
@@ -15,16 +18,23 @@ import {
   type Resources
 } from '../../game/catalog';
 import {
-  FULL_RATE_SETS,
-  DAILY_SET_LIMIT,
+  WEEKLY_BONUS_AMOUNT,
   canPlaceAt,
+  currentWeeklyStreak,
+  forgeRate,
   hqLevel,
   isQuietToday,
-  localDayKey,
   placeBlocker,
+  questSlots,
+  sessionBonusAmount,
+  shieldCapacity,
+  structureLevel,
+  trainingDaysThisWeek,
   upgradeBlocker,
   type ActionError,
-  type PlacedItem
+  type PlacedItem,
+  type Quest,
+  type TodayPlan
 } from '../../game/engine';
 import type { BaseGame } from '../../game/useBaseGame';
 import { BaseBoard, ItemPreview, RESOURCE_COLOR } from './BaseBoard';
@@ -95,6 +105,119 @@ function Sheet({ title, onClose, children }: { title: string; onClose: () => voi
         <div className="base-sheet-body">{children}</div>
       </div>
     </div>
+  );
+}
+
+function useExerciseName() {
+  const { t } = useLanguage();
+  return (id?: string) => {
+    const variant = id ? getVariantById(id) : undefined;
+    return variant ? localizeVariant(variant, t.moves).name : id ?? '';
+  };
+}
+
+export function useQuestText() {
+  const { t } = useLanguage();
+  const nameOf = useExerciseName();
+  return (quest: Quest) => {
+    const q = t.game.quests;
+    switch (quest.kind) {
+      case 'finishExercise':
+        return q.finishExercise(nameOf(quest.exerciseId), quest.target);
+      case 'inRange':
+        return q.inRange(nameOf(quest.exerciseId), quest.min ?? 0, quest.max ?? 0);
+      case 'patternSets':
+        return q.patternSets(quest.target, t.game.patterns[quest.pattern ?? 'push']);
+      case 'stretch':
+        return q.stretch(quest.target);
+    }
+  };
+}
+
+function TodayPanel({ game, plan, onGoTrain }: { game: BaseGame; plan: TodayPlan | null; onGoTrain: () => void }) {
+  const { t } = useLanguage();
+  const g = t.game;
+  const { state } = game;
+  const questText = useQuestText();
+  const planned = plan?.exercises.reduce((n, e) => n + e.target, 0) ?? 0;
+  const done = plan?.exercises.reduce((n, e) => n + Math.min(e.done, e.target), 0) ?? 0;
+  const sessionDone = !!plan && state.stats.sessionDay === plan.day;
+  const weekDone = trainingDaysThisWeek(state);
+  const weekTarget = plan?.weeklyTarget ?? 0;
+  const weekHit = weekTarget > 0 && weekDone >= weekTarget;
+  const weeklyStreak = currentWeeklyStreak(state);
+  const quests = plan && state.quests?.day === plan.day ? state.quests.list : [];
+
+  return (
+    <section className="base-today cyber-panel normal-case" aria-label={g.today.title}>
+      <div className="base-today-head">
+        <h2 className="base-today-title">{g.today.title}</h2>
+        {!plan?.isRestDay && !sessionDone && (
+          <button type="button" className="base-status-btn" onClick={onGoTrain}>
+            {g.goTrain}
+          </button>
+        )}
+      </div>
+
+      {plan?.isRestDay ? (
+        <p className="base-today-line">{g.today.rest}</p>
+      ) : (
+        planned > 0 && (
+          <>
+            <p className="base-today-line">{g.today.training(done, planned)}</p>
+            <div className="base-progress" role="progressbar" aria-valuemin={0} aria-valuemax={planned} aria-valuenow={done}>
+              <span style={{ width: `${Math.round((done / planned) * 100)}%` }} />
+            </div>
+            <p className="base-today-sub">
+              {sessionDone ? g.today.sessionDone : g.today.sessionBonus(sessionBonusAmount(state, false))}
+            </p>
+          </>
+        )
+      )}
+
+      {weekTarget > 0 && (
+        <p className="base-today-line">
+          {g.today.week(Math.min(weekDone, weekTarget), weekTarget)}
+          <span className="base-today-sub">
+            {' · '}
+            {weekHit ? g.today.weeklyDone : g.today.weeklyBonus(WEEKLY_BONUS_AMOUNT)}
+          </span>
+          {weeklyStreak > 0 && <span className="base-today-streak">{g.today.weeklyStreak(weeklyStreak)}</span>}
+        </p>
+      )}
+
+      <div className="base-quests">
+        <h3 className="base-quests-title">{g.quests.title}</h3>
+        {quests.length ? (
+          <ul className="base-quest-list">
+            {quests.map((quest) => (
+              <li key={quest.id} className={`base-quest ${quest.done ? 'is-done' : ''}`}>
+                <span className="base-quest-check" aria-hidden="true">
+                  {quest.done && <Check size={14} strokeWidth={3} />}
+                </span>
+                <span className="base-quest-text">
+                  {questText(quest)}
+                  {quest.done ? (
+                    <span className="sr-only"> · {g.quests.done}</span>
+                  ) : (
+                    quest.target > 1 && (
+                      <span className="base-quest-progress tabular-nums">
+                        {' '}
+                        {Math.min(quest.progress, quest.target)}/{quest.target}
+                      </span>
+                    )
+                  )}
+                </span>
+                <CostList cost={quest.reward} resources={{ stone: 1e9, timber: 1e9, iron: 1e9, crystal: 1e9 }} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="base-today-sub">{g.quests.none}</p>
+        )}
+        {questSlots(state) < 4 && !plan?.isRestDay && <p className="base-today-sub">{g.quests.moreSlots}</p>}
+      </div>
+    </section>
   );
 }
 
@@ -198,14 +321,7 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
       );
     }
     if (!lit) return <p className="base-status">{g.status.quiet}</p>;
-    const setsToday = state.stats.day === localDayKey(new Date()) ? state.stats.setsToday : 0;
-    const text =
-      setsToday >= DAILY_SET_LIMIT
-        ? g.status.limit
-        : setsToday >= FULL_RATE_SETS
-          ? g.status.half
-          : g.status.today(setsToday, FULL_RATE_SETS);
-    return <p className="base-status">{text}</p>;
+    return null;
   })();
 
   const labelForItem = (item: PlacedItem) => {
@@ -244,6 +360,8 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
 
       {statusLine}
 
+      <TodayPanel game={game} plan={game.plan} onGoTrain={onGoTrain} />
+
       {mode.kind !== 'idle' && modeItemId && (
         <div className="base-mode-bar" role="status">
           <span>
@@ -258,6 +376,7 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
       <div className="base-board-wrap" dir="ltr">
         <BaseBoard
           state={state}
+          plan={game.plan}
           lit={lit}
           selectedUid={selected?.uid ?? null}
           validTiles={validTiles}
@@ -467,6 +586,10 @@ function ItemSheet({
         </div>
       </div>
 
+      {def?.kind === 'structure' && item.level > 0 && (
+        <BuildingRole item={item} game={game} onNotice={onNotice} />
+      )}
+
       {def?.kind === 'structure' && !building && (
         <div className="base-upgrade">
           {item.level >= def.levels.length ? (
@@ -481,9 +604,6 @@ function ItemSheet({
                     <CostList cost={next.cost} resources={state.resources} />
                     <span className="base-catalog-sets">{g.setsToBuild(next.sets)}</span>
                   </div>
-                  {item.itemId === 'hq' && item.level < MAX_HQ_LEVEL && (
-                    <p className="base-item-sub">{g.items.hq.description}</p>
-                  )}
                   <button
                     type="button"
                     className="base-primary-btn"
@@ -523,4 +643,105 @@ function ItemSheet({
       </div>
     </Sheet>
   );
+}
+
+function BuildingRole({
+  item,
+  game,
+  onNotice
+}: {
+  item: PlacedItem;
+  game: BaseGame;
+  onNotice: (text: string) => void;
+}) {
+  const { t } = useLanguage();
+  const g = t.game;
+  const { state, plan } = game;
+  const nameOf = useExerciseName();
+  const [from, setFrom] = useState<ResourceId>('iron');
+  const [to, setTo] = useState<ResourceId>('timber');
+
+  switch (item.itemId) {
+    case 'hq': {
+      const next = item.level + 1;
+      return (
+        <p className="base-role">
+          {item.level >= MAX_HQ_LEVEL
+            ? g.roles.hqMax
+            : g.roles.hq(state.stats.weeksOnTarget, HQ_WEEKS_REQUIRED[next] ?? 0, next)}
+        </p>
+      );
+    }
+    case 'watchtower':
+      return <p className="base-role">{g.roles.watchtower(questSlots(state))}</p>;
+    case 'lodge':
+      return <p className="base-role">{g.roles.lodge(state.shields, shieldCapacity(state))}</p>;
+    case 'spring':
+      return <p className="base-role">{g.roles.spring(structureLevel(state, 'spring'))}</p>;
+    case 'yard':
+      return (
+        <div className="base-role">
+          <p>{g.roles.yard(sessionBonusAmount(state, false))}</p>
+          {plan?.isRestDay ? (
+            <p className="base-item-sub">{g.yard.restDay}</p>
+          ) : (
+            <>
+              <h3 className="base-quests-title">{g.yard.stationsTitle}</h3>
+              <ul className="base-station-list">
+                {(plan?.exercises ?? []).map((e) => (
+                  <li key={e.id} className={e.done >= e.target ? 'is-done' : ''}>
+                    <span>{nameOf(e.id)}</span>
+                    <span className="tabular-nums">
+                      {Math.min(e.done, e.target)}/{e.target}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      );
+    case 'forge': {
+      const rate = forgeRate(state) ?? 3;
+      const out = 5;
+      const pick = (value: ResourceId, onChange: (r: ResourceId) => void, label: string) => (
+        <div className="base-forge-pick" role="radiogroup" aria-label={label}>
+          <span className="base-forge-label">{label}</span>
+          {RESOURCE_IDS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={value === id}
+              aria-label={g.resources[id]}
+              className={`base-forge-option ${value === id ? 'is-active' : ''}`}
+              onClick={() => onChange(id)}>
+              <ResourceIcon id={id} size={18} />
+            </button>
+          ))}
+        </div>
+      );
+      return (
+        <div className="base-role">
+          <p>{g.roles.forge(rate)}</p>
+          {pick(from, setFrom, g.forge.from)}
+          {pick(to, setTo, g.forge.to)}
+          <button
+            type="button"
+            className="base-primary-btn"
+            disabled={from === to || state.resources[from] < rate * out}
+            onClick={() => {
+              const result = game.trade(from, to);
+              if (!result.ok) onNotice(g.errors[result.error]);
+            }}>
+            <ResourceIcon id={from} size={16} />
+            {g.forge.trade(rate * out, out)}
+            <ResourceIcon id={to} size={16} />
+          </button>
+        </div>
+      );
+    }
+    default:
+      return null;
+  }
 }

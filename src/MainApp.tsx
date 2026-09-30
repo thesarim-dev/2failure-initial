@@ -15,6 +15,7 @@ import {
   LINEUP_EQUIP_COUNT,
   Move,
   Variant,
+  getVariantById,
   isRepLoggedCategory,
   isWeightedEquipmentCategory,
   resolveMoveById
@@ -25,7 +26,9 @@ import { usePushupDailyReps } from './hooks/usePushupDailyReps';
 import { useRotatingProgram } from './hooks/useRotatingProgram';
 import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { calculateCoinsEarned } from './lib/coinRewards';
-import { shouldCountStreakForDay } from './lib/userStats';
+import { shouldCountStreakForDay, toLocalDateString } from './lib/userStats';
+import { useTrainingDaysPerWeek } from './hooks/useTrainingDaysPerWeek';
+import type { TodayPlan } from './game/engine';
 import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { sumDailySets } from './lib/workoutProgress';
 import { RepPrompt } from './components/RepPrompt';
@@ -41,7 +44,7 @@ import { GuidedTour } from './components/GuidedTour';
 import { FirstSetCoach, type FirstSetStage } from './components/FirstSetCoach';
 import { isPoseAiTrackingEnabled } from './config/features';
 import { isPoseExerciseId } from './lib/pose/repCounterFactory';
-import { useBaseGame } from './game/useBaseGame';
+import { patternForMove, useBaseGame } from './game/useBaseGame';
 import { BaseScreen } from './components/game/BaseScreen';
 import { AppTabBar } from './components/AppTabBar';
 
@@ -88,6 +91,7 @@ export function MainApp() {
     restoringStreak,
     error: statsError,
     lastWorkoutDate,
+    recentRestDays,
     restoreStreakCost,
     recordWorkoutComplete,
     restoreStreak: restoreUserStreak
@@ -126,22 +130,26 @@ export function MainApp() {
   // True from the moment the tour starts the first workout until the user is back home.
   const [guidingFirstSet, setGuidingFirstSet] = useState(false);
   const { weightUnit, setWeightUnit } = useWeightUnit();
-  // The base game: every finished set earns materials for it.
-  const baseGame = useBaseGame(user?.id, currentStreak);
+  const { trainingDaysPerWeek, setTrainingDaysPerWeek } = useTrainingDaysPerWeek();
+  // Training days per week: the program's split, or the player's own setting.
+  // The rest of the week is planned rest, which keeps the streak alive.
+  const weeklyTarget = rotatingProgramEnabled ? rotationCycle.length : trainingDaysPerWeek;
+  const restAllowance = Math.max(0, 7 - weeklyTarget);
 
   useEffect(() => {
     if (statsLoading || setsLoading) return;
     if (
       shouldCountStreakForDay(sumDailySets(setsCompleted), lastWorkoutDate)
     ) {
-      void recordWorkoutComplete();
+      void recordWorkoutComplete(restAllowance);
     }
   }, [
     statsLoading,
     setsLoading,
     setsCompleted,
     lastWorkoutDate,
-    recordWorkoutComplete
+    recordWorkoutComplete,
+    restAllowance
   ]);
 
   const lineupForToday = useMemo(() => {
@@ -163,6 +171,55 @@ export function MainApp() {
     equippedLower,
     equippedCore
   ]);
+
+  // Today's Plan: the exercises and set targets the Train tab shows right now,
+  // from the program day or the equipped lineup. The base game reads only this.
+  const todayPlan = useMemo<TodayPlan | null>(() => {
+    if (setsLoading) return null;
+    const ids = [
+      ...lineupForToday.upper,
+      ...lineupForToday.lower,
+      ...lineupForToday.core,
+      ...lineupForToday.recovery
+    ];
+    return {
+      day: toLocalDateString(),
+      isRestDay: isRestDayToday,
+      weeklyTarget,
+      exercises: ids.flatMap((id) => {
+        const move = resolveMoveById(id);
+        if (!move) return [];
+        const { totalSets } = resolveSetTargets(
+          id,
+          1,
+          dailySetGoal,
+          lineupForToday.setsToFailure,
+          rotatingProgramEnabled
+        );
+        const variant = getVariantById(id);
+        return [
+          {
+            id,
+            pattern: patternForMove(move),
+            target: totalSets,
+            done: setsCompleted[id] ?? 0,
+            repCeiling: isRepLoggedCategory(id) ? variant?.repCeiling : undefined
+          }
+        ];
+      })
+    };
+  }, [
+    setsLoading,
+    lineupForToday,
+    isRestDayToday,
+    weeklyTarget,
+    dailySetGoal,
+    rotatingProgramEnabled,
+    setsCompleted
+  ]);
+
+  // The base game: every finished set earns materials for it.
+  const baseGame = useBaseGame(user?.id, currentStreak, todayPlan);
 
   const initialMove: Move | null = screenInit.currentMoveId
     ? resolveMoveById(screenInit.currentMoveId)
@@ -236,7 +293,7 @@ export function MainApp() {
         totalSetsToday !== null &&
         shouldCountStreakForDay(totalSetsToday, lastWorkoutDate)
       ) {
-        await recordWorkoutComplete();
+        await recordWorkoutComplete(restAllowance);
       }
     })();
     void setCoins((c) => c + calculateCoinsEarned(duration, currentMove.tier ?? 'BASE'));
@@ -363,6 +420,12 @@ export function MainApp() {
     void refetchPushupReps();
     setAppState('HOME');
   };
+  // Lodge shield: a free restore for an unplanned miss.
+  const handleUseShield = async () => {
+    if (!user || restoringStreak || baseGame.state.shields < 1) return;
+    const result = await restoreUserStreak({ free: true });
+    if (result) baseGame.spendShield();
+  };
   const handleRestoreStreak = async () => {
     if (!user || restoringStreak || coins < restoreStreakCost) return;
 
@@ -469,6 +532,10 @@ export function MainApp() {
         lastWorkoutDate={lastWorkoutDate}
         restoreStreakCost={restoreStreakCost}
         onRestoreStreak={handleRestoreStreak}
+        restAllowance={restAllowance}
+        recentRestDays={recentRestDays}
+        shields={baseGame.state.shields}
+        onUseShield={handleUseShield}
         profileLoading={profileLoading}
         profileError={profileError}
         statsError={statsError}
@@ -532,6 +599,8 @@ export function MainApp() {
         weightUnit={weightUnit}
         onWeightUnitChange={setWeightUnit}
         onReplayTour={handleReplayTour}
+        trainingDaysPerWeek={trainingDaysPerWeek}
+        onTrainingDaysChange={setTrainingDaysPerWeek}
         onBack={handleCloseSettings} />
 
       }

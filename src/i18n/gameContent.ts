@@ -58,6 +58,49 @@ export type GameCopy = {
     seeBase: string;
   };
   intro: { title: string; body: string; rule: string; ok: string };
+  patterns: Record<'push' | 'pull' | 'legs' | 'core' | 'recovery', string>;
+  today: {
+    title: string;
+    training: (done: number, total: number) => string;
+    rest: string;
+    sessionBonus: (amount: number) => string;
+    sessionDone: string;
+    week: (done: number, target: number) => string;
+    weeklyStreak: (weeks: number) => string;
+    weeklyBonus: (amount: number) => string;
+    weeklyDone: string;
+  };
+  quests: {
+    title: string;
+    finishExercise: (name: string, sets: number) => string;
+    inRange: (name: string, min: number, max: number) => string;
+    patternSets: (sets: number, pattern: string) => string;
+    stretch: (sets: number) => string;
+    done: string;
+    moreSlots: string;
+    none: string;
+  };
+  roles: {
+    hq: (weeksDone: number, weeksNeeded: number, nextLevel: number) => string;
+    hqMax: string;
+    watchtower: (slots: number) => string;
+    lodge: (shields: number, capacity: number) => string;
+    forge: (rate: number) => string;
+    spring: (level: number) => string;
+    yard: (bonus: number) => string;
+  };
+  forge: { from: string; to: string; trade: (cost: number, out: number) => string };
+  lodge: { useShield: (shields: number) => string };
+  yard: { stationsTitle: string; restDay: string };
+  rewardExtra: {
+    beyondPlan: string;
+    quest: (text: string) => string;
+    session: string;
+    weekly: string;
+    spring: (amount: number) => string;
+    shield: string;
+  };
+  trainingDays: { title: string; description: (days: number) => string };
 };
 
 const en: GameCopy = {
@@ -96,6 +139,7 @@ const en: GameCopy = {
     lodge: { name: 'Lodge', description: 'A timber lodge, built mostly from pull sets.' },
     forge: { name: 'Forge', description: 'An iron forge, built mostly from leg sets.' },
     spring: { name: 'Crystal Spring', description: 'A calm spring, built mostly from core sets.' },
+    yard: { name: 'Training Yard', description: "Your training ground. It shows today's workout as stations." },
     path: { name: 'Path', description: 'Stone paving to connect your buildings.' },
     wall: { name: 'Wall', description: 'A low stone wall.' },
     pine: { name: 'Pine', description: 'An evergreen tree.' },
@@ -124,7 +168,11 @@ const en: GameCopy = {
     needsHq: 'Upgrade HQ first',
     notEarned: 'Not earned yet',
     alreadyPlaced: 'Already on your base',
-    notRemovable: "Buildings can be moved but not removed"
+    notRemovable: "Buildings can be moved but not removed",
+    needsWeeks: 'Needs more weeks on target',
+    noForge: 'Build a Forge first',
+    noShield: 'No shields left',
+    sameResource: 'Pick two different materials'
   },
   trophyShelf: {
     title: 'Trophies',
@@ -149,7 +197,11 @@ const en: GameCopy = {
     'first-pistol': { name: 'First Pistol Squat', how: 'Log a set of pistol squats.', proof: (v) => `${v} reps in the first set` },
     'first-loaded': { name: 'Loaded Up', how: 'Finish a backpack set.', proof: () => 'First set with a loaded backpack' },
     'first-elite': { name: 'Elite Move', how: 'Finish a set of an elite exercise.', proof: () => 'First elite-tier set' },
-    'balanced-week': { name: 'Balanced Week', how: 'Train push, pull, legs and core in the same week.', proof: () => 'Push, pull, legs and core in one week' }
+    'balanced-week': { name: 'Balanced Week', how: 'Train push, pull, legs and core in the same week.', proof: () => 'Push, pull, legs and core in one week' },
+    'first-session': { name: 'Plan Complete', how: "Finish a whole day's plan.", proof: () => "First full day's plan" },
+    'first-week': { name: 'On Target', how: 'Hit your weekly training target.', proof: () => 'First week on target' },
+    'weeks-4': { name: '4 Weeks Strong', how: 'Hit your weekly target 4 weeks in a row.', proof: (v) => `${v} weeks on target in a row` },
+    'weeks-12': { name: '12 Weeks Strong', how: 'Hit your weekly target 12 weeks in a row.', proof: (v) => `${v} weeks on target in a row` }
   },
   reward: {
     title: 'For your base',
@@ -160,6 +212,56 @@ const en: GameCopy = {
     construction: (name, sets) => `${name}: ${sets === 1 ? '1 more set' : `${sets} more sets`} to finish`,
     built: (name) => `${name} is finished!`,
     seeBase: 'See your base'
+  },
+  patterns: { push: 'push', pull: 'pull', legs: 'leg', core: 'core', recovery: 'stretch' },
+  today: {
+    title: 'Today',
+    training: (done, total) => `Today's plan: ${done} of ${total} sets`,
+    rest: 'Rest day. Recovery counts, and your streak is safe.',
+    sessionBonus: (amount) => `Finish today's plan: +${amount} of each material`,
+    sessionDone: "Today's plan is done. Great work.",
+    week: (done, target) => `This week: ${done} of ${target} training days`,
+    weeklyStreak: (weeks) => (weeks === 1 ? '1 week on target in a row' : `${weeks} weeks on target in a row`),
+    weeklyBonus: (amount) => `Hit your week: +${amount} of each`,
+    weeklyDone: 'Weekly target hit.'
+  },
+  quests: {
+    title: 'Quests',
+    finishExercise: (name, sets) => `Finish all ${sets} sets of ${name}`,
+    inRange: (name, min, max) => `Log a ${name} set of ${min}–${max} reps`,
+    patternSets: (sets, pattern) => `Do ${sets} ${pattern} sets`,
+    stretch: (sets) => `Do ${sets} stretches`,
+    done: 'Done',
+    moreSlots: 'Build or upgrade a Watchtower for more quests.',
+    none: "Quests appear once today's workout loads."
+  },
+  roles: {
+    hq: (weeksDone, weeksNeeded, next) =>
+      `Level ${next} needs ${weeksNeeded} weeks on target. You have ${weeksDone}.`,
+    hqMax: 'Your headquarters is fully upgraded.',
+    watchtower: (slots) => `Spots daily quests from today's workout. Quest slots: ${slots}.`,
+    lodge: (shields, capacity) =>
+      `Stores streak shields for unplanned misses, earned by hitting your week. Shields: ${shields}/${capacity}.`,
+    forge: (rate) => `Trades materials: ${rate} of one for 1 of another. Handy when an exercise isn't possible for you yet.`,
+    spring: (level) =>
+      `Stretches earn +${level} extra, and your first set after a rest day earns +${level * 2}.`,
+    yard: (bonus) => `Shows today's workout as stations. Finishing the plan earns +${bonus} of each material.`
+  },
+  forge: { from: 'Give', to: 'Get', trade: (cost, out) => `Trade ${cost} for ${out}` },
+  lodge: { useShield: (shields) => `Use a shield (${shields} left)` },
+  yard: { stationsTitle: "Today's stations", restDay: 'Rest day: the yard is closed. Recovery counts.' },
+  rewardExtra: {
+    beyondPlan: "Beyond today's plan, so this set earns half. Rest is part of training too.",
+    quest: (text) => `Quest done: ${text}`,
+    session: "Today's plan complete: session bonus!",
+    weekly: 'Weekly target hit: weekly bonus!',
+    spring: (amount) => `Crystal Spring bonus: +${amount}`,
+    shield: 'Your Lodge earned a streak shield.'
+  },
+  trainingDays: {
+    title: 'Training days per week',
+    description: (days) =>
+      `Plan ${days} training days. The other ${7 - days} are rest days, and they keep your streak alive.`
   },
   intro: {
     title: 'Welcome to your base',
@@ -202,6 +304,7 @@ const he: GameCopy = {
     lodge: { name: 'בקתה', description: 'בקתת עץ, נבנית בעיקר מסטים של משיכה.' },
     forge: { name: 'נפחייה', description: 'נפחיית ברזל, נבנית בעיקר מסטים של רגליים.' },
     spring: { name: 'מעיין קריסטל', description: 'מעיין רגוע, נבנה בעיקר מסטים של ליבה.' },
+    yard: { name: 'חצר אימונים', description: 'מגרש האימונים שלך. מציג את האימון של היום כתחנות.' },
     path: { name: 'שביל', description: 'ריצוף אבן שמחבר בין המבנים.' },
     wall: { name: 'חומה', description: 'חומת אבן נמוכה.' },
     pine: { name: 'אורן', description: 'עץ ירוק־עד.' },
@@ -230,7 +333,11 @@ const he: GameCopy = {
     needsHq: 'שדרג קודם את המפקדה',
     notEarned: 'עדיין לא הושג',
     alreadyPlaced: 'כבר נמצא בבסיס שלך',
-    notRemovable: 'אפשר להזיז מבנים אבל לא להסיר אותם'
+    notRemovable: 'אפשר להזיז מבנים אבל לא להסיר אותם',
+    needsWeeks: 'נדרשים עוד שבועות ביעד',
+    noForge: 'בנה קודם נפחייה',
+    noShield: 'לא נשארו מגינים',
+    sameResource: 'בחר שני חומרים שונים'
   },
   trophyShelf: {
     title: 'גביעים',
@@ -255,7 +362,11 @@ const he: GameCopy = {
     'first-pistol': { name: 'סקוואט אקדח ראשון', how: 'רשום סט של סקוואט אקדח.', proof: (v) => `${v} חזרות בסט הראשון` },
     'first-loaded': { name: 'עם משקל', how: 'סיים סט עם תיק גב.', proof: () => 'הסט הראשון עם תיק גב טעון' },
     'first-elite': { name: 'תרגיל עילית', how: 'סיים סט של תרגיל ברמת עילית.', proof: () => 'הסט הראשון ברמת עילית' },
-    'balanced-week': { name: 'שבוע מאוזן', how: 'התאמן דחיפה, משיכה, רגליים וליבה באותו שבוע.', proof: () => 'דחיפה, משיכה, רגליים וליבה בשבוע אחד' }
+    'balanced-week': { name: 'שבוע מאוזן', how: 'התאמן דחיפה, משיכה, רגליים וליבה באותו שבוע.', proof: () => 'דחיפה, משיכה, רגליים וליבה בשבוע אחד' },
+    'first-session': { name: 'תוכנית הושלמה', how: 'סיים תוכנית של יום שלם.', proof: () => 'התוכנית היומית המלאה הראשונה' },
+    'first-week': { name: 'ביעד', how: 'עמוד ביעד האימונים השבועי.', proof: () => 'השבוע הראשון ביעד' },
+    'weeks-4': { name: '4 שבועות חזקים', how: 'עמוד ביעד השבועי 4 שבועות ברצף.', proof: (v) => `${v} שבועות ביעד ברצף` },
+    'weeks-12': { name: '12 שבועות חזקים', how: 'עמוד ביעד השבועי 12 שבועות ברצף.', proof: (v) => `${v} שבועות ביעד ברצף` }
   },
   reward: {
     title: 'לבסיס שלך',
@@ -266,6 +377,56 @@ const he: GameCopy = {
     construction: (name, sets) => `${name}: ${sets === 1 ? 'עוד סט אחד' : `עוד ${sets} סטים`} לסיום`,
     built: (name) => `${name} מוכן!`,
     seeBase: 'לבסיס שלך'
+  },
+  patterns: { push: 'דחיפה', pull: 'משיכה', legs: 'רגליים', core: 'ליבה', recovery: 'מתיחה' },
+  today: {
+    title: 'היום',
+    training: (done, total) => `התוכנית של היום: ${done} מתוך ${total} סטים`,
+    rest: 'יום מנוחה. גם התאוששות נחשבת, והרצף שלך מוגן.',
+    sessionBonus: (amount) => `סיים את התוכנית של היום: ‎+${amount} מכל חומר`,
+    sessionDone: 'התוכנית של היום הושלמה. עבודה מצוינת.',
+    week: (done, target) => `השבוע: ${done} מתוך ${target} ימי אימון`,
+    weeklyStreak: (weeks) => (weeks === 1 ? 'שבוע אחד ביעד ברצף' : `${weeks} שבועות ביעד ברצף`),
+    weeklyBonus: (amount) => `עמוד ביעד השבועי: ‎+${amount} מכל חומר`,
+    weeklyDone: 'היעד השבועי הושג.'
+  },
+  quests: {
+    title: 'משימות',
+    finishExercise: (name, sets) => `סיים את כל ${sets} הסטים של ${name}`,
+    inRange: (name, min, max) => `רשום סט ${name} של ${min}–${max} חזרות`,
+    patternSets: (sets, pattern) => `עשה ${sets} סטים של ${pattern}`,
+    stretch: (sets) => `עשה ${sets} מתיחות`,
+    done: 'בוצע',
+    moreSlots: 'בנה או שדרג מגדל תצפית כדי לקבל עוד משימות.',
+    none: 'המשימות יופיעו כשהאימון של היום ייטען.'
+  },
+  roles: {
+    hq: (weeksDone, weeksNeeded, next) =>
+      `שלב ${next} דורש ${weeksNeeded} שבועות ביעד. יש לך ${weeksDone}.`,
+    hqMax: 'המפקדה שלך משודרגת במלואה.',
+    watchtower: (slots) => `מאתר משימות יומיות מהאימון של היום. מקומות למשימות: ${slots}.`,
+    lodge: (shields, capacity) =>
+      `שומרת מגיני רצף לימים שפספסת בלי תכנון. מקבלים אותם כשעומדים ביעד השבועי. מגינים: ${shields}/${capacity}.`,
+    forge: (rate) => `מחליפה חומרים: ${rate} מסוג אחד תמורת 1 מסוג אחר. שימושי כשתרגיל מסוים עדיין לא אפשרי בשבילך.`,
+    spring: (level) =>
+      `מתיחות מזכות ב־${level} נוספים, והסט הראשון אחרי יום מנוחה מזכה ב־${level * 2} נוספים.`,
+    yard: (bonus) => `מציג את האימון של היום כתחנות. סיום התוכנית מזכה ב־${bonus} מכל חומר.`
+  },
+  forge: { from: 'תן', to: 'קבל', trade: (cost, out) => `החלף ${cost} תמורת ${out}` },
+  lodge: { useShield: (shields) => `השתמש במגן (נשארו ${shields})` },
+  yard: { stationsTitle: 'התחנות של היום', restDay: 'יום מנוחה: החצר סגורה. גם התאוששות נחשבת.' },
+  rewardExtra: {
+    beyondPlan: 'מעבר לתוכנית של היום, אז הסט הזה מזכה בחצי. גם מנוחה היא חלק מהאימון.',
+    quest: (text) => `משימה הושלמה: ${text}`,
+    session: 'התוכנית של היום הושלמה: בונוס אימון!',
+    weekly: 'היעד השבועי הושג: בונוס שבועי!',
+    spring: (amount) => `בונוס מעיין הקריסטל: ‎+${amount}`,
+    shield: 'הבקתה שלך קיבלה מגן רצף.'
+  },
+  trainingDays: {
+    title: 'ימי אימון בשבוע',
+    description: (days) =>
+      `תכנן ${days} ימי אימון. ${7 - days} הימים האחרים הם ימי מנוחה, והם שומרים על הרצף שלך.`
   },
   intro: {
     title: 'ברוך הבא לבסיס שלך',
@@ -308,6 +469,7 @@ const ar: GameCopy = {
     lodge: { name: 'الكوخ', description: 'كوخ خشبي، يُبنى غالباً من مجموعات السحب.' },
     forge: { name: 'الحدادة', description: 'ورشة حدادة، تُبنى غالباً من مجموعات الساقين.' },
     spring: { name: 'نبع الكريستال', description: 'نبع هادئ، يُبنى غالباً من مجموعات الجذع.' },
+    yard: { name: 'ساحة التدريب', description: 'ساحة تدريبك. تعرض تمرين اليوم كمحطات.' },
     path: { name: 'ممر', description: 'رصف حجري يربط بين مبانيك.' },
     wall: { name: 'سور', description: 'سور حجري منخفض.' },
     pine: { name: 'صنوبر', description: 'شجرة دائمة الخضرة.' },
@@ -336,7 +498,11 @@ const ar: GameCopy = {
     needsHq: 'طوّر المقر أولاً',
     notEarned: 'لم تحصل عليه بعد',
     alreadyPlaced: 'موجود في قاعدتك بالفعل',
-    notRemovable: 'يمكن نقل المباني لكن لا يمكن إزالتها'
+    notRemovable: 'يمكن نقل المباني لكن لا يمكن إزالتها',
+    needsWeeks: 'تحتاج إلى أسابيع أكثر على الهدف',
+    noForge: 'ابنِ ورشة حدادة أولاً',
+    noShield: 'لم يتبقَّ أي درع',
+    sameResource: 'اختر مادتين مختلفتين'
   },
   trophyShelf: {
     title: 'الكؤوس',
@@ -361,7 +527,11 @@ const ar: GameCopy = {
     'first-pistol': { name: 'أول قرفصاء مسدس', how: 'سجّل مجموعة من قرفصاء المسدس.', proof: (v) => `${v} تكرارات في المجموعة الأولى` },
     'first-loaded': { name: 'بوزن إضافي', how: 'أنهِ مجموعة بحقيبة الظهر.', proof: () => 'أول مجموعة بحقيبة ظهر محمّلة' },
     'first-elite': { name: 'تمرين النخبة', how: 'أنهِ مجموعة من تمرين بمستوى النخبة.', proof: () => 'أول مجموعة بمستوى النخبة' },
-    'balanced-week': { name: 'أسبوع متوازن', how: 'تدرّب دفعاً وسحباً وساقين وجذعاً في الأسبوع نفسه.', proof: () => 'دفع وسحب وساقان وجذع في أسبوع واحد' }
+    'balanced-week': { name: 'أسبوع متوازن', how: 'تدرّب دفعاً وسحباً وساقين وجذعاً في الأسبوع نفسه.', proof: () => 'دفع وسحب وساقان وجذع في أسبوع واحد' },
+    'first-session': { name: 'اكتملت الخطة', how: 'أنهِ خطة يوم كامل.', proof: () => 'أول خطة يومية كاملة' },
+    'first-week': { name: 'على الهدف', how: 'حقّق هدف التدريب الأسبوعي.', proof: () => 'أول أسبوع على الهدف' },
+    'weeks-4': { name: '4 أسابيع قوية', how: 'حقّق هدفك الأسبوعي 4 أسابيع متتالية.', proof: (v) => `${v} أسابيع متتالية على الهدف` },
+    'weeks-12': { name: '12 أسبوعاً قوياً', how: 'حقّق هدفك الأسبوعي 12 أسبوعاً متتالياً.', proof: (v) => `${v} أسبوعاً متتالياً على الهدف` }
   },
   reward: {
     title: 'لقاعدتك',
@@ -372,6 +542,56 @@ const ar: GameCopy = {
     construction: (name, sets) => `${name}: ${sets === 1 ? 'مجموعة واحدة أخرى' : `${sets} مجموعات أخرى`} للانتهاء`,
     built: (name) => `اكتمل ${name}!`,
     seeBase: 'اذهب إلى قاعدتك'
+  },
+  patterns: { push: 'الدفع', pull: 'السحب', legs: 'الساقين', core: 'الجذع', recovery: 'التمدد' },
+  today: {
+    title: 'اليوم',
+    training: (done, total) => `خطة اليوم: ${done} من ${total} مجموعات`,
+    rest: 'يوم راحة. التعافي يُحتسب، وسلسلتك في أمان.',
+    sessionBonus: (amount) => `أنهِ خطة اليوم: ‎+${amount} من كل مادة`,
+    sessionDone: 'اكتملت خطة اليوم. عمل رائع.',
+    week: (done, target) => `هذا الأسبوع: ${done} من ${target} أيام تدريب`,
+    weeklyStreak: (weeks) => (weeks === 1 ? 'أسبوع واحد على الهدف' : `${weeks} أسابيع متتالية على الهدف`),
+    weeklyBonus: (amount) => `حقّق هدف أسبوعك: ‎+${amount} من كل مادة`,
+    weeklyDone: 'تحقق الهدف الأسبوعي.'
+  },
+  quests: {
+    title: 'المهام',
+    finishExercise: (name, sets) => `أنهِ جميع مجموعات ${name} (${sets})`,
+    inRange: (name, min, max) => `سجّل مجموعة ${name} من ${min} إلى ${max} تكراراً`,
+    patternSets: (sets, pattern) => `أدِّ ${sets} مجموعات ${pattern}`,
+    stretch: (sets) => `أدِّ ${sets} تمارين تمدد`,
+    done: 'تم',
+    moreSlots: 'ابنِ برج مراقبة أو طوّره للحصول على مهام أكثر.',
+    none: 'ستظهر المهام عند تحميل تمرين اليوم.'
+  },
+  roles: {
+    hq: (weeksDone, weeksNeeded, next) =>
+      `المستوى ${next} يتطلب ${weeksNeeded} أسابيع على الهدف. لديك ${weeksDone}.`,
+    hqMax: 'مقرك مطوّر بالكامل.',
+    watchtower: (slots) => `يرصد مهاماً يومية من تمرين اليوم. خانات المهام: ${slots}.`,
+    lodge: (shields, capacity) =>
+      `يخزّن دروع السلسلة للأيام الفائتة غير المخطط لها، وتحصل عليها بتحقيق هدف الأسبوع. الدروع: ${shields}/${capacity}.`,
+    forge: (rate) => `تبادل المواد: ${rate} من نوع مقابل 1 من نوع آخر. مفيد عندما لا يكون تمرين ما ممكناً لك بعد.`,
+    spring: (level) =>
+      `تمارين التمدد تمنح ${level} إضافية، وأول مجموعة بعد يوم راحة تمنح ${level * 2} إضافية.`,
+    yard: (bonus) => `يعرض تمرين اليوم كمحطات. إنهاء الخطة يمنح ${bonus} من كل مادة.`
+  },
+  forge: { from: 'تعطي', to: 'تأخذ', trade: (cost, out) => `بادل ${cost} مقابل ${out}` },
+  lodge: { useShield: (shields) => `استخدم درعاً (متبقٍ ${shields})` },
+  yard: { stationsTitle: 'محطات اليوم', restDay: 'يوم راحة: الساحة مغلقة. التعافي يُحتسب.' },
+  rewardExtra: {
+    beyondPlan: 'هذه المجموعة خارج خطة اليوم، لذا تمنح النصف. الراحة جزء من التدريب أيضاً.',
+    quest: (text) => `اكتملت مهمة: ${text}`,
+    session: 'اكتملت خطة اليوم: مكافأة الجلسة!',
+    weekly: 'تحقق الهدف الأسبوعي: مكافأة أسبوعية!',
+    spring: (amount) => `مكافأة نبع الكريستال: ‎+${amount}`,
+    shield: 'حصل كوخك على درع للسلسلة.'
+  },
+  trainingDays: {
+    title: 'أيام التدريب في الأسبوع',
+    description: (days) =>
+      `خطط لـ${days} أيام تدريب. الأيام الـ${7 - days} الأخرى أيام راحة، وهي تحافظ على سلسلتك.`
   },
   intro: {
     title: 'مرحباً بك في قاعدتك',

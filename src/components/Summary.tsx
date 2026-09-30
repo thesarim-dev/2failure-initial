@@ -6,7 +6,7 @@ import { localizeVariant } from '../i18n/localize';
 import { Castle } from 'lucide-react';
 import type { SetReward } from '../game/engine';
 import { resourcesOf } from '../game/engine';
-import { ResourceIcon } from './game/BaseScreen';
+import { ResourceIcon, useQuestText } from './game/BaseScreen';
 import { FailureLogo } from './FailureLogo';
 import confetti from 'canvas-confetti';
 import type { SetRepResult } from '../types/repProgress';
@@ -53,6 +53,7 @@ export function Summary({
   onHome
 }: SummaryProps) {
   const { t, language } = useLanguage();
+  const questText = useQuestText();
   const [quote] = useState(
     () => t.summary.quotes[Math.floor(Math.random() * t.summary.quotes.length)]
   );
@@ -336,10 +337,29 @@ export function Summary({
               <p className="summary-base-note">
                 {baseReward.rate === 'tooShort'
                   ? t.game.reward.tooShort
-                  : baseReward.rate === 'half'
-                    ? t.game.reward.half
-                    : t.game.reward.limit}
+                  : baseReward.beyondPlan
+                    ? t.game.rewardExtra.beyondPlan
+                    : baseReward.rate === 'half'
+                      ? t.game.reward.half
+                      : t.game.reward.limit}
               </p>
+            )}
+            {baseReward.springBonus ? (
+              <p className="summary-base-note">{t.game.rewardExtra.spring(baseReward.springBonus)}</p>
+            ) : null}
+            {baseReward.questsDone.map((quest) => (
+              <p key={quest.id} className="summary-base-line summary-base-quest">
+                {t.game.rewardExtra.quest(questText(quest))}
+              </p>
+            ))}
+            {baseReward.session && (
+              <p className="summary-base-line summary-base-quest">{t.game.rewardExtra.session}</p>
+            )}
+            {baseReward.weekly && (
+              <p className="summary-base-line summary-base-trophy">{t.game.rewardExtra.weekly}</p>
+            )}
+            {baseReward.shieldEarned && (
+              <p className="summary-base-line">{t.game.rewardExtra.shield}</p>
             )}
             {baseReward.construction && (
               <p className="summary-base-line">

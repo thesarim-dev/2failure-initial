@@ -22,6 +22,12 @@ interface DashboardProps {
   restoringStreak: boolean;
   lastWorkoutDate: string | null;
   restoreStreakCost: number;
+  /** Rest days per 7 days that don't break the streak. */
+  restAllowance: number;
+  recentRestDays: string[];
+  /** Lodge streak shields available (free restores). */
+  shields: number;
+  onUseShield: () => void;
   onRestoreStreak: () => void;
   profileLoading: boolean;
   profileError: string | null;
@@ -59,6 +65,10 @@ export function Dashboard({
   restoringStreak,
   lastWorkoutDate,
   restoreStreakCost,
+  restAllowance,
+  recentRestDays,
+  shields,
+  onUseShield,
   onRestoreStreak,
   profileLoading,
   profileError,
@@ -105,7 +115,9 @@ export function Dashboard({
         longest_streak: longestStreak,
         last_workout_date: lastWorkoutDate
       },
-      totalSetsToday
+      totalSetsToday,
+      undefined,
+      { restAllowance, recentRestDays }
     );
 
   const activeMoves = useMemo(
@@ -202,6 +214,15 @@ export function Dashboard({
             )}
           </div>
 
+          {canRestoreStreak && shields > 0 && (
+            <button
+              type="button"
+              onClick={onUseShield}
+              disabled={restoringStreak}
+              className="rounded-full border border-[#F2A541] bg-white/80 dark:bg-[#2a2a2a]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#8A4F00] dark:text-[#FFC784] disabled:cursor-not-allowed disabled:opacity-60">
+              {t.game.lodge.useShield(shields)}
+            </button>
+          )}
           {canRestoreStreak && (
             <button
               type="button"

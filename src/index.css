@@ -3116,4 +3116,201 @@
       transition: none;
     }
   }
+
+  /* ---------- Today panel, quests, building roles ---------- */
+  .base-today {
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .base-today.cyber-panel {
+    background: #ffffff;
+  }
+  .dark .base-today.cyber-panel {
+    background: #15151d;
+  }
+  .base-today-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .base-today-title {
+    font-size: 1.15rem;
+    line-height: 1.1;
+    color: #00a8d8;
+  }
+  .base-today-line {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .base-today-sub {
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0.7;
+  }
+  .base-today-streak {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #a86f00;
+  }
+  .dark .base-today-streak {
+    color: #f7c948;
+  }
+  .base-progress {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+  .dark .base-progress {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .base-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #c8f032;
+    box-shadow: 0 0 10px rgba(200, 240, 50, 0.6);
+    transition: width 0.4s ease;
+  }
+  .base-quests {
+    margin-top: 0.3rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed rgba(0, 0, 0, 0.14);
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .dark .base-quests {
+    border-top-color: rgba(255, 255, 255, 0.14);
+  }
+  .base-quests-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+    opacity: 0.65;
+  }
+  .base-quest-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .base-quest {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    column-gap: 0.55rem;
+    row-gap: 0.25rem;
+  }
+  .base-quest .base-cost {
+    grid-column: 2;
+  }
+  .base-quest-check {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(0, 0, 0, 0.25);
+  }
+  .dark .base-quest-check {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  .base-quest.is-done .base-quest-check {
+    background: #c8f032;
+    border-color: #c8f032;
+    color: #0c0f02;
+  }
+  .base-quest-text {
+    font-size: 0.87rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .base-quest.is-done .base-quest-text {
+    opacity: 0.55;
+    text-decoration: line-through;
+  }
+  .base-quest.is-done .base-cost {
+    opacity: 0.5;
+  }
+  .base-quest-progress {
+    font-weight: 800;
+    color: #00a8d8;
+  }
+  .base-role {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    border-radius: 0.9rem;
+    font-size: 0.87rem;
+    font-weight: 600;
+    line-height: 1.45;
+    border: 1px solid rgba(0, 168, 216, 0.35);
+    background: rgba(0, 168, 216, 0.06);
+  }
+  .base-station-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .base-station-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-weight: 700;
+  }
+  .base-station-list li.is-done {
+    color: #4f7a00;
+  }
+  .dark .base-station-list li.is-done {
+    color: #c8f032;
+  }
+  .base-forge-pick {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .base-forge-label {
+    min-width: 3.2rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    opacity: 0.7;
+  }
+  .base-forge-option {
+    width: 2.4rem;
+    height: 2.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.7rem;
+    background: #15151d;
+    border: 2px solid transparent;
+  }
+  .base-forge-option.is-active {
+    border-color: #c8f032;
+    box-shadow: 0 0 10px rgba(200, 240, 50, 0.4);
+  }
+  .base-forge-option:focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
+  .base-yard {
+    fill: #1d2a18;
+  }
+  .summary-base-quest {
+    color: #4f7a00;
+    font-weight: 800;
+  }
+  .dark .summary-base-quest {
+    color: #c8f032;
+  }
 }

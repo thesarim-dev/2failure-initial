@@ -5,6 +5,11 @@ import {
   applySet,
   applyStreak,
   createInitialState,
+  createInitialStats,
+  ensureQuests,
+  spendShield,
+  tradeMaterials,
+  type TodayPlan,
   moveItem,
   placeItem,
   placeTrophy,
@@ -15,7 +20,7 @@ import {
   type SetReward,
   type SetTier
 } from './engine';
-import type { TrainingPattern } from './catalog';
+import type { ResourceId, TrainingPattern } from './catalog';
 
 /**
  * Iteration 1 keeps the base on this device, per user, like owned exercises.
@@ -29,7 +34,14 @@ function load(userId: string | undefined): GameState {
     if (!raw) return createInitialState();
     const parsed = JSON.parse(raw) as GameState;
     if (parsed?.version !== 1 || !Array.isArray(parsed.placed)) return createInitialState();
-    return { ...createInitialState(), ...parsed };
+    // Fill in fields added after the save was made.
+    return {
+      ...createInitialState(),
+      ...parsed,
+      stats: { ...createInitialStats(), ...parsed.stats },
+      quests: parsed.quests ?? null,
+      shields: parsed.shields ?? 0
+    };
   } catch {
     return createInitialState();
   }
@@ -57,7 +69,15 @@ export type RecordSetInput = {
   verified?: boolean;
 };
 
-export function useBaseGame(userId: string | undefined, currentStreak: number) {
+/**
+ * `plan` is today's workout exactly as the Train tab shows it (program day or
+ * equipped lineup), or null while it's still loading.
+ */
+export function useBaseGame(
+  userId: string | undefined,
+  currentStreak: number,
+  plan: TodayPlan | null
+) {
   const [state, setState] = useState<GameState>(() => load(userId));
   const [lastReward, setLastReward] = useState<SetReward | null>(null);
   const stateRef = useRef(state);
@@ -75,6 +95,15 @@ export function useBaseGame(userId: string | undefined, currentStreak: number) {
     },
     [userId]
   );
+
+  const planRef = useRef(plan);
+  planRef.current = plan;
+
+  // Today's quests are made once per day, from the plan the player sees.
+  useEffect(() => {
+    const next = ensureQuests(stateRef.current, plan);
+    if (next !== stateRef.current) commit(next);
+  }, [plan, commit]);
 
   // Streak trophies follow the app's streak, which updates after the set is saved.
   useEffect(() => {
@@ -96,7 +125,8 @@ export function useBaseGame(userId: string | undefined, currentStreak: number) {
         durationSeconds,
         reps,
         verified,
-        loaded: isWeightedEquipmentCategory(move.categoryId)
+        loaded: isWeightedEquipmentCategory(move.categoryId),
+        plan: planRef.current ?? undefined
       });
       if (next !== stateRef.current) commit(next);
       setLastReward(reward);
@@ -133,6 +163,9 @@ export function useBaseGame(userId: string | undefined, currentStreak: number) {
     upgrade: (uid: string) => run(upgradeItem(stateRef.current, uid)),
     move: (uid: string, x: number, y: number) => run(moveItem(stateRef.current, uid, x, y)),
     remove: (uid: string) => run(removeItem(stateRef.current, uid)),
+    trade: (from: ResourceId, to: ResourceId) => run(tradeMaterials(stateRef.current, from, to)),
+    spendShield: () => run(spendShield(stateRef.current)),
+    plan,
     markSeen,
     dismissIntro,
     hasNews: state.unseen.length > 0

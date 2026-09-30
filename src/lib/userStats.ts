@@ -103,44 +103,105 @@ const DEFAULT_STATS = (userId: string): UserStats => ({
 });
 
 /**
- * True only when a full day was missed, meaning the next workout would reset
- * the streak. Not having trained *yet* today does not put the streak at risk.
+ * Rest-aware streaks. Days without training don't break the streak as long as
+ * they fit the player's weekly rest allowance (7 minus training days per week,
+ * or 7 minus the program split). Rest days count as days on plan.
+ */
+export type StreakRestOptions = {
+  /** Rest days allowed in any 7-day window. */
+  restAllowance: number;
+  /** Days already counted as rest recently (YYYY-MM-DD). */
+  recentRestDays: string[];
+};
+
+function shiftLocalDate(day: string, delta: number): string {
+  const [year, month, date] = day.split('-').map(Number);
+  const d = new Date(year, month - 1, date);
+  d.setDate(d.getDate() + delta);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
+/** Days strictly between the last workout and today (the days that were skipped). */
+export function skippedDays(lastWorkoutDate: string, today: string): string[] {
+  const days: string[] = [];
+  let day = shiftLocalDate(lastWorkoutDate, 1);
+  // Cap the walk: anything this long is broken regardless of allowance.
+  while (day < today && days.length < 14) {
+    days.push(day);
+    day = shiftLocalDate(day, 1);
+  }
+  return days;
+}
+
+/** Whether the skipped days fit the rest allowance of the last 7 days. */
+export function restFitsAllowance(
+  lastWorkoutDate: string,
+  today: string,
+  options: StreakRestOptions
+): boolean {
+  const skipped = skippedDays(lastWorkoutDate, today);
+  const windowStart = shiftLocalDate(today, -7);
+  const restInWindow = new Set(
+    [...options.recentRestDays, ...skipped].filter((day) => day >= windowStart && day < today)
+  );
+  const skippedOutsideWindow = skipped.filter((day) => day < windowStart).length;
+  return restInWindow.size + skippedOutsideWindow <= Math.max(0, options.restAllowance);
+}
+
+/**
+ * True only when the streak can no longer continue. Not having trained *yet*
+ * today does not put the streak at risk, and neither does planned rest.
  */
 export function isStreakBroken(
   lastWorkoutDate: string | null,
-  today = toLocalDateString()
+  today = toLocalDateString(),
+  options?: StreakRestOptions
 ): boolean {
   if (!lastWorkoutDate) return false;
-  return (
-    lastWorkoutDate !== today &&
-    lastWorkoutDate !== previousLocalDateString(today)
-  );
+  if (lastWorkoutDate === today || lastWorkoutDate === previousLocalDateString(today)) {
+    return false;
+  }
+  if (options && restFitsAllowance(lastWorkoutDate, today, options)) return false;
+  return true;
 }
 
 export function canOfferStreakRestore(
   stats: Pick<UserStats, 'current_streak' | 'longest_streak' | 'last_workout_date'>,
   totalSetsCompletedToday: number,
-  today = toLocalDateString()
+  today = toLocalDateString(),
+  options?: StreakRestOptions
 ): boolean {
   const restoredStreak = Math.max(stats.current_streak, stats.longest_streak);
   return (
     restoredStreak > 0 &&
-    isStreakBroken(stats.last_workout_date, today) &&
+    isStreakBroken(stats.last_workout_date, today, options) &&
     totalSetsCompletedToday < STREAK_MIN_SETS_PER_DAY
   );
 }
 
 export function computeStreakAfterWorkout(
   stats: UserStats,
-  today = toLocalDateString(new Date())
-): Pick<UserStats, 'current_streak' | 'longest_streak' | 'total_workouts' | 'last_workout_date'> {
+  today = toLocalDateString(new Date()),
+  options?: StreakRestOptions
+): Pick<UserStats, 'current_streak' | 'longest_streak' | 'total_workouts' | 'last_workout_date'> & {
+  /** Skipped days that were counted as planned rest. Not stored in the database. */
+  restDaysAdded: string[];
+} {
   const last = stats.last_workout_date;
   let currentStreak = stats.current_streak;
+  let restDaysAdded: string[] = [];
 
   if (last === today) {
     // Already worked out today — streak unchanged
   } else if (last === previousLocalDateString(today)) {
     currentStreak = stats.current_streak + 1;
+  } else if (last && options && restFitsAllowance(last, today, options)) {
+    // Planned rest: rest days count as days on plan, plus today.
+    restDaysAdded = skippedDays(last, today);
+    currentStreak = stats.current_streak + restDaysAdded.length + 1;
   } else {
     currentStreak = 1;
   }
@@ -152,7 +213,8 @@ export function computeStreakAfterWorkout(
     current_streak: currentStreak,
     longest_streak: longestStreak,
     total_workouts: totalWorkouts,
-    last_workout_date: today
+    last_workout_date: today,
+    restDaysAdded
   };
 }
 
@@ -186,15 +248,18 @@ export async function fetchUserStats(userId: string): Promise<UserStats> {
   return normalizeStats(created as UserStats);
 }
 
-export async function completeWorkout(userId: string): Promise<UserStats> {
+export async function completeWorkout(
+  userId: string,
+  options?: StreakRestOptions
+): Promise<{ stats: UserStats; restDaysAdded: string[] }> {
   const stats = await fetchUserStats(userId);
   const today = toLocalDateString();
 
   if (stats.last_workout_date === today) {
-    return stats;
+    return { stats, restDaysAdded: [] };
   }
 
-  const next = computeStreakAfterWorkout(stats, today);
+  const { restDaysAdded, ...next } = computeStreakAfterWorkout(stats, today, options);
 
   const { data, error } = await supabase
     .from('user_stats')
@@ -204,11 +269,12 @@ export async function completeWorkout(userId: string): Promise<UserStats> {
     .single();
 
   if (error) throw error;
-  return normalizeStats(data as UserStats);
+  return { stats: normalizeStats(data as UserStats), restDaysAdded };
 }
 
 export async function restoreStreak(
-  userId: string
+  userId: string,
+  options: { free?: boolean } = {}
 ): Promise<{ stats: UserStats; cost: number }> {
   const stats = await fetchUserStats(userId);
   const today = toLocalDateString(new Date());
@@ -227,7 +293,8 @@ export async function restoreStreak(
 
   const monthKey = getRestoreMonthKey(today);
   const usage = restoresThisMonth(stats, today);
-  const cost = getStreakRestoreCost(usage);
+  // A Lodge streak shield restores for free and doesn't raise next month's price.
+  const cost = options.free ? 0 : getStreakRestoreCost(usage);
 
   const next = {
     current_streak: restoredStreak,
@@ -235,7 +302,7 @@ export async function restoreStreak(
     total_workouts: stats.total_workouts,
     last_workout_date: today,
     streak_restore_month: monthKey,
-    streak_restore_count: usage + 1
+    streak_restore_count: options.free ? usage : usage + 1
   };
 
   const { data, error } = await supabase

@@ -533,6 +533,33 @@ If the home screen shows a red error banner:
 
 ---
 
+## Your base (the game)
+
+Every set you finish earns materials for your own base. Tap **Base** in the bottom bar to see it.
+
+**Materials** come from the kind of set you do: push sets earn stone, pull sets timber, leg sets iron, core sets crystal, and stretches a little of each.
+
+**Today's plan** is exactly what the Train tab shows: your rotating-program day, or your equipped lineup when the program is off. Sets in today's plan earn full materials. A few sets beyond the plan earn half, then nothing, because rest is part of training. Finishing the whole plan earns a session bonus. Sets under 10 seconds don't earn anything.
+
+**Your week**: hitting your weekly training target (the program split, or **Settings → Training days per week** when the program is off) earns the biggest reward of the week and builds a weekly streak.
+
+**Streaks respect rest.** Days off within your weekly rest allowance (7 minus your training days) keep your streak alive and count as days on plan. Only going beyond the allowance breaks it.
+
+| Building | What it does |
+|---|---|
+| **Headquarters** | Unlocks more land. Each level also needs weeks on target (2 for level 2, 6 for level 3). |
+| **Watchtower** | Daily quests from today's plan. Each level adds a quest slot. |
+| **Training Yard** | Shows today's workout as stations; raises the session bonus. |
+| **Lodge** | Stores streak shields (earned by hitting your week) for unplanned misses. |
+| **Forge** | Trades one material for another (3:1, or 2:1 at level 3). |
+| **Crystal Spring** | Bonus for stretches and for your first set after a rest day. |
+
+Buildings finish by completing sets, not by waiting, one at a time. Decorations place instantly and are refunded in full if removed. **Trophies** can only be earned, never bought; tap one to see its proof. Rep trophies counted by the AI camera are marked as verified.
+
+The base is saved on this device for now.
+
+---
+
 ## 14. Glossary
 
 | Term | Definition |

@@ -54,6 +54,12 @@ export function isTileBuildable(x: number, y: number, hqLevel: number): boolean 
 /** HQ sits in the middle of the plot and is always there. */
 export const HQ_POSITION = { x: 4, y: 4 };
 
+/**
+ * On-target weeks needed before each HQ level (index = level). Base level
+ * reflects a habit, not one heavy weekend.
+ */
+export const HQ_WEEKS_REQUIRED: Record<number, number> = { 1: 0, 2: 2, 3: 6 };
+
 // ---------------------------------------------------------------------------
 // Items
 // ---------------------------------------------------------------------------
@@ -137,6 +143,19 @@ export const STRUCTURES: StructureDef[] = [
     ]
   },
   {
+    // Shows today's workout as stations; its level raises the session bonus.
+    kind: 'structure',
+    id: 'yard',
+    size: 2,
+    unlockHq: 1,
+    maxCount: () => 1,
+    levels: [
+      { cost: { stone: 10, timber: 10, iron: 10, crystal: 5 }, sets: 2 },
+      { cost: { stone: 30, timber: 30, iron: 30, crystal: 15 }, sets: 3 },
+      { cost: { stone: 60, timber: 60, iron: 60, crystal: 30 }, sets: 4 }
+    ]
+  },
+  {
     kind: 'structure',
     id: 'spring',
     size: 1,
@@ -195,7 +214,11 @@ export const TROPHIES: TrophyDef[] = [
   { id: 'first-pistol', tier: 'gold', shape: 'statue' },
   { id: 'first-loaded', tier: 'bronze', shape: 'medal' },
   { id: 'first-elite', tier: 'silver', shape: 'medal' },
-  { id: 'balanced-week', tier: 'silver', shape: 'medal' }
+  { id: 'balanced-week', tier: 'silver', shape: 'medal' },
+  { id: 'first-session', tier: 'bronze', shape: 'cup' },
+  { id: 'first-week', tier: 'bronze', shape: 'monument' },
+  { id: 'weeks-4', tier: 'silver', shape: 'monument' },
+  { id: 'weeks-12', tier: 'gold', shape: 'monument' }
 ];
 
 const TROPHIES_BY_ID = new Map(TROPHIES.map((trophy) => [trophy.id, trophy]));

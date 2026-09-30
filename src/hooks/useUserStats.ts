@@ -6,8 +6,10 @@ import {
   getStreakRestoreCost,
   restoreStreak,
   restoresThisMonth,
-  toLocalDateString
+  toLocalDateString,
+  type StreakRestOptions
 } from '../lib/userStats';
+import { appendRestLog, readRestLog } from '../lib/restLog';
 import type { UserStats } from '../types/userStats';
 
 export function useUserStats() {
@@ -18,6 +20,11 @@ export function useUserStats() {
   const [completing, setCompleting] = useState(false);
   const [restoringStreak, setRestoringStreak] = useState(false);
   const [todayFailures, setTodayFailures] = useState(0);
+  const [recentRestDays, setRecentRestDays] = useState<string[]>(() => readRestLog(user?.id));
+
+  useEffect(() => {
+    setRecentRestDays(readRestLog(user?.id));
+  }, [user?.id]);
 
   const loadStats = useCallback(async () => {
     if (!user) {
@@ -59,7 +66,8 @@ export function useUserStats() {
     }
   }, [stats]);
 
-  const recordWorkoutComplete = useCallback(async () => {
+  /** `restAllowance`: rest days per 7 days that keep the streak alive. */
+  const recordWorkoutComplete = useCallback(async (restAllowance = 0) => {
     if (!user) return null;
 
     setCompleting(true);
@@ -67,7 +75,9 @@ export function useUserStats() {
 
     try {
       const today = toLocalDateString();
-      const updated = await completeWorkout(user.id);
+      const options: StreakRestOptions = { restAllowance, recentRestDays: readRestLog(user.id) };
+      const { stats: updated, restDaysAdded } = await completeWorkout(user.id, options);
+      if (restDaysAdded.length) setRecentRestDays(appendRestLog(user.id, restDaysAdded, today));
       setStats(updated);
       setTodayFailures((n) =>
         stats?.last_workout_date === today ? n + 1 : 1
@@ -83,14 +93,14 @@ export function useUserStats() {
     }
   }, [user]);
 
-  const restoreUserStreak = useCallback(async () => {
+  const restoreUserStreak = useCallback(async (options: { free?: boolean } = {}) => {
     if (!user) return null;
 
     setRestoringStreak(true);
     setError(null);
 
     try {
-      const result = await restoreStreak(user.id);
+      const result = await restoreStreak(user.id, options);
       setStats(result.stats);
       return result;
     } catch (err) {
@@ -110,6 +120,7 @@ export function useUserStats() {
     totalWorkouts: stats?.total_workouts ?? 0,
     todayFailures,
     lastWorkoutDate: stats?.last_workout_date ?? null,
+    recentRestDays,
     restoreStreakCost: stats ? getStreakRestoreCost(restoresThisMonth(stats)) : getStreakRestoreCost(0),
     loading,
     completing,

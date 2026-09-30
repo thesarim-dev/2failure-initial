@@ -8,7 +8,7 @@ import {
   isTileBuildable,
   type TrophyTier
 } from '../../game/catalog';
-import { hqLevel, itemSize, type GameState, type PlacedItem } from '../../game/engine';
+import { hqLevel, itemSize, type GameState, type PlacedItem, type TodayPlan } from '../../game/engine';
 
 /** Accent colours, one per resource, reused across the game UI. */
 export const RESOURCE_COLOR = {
@@ -177,6 +177,88 @@ function Headquarters({ level, lit }: ArtProps) {
   );
 }
 
+const PATTERN_COLOR: Record<string, string> = {
+  push: RESOURCE_COLOR.stone,
+  pull: RESOURCE_COLOR.timber,
+  legs: RESOURCE_COLOR.iron,
+  core: RESOURCE_COLOR.crystal,
+  recovery: PINE
+};
+
+/** A small piece of equipment per exercise type. */
+function Station({ pattern, x, y, done }: { pattern: string; x: number; y: number; done: boolean }) {
+  const c = PATTERN_COLOR[pattern] ?? LIME;
+  return (
+    <g transform={`translate(${x} ${y})`} opacity={done ? 1 : 0.55}>
+      <rect x={-20} y={-20} width={40} height={40} rx={6} className="base-body-2" stroke={c} strokeWidth={done ? 3 : 1.5} />
+      {pattern === 'pull' && (
+        <g stroke={c} strokeWidth={3} strokeLinecap="round">
+          <line x1={-12} y1={10} x2={-12} y2={-12} />
+          <line x1={12} y1={10} x2={12} y2={-12} />
+          <line x1={-14} y1={-10} x2={14} y2={-10} />
+        </g>
+      )}
+      {pattern === 'push' && (
+        <g stroke={c} strokeWidth={3} strokeLinecap="round">
+          <line x1={-12} y1={10} x2={-12} y2={-6} />
+          <line x1={12} y1={10} x2={12} y2={-6} />
+          <line x1={-15} y1={-6} x2={-6} y2={-6} />
+          <line x1={6} y1={-6} x2={15} y2={-6} />
+        </g>
+      )}
+      {pattern === 'legs' && <rect x={-13} y={-3} width={26} height={9} rx={2} fill={c} />}
+      {pattern === 'core' && <rect x={-14} y={-8} width={28} height={16} rx={8} fill={c} opacity={0.8} />}
+      {pattern === 'recovery' && <rect x={-14} y={-10} width={28} height={20} rx={4} fill={c} opacity={0.6} />}
+      {done && (
+        <circle cx={14} cy={-14} r={7} fill={LIME}>
+          <title>done</title>
+        </circle>
+      )}
+    </g>
+  );
+}
+
+function TrainingYard({ level, lit, plan }: ArtProps & { plan?: TodayPlan | null }) {
+  const c = LIME;
+  const stations = (plan?.exercises ?? []).slice(0, 6);
+  const slots = [
+    [52, 70],
+    [100, 70],
+    [148, 70],
+    [52, 122],
+    [100, 122],
+    [148, 122]
+  ];
+  return (
+    <g>
+      <Shadow w={86} cy={182} cx={100} />
+      <rect x={14} y={30} width={172} height={146} rx={10} className="base-yard" stroke={c} strokeWidth={2.5} strokeDasharray={level >= 2 ? undefined : '10 6'} />
+      {level >= 3 && <rect x={22} y={38} width={156} height={130} rx={8} fill="none" stroke={c} strokeWidth={1.2} opacity={0.5} />}
+      {[20, 180].map((x) => (
+        <g key={x}>
+          <line x1={x} y1={30} x2={x} y2={12} stroke={RESOURCE_COLOR.stone} strokeWidth={3} />
+          <Light lit={lit}>
+            <circle cx={x} cy={10} r={level >= 2 ? 6 : 4} fill={c} />
+          </Light>
+        </g>
+      ))}
+      {stations.length ? (
+        stations.map((station, i) => (
+          <Station
+            key={station.id}
+            pattern={station.pattern}
+            x={slots[i][0]}
+            y={slots[i][1]}
+            done={station.done >= station.target}
+          />
+        ))
+      ) : (
+        slots.slice(0, 3).map(([x, y]) => <Station key={x} pattern="recovery" x={x} y={y + 26} done={false} />)
+      )}
+    </g>
+  );
+}
+
 function Decor({ id, lit }: { id: string; lit: boolean }) {
   switch (id) {
     case 'path':
@@ -320,7 +402,17 @@ export function TrophyArt({ trophyId, verified }: { trophyId: string; verified?:
 }
 
 /** Artwork for any placed item, drawn in a 100×100 box (200×200 for HQ). */
-export function ItemArt({ item, lit, verified }: { item: PlacedItem; lit: boolean; verified?: boolean }) {
+export function ItemArt({
+  item,
+  lit,
+  verified,
+  plan
+}: {
+  item: PlacedItem;
+  lit: boolean;
+  verified?: boolean;
+  plan?: TodayPlan | null;
+}) {
   if (item.itemId.startsWith(TROPHY_ITEM_PREFIX)) {
     return <TrophyArt trophyId={item.itemId.slice(TROPHY_ITEM_PREFIX.length)} verified={verified} />;
   }
@@ -337,6 +429,8 @@ export function ItemArt({ item, lit, verified }: { item: PlacedItem; lit: boolea
       return <Forge {...props} />;
     case 'spring':
       return <Spring {...props} />;
+    case 'yard':
+      return <TrainingYard {...props} plan={plan} />;
     default:
       return <Decor id={item.itemId} lit={lit} />;
   }
@@ -364,11 +458,13 @@ function accentFor(itemId: string): string {
   if (itemId === 'watchtower') return RESOURCE_COLOR.stone;
   if (itemId === 'lodge') return RESOURCE_COLOR.timber;
   if (itemId === 'forge') return RESOURCE_COLOR.iron;
+  if (itemId === 'yard') return LIME;
   return RESOURCE_COLOR.crystal;
 }
 
 type BoardProps = {
   state: GameState;
+  plan?: TodayPlan | null;
   lit: boolean;
   selectedUid: string | null;
   /** When set, the board is in place/move mode and these tiles are valid. */
@@ -388,6 +484,7 @@ function onKeyActivate(event: KeyboardEvent, action: () => void) {
 
 export function BaseBoard({
   state,
+  plan,
   lit,
   selectedUid,
   validTiles,
@@ -482,7 +579,7 @@ export function BaseBoard({
             {building && item.level === 0 ? (
               <rect x={14} y={30} width={size * T - 28} height={size * T - 40} rx={4} className="base-foundation" />
             ) : (
-              <ItemArt item={item} lit={lit} verified={verified} />
+              <ItemArt item={item} lit={lit} verified={verified} plan={plan} />
             )}
             {def?.kind === 'structure' && !building && (
               <LevelPips level={item.level} color={accentFor(item.itemId)} cx={(size * T) / 2} y={size * T - 4} />
