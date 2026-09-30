@@ -21,7 +21,7 @@ export type GameCopy = {
   goTrain: string;
   build: string;
   trophies: (earned: number, total: number) => string;
-  buildTabs: { structures: string; decor: string };
+  buildTabs: { structures: string; decor: string; trophies: string };
   placeHint: (name: string) => string;
   moveHint: (name: string) => string;
   cancel: string;
@@ -84,7 +84,7 @@ export type GameCopy = {
     hq: (weeksDone: number, weeksNeeded: number, nextLevel: number) => string;
     hqMax: string;
     watchtower: (slots: number) => string;
-    lodge: (shields: number, capacity: number) => string;
+    lodge: (shields: number, capacity: number, builders: number) => string;
     forge: (rate: number) => string;
     spring: (level: number) => string;
     yard: (bonus: number) => string;
@@ -101,6 +101,34 @@ export type GameCopy = {
     shield: string;
   };
   trainingDays: { title: string; description: (days: number) => string };
+  customize: {
+    title: string;
+    edit: string;
+    style: string;
+    color: string;
+    auto: string;
+    place: string;
+    save: string;
+  };
+  styleNames: Record<string, string>;
+  colorNames: Record<string, string>;
+  builders: {
+    status: (busy: number, total: number) => string;
+    needs: (builders: number) => string;
+    jobs: string;
+  };
+  land: {
+    button: string;
+    title: string;
+    current: (side: number) => string;
+    next: (side: number) => string;
+    cost: (coins: number) => string;
+    balance: (coins: number) => string;
+    buy: (coins: number) => string;
+    max: string;
+    why: string;
+  };
+  coins: (amount: number) => string;
 };
 
 const en: GameCopy = {
@@ -125,7 +153,7 @@ const en: GameCopy = {
   goTrain: 'Train',
   build: 'Build',
   trophies: (earned, total) => `Trophies ${earned}/${total}`,
-  buildTabs: { structures: 'Buildings', decor: 'Decor' },
+  buildTabs: { structures: 'Buildings', decor: 'Decor', trophies: 'Trophies' },
   placeHint: (name) => `Tap a highlighted tile to place ${name}.`,
   moveHint: (name) => `Tap a highlighted tile to move ${name}.`,
   cancel: 'Cancel',
@@ -142,7 +170,7 @@ const en: GameCopy = {
     yard: { name: 'Training Yard', description: "Your training ground. It shows today's workout as stations." },
     path: { name: 'Path', description: 'Stone paving to connect your buildings.' },
     wall: { name: 'Wall', description: 'A low stone wall.' },
-    pine: { name: 'Pine', description: 'An evergreen tree.' },
+    pine: { name: 'Tree', description: 'Pick a pine, oak, palm or cherry blossom.' },
     lamp: { name: 'Lamp', description: 'Lights up on days you train.' },
     banner: { name: 'Banner', description: 'Fly your colours.' },
     garden: { name: 'Garden bed', description: 'A small bed of flowers.' },
@@ -172,7 +200,11 @@ const en: GameCopy = {
     needsWeeks: 'Needs more weeks on target',
     noForge: 'Build a Forge first',
     noShield: 'No shields left',
-    sameResource: 'Pick two different materials'
+    sameResource: 'Pick two different materials',
+    needsBuilders: 'Not enough free builders. Level N needs N builders; the Lodge adds more.',
+    needsCoins: 'Not enough coins yet',
+    maxLand: 'Your land is as big as it gets',
+    underConstruction: 'Already being built'
   },
   trophyShelf: {
     title: 'Trophies',
@@ -240,8 +272,8 @@ const en: GameCopy = {
       `Level ${next} needs ${weeksNeeded} weeks on target. You have ${weeksDone}.`,
     hqMax: 'Your headquarters is fully upgraded.',
     watchtower: (slots) => `Spots daily quests from today's workout. Quest slots: ${slots}.`,
-    lodge: (shields, capacity) =>
-      `Stores streak shields for unplanned misses, earned by hitting your week. Shields: ${shields}/${capacity}.`,
+    lodge: (shields, capacity, builders) =>
+      `Adds a builder per level (you have ${builders}), and stores streak shields for unplanned misses, earned by hitting your week. Shields: ${shields}/${capacity}.`,
     forge: (rate) => `Trades materials: ${rate} of one for 1 of another. Handy when an exercise isn't possible for you yet.`,
     spring: (level) =>
       `Stretches earn +${level} extra, and your first set after a rest day earns +${level * 2}.`,
@@ -258,6 +290,43 @@ const en: GameCopy = {
     spring: (amount) => `Crystal Spring bonus: +${amount}`,
     shield: 'Your Lodge earned a streak shield.'
   },
+  customize: {
+    title: 'Customize',
+    edit: 'Customize',
+    style: 'Style',
+    color: 'Colour',
+    auto: 'Default',
+    place: 'Choose a spot',
+    save: 'Save'
+  },
+  styleNames: {
+    stone: 'Stone', wood: 'Wood', tiles: 'Tiles', hedge: 'Hedge', fence: 'Fence',
+    pine: 'Pine', oak: 'Oak', palm: 'Palm', cherry: 'Cherry blossom',
+    classic: 'Classic', lantern: 'Lantern', neon: 'Neon',
+    plain: 'Plain', stripe: 'Stripe', chevron: 'Chevron',
+    wildflowers: 'Wildflowers', tulips: 'Tulips', roses: 'Roses', lavender: 'Lavender',
+    tiered: 'Tiered', jet: 'Jet', marble: 'Marble'
+  },
+  colorNames: {
+    cyan: 'Cyan', lime: 'Lime', magenta: 'Magenta', amber: 'Amber', violet: 'Violet', red: 'Red', white: 'White'
+  },
+  builders: {
+    status: (busy, total) => `Builders: ${busy} of ${total} busy`,
+    needs: (builders) => (builders === 1 ? 'needs 1 builder' : `needs ${builders} builders`),
+    jobs: 'In progress'
+  },
+  land: {
+    button: 'Expand land',
+    title: 'Expand your land',
+    current: (side) => `Your land: ${side}×${side}`,
+    next: (side) => `Next: ${side}×${side}`,
+    cost: (coins) => `Costs ${coins} coins`,
+    balance: (coins) => `You have ${coins} coins`,
+    buy: (coins) => `Expand for ${coins} coins`,
+    max: 'Your land is as big as it gets.',
+    why: 'Land is paid with coins from your sets, and it is meant to take a while.'
+  },
+  coins: (amount) => `${amount} coins`,
   trainingDays: {
     title: 'Training days per week',
     description: (days) =>
@@ -293,7 +362,7 @@ const he: GameCopy = {
   goTrain: 'לאימון',
   build: 'בנייה',
   trophies: (earned, total) => `גביעים ${earned}/${total}`,
-  buildTabs: { structures: 'מבנים', decor: 'קישוטים' },
+  buildTabs: { structures: 'מבנים', decor: 'קישוטים', trophies: 'גביעים' },
   placeHint: (name) => `הקש על משבצת מודגשת כדי למקם ${name}.`,
   moveHint: (name) => `הקש על משבצת מודגשת כדי להזיז ${name}.`,
   cancel: 'ביטול',
@@ -307,7 +376,7 @@ const he: GameCopy = {
     yard: { name: 'חצר אימונים', description: 'מגרש האימונים שלך. מציג את האימון של היום כתחנות.' },
     path: { name: 'שביל', description: 'ריצוף אבן שמחבר בין המבנים.' },
     wall: { name: 'חומה', description: 'חומת אבן נמוכה.' },
-    pine: { name: 'אורן', description: 'עץ ירוק־עד.' },
+    pine: { name: 'עץ', description: 'בחר אורן, אלון, דקל או פריחת דובדבן.' },
     lamp: { name: 'פנס', description: 'נדלק בימים שבהם אתה מתאמן.' },
     banner: { name: 'דגל', description: 'הנף את הצבעים שלך.' },
     garden: { name: 'ערוגה', description: 'ערוגת פרחים קטנה.' },
@@ -337,7 +406,11 @@ const he: GameCopy = {
     needsWeeks: 'נדרשים עוד שבועות ביעד',
     noForge: 'בנה קודם נפחייה',
     noShield: 'לא נשארו מגינים',
-    sameResource: 'בחר שני חומרים שונים'
+    sameResource: 'בחר שני חומרים שונים',
+    needsBuilders: 'אין מספיק בנאים פנויים. שלב N דורש N בנאים, והבקתה מוסיפה עוד.',
+    needsCoins: 'עדיין אין מספיק מטבעות',
+    maxLand: 'השטח שלך בגודל המקסימלי',
+    underConstruction: 'כבר בבנייה'
   },
   trophyShelf: {
     title: 'גביעים',
@@ -405,8 +478,8 @@ const he: GameCopy = {
       `שלב ${next} דורש ${weeksNeeded} שבועות ביעד. יש לך ${weeksDone}.`,
     hqMax: 'המפקדה שלך משודרגת במלואה.',
     watchtower: (slots) => `מאתר משימות יומיות מהאימון של היום. מקומות למשימות: ${slots}.`,
-    lodge: (shields, capacity) =>
-      `שומרת מגיני רצף לימים שפספסת בלי תכנון. מקבלים אותם כשעומדים ביעד השבועי. מגינים: ${shields}/${capacity}.`,
+    lodge: (shields, capacity, builders) =>
+      `מוסיפה בנאי בכל שלב (יש לך ${builders}), ושומרת מגיני רצף לימים שפספסת בלי תכנון. מקבלים אותם כשעומדים ביעד השבועי. מגינים: ${shields}/${capacity}.`,
     forge: (rate) => `מחליפה חומרים: ${rate} מסוג אחד תמורת 1 מסוג אחר. שימושי כשתרגיל מסוים עדיין לא אפשרי בשבילך.`,
     spring: (level) =>
       `מתיחות מזכות ב־${level} נוספים, והסט הראשון אחרי יום מנוחה מזכה ב־${level * 2} נוספים.`,
@@ -423,6 +496,43 @@ const he: GameCopy = {
     spring: (amount) => `בונוס מעיין הקריסטל: ‎+${amount}`,
     shield: 'הבקתה שלך קיבלה מגן רצף.'
   },
+  customize: {
+    title: 'התאמה אישית',
+    edit: 'התאמה אישית',
+    style: 'סגנון',
+    color: 'צבע',
+    auto: 'ברירת מחדל',
+    place: 'בחר מקום',
+    save: 'שמירה'
+  },
+  styleNames: {
+    stone: 'אבן', wood: 'עץ', tiles: 'אריחים', hedge: 'גדר חיה', fence: 'גדר',
+    pine: 'אורן', oak: 'אלון', palm: 'דקל', cherry: 'פריחת דובדבן',
+    classic: 'קלאסי', lantern: 'עששית', neon: 'ניאון',
+    plain: 'חלק', stripe: 'פס', chevron: 'שברון',
+    wildflowers: 'פרחי בר', tulips: 'צבעונים', roses: 'ורדים', lavender: 'לבנדר',
+    tiered: 'קומות', jet: 'סילון', marble: 'שיש'
+  },
+  colorNames: {
+    cyan: 'טורקיז', lime: 'ליים', magenta: 'מג׳נטה', amber: 'ענבר', violet: 'סגול', red: 'אדום', white: 'לבן'
+  },
+  builders: {
+    status: (busy, total) => `בנאים: ${busy} מתוך ${total} עסוקים`,
+    needs: (builders) => (builders === 1 ? 'דורש בנאי אחד' : `דורש ${builders} בנאים`),
+    jobs: 'בתהליך'
+  },
+  land: {
+    button: 'הרחבת שטח',
+    title: 'הרחב את השטח שלך',
+    current: (side) => `השטח שלך: ${side}×${side}`,
+    next: (side) => `הבא: ${side}×${side}`,
+    cost: (coins) => `עולה ${coins} מטבעות`,
+    balance: (coins) => `יש לך ${coins} מטבעות`,
+    buy: (coins) => `הרחב תמורת ${coins} מטבעות`,
+    max: 'השטח שלך בגודל המקסימלי.',
+    why: 'משלמים על שטח במטבעות מהסטים שלך, וזה אמור לקחת זמן.'
+  },
+  coins: (amount) => `${amount} מטבעות`,
   trainingDays: {
     title: 'ימי אימון בשבוע',
     description: (days) =>
@@ -458,7 +568,7 @@ const ar: GameCopy = {
   goTrain: 'تدرّب',
   build: 'بناء',
   trophies: (earned, total) => `الكؤوس ${earned}/${total}`,
-  buildTabs: { structures: 'مبانٍ', decor: 'زينة' },
+  buildTabs: { structures: 'مبانٍ', decor: 'زينة', trophies: 'كؤوس' },
   placeHint: (name) => `اضغط على مربع مضيء لوضع ${name}.`,
   moveHint: (name) => `اضغط على مربع مضيء لنقل ${name}.`,
   cancel: 'إلغاء',
@@ -472,7 +582,7 @@ const ar: GameCopy = {
     yard: { name: 'ساحة التدريب', description: 'ساحة تدريبك. تعرض تمرين اليوم كمحطات.' },
     path: { name: 'ممر', description: 'رصف حجري يربط بين مبانيك.' },
     wall: { name: 'سور', description: 'سور حجري منخفض.' },
-    pine: { name: 'صنوبر', description: 'شجرة دائمة الخضرة.' },
+    pine: { name: 'شجرة', description: 'اختر صنوبراً أو بلوطاً أو نخلة أو زهر الكرز.' },
     lamp: { name: 'مصباح', description: 'يضيء في الأيام التي تتدرب فيها.' },
     banner: { name: 'راية', description: 'ارفع ألوانك.' },
     garden: { name: 'حوض زهور', description: 'حوض صغير من الزهور.' },
@@ -502,7 +612,11 @@ const ar: GameCopy = {
     needsWeeks: 'تحتاج إلى أسابيع أكثر على الهدف',
     noForge: 'ابنِ ورشة حدادة أولاً',
     noShield: 'لم يتبقَّ أي درع',
-    sameResource: 'اختر مادتين مختلفتين'
+    sameResource: 'اختر مادتين مختلفتين',
+    needsBuilders: 'لا يوجد بنّاؤون متاحون بما يكفي. المستوى N يحتاج N بنّائين، والكوخ يضيف المزيد.',
+    needsCoins: 'لا توجد عملات كافية بعد',
+    maxLand: 'أرضك في أكبر حجم ممكن',
+    underConstruction: 'قيد البناء بالفعل'
   },
   trophyShelf: {
     title: 'الكؤوس',
@@ -570,8 +684,8 @@ const ar: GameCopy = {
       `المستوى ${next} يتطلب ${weeksNeeded} أسابيع على الهدف. لديك ${weeksDone}.`,
     hqMax: 'مقرك مطوّر بالكامل.',
     watchtower: (slots) => `يرصد مهاماً يومية من تمرين اليوم. خانات المهام: ${slots}.`,
-    lodge: (shields, capacity) =>
-      `يخزّن دروع السلسلة للأيام الفائتة غير المخطط لها، وتحصل عليها بتحقيق هدف الأسبوع. الدروع: ${shields}/${capacity}.`,
+    lodge: (shields, capacity, builders) =>
+      `يضيف بنّاءً مع كل مستوى (لديك ${builders})، ويخزّن دروع السلسلة للأيام الفائتة غير المخطط لها، وتحصل عليها بتحقيق هدف الأسبوع. الدروع: ${shields}/${capacity}.`,
     forge: (rate) => `تبادل المواد: ${rate} من نوع مقابل 1 من نوع آخر. مفيد عندما لا يكون تمرين ما ممكناً لك بعد.`,
     spring: (level) =>
       `تمارين التمدد تمنح ${level} إضافية، وأول مجموعة بعد يوم راحة تمنح ${level * 2} إضافية.`,
@@ -588,6 +702,43 @@ const ar: GameCopy = {
     spring: (amount) => `مكافأة نبع الكريستال: ‎+${amount}`,
     shield: 'حصل كوخك على درع للسلسلة.'
   },
+  customize: {
+    title: 'تخصيص',
+    edit: 'تخصيص',
+    style: 'النمط',
+    color: 'اللون',
+    auto: 'افتراضي',
+    place: 'اختر مكاناً',
+    save: 'حفظ'
+  },
+  styleNames: {
+    stone: 'حجر', wood: 'خشب', tiles: 'بلاط', hedge: 'سياج نباتي', fence: 'سياج',
+    pine: 'صنوبر', oak: 'بلوط', palm: 'نخلة', cherry: 'زهر الكرز',
+    classic: 'كلاسيكي', lantern: 'فانوس', neon: 'نيون',
+    plain: 'سادة', stripe: 'خط', chevron: 'شيفرون',
+    wildflowers: 'زهور برية', tulips: 'توليب', roses: 'ورود', lavender: 'لافندر',
+    tiered: 'طبقات', jet: 'نافورة عالية', marble: 'رخام'
+  },
+  colorNames: {
+    cyan: 'سماوي', lime: 'ليموني', magenta: 'أرجواني', amber: 'كهرماني', violet: 'بنفسجي', red: 'أحمر', white: 'أبيض'
+  },
+  builders: {
+    status: (busy, total) => `البنّاؤون: ${busy} من ${total} مشغولون`,
+    needs: (builders) => (builders === 1 ? 'يحتاج بنّاءً واحداً' : `يحتاج ${builders} بنّائين`),
+    jobs: 'قيد التنفيذ'
+  },
+  land: {
+    button: 'توسيع الأرض',
+    title: 'وسّع أرضك',
+    current: (side) => `أرضك: ${side}×${side}`,
+    next: (side) => `التالي: ${side}×${side}`,
+    cost: (coins) => `التكلفة ${coins} عملة`,
+    balance: (coins) => `لديك ${coins} عملة`,
+    buy: (coins) => `وسّع مقابل ${coins} عملة`,
+    max: 'أرضك في أكبر حجم ممكن.',
+    why: 'تُدفع الأرض بالعملات من مجموعاتك، ومن المفترض أن يستغرق ذلك وقتاً.'
+  },
+  coins: (amount) => `${amount} عملة`,
   trainingDays: {
     title: 'أيام التدريب في الأسبوع',
     description: (days) =>

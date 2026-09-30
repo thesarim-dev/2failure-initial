@@ -4,6 +4,8 @@ import { getVariantById, isWeightedEquipmentCategory, type Move } from '../compo
 import {
   applySet,
   applyStreak,
+  customizeItem,
+  expandLand,
   createInitialState,
   createInitialStats,
   ensureQuests,
@@ -16,11 +18,13 @@ import {
   removeItem,
   upgradeItem,
   type ActionResult,
+  type Construction,
   type GameState,
+  type PlacedItem,
   type SetReward,
   type SetTier
 } from './engine';
-import type { ResourceId, TrainingPattern } from './catalog';
+import type { Customization, ResourceId, TrainingPattern } from './catalog';
 
 /**
  * Iteration 1 keeps the base on this device, per user, like owned exercises.
@@ -28,19 +32,48 @@ import type { ResourceId, TrainingPattern } from './catalog';
  */
 const STORAGE_KEY = 'base-game';
 
+type SaveV1 = Omit<GameState, 'version' | 'constructions' | 'landLevel'> & {
+  version: 1;
+  construction?: Omit<Construction, 'builders'> | null;
+};
+
+/**
+ * v1 bases lived on a 10×10 plot where HQ level set the land. v2 uses a 14×14
+ * plot with land bought by coins: re-centre everything and keep the land they had.
+ */
+function migrateV1(save: SaveV1): GameState {
+  const hq = save.placed.find((p) => p.itemId === 'hq')?.level ?? 1;
+  const placed: PlacedItem[] = save.placed.map((p) => ({ ...p, x: p.x + 2, y: p.y + 2 }));
+  const job = save.construction;
+  const { construction: _old, ...rest } = save;
+  void _old;
+  return {
+    ...createInitialState(),
+    ...rest,
+    version: 2,
+    placed,
+    landLevel: Math.min(2, Math.max(0, hq - 1)),
+    constructions: job ? [{ ...job, builders: 1 }] : []
+  };
+}
+
 function load(userId: string | undefined): GameState {
   try {
     const raw = window.localStorage.getItem(storageKeyFor(userId, STORAGE_KEY));
     if (!raw) return createInitialState();
-    const parsed = JSON.parse(raw) as GameState;
-    if (parsed?.version !== 1 || !Array.isArray(parsed.placed)) return createInitialState();
+    const parsed = JSON.parse(raw) as GameState | SaveV1;
+    if (!parsed || !Array.isArray(parsed.placed)) return createInitialState();
+    const state = parsed.version === 1 ? migrateV1(parsed) : parsed.version === 2 ? parsed : null;
+    if (!state) return createInitialState();
     // Fill in fields added after the save was made.
     return {
       ...createInitialState(),
-      ...parsed,
-      stats: { ...createInitialStats(), ...parsed.stats },
-      quests: parsed.quests ?? null,
-      shields: parsed.shields ?? 0
+      ...state,
+      stats: { ...createInitialStats(), ...state.stats },
+      constructions: state.constructions ?? [],
+      landLevel: state.landLevel ?? 0,
+      quests: state.quests ?? null,
+      shields: state.shields ?? 0
     };
   } catch {
     return createInitialState();
@@ -157,10 +190,14 @@ export function useBaseGame(
     lastReward,
     clearLastReward: () => setLastReward(null),
     recordSet,
-    place: (itemId: string, x: number, y: number) => run(placeItem(stateRef.current, itemId, x, y)),
-    placeTrophy: (trophyId: string, x: number, y: number) =>
-      run(placeTrophy(stateRef.current, trophyId, x, y)),
-    upgrade: (uid: string) => run(upgradeItem(stateRef.current, uid)),
+    place: (itemId: string, x: number, y: number, custom?: Customization) =>
+      run(placeItem(stateRef.current, itemId, x, y, custom)),
+    placeTrophy: (trophyId: string, x: number, y: number, custom?: Customization) =>
+      run(placeTrophy(stateRef.current, trophyId, x, y, custom)),
+    /** `coins` is the player's balance; the caller deducts `coinCost` on success. */
+    upgrade: (uid: string, coins: number) => run(upgradeItem(stateRef.current, uid, coins)),
+    expandLand: (coins: number) => run(expandLand(stateRef.current, coins)),
+    customize: (uid: string, custom: Customization) => run(customizeItem(stateRef.current, uid, custom)),
     move: (uid: string, x: number, y: number) => run(moveItem(stateRef.current, uid, x, y)),
     remove: (uid: string) => run(removeItem(stateRef.current, uid)),
     trade: (from: ResourceId, to: ResourceId) => run(tradeMaterials(stateRef.current, from, to)),

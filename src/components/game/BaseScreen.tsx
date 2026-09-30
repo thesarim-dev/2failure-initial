@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Check, Hammer, Move as MoveIcon, ShieldCheck, Trophy, X } from 'lucide-react';
+import { Check, Coins, Expand, Hammer, Move as MoveIcon, Palette, ShieldCheck, X } from 'lucide-react';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
 import { useLanguage } from '../../context/LanguageContext';
 import {
+  CUSTOMIZE,
   DECOR,
+  DECOR_BUILD_SETS,
   GRID_SIZE,
+  LAND_SIDES,
+  PALETTE,
+  PALETTE_IDS,
+  buildersForLevel,
+  customizeKey,
+  type Customization,
   HQ_WEEKS_REQUIRED,
   MAX_HQ_LEVEL,
   RESOURCE_IDS,
@@ -19,7 +27,13 @@ import {
 } from '../../game/catalog';
 import {
   WEEKLY_BONUS_AMOUNT,
+  busyBuilders,
   canPlaceAt,
+  jobFor,
+  nextLandCost,
+  totalBuilders,
+  trophyBlocker,
+  upgradeCoinCost,
   currentWeeklyStreak,
   forgeRate,
   hqLevel,
@@ -39,13 +53,15 @@ import {
 import type { BaseGame } from '../../game/useBaseGame';
 import { BaseBoard, ItemPreview, RESOURCE_COLOR } from './BaseBoard';
 
+type Draft = { kind: 'item'; itemId: string } | { kind: 'trophy'; trophyId: string };
+
 type Mode =
   | { kind: 'idle' }
-  | { kind: 'place'; itemId: string }
-  | { kind: 'placeTrophy'; trophyId: string }
+  | { kind: 'place'; itemId: string; custom: Customization }
+  | { kind: 'placeTrophy'; trophyId: string; custom: Customization }
   | { kind: 'move'; uid: string };
 
-type SheetState = null | 'build' | 'trophies' | { uid: string };
+type SheetState = null | 'build' | 'land' | { uid: string } | { draft: Draft };
 
 export function ResourceIcon({ id, size = 18 }: { id: ResourceId; size?: number }) {
   const c = RESOURCE_COLOR[id];
@@ -221,13 +237,103 @@ function TodayPanel({ game, plan, onGoTrain }: { game: BaseGame; plan: TodayPlan
   );
 }
 
-export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () => void }) {
+/** Style chips and colour swatches, with a live preview. */
+function CustomizePanel({
+  itemId,
+  trophyId,
+  level = 1,
+  value,
+  onChange
+}: {
+  itemId?: string;
+  trophyId?: string;
+  level?: number;
+  value: Customization;
+  onChange: (next: Customization) => void;
+}) {
+  const { t } = useLanguage();
+  const g = t.game;
+  const options = CUSTOMIZE[customizeKey(trophyId ? `${TROPHY_ITEM_PREFIX}${trophyId}` : itemId ?? '')] ?? {};
+  return (
+    <div className="base-customize">
+      <div className="base-customize-preview">
+        <ItemPreview itemId={itemId} trophyId={trophyId} level={level} style={value.style} color={value.color} size={112} />
+      </div>
+      {options.styles && (
+        <div className="base-customize-group" role="radiogroup" aria-label={g.customize.style}>
+          <span className="base-customize-label">{g.customize.style}</span>
+          <div className="base-chip-row">
+            {options.styles.map((style) => (
+              <button
+                key={style}
+                type="button"
+                role="radio"
+                aria-checked={(value.style ?? options.styles?.[0]) === style}
+                className={`base-chip ${(value.style ?? options.styles?.[0]) === style ? 'is-active' : ''}`}
+                onClick={() => onChange({ ...value, style })}>
+                {g.styleNames[style] ?? style}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {options.colors && (
+        <div className="base-customize-group" role="radiogroup" aria-label={g.customize.color}>
+          <span className="base-customize-label">{g.customize.color}</span>
+          <div className="base-swatch-row">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!value.color}
+              aria-label={g.customize.auto}
+              title={g.customize.auto}
+              className={`base-swatch base-swatch--auto ${!value.color ? 'is-active' : ''}`}
+              onClick={() => onChange({ ...value, color: undefined })}
+            />
+            {PALETTE_IDS.map((id) => (
+              <button
+                key={id}
+                type="button"
+                role="radio"
+                aria-checked={value.color === id}
+                aria-label={g.colorNames[id]}
+                title={g.colorNames[id]}
+                className={`base-swatch ${value.color === id ? 'is-active' : ''}`}
+                style={{ background: PALETTE[id] }}
+                onClick={() => onChange({ ...value, color: id })}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function hasCustomization(itemId: string): boolean {
+  const options = CUSTOMIZE[customizeKey(itemId)];
+  return !!(options?.styles?.length || options?.colors);
+}
+
+export function BaseScreen({
+  game,
+  onGoTrain,
+  coins,
+  onSpendCoins
+}: {
+  game: BaseGame;
+  onGoTrain: () => void;
+  /** The workout currency, used for land and upgrades. */
+  coins: number;
+  onSpendCoins: (amount: number) => void;
+}) {
   const { t, language } = useLanguage();
   const g = t.game;
   const { state } = game;
   const [mode, setMode] = useState<Mode>({ kind: 'idle' });
   const [sheet, setSheet] = useState<SheetState>(null);
-  const [buildTab, setBuildTab] = useState<'structures' | 'decor'>('structures');
+  const [buildTab, setBuildTab] = useState<'structures' | 'decor' | 'trophies'>('structures');
+  const [draftCustom, setDraftCustom] = useState<Customization>({});
   const [notice, setNotice] = useState<string | null>(null);
   const level = hqLevel(state);
   const lit = !isQuietToday(state);
@@ -293,9 +399,9 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
     }
     const result =
       mode.kind === 'place'
-        ? game.place(mode.itemId, x, y)
+        ? game.place(mode.itemId, x, y, mode.custom)
         : mode.kind === 'placeTrophy'
-          ? game.placeTrophy(mode.trophyId, x, y)
+          ? game.placeTrophy(mode.trophyId, x, y, mode.custom)
           : game.move(mode.uid, x, y);
     if (!result.ok) {
       setNotice(errorText(result.error, modeItemId ?? undefined));
@@ -304,25 +410,24 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
     setMode({ kind: 'idle' });
   };
 
-  const selected = sheet && typeof sheet === 'object' ? state.placed.find((p) => p.uid === sheet.uid) : undefined;
-  const construction = state.construction;
-  const constructionItem = construction && state.placed.find((p) => p.uid === construction.uid);
-
-  const statusLine = (() => {
-    if (constructionItem && construction) {
-      return (
-        <div className="base-status base-status--building">
-          <Hammer size={16} strokeWidth={2.5} aria-hidden="true" />
-          <span>{g.status.building(nameOf(constructionItem.itemId), construction.setsRemaining)}</span>
-          <button type="button" className="base-status-btn" onClick={onGoTrain}>
-            {g.goTrain}
-          </button>
-        </div>
-      );
+  /** Pick something in the build menu: customize first if it has options. */
+  const choose = (draft: Draft) => {
+    const itemId = draft.kind === 'item' ? draft.itemId : `${TROPHY_ITEM_PREFIX}${draft.trophyId}`;
+    setDraftCustom({});
+    if (hasCustomization(itemId)) {
+      setSheet({ draft });
+      return;
     }
-    if (!lit) return <p className="base-status">{g.status.quiet}</p>;
-    return null;
-  })();
+    setSheet(null);
+    setMode(draft.kind === 'item' ? { kind: 'place', itemId: draft.itemId, custom: {} } : { kind: 'placeTrophy', trophyId: draft.trophyId, custom: {} });
+  };
+
+  const selected = sheet && typeof sheet === 'object' && 'uid' in sheet ? state.placed.find((p) => p.uid === sheet.uid) : undefined;
+  const draft = sheet && typeof sheet === 'object' && 'draft' in sheet ? sheet.draft : null;
+  const busy = busyBuilders(state);
+  const total = totalBuilders(state);
+  const landSide = LAND_SIDES[state.landLevel];
+  const landCost = nextLandCost(state);
 
   const labelForItem = (item: PlacedItem) => {
     const def = getItemDef(item.itemId);
@@ -334,7 +439,14 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
     <div className="base-screen">
       <header className="base-header">
         <h1 className="base-title">{g.title}</h1>
-        <span className="base-hq-chip">{g.hqLevel(level)}</span>
+        <div className="base-header-chips">
+          <span className="base-coin-chip" title={g.coins(coins)}>
+            <Coins size={15} strokeWidth={2.5} aria-hidden="true" />
+            <span className="tabular-nums">{coins}</span>
+            <span className="sr-only">{g.coins(coins)}</span>
+          </span>
+          <span className="base-hq-chip">{g.hqLevel(level)}</span>
+        </div>
       </header>
 
       <div className="base-resources" role="list">
@@ -358,7 +470,32 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
         </section>
       )}
 
-      {statusLine}
+      {!lit && <p className="base-status">{g.status.quiet}</p>}
+
+      {state.constructions.length > 0 && (
+        <section className="base-status base-status--building" aria-label={g.builders.jobs}>
+          <Hammer size={16} strokeWidth={2.5} aria-hidden="true" />
+          <div className="base-jobs">
+            <span className="base-jobs-head">{g.builders.status(busy, total)}</span>
+            {state.constructions.map((job) => {
+              const item = state.placed.find((p) => p.uid === job.uid);
+              if (!item) return null;
+              const isStructure = getItemDef(item.itemId)?.kind === 'structure';
+              return (
+                <span key={job.uid} className="base-job">
+                  {nameOf(item.itemId)}
+                  {isStructure && ` · ${g.level(job.targetLevel)}`}
+                  {': '}
+                  {g.setsLeft(job.setsRemaining)}
+                </span>
+              );
+            })}
+          </div>
+          <button type="button" className="base-status-btn" onClick={onGoTrain}>
+            {g.goTrain}
+          </button>
+        </section>
+      )}
 
       <TodayPanel game={game} plan={game.plan} onGoTrain={onGoTrain} />
 
@@ -398,9 +535,9 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
             <Hammer size={18} strokeWidth={2.5} aria-hidden="true" />
             {g.build}
           </button>
-          <button type="button" className="base-secondary-btn" onClick={() => setSheet('trophies')}>
-            <Trophy size={18} strokeWidth={2.5} aria-hidden="true" />
-            {g.trophies(earnedCount, TROPHIES.length)}
+          <button type="button" className="base-secondary-btn" onClick={() => setSheet('land')}>
+            <Expand size={18} strokeWidth={2.5} aria-hidden="true" />
+            {g.land.button}
           </button>
         </div>
       )}
@@ -408,7 +545,7 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
       {sheet === 'build' && (
         <Sheet title={g.build} onClose={() => setSheet(null)}>
           <div className="base-tabs" role="tablist">
-            {(['structures', 'decor'] as const).map((tab) => (
+            {(['structures', 'decor', 'trophies'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -417,88 +554,150 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
                 className={`base-tab ${buildTab === tab ? 'is-active' : ''}`}
                 onClick={() => setBuildTab(tab)}>
                 {g.buildTabs[tab]}
+                {tab === 'trophies' && <span className="base-tab-count"> {earnedCount}/{TROPHIES.length}</span>}
               </button>
             ))}
           </div>
-          <ul className="base-catalog">
-            {(buildTab === 'structures' ? STRUCTURES.filter((s) => s.id !== 'hq') : DECOR).map((def) => {
-              const blocker = placeBlocker(state, def.id);
-              const cost = def.kind === 'structure' ? def.levels[0].cost : def.cost;
-              return (
-                <li key={def.id}>
-                  <button
-                    type="button"
-                    className="base-catalog-item"
-                    disabled={blocker !== null}
-                    onClick={() => {
-                      setSheet(null);
-                      setMode({ kind: 'place', itemId: def.id });
-                    }}>
-                    <ItemPreview itemId={def.id} />
-                    <span className="base-catalog-text">
-                      <span className="base-catalog-name">{g.items[def.id]?.name}</span>
-                      <span className="base-catalog-desc">{g.items[def.id]?.description}</span>
-                      <span className="base-catalog-meta">
-                        <CostList cost={cost} resources={state.resources} />
-                        {def.kind === 'structure' && (
-                          <span className="base-catalog-sets">{g.setsToBuild(def.levels[0].sets)}</span>
-                        )}
+          <p className="base-sheet-intro">{g.builders.status(busy, total)}</p>
+          {buildTab !== 'trophies' ? (
+            <ul className="base-catalog">
+              {(buildTab === 'structures' ? STRUCTURES.filter((s) => s.id !== 'hq') : DECOR).map((def) => {
+                const blocker = placeBlocker(state, def.id);
+                const cost = def.kind === 'structure' ? def.levels[0].cost : def.cost;
+                const sets = def.kind === 'structure' ? def.levels[0].sets : DECOR_BUILD_SETS;
+                return (
+                  <li key={def.id}>
+                    <button
+                      type="button"
+                      className="base-catalog-item"
+                      disabled={blocker !== null}
+                      onClick={() => choose({ kind: 'item', itemId: def.id })}>
+                      <ItemPreview itemId={def.id} />
+                      <span className="base-catalog-text">
+                        <span className="base-catalog-name">{g.items[def.id]?.name}</span>
+                        <span className="base-catalog-desc">{g.items[def.id]?.description}</span>
+                        <span className="base-catalog-meta">
+                          <CostList cost={cost} resources={state.resources} />
+                          <span className="base-catalog-sets">
+                            {g.setsToBuild(sets)} · {g.builders.needs(1)}
+                          </span>
+                        </span>
+                        {blocker && <span className="base-catalog-blocker">{errorText(blocker, def.id)}</span>}
                       </span>
-                      {blocker && <span className="base-catalog-blocker">{errorText(blocker, def.id)}</span>}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <>
+              <p className="base-sheet-intro">{g.trophyShelf.intro}</p>
+              <ul className="base-trophy-grid">
+                {TROPHIES.map((def) => {
+                  const earned = state.trophies[def.id];
+                  const copy = g.trophyNames[def.id];
+                  const blocker = trophyBlocker(state, def.id);
+                  const placed = blocker === 'alreadyPlaced';
+                  return (
+                    <li key={def.id} className={`base-trophy ${earned ? 'is-earned' : 'is-locked'}`}>
+                      <ItemPreview trophyId={def.id} verified={earned?.verified} size={64} />
+                      <span className="base-trophy-name">{copy?.name}</span>
+                      {earned ? (
+                        <>
+                          <span className="base-trophy-proof">{copy?.proof(earned.value ?? 0)}</span>
+                          <span className="base-trophy-date">
+                            {g.trophyShelf.earnedOn(dateFormat.format(new Date(earned.earnedAt)))}
+                          </span>
+                          {earned.verified && (
+                            <span className="base-trophy-verified">
+                              <ShieldCheck size={13} strokeWidth={2.5} aria-hidden="true" />
+                              {g.trophyShelf.verified}
+                            </span>
+                          )}
+                          {placed ? (
+                            <span className="base-trophy-placed">{g.trophyShelf.onBase}</span>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className="base-small-btn"
+                                disabled={blocker !== null}
+                                onClick={() => choose({ kind: 'trophy', trophyId: def.id })}>
+                                {g.trophyShelf.place}
+                              </button>
+                              {blocker && <span className="base-catalog-blocker">{errorText(blocker)}</span>}
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <span className="base-trophy-how">{copy?.how}</span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
         </Sheet>
       )}
 
-      {sheet === 'trophies' && (
-        <Sheet title={g.trophyShelf.title} onClose={() => setSheet(null)}>
-          <p className="base-sheet-intro">{g.trophyShelf.intro}</p>
-          <ul className="base-trophy-grid">
-            {TROPHIES.map((def) => {
-              const earned = state.trophies[def.id];
-              const copy = g.trophyNames[def.id];
-              const placed = state.placed.some((p) => p.itemId === `${TROPHY_ITEM_PREFIX}${def.id}`);
-              return (
-                <li key={def.id} className={`base-trophy ${earned ? 'is-earned' : 'is-locked'}`}>
-                  <ItemPreview trophyId={def.id} verified={earned?.verified} size={64} />
-                  <span className="base-trophy-name">{copy?.name}</span>
-                  {earned ? (
-                    <>
-                      <span className="base-trophy-proof">{copy?.proof(earned.value ?? 0)}</span>
-                      <span className="base-trophy-date">
-                        {g.trophyShelf.earnedOn(dateFormat.format(new Date(earned.earnedAt)))}
-                      </span>
-                      {earned.verified && (
-                        <span className="base-trophy-verified">
-                          <ShieldCheck size={13} strokeWidth={2.5} aria-hidden="true" />
-                          {g.trophyShelf.verified}
-                        </span>
-                      )}
-                      {placed ? (
-                        <span className="base-trophy-placed">{g.trophyShelf.onBase}</span>
-                      ) : (
-                        <button
-                          type="button"
-                          className="base-small-btn"
-                          onClick={() => {
-                            setSheet(null);
-                            setMode({ kind: 'placeTrophy', trophyId: def.id });
-                          }}>
-                          {g.trophyShelf.place}
-                        </button>
-                      )}
-                    </>
-                  ) : (
-                    <span className="base-trophy-how">{copy?.how}</span>
-                  )}
-                </li>
+      {draft && (
+        <Sheet
+          title={draft.kind === 'item' ? nameOf(draft.itemId) : g.trophyNames[draft.trophyId]?.name ?? ''}
+          onClose={() => setSheet('build')}>
+          <CustomizePanel
+            itemId={draft.kind === 'item' ? draft.itemId : undefined}
+            trophyId={draft.kind === 'trophy' ? draft.trophyId : undefined}
+            value={draftCustom}
+            onChange={setDraftCustom}
+          />
+          <button
+            type="button"
+            className="base-primary-btn"
+            onClick={() => {
+              setSheet(null);
+              setMode(
+                draft.kind === 'item'
+                  ? { kind: 'place', itemId: draft.itemId, custom: draftCustom }
+                  : { kind: 'placeTrophy', trophyId: draft.trophyId, custom: draftCustom }
               );
-            })}
-          </ul>
+            }}>
+            {g.customize.place}
+          </button>
+        </Sheet>
+      )}
+
+      {sheet === 'land' && (
+        <Sheet title={g.land.title} onClose={() => setSheet(null)}>
+          <p className="base-today-line">{g.land.current(landSide)}</p>
+          {landCost === null ? (
+            <p className="base-item-sub">{g.land.max}</p>
+          ) : (
+            <div className="base-upgrade">
+              <p className="base-today-line">{g.land.next(LAND_SIDES[state.landLevel + 1])}</p>
+              <p className="base-today-sub">{g.land.why}</p>
+              <p className="base-land-cost">
+                <Coins size={16} strokeWidth={2.5} aria-hidden="true" />
+                {g.land.cost(landCost)} · {g.land.balance(coins)}
+              </p>
+              <button
+                type="button"
+                className="base-primary-btn"
+                disabled={coins < landCost}
+                onClick={() => {
+                  const result = game.expandLand(coins);
+                  if (!result.ok) {
+                    setNotice(errorText(result.error));
+                    return;
+                  }
+                  if (result.coinCost) onSpendCoins(result.coinCost);
+                  setSheet(null);
+                }}>
+                {g.land.buy(landCost)}
+              </button>
+              {coins < landCost && <p className="base-catalog-blocker">{g.errors.needsCoins}</p>}
+            </div>
+          )}
         </Sheet>
       )}
 
@@ -506,6 +705,8 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
         <ItemSheet
           item={selected}
           game={game}
+          coins={coins}
+          onSpendCoins={onSpendCoins}
           nameOf={nameOf}
           errorText={errorText}
           dateFormat={dateFormat}
@@ -524,6 +725,8 @@ export function BaseScreen({ game, onGoTrain }: { game: BaseGame; onGoTrain: () 
 function ItemSheet({
   item,
   game,
+  coins,
+  onSpendCoins,
   nameOf,
   errorText,
   dateFormat,
@@ -533,6 +736,8 @@ function ItemSheet({
 }: {
   item: PlacedItem;
   game: BaseGame;
+  coins: number;
+  onSpendCoins: (amount: number) => void;
   nameOf: (itemId: string) => string;
   errorText: (error: ActionError, itemId?: string) => string;
   dateFormat: Intl.DateTimeFormat;
@@ -547,7 +752,10 @@ function ItemSheet({
   const isTrophy = item.itemId.startsWith(TROPHY_ITEM_PREFIX);
   const trophyId = isTrophy ? item.itemId.slice(TROPHY_ITEM_PREFIX.length) : null;
   const earned = trophyId ? state.trophies[trophyId] : undefined;
-  const building = state.construction?.uid === item.uid ? state.construction : null;
+  const building = jobFor(state, item.uid) ?? null;
+  const [editing, setEditing] = useState(false);
+  const [custom, setCustom] = useState<Customization>({ style: item.style, color: item.color as Customization['color'] });
+  const canCustomize = hasCustomization(item.itemId);
 
   const remove = () => {
     const result = game.remove(item.uid);
@@ -557,63 +765,99 @@ function ItemSheet({
 
   return (
     <Sheet title={nameOf(item.itemId)} onClose={onClose}>
-      <div className="base-item-head">
-        {trophyId ? (
-          <ItemPreview trophyId={trophyId} verified={earned?.verified} size={72} />
-        ) : (
-          <ItemPreview itemId={item.itemId} level={Math.max(item.level, 1)} size={72} />
-        )}
-        <div className="base-item-text">
-          {def?.kind === 'structure' && (
-            <p className="base-item-level">
-              {building ? g.setsLeft(building.setsRemaining) : g.level(item.level)}
-            </p>
-          )}
-          {trophyId && earned ? (
-            <>
-              <p>{g.trophyNames[trophyId]?.proof(earned.value ?? 0)}</p>
-              <p className="base-item-sub">{g.trophyShelf.earnedOn(dateFormat.format(new Date(earned.earnedAt)))}</p>
-              {earned.verified && (
-                <p className="base-trophy-verified">
-                  <ShieldCheck size={14} strokeWidth={2.5} aria-hidden="true" />
-                  {g.trophyShelf.verified}
-                </p>
-              )}
-            </>
+      {editing ? (
+        <>
+          <CustomizePanel
+            itemId={trophyId ? undefined : item.itemId}
+            trophyId={trophyId ?? undefined}
+            level={Math.max(item.level, 1)}
+            value={custom}
+            onChange={setCustom}
+          />
+          <button
+            type="button"
+            className="base-primary-btn"
+            onClick={() => {
+              game.customize(item.uid, custom);
+              setEditing(false);
+            }}>
+            {g.customize.save}
+          </button>
+        </>
+      ) : (
+        <div className="base-item-head">
+          {trophyId ? (
+            <ItemPreview trophyId={trophyId} verified={earned?.verified} size={72} style={item.style} color={item.color} />
           ) : (
-            <p>{g.items[item.itemId]?.description}</p>
+            <ItemPreview itemId={item.itemId} level={Math.max(item.level, 1)} size={72} style={item.style} color={item.color} />
           )}
+          <div className="base-item-text">
+            {(def?.kind === 'structure' || building) && (
+              <p className="base-item-level">
+                {building ? g.setsLeft(building.setsRemaining) : g.level(item.level)}
+              </p>
+            )}
+            {trophyId && earned ? (
+              <>
+                <p>{g.trophyNames[trophyId]?.proof(earned.value ?? 0)}</p>
+                <p className="base-item-sub">{g.trophyShelf.earnedOn(dateFormat.format(new Date(earned.earnedAt)))}</p>
+                {earned.verified && (
+                  <p className="base-trophy-verified">
+                    <ShieldCheck size={14} strokeWidth={2.5} aria-hidden="true" />
+                    {g.trophyShelf.verified}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p>{g.items[item.itemId]?.description}</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {def?.kind === 'structure' && item.level > 0 && (
+      {!editing && def?.kind === 'structure' && item.level > 0 && (
         <BuildingRole item={item} game={game} onNotice={onNotice} />
       )}
 
-      {def?.kind === 'structure' && !building && (
+      {!editing && def?.kind === 'structure' && !building && (
         <div className="base-upgrade">
           {item.level >= def.levels.length ? (
             <p className="base-item-sub">{g.maxLevel}</p>
           ) : (
             (() => {
-              const blocker = upgradeBlocker(state, item.uid);
+              const target = item.level + 1;
+              const blocker = upgradeBlocker(state, item.uid, coins);
               const next = def.levels[item.level];
+              const coinCost = upgradeCoinCost(def.id, target);
               return (
                 <>
                   <div className="base-catalog-meta">
                     <CostList cost={next.cost} resources={state.resources} />
-                    <span className="base-catalog-sets">{g.setsToBuild(next.sets)}</span>
+                    {coinCost > 0 && (
+                      <span className={`base-cost-chip ${coins < coinCost ? 'is-short' : ''}`}>
+                        <Coins size={13} strokeWidth={2.5} aria-hidden="true" />
+                        <span className="tabular-nums">{coinCost}</span>
+                        <span className="sr-only">{g.coins(coinCost)}</span>
+                      </span>
+                    )}
                   </div>
+                  <p className="base-catalog-sets">
+                    {g.setsToBuild(next.sets)} · {g.builders.needs(buildersForLevel(target))}
+                  </p>
                   <button
                     type="button"
                     className="base-primary-btn"
                     disabled={blocker !== null}
                     onClick={() => {
-                      const result = game.upgrade(item.uid);
-                      if (!result.ok) onNotice(errorText(result.error));
+                      const result = game.upgrade(item.uid, coins);
+                      if (!result.ok) {
+                        onNotice(errorText(result.error));
+                      } else if (result.coinCost) {
+                        onSpendCoins(result.coinCost);
+                      }
                       onClose();
                     }}>
-                    {g.upgradeTo(item.level + 1)}
+                    {g.upgradeTo(target)}
                   </button>
                   {blocker && <p className="base-catalog-blocker">{errorText(blocker)}</p>}
                 </>
@@ -623,24 +867,32 @@ function ItemSheet({
         </div>
       )}
 
-      <div className="base-item-actions">
-        {item.itemId !== 'hq' && (
-          <button type="button" className="base-secondary-btn" onClick={onMove}>
-            <MoveIcon size={16} strokeWidth={2.5} aria-hidden="true" />
-            {g.move}
-          </button>
-        )}
-        {def?.kind === 'decor' && (
-          <button type="button" className="base-secondary-btn" onClick={remove}>
-            {g.remove} · {g.refund}
-          </button>
-        )}
-        {isTrophy && (
-          <button type="button" className="base-secondary-btn" onClick={remove}>
-            {g.putAway}
-          </button>
-        )}
-      </div>
+      {!editing && (
+        <div className="base-item-actions">
+          {canCustomize && (
+            <button type="button" className="base-secondary-btn" onClick={() => setEditing(true)}>
+              <Palette size={16} strokeWidth={2.5} aria-hidden="true" />
+              {g.customize.edit}
+            </button>
+          )}
+          {item.itemId !== 'hq' && (
+            <button type="button" className="base-secondary-btn" onClick={onMove}>
+              <MoveIcon size={16} strokeWidth={2.5} aria-hidden="true" />
+              {g.move}
+            </button>
+          )}
+          {def?.kind === 'decor' && (
+            <button type="button" className="base-secondary-btn" onClick={remove}>
+              {g.remove} · {g.refund}
+            </button>
+          )}
+          {isTrophy && (
+            <button type="button" className="base-secondary-btn" onClick={remove}>
+              {g.putAway}
+            </button>
+          )}
+        </div>
+      )}
     </Sheet>
   );
 }
@@ -675,7 +927,7 @@ function BuildingRole({
     case 'watchtower':
       return <p className="base-role">{g.roles.watchtower(questSlots(state))}</p>;
     case 'lodge':
-      return <p className="base-role">{g.roles.lodge(state.shields, shieldCapacity(state))}</p>;
+      return <p className="base-role">{g.roles.lodge(state.shields, shieldCapacity(state), totalBuilders(state))}</p>;
     case 'spring':
       return <p className="base-role">{g.roles.spring(structureLevel(state, 'spring'))}</p>;
     case 'yard':

@@ -34,25 +34,84 @@ export const STARTING_RESOURCES: Resources = { stone: 25, timber: 25, iron: 25, 
 // Plot and headquarters
 // ---------------------------------------------------------------------------
 
-export const GRID_SIZE = 10;
+export const GRID_SIZE = 14;
 export const MAX_HQ_LEVEL = 3;
+export const MAX_STRUCTURE_LEVEL = 3;
 
-/** Side length of the buildable square for each HQ level, centred on the plot. */
-const BUILDABLE_SIDE_BY_HQ: Record<number, number> = { 1: 6, 2: 8, 3: 10 };
+/**
+ * Land is bought with coins (the workout currency) and is deliberately
+ * expensive. Index = land level; side = buildable square, centred on the plot.
+ */
+export const LAND_SIDES = [6, 8, 10, 12, 14] as const;
+export const LAND_COIN_COST = [0, 500, 1200, 2500, 4000] as const;
+export const MAX_LAND_LEVEL = LAND_SIDES.length - 1;
 
-export function buildableBounds(hqLevel: number): { min: number; max: number } {
-  const side = BUILDABLE_SIDE_BY_HQ[Math.min(Math.max(hqLevel, 1), MAX_HQ_LEVEL)];
+export function buildableBounds(landLevel: number): { min: number; max: number } {
+  const side = LAND_SIDES[Math.min(Math.max(landLevel, 0), MAX_LAND_LEVEL)];
   const min = (GRID_SIZE - side) / 2;
   return { min, max: min + side - 1 };
 }
 
-export function isTileBuildable(x: number, y: number, hqLevel: number): boolean {
-  const { min, max } = buildableBounds(hqLevel);
+export function isTileBuildable(x: number, y: number, landLevel: number): boolean {
+  const { min, max } = buildableBounds(landLevel);
   return x >= min && x <= max && y >= min && y <= max;
 }
 
 /** HQ sits in the middle of the plot and is always there. */
-export const HQ_POSITION = { x: 4, y: 4 };
+export const HQ_POSITION = { x: 6, y: 6 };
+
+/** Coins for upgrading a building to each level (index = target level). */
+export const UPGRADE_COIN_COST: Record<number, number> = { 2: 150, 3: 400 };
+export const HQ_UPGRADE_COIN_COST: Record<number, number> = { 2: 250, 3: 600 };
+
+/** Builders needed at once for a job: level N needs N; decor and trophies need 1. */
+export function buildersForLevel(targetLevel: number): number {
+  return Math.max(1, targetLevel);
+}
+
+/** Decor and trophies take one set to put up. */
+export const DECOR_BUILD_SETS = 1;
+
+// ---------------------------------------------------------------------------
+// Customization
+// ---------------------------------------------------------------------------
+
+/** Accent colours the player can pick for buildings, lights, flags and pedestals. */
+export const PALETTE = {
+  cyan: '#37d8ff',
+  lime: '#c8f032',
+  magenta: '#ff5fd2',
+  amber: '#f2a541',
+  violet: '#a78bfa',
+  red: '#ff5a5a',
+  white: '#e8edf2'
+} as const;
+export type PaletteId = keyof typeof PALETTE;
+export const PALETTE_IDS = Object.keys(PALETTE) as PaletteId[];
+
+export type Customization = { style?: string; color?: PaletteId };
+
+/** What each item lets the player change. `colors: true` shows the palette. */
+export const CUSTOMIZE: Record<string, { styles?: string[]; colors?: boolean }> = {
+  hq: { colors: true },
+  watchtower: { colors: true },
+  lodge: { colors: true },
+  forge: { colors: true },
+  spring: { colors: true },
+  yard: { colors: true },
+  path: { styles: ['stone', 'wood', 'tiles'] },
+  wall: { styles: ['stone', 'hedge', 'fence'] },
+  pine: { styles: ['pine', 'oak', 'palm', 'cherry'] },
+  lamp: { styles: ['classic', 'lantern', 'neon'], colors: true },
+  banner: { styles: ['plain', 'stripe', 'chevron'], colors: true },
+  garden: { styles: ['wildflowers', 'tulips', 'roses', 'lavender'], colors: true },
+  fountain: { styles: ['classic', 'tiered', 'jet'] },
+  trophy: { styles: ['stone', 'marble', 'neon'], colors: true }
+};
+
+export function customizeKey(itemId: string): string {
+  return itemId.startsWith('trophy:') ? 'trophy' : itemId;
+}
 
 /**
  * On-target weeks needed before each HQ level (index = level). Base level
@@ -123,7 +182,8 @@ export const STRUCTURES: StructureDef[] = [
     id: 'lodge',
     size: 1,
     unlockHq: 1,
-    maxCount: (hq) => hq,
+    // One Lodge per base: each of its levels adds a builder.
+    maxCount: () => 1,
     levels: [
       { cost: { timber: 15, stone: 10 }, sets: 1 },
       { cost: { timber: 35, stone: 20, iron: 10 }, sets: 2 },

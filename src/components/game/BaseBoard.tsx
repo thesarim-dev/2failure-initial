@@ -1,6 +1,7 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import {
   GRID_SIZE,
+  PALETTE,
   TROPHY_ITEM_PREFIX,
   buildableBounds,
   getItemDef,
@@ -28,7 +29,7 @@ const TIER_COLOR: Record<TrophyTier, string> = {
 
 const T = 100; // tile size in board units
 
-type ArtProps = { level: number; lit: boolean };
+type ArtProps = { level: number; lit: boolean; accent: string };
 
 /** A warm window or lamp that goes dark on quiet days. */
 function Light({ lit, children }: { lit: boolean; children: ReactNode }) {
@@ -52,52 +53,121 @@ function LevelPips({ level, color, cx = 50, y = 97 }: { level: number; color: st
   );
 }
 
-function Watchtower({ level, lit }: ArtProps) {
-  const c = RESOURCE_COLOR.stone;
+/** Tinted glass used on level-3 ("modern") buildings. */
+function Glass({ x, y, w, h, lit, rx = 2 }: { x: number; y: number; w: number; h: number; lit: boolean; rx?: number }) {
+  return (
+    <g>
+      <rect x={x} y={y} width={w} height={h} rx={rx} className="base-glass" />
+      <Light lit={lit}>
+        <rect x={x + 2} y={y + 2} width={w - 4} height={h - 4} rx={rx} fill={LIME} opacity={0.35} />
+      </Light>
+      <line x1={x + w * 0.3} y1={y + 2} x2={x + w * 0.1} y2={y + h - 2} stroke="#fff" strokeOpacity={0.35} strokeWidth={1.5} />
+    </g>
+  );
+}
+
+function Watchtower({ level, lit, accent: c }: ArtProps) {
+  if (level >= 3) {
+    // Modern: slim concrete core with a glass lookout cabin and a beacon.
+    return (
+      <g>
+        <Shadow w={24} />
+        <rect x={40} y={42} width={20} height={46} rx={2} className="base-body-2" stroke={c} strokeWidth={2} />
+        <line x1={50} y1={46} x2={50} y2={86} stroke={c} strokeWidth={1.5} opacity={0.6} />
+        <rect x={24} y={20} width={52} height={24} rx={4} className="base-body" stroke={c} strokeWidth={2.5} />
+        <Glass x={28} y={24} w={44} h={16} lit={lit} />
+        <line x1={20} y1={18} x2={80} y2={18} stroke={c} strokeWidth={3} strokeLinecap="round" />
+        <line x1={50} y1={18} x2={50} y2={4} stroke={c} strokeWidth={2} />
+        <Light lit={lit}>
+          <circle cx={50} cy={4} r={4} fill={c} />
+        </Light>
+      </g>
+    );
+  }
   return (
     <g>
       <Shadow w={26} />
       <rect x={33} y={38} width={34} height={50} rx={3} className="base-body" stroke={c} strokeWidth={2.5} />
-      {level >= 2 && <line x1={33} y1={56} x2={67} y2={56} stroke={c} strokeWidth={2} opacity={0.7} />}
-      {level >= 3 && <line x1={33} y1={72} x2={67} y2={72} stroke={c} strokeWidth={2} opacity={0.7} />}
+      {level >= 2 && (
+        <g stroke={c} strokeWidth={2} opacity={0.7}>
+          <line x1={33} y1={56} x2={67} y2={56} />
+          <line x1={33} y1={72} x2={67} y2={72} />
+        </g>
+      )}
       <rect x={26} y={28} width={48} height={12} rx={2} className="base-body-2" stroke={c} strokeWidth={2.5} />
       {[26, 38, 50, 62].map((x) => (
         <rect key={x} x={x} y={21} width={8} height={8} rx={1} className="base-body-2" stroke={c} strokeWidth={2} />
       ))}
       <Light lit={lit}>
-        <rect x={45} y={level >= 3 ? 44 : 60} width={10} height={12} rx={5} fill={LIME} />
-        {level >= 3 && <rect x={45} y={62} width={10} height={12} rx={5} fill={LIME} />}
+        <rect x={45} y={level >= 2 ? 44 : 60} width={10} height={12} rx={5} fill={LIME} />
+        {level >= 2 && <rect x={45} y={62} width={10} height={12} rx={5} fill={LIME} />}
       </Light>
       {level >= 2 && (
         <g>
           <line x1={50} y1={21} x2={50} y2={4} stroke={c} strokeWidth={2} />
-          <path d="M50 4 L66 8 L50 13 Z" fill={RESOURCE_COLOR.timber} />
+          <path d="M50 4 L66 8 L50 13 Z" fill={c} />
         </g>
       )}
     </g>
   );
 }
 
-function Lodge({ level, lit }: ArtProps) {
-  const c = RESOURCE_COLOR.timber;
+function Lodge({ level, lit, accent: c }: ArtProps) {
+  if (level >= 3) {
+    // Modern: flat roof, full-height glass and solar panels.
+    return (
+      <g>
+        <Shadow w={38} />
+        <rect x={14} y={40} width={72} height={48} rx={3} className="base-body" stroke={c} strokeWidth={2.5} />
+        <rect x={10} y={34} width={80} height={8} rx={2} className="base-body-2" stroke={c} strokeWidth={2.5} />
+        {[18, 38, 58].map((x) => (
+          <rect key={x} x={x} y={24} width={16} height={9} rx={1} fill="#1b2a44" stroke={c} strokeWidth={1.5} />
+        ))}
+        <Glass x={20} y={48} w={38} h={36} lit={lit} />
+        <rect x={64} y={60} width={14} height={28} rx={2} fill={c} opacity={0.85} />
+      </g>
+    );
+  }
   return (
     <g>
       <Shadow w={36} />
       {level >= 2 && <rect x={63} y={24} width={9} height={18} className="base-body-2" stroke={c} strokeWidth={2} />}
       <rect x={20} y={48} width={60} height={40} rx={3} className="base-body" stroke={c} strokeWidth={2.5} />
       <path d="M13 51 L50 21 L87 51 Z" className="base-body-2" stroke={c} strokeWidth={2.5} strokeLinejoin="round" />
-      {level >= 3 && <path d="M24 48 L50 28 L76 48" fill="none" stroke={c} strokeWidth={1.5} opacity={0.6} />}
+      {level >= 2 && (
+        <g>
+          <path d="M24 48 L50 28 L76 48" fill="none" stroke={c} strokeWidth={1.5} opacity={0.6} />
+          <rect x={16} y={84} width={68} height={5} rx={1} fill={c} opacity={0.7} />
+        </g>
+      )}
       <rect x={44} y={66} width={12} height={22} rx={2} fill={c} opacity={0.85} />
       <Light lit={lit}>
         <rect x={26} y={58} width={12} height={10} rx={2} fill={LIME} />
-        {level >= 3 && <rect x={62} y={58} width={12} height={10} rx={2} fill={LIME} />}
+        {level >= 2 && <rect x={62} y={58} width={12} height={10} rx={2} fill={LIME} />}
       </Light>
     </g>
   );
 }
 
-function Forge({ level, lit }: ArtProps) {
-  const c = RESOURCE_COLOR.iron;
+function Forge({ level, lit, accent: c }: ArtProps) {
+  if (level >= 3) {
+    // Modern foundry: sawtooth roof with skylights and glowing vents.
+    return (
+      <g>
+        <Shadow w={38} />
+        <rect x={12} y={44} width={76} height={44} rx={3} className="base-body" stroke={c} strokeWidth={2.5} />
+        <path d="M12 44 L12 30 L31 44 L31 30 L50 44 L50 30 L69 44 L69 30 L88 44" className="base-body-2" stroke={c} strokeWidth={2.5} strokeLinejoin="round" />
+        <Light lit={lit}>
+          {[18, 37, 56, 75].map((x) => (
+            <path key={x} d={`M${x} 42 L${x} 35 L${x + 8} 42 Z`} fill={LIME} opacity={0.8} />
+          ))}
+          <rect x={20} y={56} width={60} height={6} rx={3} fill={c} />
+          <rect x={20} y={68} width={60} height={6} rx={3} fill={c} opacity={0.7} />
+        </Light>
+        <rect x={40} y={78} width={20} height={10} rx={2} className="base-body-2" stroke={c} strokeWidth={1.5} />
+      </g>
+    );
+  }
   return (
     <g>
       <Shadow w={36} />
@@ -106,37 +176,67 @@ function Forge({ level, lit }: ArtProps) {
       <rect x={14} y={40} width={72} height={9} rx={2} className="base-body-2" stroke={c} strokeWidth={2.5} />
       <Light lit={lit}>
         <path d="M36 88 V74 A14 14 0 0 1 64 74 V88 Z" fill={c} />
-        <circle cx={68} cy={level >= 2 ? 7 : 14} r={level >= 3 ? 5 : 3.5} fill={c} />
+        <circle cx={68} cy={level >= 2 ? 7 : 14} r={level >= 2 ? 5 : 3.5} fill={c} />
       </Light>
-      {level >= 3 && <path d="M22 80 h12 l-3 5 h-6 z" fill={RESOURCE_COLOR.stone} />}
+      {level >= 2 && <path d="M20 80 h14 l-3 6 h-8 z" fill={RESOURCE_COLOR.stone} />}
     </g>
   );
 }
 
-function Spring({ level, lit }: ArtProps) {
-  const c = RESOURCE_COLOR.crystal;
+function Spring({ level, lit, accent: c }: ArtProps) {
   const spikes =
-    level >= 3
-      ? ['M30 52 L36 22 L42 52 Z', 'M44 50 L50 10 L56 50 Z', 'M58 52 L64 24 L70 52 Z']
-      : level >= 2
-        ? ['M34 52 L40 26 L46 52 Z', 'M52 52 L60 20 L66 52 Z']
-        : ['M44 52 L50 26 L56 52 Z'];
+    level >= 2 ? ['M30 52 L36 22 L42 52 Z', 'M44 50 L50 10 L56 50 Z', 'M58 52 L64 24 L70 52 Z'] : ['M44 52 L50 26 L56 52 Z'];
   return (
     <g>
       <Shadow w={38} cy={84} />
-      <ellipse cx={50} cy={64} rx={38} ry={22} className="base-body-2" stroke={RESOURCE_COLOR.stone} strokeWidth={2.5} />
+      <ellipse cx={50} cy={64} rx={38} ry={22} className="base-body-2" stroke={level >= 2 ? c : RESOURCE_COLOR.stone} strokeWidth={2.5} />
       <Light lit={lit}>
         <ellipse cx={50} cy={64} rx={29} ry={15} fill={c} opacity={0.55} stroke={c} strokeWidth={2} />
       </Light>
       {spikes.map((d) => (
         <path key={d} d={d} fill={c} opacity={0.9} stroke={c} strokeWidth={1.5} strokeLinejoin="round" />
       ))}
+      {level >= 3 && (
+        // Modern pavilion: thin columns and a floating canopy.
+        <g>
+          {[16, 84].map((x) => (
+            <line key={x} x1={x} y1={70} x2={x} y2={14} stroke={c} strokeWidth={2.5} />
+          ))}
+          <rect x={10} y={8} width={80} height={7} rx={3} className="base-body" stroke={c} strokeWidth={2} />
+          <Light lit={lit}>
+            <line x1={14} y1={17} x2={86} y2={17} stroke={LIME} strokeWidth={2} />
+          </Light>
+        </g>
+      )}
     </g>
   );
 }
 
-function Headquarters({ level, lit }: ArtProps) {
-  const c = RESOURCE_COLOR.crystal;
+function Headquarters({ level, lit, accent: c }: ArtProps) {
+  if (level >= 3) {
+    // Modern HQ: stepped glass atrium, slim towers and a beacon spire.
+    return (
+      <g>
+        <Shadow w={86} cy={180} cx={100} />
+        {[22, 152].map((x) => (
+          <g key={x}>
+            <rect x={x} y={52} width={26} height={124} rx={3} className="base-body-2" stroke={c} strokeWidth={3} />
+            <Glass x={x + 5} y={60} w={16} h={70} lit={lit} />
+            <line x1={x} y1={50} x2={x + 26} y2={50} stroke={c} strokeWidth={4} strokeLinecap="round" />
+          </g>
+        ))}
+        <rect x={48} y={96} width={104} height={80} rx={4} className="base-body" stroke={c} strokeWidth={3} />
+        <rect x={62} y={66} width={76} height={32} rx={4} className="base-body" stroke={c} strokeWidth={3} />
+        <Glass x={68} y={72} w={64} h={22} lit={lit} />
+        <Glass x={56} y={106} w={88} h={38} lit={lit} />
+        <line x1={100} y1={66} x2={100} y2={16} stroke={c} strokeWidth={3} />
+        <Light lit={lit}>
+          <circle cx={100} cy={12} r={8} fill={LIME} />
+          <path d="M84 176 V156 H116 V176 Z" fill={LIME} />
+        </Light>
+      </g>
+    );
+  }
   const towerTop = level >= 2 ? 70 : 96;
   return (
     <g>
@@ -154,14 +254,6 @@ function Headquarters({ level, lit }: ArtProps) {
       ))}
       <rect x={42} y={80} width={116} height={96} rx={4} className="base-body" stroke={c} strokeWidth={3} />
       <path d="M32 84 L100 34 L168 84 Z" className="base-body-2" stroke={c} strokeWidth={3} strokeLinejoin="round" />
-      {level >= 3 && (
-        <g>
-          <line x1={100} y1={34} x2={100} y2={10} stroke={c} strokeWidth={3} />
-          <Light lit={lit}>
-            <circle cx={100} cy={8} r={7} fill={LIME} />
-          </Light>
-        </g>
-      )}
       <Light lit={lit}>
         <path d="M84 176 V148 A16 16 0 0 1 116 148 V176 Z" fill={LIME} />
         <rect x={56} y={100} width={14} height={14} rx={2} fill={LIME} />
@@ -170,7 +262,7 @@ function Headquarters({ level, lit }: ArtProps) {
       {level >= 2 && (
         <g>
           <line x1={60} y1={80} x2={60} y2={52} stroke={c} strokeWidth={2.5} />
-          <path d="M60 52 L80 57 L60 63 Z" fill={LIME} />
+          <path d="M60 52 L80 57 L60 63 Z" fill={c} />
         </g>
       )}
     </g>
@@ -218,8 +310,7 @@ function Station({ pattern, x, y, done }: { pattern: string; x: number; y: numbe
   );
 }
 
-function TrainingYard({ level, lit, plan }: ArtProps & { plan?: TodayPlan | null }) {
-  const c = LIME;
+function TrainingYard({ level, lit, plan, accent: c }: ArtProps & { plan?: TodayPlan | null }) {
   const stations = (plan?.exercises ?? []).slice(0, 6);
   const slots = [
     [52, 70],
@@ -232,13 +323,26 @@ function TrainingYard({ level, lit, plan }: ArtProps & { plan?: TodayPlan | null
   return (
     <g>
       <Shadow w={86} cy={182} cx={100} />
-      <rect x={14} y={30} width={172} height={146} rx={10} className="base-yard" stroke={c} strokeWidth={2.5} strokeDasharray={level >= 2 ? undefined : '10 6'} />
-      {level >= 3 && <rect x={22} y={38} width={156} height={130} rx={8} fill="none" stroke={c} strokeWidth={1.2} opacity={0.5} />}
+      <rect x={14} y={30} width={172} height={146} rx={10} className={level >= 3 ? 'base-yard base-yard--turf' : 'base-yard'} stroke={c} strokeWidth={2.5} strokeDasharray={level >= 2 ? undefined : '10 6'} />
+      {level >= 3 && (
+        // Modern: track lines and a scoreboard.
+        <g>
+          <rect x={24} y={40} width={152} height={126} rx={8} fill="none" stroke="#fff" strokeOpacity={0.25} strokeWidth={1.5} />
+          <rect x={74} y={16} width={52} height={16} rx={3} className="base-body" stroke={c} strokeWidth={2} />
+          <Light lit={lit}>
+            <rect x={78} y={20} width={44} height={8} rx={2} fill={c} opacity={0.8} />
+          </Light>
+        </g>
+      )}
       {[20, 180].map((x) => (
         <g key={x}>
-          <line x1={x} y1={30} x2={x} y2={12} stroke={RESOURCE_COLOR.stone} strokeWidth={3} />
+          <line x1={x} y1={30} x2={x} y2={level >= 3 ? 4 : 12} stroke={RESOURCE_COLOR.stone} strokeWidth={3} />
           <Light lit={lit}>
-            <circle cx={x} cy={10} r={level >= 2 ? 6 : 4} fill={c} />
+            {level >= 3 ? (
+              <rect x={x - 9} y={0} width={18} height={7} rx={2} fill={LIME} />
+            ) : (
+              <circle cx={x} cy={10} r={level >= 2 ? 6 : 4} fill={c} />
+            )}
           </Light>
         </g>
       ))}
@@ -259,9 +363,31 @@ function TrainingYard({ level, lit, plan }: ArtProps & { plan?: TodayPlan | null
   );
 }
 
-function Decor({ id, lit }: { id: string; lit: boolean }) {
+function Decor({ id, lit, style, color }: { id: string; lit: boolean; style?: string; color?: string }) {
   switch (id) {
     case 'path':
+      if (style === 'wood') {
+        return (
+          <g>
+            <rect x={6} y={6} width={88} height={88} rx={10} className="base-path" />
+            {[12, 30, 48, 66].map((y) => (
+              <rect key={y} x={12} y={y} width={76} height={14} rx={3} fill="#6b4a2b" stroke={RESOURCE_COLOR.timber} strokeWidth={1.2} />
+            ))}
+          </g>
+        );
+      }
+      if (style === 'tiles') {
+        return (
+          <g>
+            <rect x={6} y={6} width={88} height={88} rx={10} className="base-path" />
+            {[12, 52].flatMap((x) =>
+              [12, 52].map((y) => (
+                <rect key={`${x}${y}`} x={x} y={y} width={36} height={36} rx={4} className="base-path-stone" stroke={PALETTE.cyan} strokeOpacity={0.6} strokeWidth={1.5} />
+              ))
+            )}
+          </g>
+        );
+      }
       return (
         <g>
           <rect x={6} y={6} width={88} height={88} rx={10} className="base-path" />
@@ -277,6 +403,31 @@ function Decor({ id, lit }: { id: string; lit: boolean }) {
         </g>
       );
     case 'wall':
+      if (style === 'hedge') {
+        return (
+          <g>
+            <Shadow w={42} cy={82} />
+            <rect x={8} y={42} width={84} height={38} rx={14} className="base-pine" stroke={PINE} strokeWidth={2.5} />
+            {[22, 42, 62, 80].map((x) => (
+              <circle key={x} cx={x} cy={52} r={5} fill={PINE} opacity={0.35} />
+            ))}
+          </g>
+        );
+      }
+      if (style === 'fence') {
+        return (
+          <g>
+            <Shadow w={42} cy={82} />
+            <g stroke={RESOURCE_COLOR.timber} strokeWidth={3} strokeLinecap="round">
+              <line x1={8} y1={56} x2={92} y2={56} />
+              <line x1={8} y1={70} x2={92} y2={70} />
+            </g>
+            {[14, 34, 54, 74, 88].map((x) => (
+              <path key={x} d={`M${x - 4} 80 V44 L${x} 38 L${x + 4} 44 V80 Z`} fill="#6b4a2b" stroke={RESOURCE_COLOR.timber} strokeWidth={1.5} />
+            ))}
+          </g>
+        );
+      }
       return (
         <g>
           <Shadow w={42} cy={82} />
@@ -287,6 +438,45 @@ function Decor({ id, lit }: { id: string; lit: boolean }) {
         </g>
       );
     case 'pine':
+      if (style === 'oak') {
+        return (
+          <g>
+            <Shadow w={28} />
+            <rect x={45} y={60} width={10} height={28} rx={2} fill={RESOURCE_COLOR.timber} />
+            <circle cx={50} cy={42} r={28} className="base-pine" stroke={PINE} strokeWidth={2.5} />
+            <circle cx={40} cy={36} r={6} fill={PINE} opacity={0.35} />
+          </g>
+        );
+      }
+      if (style === 'palm') {
+        return (
+          <g>
+            <Shadow w={20} />
+            <path d="M50 88 C 52 70, 46 50, 52 30" fill="none" stroke={RESOURCE_COLOR.timber} strokeWidth={5} strokeLinecap="round" />
+            {['M52 30 C 40 18, 24 22, 16 32', 'M52 30 C 64 18, 80 22, 86 32', 'M52 30 C 44 26, 34 38, 30 50', 'M52 30 C 60 26, 70 38, 74 50', 'M52 30 C 50 16, 54 8, 60 4'].map((d) => (
+              <path key={d} d={d} fill="none" stroke={PINE} strokeWidth={5} strokeLinecap="round" />
+            ))}
+          </g>
+        );
+      }
+      if (style === 'cherry') {
+        return (
+          <g>
+            <Shadow w={28} />
+            <rect x={46} y={60} width={8} height={28} rx={2} fill={RESOURCE_COLOR.timber} />
+            <circle cx={50} cy={42} r={27} fill="#4a1f3a" stroke="#ff9ed8" strokeWidth={2.5} />
+            {[
+              [38, 34],
+              [58, 30],
+              [50, 48],
+              [34, 50],
+              [64, 50]
+            ].map(([x, y]) => (
+              <circle key={`${x}${y}`} cx={x} cy={y} r={4} fill="#ffc2e6" />
+            ))}
+          </g>
+        );
+      }
       return (
         <g>
           <Shadow w={24} />
@@ -295,44 +485,90 @@ function Decor({ id, lit }: { id: string; lit: boolean }) {
           <path d="M50 28 L78 74 L22 74 Z" className="base-pine" stroke={PINE} strokeWidth={2.5} strokeLinejoin="round" />
         </g>
       );
-    case 'lamp':
+    case 'lamp': {
+      const glow = color ?? LIME;
+      if (style === 'lantern') {
+        return (
+          <g>
+            <Shadow w={16} />
+            <path d="M34 88 V30 H58" fill="none" stroke={RESOURCE_COLOR.stone} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />
+            <rect x={52} y={32} width={16} height={20} rx={3} className="base-body-2" stroke={RESOURCE_COLOR.stone} strokeWidth={2} />
+            <Light lit={lit}>
+              <circle cx={60} cy={42} r={20} fill={glow} opacity={0.18} />
+              <rect x={56} y={36} width={8} height={12} rx={2} fill={glow} />
+            </Light>
+          </g>
+        );
+      }
+      if (style === 'neon') {
+        return (
+          <g>
+            <Shadow w={12} />
+            <Light lit={lit}>
+              <rect x={46} y={24} width={8} height={64} rx={4} fill={glow} />
+              <rect x={40} y={20} width={20} height={72} rx={10} fill={glow} opacity={0.15} />
+            </Light>
+            <rect x={40} y={86} width={20} height={5} rx={2} fill={RESOURCE_COLOR.stone} />
+          </g>
+        );
+      }
       return (
         <g>
           <Shadow w={14} />
           <line x1={50} y1={88} x2={50} y2={38} stroke={RESOURCE_COLOR.stone} strokeWidth={4} strokeLinecap="round" />
           <rect x={40} y={26} width={20} height={14} rx={3} className="base-body-2" stroke={RESOURCE_COLOR.stone} strokeWidth={2} />
           <Light lit={lit}>
-            <circle cx={50} cy={33} r={22} fill={LIME} opacity={0.18} />
-            <circle cx={50} cy={33} r={5} fill={LIME} />
+            <circle cx={50} cy={33} r={22} fill={glow} opacity={0.18} />
+            <circle cx={50} cy={33} r={5} fill={glow} />
           </Light>
         </g>
       );
-    case 'banner':
+    }
+    case 'banner': {
+      const flag = color ?? RESOURCE_COLOR.timber;
       return (
         <g>
           <Shadow w={14} />
           <line x1={34} y1={90} x2={34} y2={10} stroke={RESOURCE_COLOR.stone} strokeWidth={4} strokeLinecap="round" />
-          <path d="M36 14 H74 V56 L55 46 L36 56 Z" fill={RESOURCE_COLOR.timber} />
-          <rect x={36} y={24} width={38} height={6} fill={LIME} />
+          <path d="M36 14 H74 V56 L55 46 L36 56 Z" fill={flag} />
+          {style === 'stripe' && <rect x={36} y={24} width={38} height={6} fill="#fff" opacity={0.85} />}
+          {style === 'chevron' && <path d="M36 22 L55 34 L74 22 V30 L55 42 L36 30 Z" fill="#fff" opacity={0.85} />}
         </g>
       );
-    case 'garden':
+    }
+    case 'garden': {
+      const petals =
+        style === 'roses'
+          ? ['#ff5a5a', '#ff7a7a', '#e03c3c']
+          : style === 'lavender'
+            ? ['#a78bfa', '#c4b5fd', '#8b5cf6']
+            : style === 'tulips'
+              ? [color ?? '#ff5fd2', color ?? '#ff5fd2', '#fff4']
+              : [RESOURCE_COLOR.iron, LIME, RESOURCE_COLOR.crystal];
+      const tint = style === 'wildflowers' || !style ? undefined : color;
       return (
         <g>
           <Shadow w={38} cy={86} />
           <rect x={12} y={48} width={76} height={36} rx={8} className="base-soil" stroke={RESOURCE_COLOR.timber} strokeWidth={2} />
           {[
-            [26, 60, RESOURCE_COLOR.iron],
-            [42, 70, LIME],
-            [56, 58, RESOURCE_COLOR.crystal],
-            [72, 70, RESOURCE_COLOR.iron],
-            [34, 76, RESOURCE_COLOR.crystal],
-            [64, 76, LIME]
-          ].map(([x, y, color]) => (
-            <circle key={`${x}${y}`} cx={x as number} cy={y as number} r={4.5} fill={color as string} />
-          ))}
+            [26, 60],
+            [42, 70],
+            [56, 58],
+            [72, 70],
+            [34, 76],
+            [64, 76]
+          ].map(([x, y], i) =>
+            style === 'lavender' ? (
+              <rect key={`${x}${y}`} x={x - 2} y={y - 12} width={4} height={14} rx={2} fill={tint ?? petals[i % 3]} />
+            ) : style === 'tulips' ? (
+              <path key={`${x}${y}`} d={`M${x - 5} ${y} Q${x} ${y - 14} ${x + 5} ${y} Z`} fill={petals[i % 2]} />
+            ) : (
+              <circle key={`${x}${y}`} cx={x} cy={y} r={4.5} fill={tint ?? petals[i % 3]} />
+            )
+          )}
         </g>
       );
+    }
     case 'fountain':
       return (
         <g>
@@ -341,8 +577,23 @@ function Decor({ id, lit }: { id: string; lit: boolean }) {
           <Light lit={lit}>
             <ellipse cx={50} cy={66} rx={27} ry={11} fill={RESOURCE_COLOR.crystal} opacity={0.6} />
           </Light>
-          <rect x={46} y={36} width={8} height={30} className="base-body" stroke={RESOURCE_COLOR.stone} strokeWidth={2} />
-          <path d="M50 36 C 40 20, 30 30, 28 44 M50 36 C 60 20, 70 30, 72 44" fill="none" stroke={RESOURCE_COLOR.crystal} strokeWidth={3} strokeLinecap="round" />
+          {style === 'tiered' ? (
+            <g>
+              <ellipse cx={50} cy={46} rx={18} ry={7} className="base-body-2" stroke={RESOURCE_COLOR.stone} strokeWidth={2} />
+              <rect x={46} y={24} width={8} height={40} className="base-body" stroke={RESOURCE_COLOR.stone} strokeWidth={2} />
+              <ellipse cx={50} cy={26} rx={10} ry={4} fill={RESOURCE_COLOR.crystal} opacity={0.7} />
+            </g>
+          ) : style === 'jet' ? (
+            <Light lit={lit}>
+              <path d="M50 64 V10" stroke={RESOURCE_COLOR.crystal} strokeWidth={5} strokeLinecap="round" />
+              <circle cx={50} cy={10} r={6} fill={RESOURCE_COLOR.crystal} opacity={0.6} />
+            </Light>
+          ) : (
+            <g>
+              <rect x={46} y={36} width={8} height={30} className="base-body" stroke={RESOURCE_COLOR.stone} strokeWidth={2} />
+              <path d="M50 36 C 40 20, 30 30, 28 44 M50 36 C 60 20, 70 30, 72 44" fill="none" stroke={RESOURCE_COLOR.crystal} strokeWidth={3} strokeLinecap="round" />
+            </g>
+          )}
         </g>
       );
     default:
@@ -350,14 +601,37 @@ function Decor({ id, lit }: { id: string; lit: boolean }) {
   }
 }
 
-export function TrophyArt({ trophyId, verified }: { trophyId: string; verified?: boolean }) {
+export function TrophyArt({
+  trophyId,
+  verified,
+  style,
+  color
+}: {
+  trophyId: string;
+  verified?: boolean;
+  style?: string;
+  color?: string;
+}) {
   const def = getTrophyDef(trophyId);
   if (!def) return null;
   const c = TIER_COLOR[def.tier];
+  const pedestal = color ?? c;
   return (
     <g>
       <Shadow w={24} cy={90} />
-      <rect x={30} y={74} width={40} height={14} rx={2} className="base-body-2" stroke={c} strokeWidth={2} />
+      {style === 'marble' ? (
+        <g>
+          <rect x={26} y={72} width={48} height={18} rx={2} fill="#e8edf2" stroke={pedestal} strokeWidth={2} />
+          <path d="M32 78 q8 -4 14 2 t14 -2" fill="none" stroke="#9aa7b8" strokeWidth={1.2} />
+        </g>
+      ) : style === 'neon' ? (
+        <g>
+          <rect x={28} y={74} width={44} height={14} rx={3} className="base-body" stroke={pedestal} strokeWidth={2.5} />
+          <line x1={32} y1={81} x2={68} y2={81} stroke={pedestal} strokeWidth={3} strokeLinecap="round" className="base-neon" />
+        </g>
+      ) : (
+        <rect x={30} y={74} width={40} height={14} rx={2} className="base-body-2" stroke={pedestal} strokeWidth={2} />
+      )}
       {def.shape === 'cup' && (
         <g fill={c}>
           <path d="M32 22 H68 V32 A18 18 0 0 1 32 32 Z" />
@@ -413,11 +687,14 @@ export function ItemArt({
   verified?: boolean;
   plan?: TodayPlan | null;
 }) {
+  const color = item.color ? PALETTE[item.color as keyof typeof PALETTE] : undefined;
   if (item.itemId.startsWith(TROPHY_ITEM_PREFIX)) {
-    return <TrophyArt trophyId={item.itemId.slice(TROPHY_ITEM_PREFIX.length)} verified={verified} />;
+    return (
+      <TrophyArt trophyId={item.itemId.slice(TROPHY_ITEM_PREFIX.length)} verified={verified} style={item.style} color={color} />
+    );
   }
   const level = Math.max(item.level, 1);
-  const props = { level, lit };
+  const props = { level, lit, accent: color ?? accentFor(item.itemId) };
   switch (item.itemId) {
     case 'hq':
       return <Headquarters {...props} />;
@@ -432,23 +709,25 @@ export function ItemArt({
     case 'yard':
       return <TrainingYard {...props} plan={plan} />;
     default:
-      return <Decor id={item.itemId} lit={lit} />;
+      return <Decor id={item.itemId} lit={lit} style={item.style} color={color} />;
   }
 }
 
 /** Standalone preview used in the build menu and info sheet. */
-export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56 }: {
+export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, style, color }: {
   itemId?: string;
   level?: number;
   trophyId?: string;
   verified?: boolean;
   size?: number;
+  style?: string;
+  color?: string;
 }) {
   const id = trophyId ? `${TROPHY_ITEM_PREFIX}${trophyId}` : itemId ?? '';
   const box = itemSize(id) * T;
   return (
     <svg viewBox={`0 0 ${box} ${box}`} width={size} height={size} aria-hidden="true" className="base-preview">
-      <ItemArt item={{ uid: 'preview', itemId: id, x: 0, y: 0, level }} lit verified={verified} />
+      <ItemArt item={{ uid: 'preview', itemId: id, x: 0, y: 0, level, style, color }} lit verified={verified} />
     </svg>
   );
 }
@@ -496,7 +775,7 @@ export function BaseBoard({
   const level = hqLevel(state);
   const placing = validTiles !== null;
   const items = [...state.placed].sort((a, b) => a.y + itemSize(a.itemId) - (b.y + itemSize(b.itemId)) || a.x - b.x);
-  const construction = state.construction;
+  const jobs = new Map(state.constructions.map((job) => [job.uid, job]));
 
   const tiles: ReactNode[] = [];
   for (let y = 0; y < GRID_SIZE; y++) {
@@ -555,7 +834,8 @@ export function BaseBoard({
 
       {items.map((item) => {
         const size = itemSize(item.itemId);
-        const building = construction?.uid === item.uid;
+        const construction = jobs.get(item.uid);
+        const building = !!construction;
         const selected = selectedUid === item.uid;
         const def = getItemDef(item.itemId);
         const trophyId = item.itemId.startsWith(TROPHY_ITEM_PREFIX)
@@ -582,7 +862,12 @@ export function BaseBoard({
               <ItemArt item={item} lit={lit} verified={verified} plan={plan} />
             )}
             {def?.kind === 'structure' && !building && (
-              <LevelPips level={item.level} color={accentFor(item.itemId)} cx={(size * T) / 2} y={size * T - 4} />
+              <LevelPips
+                level={item.level}
+                color={item.color ? PALETTE[item.color as keyof typeof PALETTE] : accentFor(item.itemId)}
+                cx={(size * T) / 2}
+                y={size * T - 4}
+              />
             )}
             {building && construction && (
               <g className="base-scaffold">

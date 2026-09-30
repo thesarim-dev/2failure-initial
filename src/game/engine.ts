@@ -3,6 +3,13 @@ import {
   GRID_SIZE,
   HQ_POSITION,
   HQ_WEEKS_REQUIRED,
+  DECOR_BUILD_SETS,
+  HQ_UPGRADE_COIN_COST,
+  LAND_COIN_COST,
+  MAX_LAND_LEVEL,
+  UPGRADE_COIN_COST,
+  buildersForLevel,
+  type Customization,
   PATTERN_RESOURCE,
   RESOURCE_IDS,
   STARTING_RESOURCES,
@@ -30,6 +37,10 @@ export type PlacedItem = {
   y: number;
   /** Finished level. 0 means the first level is still being built. */
   level: number;
+  /** Player's chosen style (decor, trophy pedestals). */
+  style?: string;
+  /** Player's chosen accent colour (a PALETTE id). */
+  color?: string;
 };
 
 export type Construction = {
@@ -37,6 +48,8 @@ export type Construction = {
   targetLevel: number;
   setsRemaining: number;
   setsTotal: number;
+  /** Builders busy on this job until it finishes. */
+  builders: number;
 };
 
 export type EarnedTrophy = {
@@ -107,10 +120,13 @@ export type TodayPlan = {
 };
 
 export type GameState = {
-  version: 1;
+  version: 2;
   resources: Resources;
   placed: PlacedItem[];
-  construction: Construction | null;
+  /** Jobs in progress; several can run at once if there are free builders. */
+  constructions: Construction[];
+  /** Land bought with coins: 0 = 6×6 … 4 = 14×14. */
+  landLevel: number;
   trophies: Record<string, EarnedTrophy>;
   stats: GameStats;
   /** New things the player hasn't looked at yet (drives the tab badge). */
@@ -125,10 +141,11 @@ export type GameState = {
 
 export function createInitialState(): GameState {
   return {
-    version: 1,
+    version: 2,
     resources: { ...STARTING_RESOURCES },
     placed: [{ uid: 'u1', itemId: 'hq', x: HQ_POSITION.x, y: HQ_POSITION.y, level: 1 }],
-    construction: null,
+    constructions: [],
+    landLevel: 0,
     trophies: {},
     stats: createInitialStats(),
     unseen: [],
@@ -250,8 +267,8 @@ export type SetReward = {
   /** Crystal Spring bonus included in `earned`. */
   springBonus?: number;
   shieldEarned?: boolean;
-  /** Construction progress made by this set, if any. */
-  construction?: { itemId: string; targetLevel: number; setsRemaining: number };
+  /** Construction progress made by this set, one entry per job. */
+  constructions: Array<{ itemId: string; targetLevel: number; setsRemaining: number }>;
 };
 
 function each(amount: number): Resources {
@@ -548,7 +565,8 @@ export function applySet(prev: GameState, event: SetEvent): { state: GameState; 
     rate: 'full',
     beyondPlan: false,
     newTrophies: [],
-    questsDone: []
+    questsDone: [],
+    constructions: []
   };
   if (event.durationSeconds < MIN_SET_SECONDS) {
     reward.rate = 'tooShort';
@@ -610,21 +628,22 @@ export function applySet(prev: GameState, event: SetEvent): { state: GameState; 
     if (!stats.weekTrainingDays.includes(today)) stats.weekTrainingDays.push(today);
   }
 
-  // Construction advances with every set that still earns something.
-  if (state.construction && reward.rate !== 'limit') {
-    const job = state.construction;
-    job.setsRemaining = Math.max(0, job.setsRemaining - 1);
-    const item = state.placed.find((p) => p.uid === job.uid);
-    if (item) {
-      reward.construction = { itemId: item.itemId, targetLevel: job.targetLevel, setsRemaining: job.setsRemaining };
+  // Every job advances with each set that still earns something.
+  if (state.constructions.length && reward.rate !== 'limit') {
+    const remaining: Construction[] = [];
+    for (const job of state.constructions) {
+      job.setsRemaining = Math.max(0, job.setsRemaining - 1);
+      const item = state.placed.find((p) => p.uid === job.uid);
+      if (!item) continue;
+      reward.constructions.push({ itemId: item.itemId, targetLevel: job.targetLevel, setsRemaining: job.setsRemaining });
       if (job.setsRemaining === 0) {
         item.level = job.targetLevel;
-        state.construction = null;
         state.unseen.push(`built:${item.uid}`);
+      } else {
+        remaining.push(job);
       }
-    } else {
-      state.construction = null;
     }
+    state.constructions = remaining;
   }
 
   // Quests
@@ -717,10 +736,9 @@ export function canPlaceAt(
 ): boolean {
   const size = itemSize(itemId);
   const occupied = occupancy(state);
-  const level = hqLevel(state);
   return tilesOf(x, y, size).every(([tx, ty]) => {
     if (tx < 0 || ty < 0 || tx >= GRID_SIZE || ty >= GRID_SIZE) return false;
-    if (!isTileBuildable(tx, ty, level)) return false;
+    if (!isTileBuildable(tx, ty, state.landLevel)) return false;
     const owner = occupied.get(`${tx},${ty}`);
     return !owner || owner === ignoreUid;
   });
@@ -748,9 +766,41 @@ export type ActionError =
   | 'needsWeeks'
   | 'noForge'
   | 'noShield'
-  | 'sameResource';
+  | 'sameResource'
+  | 'needsBuilders'
+  | 'needsCoins'
+  | 'maxLand'
+  | 'underConstruction';
 
-export type ActionResult = { ok: true; state: GameState } | { ok: false; error: ActionError };
+export type ActionResult =
+  | { ok: true; state: GameState; /** Coins the caller must deduct. */ coinCost?: number }
+  | { ok: false; error: ActionError };
+
+// ---------------------------------------------------------------------------
+// Builders
+// ---------------------------------------------------------------------------
+
+/** One builder at HQ, plus one per Lodge level. */
+export function totalBuilders(state: GameState): number {
+  return 1 + structureLevel(state, 'lodge');
+}
+
+export function busyBuilders(state: GameState): number {
+  return state.constructions.reduce((n, job) => n + job.builders, 0);
+}
+
+export function freeBuilders(state: GameState): number {
+  return Math.max(0, totalBuilders(state) - busyBuilders(state));
+}
+
+export function jobFor(state: GameState, uid: string): Construction | undefined {
+  return state.constructions.find((job) => job.uid === uid);
+}
+
+function applyCustom(item: PlacedItem, custom?: Customization) {
+  if (custom?.style) item.style = custom.style;
+  if (custom?.color) item.color = custom.color;
+}
 
 function pay(state: GameState, cost: Cost) {
   for (const id of RESOURCE_IDS) state.resources[id] -= cost[id] ?? 0;
@@ -762,78 +812,123 @@ export function placeBlocker(state: GameState, itemId: string): ActionError | nu
   if (!def) return 'locked';
   const level = hqLevel(state);
   if (level < def.unlockHq) return 'locked';
-  if (def.kind === 'structure') {
-    if (countPlaced(state, itemId) >= def.maxCount(level)) return 'maxCount';
-    if (state.construction) return 'builderBusy';
-    if (!canAfford(state.resources, def.levels[0].cost)) return 'cantAfford';
-    return null;
-  }
-  if (!canAfford(state.resources, def.cost)) return 'cantAfford';
+  if (def.kind === 'structure' && countPlaced(state, itemId) >= def.maxCount(level)) return 'maxCount';
+  if (freeBuilders(state) < 1) return 'builderBusy';
+  const cost = def.kind === 'structure' ? def.levels[0].cost : def.cost;
+  if (!canAfford(state.resources, cost)) return 'cantAfford';
   return null;
 }
 
-export function placeItem(prev: GameState, itemId: string, x: number, y: number): ActionResult {
+export function placeItem(
+  prev: GameState,
+  itemId: string,
+  x: number,
+  y: number,
+  custom?: Customization
+): ActionResult {
   const blocker = placeBlocker(prev, itemId);
   if (blocker) return { ok: false, error: blocker };
   if (!canPlaceAt(prev, itemId, x, y)) return { ok: false, error: 'blocked' };
   const def = getItemDef(itemId)!;
   const state = structuredClone(prev);
   const uid = `u${state.nextUid++}`;
-
-  if (def.kind === 'structure') {
-    const first = def.levels[0];
-    pay(state, first.cost);
-    state.placed.push({ uid, itemId, x, y, level: first.sets === 0 ? 1 : 0 });
-    if (first.sets > 0) {
-      state.construction = { uid, targetLevel: 1, setsRemaining: first.sets, setsTotal: first.sets };
-    }
-  } else {
-    pay(state, def.cost);
-    state.placed.push({ uid, itemId, x, y, level: 1 });
+  const sets = def.kind === 'structure' ? def.levels[0].sets : DECOR_BUILD_SETS;
+  pay(state, def.kind === 'structure' ? def.levels[0].cost : def.cost);
+  const item: PlacedItem = { uid, itemId, x, y, level: sets === 0 ? 1 : 0 };
+  applyCustom(item, custom);
+  state.placed.push(item);
+  if (sets > 0) {
+    state.constructions.push({ uid, targetLevel: 1, setsRemaining: sets, setsTotal: sets, builders: 1 });
   }
   return { ok: true, state };
 }
 
-export function placeTrophy(prev: GameState, trophyId: string, x: number, y: number): ActionResult {
-  if (!prev.trophies[trophyId]) return { ok: false, error: 'notEarned' };
+/** Trophies are free to place but still need a builder for one set. */
+export function trophyBlocker(state: GameState, trophyId: string): ActionError | null {
+  if (!state.trophies[trophyId]) return 'notEarned';
+  if (state.placed.some((p) => p.itemId === `${TROPHY_ITEM_PREFIX}${trophyId}`)) return 'alreadyPlaced';
+  if (freeBuilders(state) < 1) return 'builderBusy';
+  return null;
+}
+
+export function placeTrophy(
+  prev: GameState,
+  trophyId: string,
+  x: number,
+  y: number,
+  custom?: Customization
+): ActionResult {
+  const blocker = trophyBlocker(prev, trophyId);
+  if (blocker) return { ok: false, error: blocker };
   const itemId = `${TROPHY_ITEM_PREFIX}${trophyId}`;
-  if (prev.placed.some((p) => p.itemId === itemId)) return { ok: false, error: 'alreadyPlaced' };
   if (!canPlaceAt(prev, itemId, x, y)) return { ok: false, error: 'blocked' };
   const state = structuredClone(prev);
-  state.placed.push({ uid: `u${state.nextUid++}`, itemId, x, y, level: 1 });
+  const uid = `u${state.nextUid++}`;
+  const item: PlacedItem = { uid, itemId, x, y, level: 0 };
+  applyCustom(item, custom);
+  state.placed.push(item);
+  state.constructions.push({ uid, targetLevel: 1, setsRemaining: DECOR_BUILD_SETS, setsTotal: DECOR_BUILD_SETS, builders: 1 });
   return { ok: true, state };
 }
 
+/** Coins needed to upgrade a structure to its next level. */
+export function upgradeCoinCost(itemId: string, targetLevel: number): number {
+  return (itemId === 'hq' ? HQ_UPGRADE_COIN_COST : UPGRADE_COIN_COST)[targetLevel] ?? 0;
+}
+
 /** Why a structure can't be upgraded right now, or null if it can. */
-export function upgradeBlocker(state: GameState, uid: string): ActionError | null {
+export function upgradeBlocker(state: GameState, uid: string, coins = Infinity): ActionError | null {
   const item = state.placed.find((p) => p.uid === uid);
   const def = item && getItemDef(item.itemId);
   if (!item || !def || def.kind !== 'structure') return 'locked';
   if (item.level >= def.levels.length) return 'maxLevel';
-  if (state.construction) return 'builderBusy';
-  if (def.id === 'hq' && state.stats.weeksOnTarget < (HQ_WEEKS_REQUIRED[item.level + 1] ?? 0)) {
-    return 'needsWeeks';
-  }
+  if (jobFor(state, uid)) return 'underConstruction';
+  const target = item.level + 1;
+  if (def.id === 'hq' && state.stats.weeksOnTarget < (HQ_WEEKS_REQUIRED[target] ?? 0)) return 'needsWeeks';
   // Other buildings can't outgrow headquarters.
   if (def.id !== 'hq' && item.level >= hqLevel(state)) return 'needsHq';
+  if (freeBuilders(state) < buildersForLevel(target)) return 'needsBuilders';
   if (!canAfford(state.resources, def.levels[item.level].cost)) return 'cantAfford';
+  if (coins < upgradeCoinCost(def.id, target)) return 'needsCoins';
   return null;
 }
 
-export function upgradeItem(prev: GameState, uid: string): ActionResult {
-  const blocker = upgradeBlocker(prev, uid);
+export function upgradeItem(prev: GameState, uid: string, coins = Infinity): ActionResult {
+  const blocker = upgradeBlocker(prev, uid, coins);
   if (blocker) return { ok: false, error: blocker };
   const state = structuredClone(prev);
   const item = state.placed.find((p) => p.uid === uid)!;
   const def = getItemDef(item.itemId) as StructureDef;
+  const target = item.level + 1;
   const next = def.levels[item.level];
   pay(state, next.cost);
-  state.construction = {
+  state.constructions.push({
     uid,
-    targetLevel: item.level + 1,
+    targetLevel: target,
     setsRemaining: next.sets,
-    setsTotal: next.sets
-  };
+    setsTotal: next.sets,
+    builders: buildersForLevel(target)
+  });
+  return { ok: true, state, coinCost: upgradeCoinCost(def.id, target) };
+}
+
+/** Coins for the next land expansion, or null at the maximum. */
+export function nextLandCost(state: GameState): number | null {
+  return state.landLevel >= MAX_LAND_LEVEL ? null : LAND_COIN_COST[state.landLevel + 1];
+}
+
+export function expandLand(prev: GameState, coins: number): ActionResult {
+  const cost = nextLandCost(prev);
+  if (cost === null) return { ok: false, error: 'maxLand' };
+  if (coins < cost) return { ok: false, error: 'needsCoins' };
+  return { ok: true, state: { ...prev, landLevel: prev.landLevel + 1 }, coinCost: cost };
+}
+
+/** Change an item's style or colour. Free, any time. */
+export function customizeItem(prev: GameState, uid: string, custom: Customization): ActionResult {
+  if (!prev.placed.some((p) => p.uid === uid)) return { ok: false, error: 'notRemovable' };
+  const state = structuredClone(prev);
+  applyCustom(state.placed.find((p) => p.uid === uid)!, custom);
   return { ok: true, state };
 }
 
@@ -857,6 +952,7 @@ export function removeItem(prev: GameState, uid: string): ActionResult {
   if (!isTrophy && def?.kind !== 'decor') return { ok: false, error: 'notRemovable' };
   const state = structuredClone(prev);
   state.placed = state.placed.filter((p) => p.uid !== uid);
+  state.constructions = state.constructions.filter((job) => job.uid !== uid);
   if (def?.kind === 'decor') {
     for (const id of RESOURCE_IDS) state.resources[id] += def.cost[id] ?? 0;
   }

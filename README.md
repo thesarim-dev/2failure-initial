@@ -547,14 +547,22 @@ Every set you finish earns materials for your own base. Tap **Base** in the bott
 
 | Building | What it does |
 |---|---|
-| **Headquarters** | Unlocks more land. Each level also needs weeks on target (2 for level 2, 6 for level 3). |
+| **Headquarters** | The heart of the base. Other buildings can't be a higher level than HQ. Each HQ level also needs weeks on target (2 for level 2, 6 for level 3). |
 | **Watchtower** | Daily quests from today's plan. Each level adds a quest slot. |
 | **Training Yard** | Shows today's workout as stations; raises the session bonus. |
-| **Lodge** | Stores streak shields (earned by hitting your week) for unplanned misses. |
+| **Lodge** | +1 builder per level (one Lodge per base), and stores streak shields for unplanned misses. |
 | **Forge** | Trades one material for another (3:1, or 2:1 at level 3). |
 | **Crystal Spring** | Bonus for stretches and for your first set after a rest day. |
 
-Buildings finish by completing sets, not by waiting, one at a time. Decorations place instantly and are refunded in full if removed. **Trophies** can only be earned, never bought; tap one to see its proof. Rep trophies counted by the AI camera are marked as verified.
+**Building and upgrading.** Open **Build** and pick from three tabs: **Buildings**, **Decor** and **Trophies**. Every job needs builders while it's in progress: new buildings, decorations and trophies take 1 builder; upgrading to level 2 takes 2 builders at once, and level 3 takes 3. You start with 1 builder, and each Lodge level adds one. Jobs finish by completing sets, not by waiting, and several can run at once when you have free builders.
+
+Buildings go up to level 3, and each level looks different: rustic, then reinforced, then modern. Upgrades cost materials plus coins (150 for level 2 and 400 for level 3; Headquarters costs 250 and 600).
+
+**Customize.** Before placing something, pick its style and colour: trim colours for buildings, styles for trees, flower beds, lamps, flags, paths, walls and fountains, and pedestals for trophies. Tap anything you've placed and choose **Customize** to change it again at any time, for free.
+
+**Land.** Your plot starts at 6×6. Tap **Expand land** to grow it with coins: 8×8 for 500, 10×10 for 1,200, 12×12 for 2,500 and 14×14 for 4,000.
+
+Decorations are refunded in full if removed. **Trophies** can only be earned, never bought; tap one to see its proof. Rep trophies counted by the AI camera are marked as verified.
 
 The base is saved on this device for now.
 

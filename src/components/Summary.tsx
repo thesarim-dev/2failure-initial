@@ -361,16 +361,18 @@ export function Summary({
             {baseReward.shieldEarned && (
               <p className="summary-base-line">{t.game.rewardExtra.shield}</p>
             )}
-            {baseReward.construction && (
-              <p className="summary-base-line">
-                {baseReward.construction.setsRemaining === 0
-                  ? t.game.reward.built(t.game.items[baseReward.construction.itemId]?.name ?? '')
-                  : t.game.reward.construction(
-                      t.game.items[baseReward.construction.itemId]?.name ?? '',
-                      baseReward.construction.setsRemaining
-                    )}
-              </p>
-            )}
+            {baseReward.constructions.map((job, index) => {
+              const name = job.itemId.startsWith('trophy:')
+                ? t.game.trophyNames[job.itemId.slice(7)]?.name ?? ''
+                : t.game.items[job.itemId]?.name ?? '';
+              return (
+                <p key={`${job.itemId}-${index}`} className="summary-base-line">
+                  {job.setsRemaining === 0
+                    ? t.game.reward.built(name)
+                    : t.game.reward.construction(name, job.setsRemaining)}
+                </p>
+              );
+            })}
             {baseReward.newTrophies.map((id) => (
               <p key={id} className="summary-base-line summary-base-trophy">
                 {t.game.reward.newTrophy(t.game.trophyNames[id]?.name ?? id)}
