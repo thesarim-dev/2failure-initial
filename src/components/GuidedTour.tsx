@@ -26,6 +26,7 @@ export type TourStepId =
   | 'coins'
   | 'store'
   | 'settings'
+  | 'base'
   | 'program'
   | 'start';
 
@@ -36,6 +37,7 @@ const STEP_ORDER: TourStepId[] = [
   'coins',
   'store',
   'settings',
+  'base',
   'program',
   'start'
 ];
@@ -48,6 +50,7 @@ const STEP_ACCENT: Record<TourStepId, string> = {
   coins: 'var(--tour-cyan)',
   store: 'var(--tour-lime)',
   settings: 'var(--tour-amber)',
+  base: 'var(--tour-lime)',
   program: 'var(--tour-cyan)',
   start: 'var(--tour-start)'
 };
@@ -61,6 +64,7 @@ type Rect = { top: number; left: number; width: number; height: number; radius: 
 function selectorFor(step: TourStepId): string | null {
   if (step === 'welcome') return null;
   if (step === 'start') return START_TARGET;
+  if (step === 'base') return '[data-tour="base-tab"]';
   return `[data-tour="${step}"]`;
 }
 

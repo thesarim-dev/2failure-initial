@@ -41,6 +41,9 @@ import { GuidedTour } from './components/GuidedTour';
 import { FirstSetCoach, type FirstSetStage } from './components/FirstSetCoach';
 import { isPoseAiTrackingEnabled } from './config/features';
 import { isPoseExerciseId } from './lib/pose/repCounterFactory';
+import { useBaseGame } from './game/useBaseGame';
+import { BaseScreen } from './components/game/BaseScreen';
+import { AppTabBar } from './components/AppTabBar';
 
 type AppState =
   | 'HOME'
@@ -49,7 +52,8 @@ type AppState =
   | 'WEIGHT_REP_PROMPT'
   | 'SUMMARY'
   | 'STORE'
-  | 'SETTINGS';
+  | 'SETTINGS'
+  | 'BASE';
 
 export function MainApp() {
   const { user } = useAuth();
@@ -122,6 +126,8 @@ export function MainApp() {
   // True from the moment the tour starts the first workout until the user is back home.
   const [guidingFirstSet, setGuidingFirstSet] = useState(false);
   const { weightUnit, setWeightUnit } = useWeightUnit();
+  // The base game: every finished set earns materials for it.
+  const baseGame = useBaseGame(user?.id, currentStreak);
 
   useEffect(() => {
     if (statsLoading || setsLoading) return;
@@ -211,10 +217,16 @@ export function MainApp() {
   const finishWorkoutSession = (
     duration: number,
     repsLogged?: number,
-    options?: { setContext?: typeof summarySetContext }
+    options?: { setContext?: typeof summarySetContext; verified?: boolean }
   ) => {
     if (!currentMove) return;
     const categoryId = currentMove.categoryId;
+    baseGame.recordSet({
+      move: currentMove,
+      durationSeconds: duration,
+      reps: repsLogged,
+      verified: options?.verified
+    });
     if (categoryId === 'pushups' && repsLogged && repsLogged > 0) {
       addPushupReps(repsLogged);
     }
@@ -264,7 +276,8 @@ export function MainApp() {
             trackedReps
           );
           setLastSetResult(result);
-          finishWorkoutSession(duration, trackedReps);
+          // Counted by the camera, so trophies from this set are verified.
+          finishWorkoutSession(duration, trackedReps, { verified: true });
           return;
         } catch {
           // Fall back to manual rep entry if auto-save fails.
@@ -363,6 +376,15 @@ export function MainApp() {
   const handleCloseStore = () => setAppState('HOME');
   const handleOpenSettings = () => setAppState('SETTINGS');
   const handleCloseSettings = () => setAppState('HOME');
+  const handleTab = (tab: 'train' | 'base') => {
+    setAppState(tab === 'base' ? 'BASE' : 'HOME');
+    window.scrollTo({ top: 0 });
+  };
+  const handleSeeBase = () => {
+    handleGoHome();
+    setAppState('BASE');
+    window.scrollTo({ top: 0 });
+  };
   const handleReplayTour = () => {
     setAppState('HOME');
     window.scrollTo({ top: 0 });
@@ -429,8 +451,13 @@ export function MainApp() {
       ? getWeightedSetContext(currentMove.categoryId)
       : null;
 
+  const showTabBar = appState === 'HOME' || appState === 'BASE';
+
   return (
-    <div className="min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#BEF028] selection:text-black">
+    <div
+      className={`min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#BEF028] selection:text-black ${
+        showTabBar ? 'has-tab-bar' : ''
+      }`}>
       {appState === 'HOME' &&
       <Dashboard
         coins={coins}
@@ -551,9 +578,21 @@ export function MainApp() {
         setNumber={summarySetContext?.setNumber}
         totalSets={summarySetContext?.totalSets}
         setsRemaining={summarySetContext?.setsRemaining ?? 0}
+        baseReward={baseGame.lastReward}
+        onSeeBase={handleSeeBase}
         onHome={handleGoHome} />
 
       }
+
+      {appState === 'BASE' && <BaseScreen game={baseGame} onGoTrain={() => handleTab('train')} />}
+
+      {showTabBar && (
+        <AppTabBar
+          active={appState === 'BASE' ? 'base' : 'train'}
+          onChange={handleTab}
+          baseHasNews={baseGame.hasNews}
+        />
+      )}
 
       {showTutorial && appState === 'HOME' && <GuidedTour onClose={handleTourClose} />}
 

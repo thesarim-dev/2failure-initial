@@ -3,6 +3,10 @@ import { motion } from 'framer-motion';
 import { Move, getLevelUpAdvice, getVariantById } from './moves';
 import { ArrowRight, TrendingUp } from 'lucide-react';
 import { localizeVariant } from '../i18n/localize';
+import { Castle } from 'lucide-react';
+import type { SetReward } from '../game/engine';
+import { resourcesOf } from '../game/engine';
+import { ResourceIcon } from './game/BaseScreen';
 import { FailureLogo } from './FailureLogo';
 import confetti from 'canvas-confetti';
 import type { SetRepResult } from '../types/repProgress';
@@ -30,6 +34,9 @@ interface SummaryProps {
   setNumber?: number;
   totalSets?: number;
   setsRemaining?: number;
+  /** What this set earned for the base game. */
+  baseReward?: SetReward | null;
+  onSeeBase?: () => void;
   onHome: () => void;
 }
 
@@ -41,6 +48,8 @@ export function Summary({
   setNumber,
   totalSets,
   setsRemaining = 0,
+  baseReward,
+  onSeeBase,
   onHome
 }: SummaryProps) {
   const { t, language } = useLanguage();
@@ -302,6 +311,59 @@ export function Summary({
             </p>
           </div>
         </motion.div>
+
+        {baseReward && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="summary-base cyber-panel normal-case"
+            aria-label={t.game.reward.title}>
+            <p className="summary-base-title">
+              <Castle size={16} strokeWidth={2.5} aria-hidden="true" />
+              {t.game.reward.title}
+            </p>
+            {resourcesOf(baseReward).length > 0 && (
+              <p className="summary-base-earned">
+                {resourcesOf(baseReward).map(([id, amount]) => (
+                  <span key={id} className="summary-base-chip">
+                    <ResourceIcon id={id} size={16} />+{amount} {t.game.resources[id]}
+                  </span>
+                ))}
+              </p>
+            )}
+            {baseReward.rate !== 'full' && (
+              <p className="summary-base-note">
+                {baseReward.rate === 'tooShort'
+                  ? t.game.reward.tooShort
+                  : baseReward.rate === 'half'
+                    ? t.game.reward.half
+                    : t.game.reward.limit}
+              </p>
+            )}
+            {baseReward.construction && (
+              <p className="summary-base-line">
+                {baseReward.construction.setsRemaining === 0
+                  ? t.game.reward.built(t.game.items[baseReward.construction.itemId]?.name ?? '')
+                  : t.game.reward.construction(
+                      t.game.items[baseReward.construction.itemId]?.name ?? '',
+                      baseReward.construction.setsRemaining
+                    )}
+              </p>
+            )}
+            {baseReward.newTrophies.map((id) => (
+              <p key={id} className="summary-base-line summary-base-trophy">
+                {t.game.reward.newTrophy(t.game.trophyNames[id]?.name ?? id)}
+              </p>
+            ))}
+            {onSeeBase && (
+              <button type="button" className="summary-base-btn" onClick={onSeeBase}>
+                {t.game.reward.seeBase}
+                <ArrowRight size={16} strokeWidth={2.5} className="tour-icon-flip" aria-hidden="true" />
+              </button>
+            )}
+          </motion.section>
+        )}
 
         <motion.button
           type="button"

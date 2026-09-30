@@ -35,6 +35,10 @@ const en: TutorialContent = {
       title: 'Settings',
       body: 'Turn on the rotating program, set your daily set target, and change language, units or night mode.'
     },
+    base: {
+      title: 'Your base',
+      body: 'Every set earns materials for your own base. Build it up, and earn trophies you can show off.'
+    },
     program: {
       title: 'Your program',
       body: "The rotating program picks today's exercises for you. Need a break? Take a rest day here."
@@ -92,6 +96,10 @@ const he: TutorialContent = {
       title: 'הגדרות',
       body: 'כאן מפעילים את התוכנית המתחלפת, קובעים יעד סטים יומי ומשנים שפה, יחידות או מצב לילה.'
     },
+    base: {
+      title: 'הבסיס שלכם',
+      body: 'כל סט מזכה בחומרים לבסיס משלכם. בנו אותו, והשיגו גביעים שאפשר להשוויץ בהם.'
+    },
     program: {
       title: 'התוכנית שלכם',
       body: 'התוכנית המתחלפת בוחרת בשבילכם את התרגילים של היום. צריכים הפסקה? קחו כאן יום מנוחה.'
@@ -148,6 +156,10 @@ const ar: TutorialContent = {
     settings: {
       title: 'الإعدادات',
       body: 'فعّل البرنامج المتناوب، وحدّد هدف المجموعات اليومي، وغيّر اللغة أو الوحدات أو الوضع الليلي.'
+    },
+    base: {
+      title: 'قاعدتك',
+      body: 'كل مجموعة تمنحك مواد لقاعدتك الخاصة. ابنِها، واحصل على كؤوس تتباهى بها.'
     },
     program: {
       title: 'برنامجك',

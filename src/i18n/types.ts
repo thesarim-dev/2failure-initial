@@ -321,6 +321,7 @@ export interface AppTranslations {
     poseTrackingStart: string;
     cameraStart: string;
   };
+  game: import('./gameContent').GameCopy;
   tutorial: {
     skip: string;
     back: string;
@@ -336,6 +337,7 @@ export interface AppTranslations {
       coins: TutorialStepCopy;
       store: TutorialStepCopy;
       settings: TutorialStepCopy;
+      base: TutorialStepCopy;
       program: TutorialStepCopy;
       start: { title: string; body: (exerciseName: string) => string };
     };

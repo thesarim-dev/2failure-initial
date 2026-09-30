@@ -5,6 +5,7 @@ import { FUN_FACTS_HE } from '../funFacts/he';
 import { moveTranslations } from '../moveTranslations';
 import { settingsContent } from '../settingsContent';
 import { tutorialContent } from '../tutorialContent';
+import { gameContent } from '../gameContent';
 import { uiContent } from '../uiContent';
 
 export const RTL_LANGUAGES: Language[] = ['he', 'ar'];
@@ -22,6 +23,7 @@ function buildLocale(lang: Language): AppTranslations {
     ...ui,
     settings: settingsContent[lang],
     tutorial: tutorialContent[lang],
+    game: gameContent[lang],
     moves: moveTranslations[lang],
     dashboard: {
       ...ui.dashboard,
