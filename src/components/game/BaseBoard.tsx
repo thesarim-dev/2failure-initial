@@ -10,7 +10,7 @@ import { itemSize, type GameState, type PlacedItem, type TodayPlan } from '../..
 import { ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
 import { MAX_LAND_LEVEL } from '../../game/catalog';
 import { useMemo, useRef } from 'react';
-import { BaseCritters } from './Critters';
+import { BaseBirds, BaseCritters } from './Critters';
 
 export { ItemArt, TrophyArt } from './BaseArt';
 
@@ -255,6 +255,8 @@ export function BaseBoard({
           </g>
         );
       })}
+
+      <BaseBirds state={state} animate={animate} />
 
       <g className="base-fireflies" pointerEvents="none">{fireflies}</g>
 

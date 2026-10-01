@@ -527,7 +527,7 @@ Buildings go up to level 3, and each level looks different: rustic, then reinfor
 
 **Decorate freely.** There are 37 decorations in eight groups (Nature, Farm, Comfort, Fun, Lights, Training, Paths & walls, Water), including a calisthenics park (pull-up bar, dip bars, plyo box, punching bag) and a farm (barn, chicken coop, windmill, well, hay and more). Tap anything you've placed to customize, move or **Flip** it.
 
-**Animals.** A cow, a chicken and a bunny wander around your base. Each **Barn** brings more cows and sheep, each **Chicken coop** more chickens, and ponds get ducks. Butterflies flutter over flowers and meadows.
+**Animals.** Cows, chickens, bunnies, cats, dogs and foxes wander your base, spawning in new spots and taking new routes each time you open it; bigger land brings more of them. Each **Barn** adds a cow, a sheep and a pig, each **Chicken coop** two chickens, and ponds get ducks. Birds fly over now and then, and butterflies flutter over flowers and meadows.
 
 **Paint the ground.** Tap **Paint**, pick a ground (grass, dirt, meadow, sand, plaza, water, snow) and drag across tiles. Painting is free; more grounds unlock with base level. Water holds lily pads and bridges; everything else needs land.
 

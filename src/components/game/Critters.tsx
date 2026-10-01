@@ -1,5 +1,6 @@
+import { useMemo } from 'react';
 import { buildableBounds } from '../../game/catalog';
-import type { GameState } from '../../game/engine';
+import { occupancy, type GameState } from '../../game/engine';
 
 /**
  * Little life on the island: animals that wander back and forth, ducks on
@@ -7,12 +8,18 @@ import type { GameState } from '../../game/engine';
  * Uses SVG motion (no state updates), and stays still for reduced motion.
  */
 
-type Kind = 'cow' | 'sheep' | 'chicken' | 'bunny' | 'duck';
+type Kind = 'cow' | 'sheep' | 'chicken' | 'bunny' | 'duck' | 'pig' | 'dog' | 'cat' | 'fox';
 
-function hash(n: number): number {
-  let h = (n * 2654435761) >>> 0;
-  h = ((h ^ (h >>> 15)) * 2246822519) >>> 0;
-  return (h ^ (h >>> 13)) >>> 0;
+/** Small seeded random generator, so animals stay put while you're on the screen. */
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
 function Cow() {
@@ -100,49 +107,216 @@ function Duck() {
   );
 }
 
-const ART: Record<Kind, () => JSX.Element> = { cow: Cow, sheep: Sheep, chicken: Chicken, bunny: Bunny, duck: Duck };
+
+function Pig() {
+  return (
+    <g>
+      <ellipse cx={0} cy={12} rx={15} ry={4} fill="#000" opacity={0.25} />
+      {[-9, -3, 4, 9].map((x) => (
+        <rect key={x} x={x - 1.6} y={3} width={3.2} height={8} rx={1.2} fill="#e88fa6" />
+      ))}
+      <ellipse cx={0} cy={0} rx={14} ry={9} fill="#f6aec0" />
+      <ellipse cx={-4} cy={-3} rx={6} ry={3} fill="#fbc8d5" opacity={0.8} />
+      <path d="M-14 -2 q-4 -2 -3 3 q1 3 3 0" stroke="#e88fa6" strokeWidth={1.6} fill="none" />
+      <circle cx={13} cy={-3} r={6} fill="#f6aec0" />
+      <ellipse cx={18} cy={-2} rx={3} ry={2.5} fill="#e88fa6" />
+      <circle cx={17.5} cy={-2.5} r={0.6} fill="#9c4a5e" />
+      <circle cx={18.8} cy={-2.5} r={0.6} fill="#9c4a5e" />
+      <circle cx={13} cy={-5} r={1} fill="#1a1a1a" />
+      <path d="M10 -8 l-1 -4 l4 2 Z" fill="#e88fa6" />
+    </g>
+  );
+}
+
+function Dog() {
+  return (
+    <g>
+      <ellipse cx={0} cy={11} rx={13} ry={3.5} fill="#000" opacity={0.25} />
+      {[-8, -3, 4, 8].map((x) => (
+        <rect key={x} x={x - 1.4} y={2} width={2.8} height={8} rx={1} fill="#9a6a3a" />
+      ))}
+      <ellipse cx={0} cy={0} rx={11} ry={6.5} fill="#c48a52" />
+      <path d="M-11 -2 q-6 -6 -4 -10" stroke="#c48a52" strokeWidth={3} fill="none" strokeLinecap="round" />
+      <circle cx={11} cy={-5} r={5.5} fill="#c48a52" />
+      <ellipse cx={16} cy={-4} rx={3.2} ry={2.4} fill="#e8c49a" />
+      <circle cx={18.5} cy={-4.5} r={1.1} fill="#1a1a1a" />
+      <ellipse cx={8.5} cy={-8} rx={2.2} ry={4} fill="#7a4a24" transform="rotate(-15 8.5 -8)" />
+      <circle cx={12} cy={-6} r={1} fill="#1a1a1a" />
+    </g>
+  );
+}
+
+function Cat() {
+  return (
+    <g>
+      <ellipse cx={0} cy={10} rx={11} ry={3} fill="#000" opacity={0.25} />
+      {[-6, -2, 3, 7].map((x) => (
+        <rect key={x} x={x - 1.1} y={2} width={2.2} height={7} rx={1} fill="#7d7f8c" />
+      ))}
+      <ellipse cx={0} cy={0} rx={9} ry={5.5} fill="#9a9caa" />
+      <path d="M-9 -1 q-6 -2 -5 -10" stroke="#9a9caa" strokeWidth={2.6} fill="none" strokeLinecap="round" />
+      <circle cx={9} cy={-5} r={4.8} fill="#9a9caa" />
+      <polygon points="6,-8.5 6.5,-13 9,-9.5" fill="#9a9caa" />
+      <polygon points="10,-9.5 12,-13 12.5,-8.5" fill="#9a9caa" />
+      <circle cx={8} cy={-5.5} r={0.9} fill="#2a8a3a" />
+      <circle cx={11} cy={-5.5} r={0.9} fill="#2a8a3a" />
+      <path d="M-3 -4 l2 3 M1 -5 l1 3" stroke="#7d7f8c" strokeWidth={1.2} />
+    </g>
+  );
+}
+
+function Fox() {
+  return (
+    <g>
+      <ellipse cx={0} cy={10} rx={13} ry={3.2} fill="#000" opacity={0.25} />
+      {[-6, -2, 4, 8].map((x) => (
+        <rect key={x} x={x - 1.2} y={2} width={2.4} height={7} rx={1} fill="#3a2a22" />
+      ))}
+      <ellipse cx={0} cy={0} rx={10} ry={5.5} fill="#e5793a" />
+      <path d="M-9 0 q-10 -2 -12 -9 q6 2 12 5 Z" fill="#e5793a" />
+      <path d="M-19 -7 q-2 -2 -2 -2 q2 1 4 3 Z" fill="#ffffff" />
+      <path d="M6 -2 l12 -1 l-5 6 Z" fill="#ffffff" />
+      <circle cx={9} cy={-4} r={4.5} fill="#e5793a" />
+      <polygon points="6.5,-7.5 7,-12.5 9.5,-8.5" fill="#e5793a" />
+      <polygon points="10,-8.5 12.5,-12.5 12.5,-7" fill="#e5793a" />
+      <polygon points="12.5,-4 17,-2.5 12.5,-1" fill="#ffffff" />
+      <circle cx={17} cy={-2.7} r={0.9} fill="#1a1a1a" />
+      <circle cx={10} cy={-5} r={0.9} fill="#1a1a1a" />
+    </g>
+  );
+}
+
+/** A small bird with flapping wings, for the flyovers. */
+function Bird() {
+  return (
+    <g>
+      <g className="base-wings">
+        <path d="M-8 0 q4 -6 8 0 q4 -6 8 0" stroke="#2a2a33" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+      </g>
+    </g>
+  );
+}
+
+const ART: Record<Kind, () => JSX.Element> = {
+  cow: Cow,
+  sheep: Sheep,
+  chicken: Chicken,
+  bunny: Bunny,
+  duck: Duck,
+  pig: Pig,
+  dog: Dog,
+  cat: Cat,
+  fox: Fox
+};
+/** Walking speed in board units per second. */
+const SPEED: Record<Kind, number> = { cow: 16, sheep: 18, pig: 20, chicken: 34, bunny: 42, duck: 22, dog: 40, cat: 30, fox: 36 };
 /** Animals are drawn a bit larger than life so they read as cute on phones. */
 const CRITTER_SCALE = 1.45;
-const SPEED: Record<Kind, number> = { cow: 26, sheep: 24, chicken: 14, bunny: 12, duck: 20 };
 
-type Critter = { kind: Kind; ax: number; bx: number; y: number; dur: number; delay: number };
+type Point = [number, number];
+type Route = {
+  kind: Kind;
+  path: string;
+  keyPoints: string;
+  keyTimes: string;
+  flipValues: string;
+  flipTimes: string;
+  dur: number;
+  delay: number;
+  start: Point;
+};
 
-function planCritters(state: GameState): Critter[] {
+/**
+ * A wandering route through random waypoints, looping back to the start,
+ * with a pause at each stop. Facing flips when walking left.
+ */
+function buildRoute(kind: Kind, points: Point[], rnd: () => number): Route {
+  const loop = [...points, points[0]];
+  const lengths = loop.slice(1).map((p, i) => Math.hypot(p[0] - loop[i][0], p[1] - loop[i][1]));
+  const total = lengths.reduce((a, b) => a + b, 0) || 1;
+  const pauses = points.map(() => 0.8 + rnd() * 2.2);
+  const dur = total / SPEED[kind] + pauses.reduce((a, b) => a + b, 0);
+  const times: number[] = [0];
+  const keys: number[] = [0];
+  const flipTimes: number[] = [];
+  const flipValues: string[] = [];
+  let t = 0;
+  let along = 0;
+  lengths.forEach((len, i) => {
+    flipTimes.push(t / dur);
+    const dx = loop[i + 1][0] - loop[i][0];
+    flipValues.push(dx < 0 ? '-1 1' : '1 1');
+    t += pauses[i];
+    times.push(t / dur);
+    keys.push(along / total);
+    t += len / SPEED[kind];
+    along += len;
+    times.push(t / dur);
+    keys.push(along / total);
+  });
+  times[times.length - 1] = 1;
+  keys[keys.length - 1] = 1;
+  const fmt = (n: number) => Math.min(1, Math.max(0, n)).toFixed(4);
+  return {
+    kind,
+    path: `M${loop.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' L')}`,
+    keyPoints: keys.map(fmt).join(';'),
+    keyTimes: times.map(fmt).join(';'),
+    flipValues: flipValues.join(';'),
+    flipTimes: flipTimes.map(fmt).join(';'),
+    dur,
+    delay: rnd() * dur,
+    start: points[0]
+  };
+}
+
+function planRoutes(state: GameState, seed: number): Route[] {
+  const rnd = mulberry32(seed);
   const { min, max } = buildableBounds(state.landLevel);
-  const side = max - min + 1;
+  const occupied = occupancy(state);
   const isWater = (x: number, y: number) => state.terrain?.[`${x},${y}`] === 'water';
   const count = (id: string) => state.placed.filter((p) => p.itemId === id && p.level > 0).length;
 
+  const land: Point[] = [];
+  const water: Point[] = [];
+  for (let y = min; y <= max; y++) {
+    for (let x = min; x <= max; x++) {
+      if (occupied.has(`${x},${y}`)) continue;
+      // A random spot inside the tile, so animals don't line up on a grid.
+      const point: Point = [x * 100 + 25 + rnd() * 50, y * 100 + 45 + rnd() * 40];
+      (isWater(x, y) ? water : land).push(point);
+    }
+  }
+  const pick = (pool: Point[]) => pool[Math.floor(rnd() * pool.length)];
+
   const kinds: Kind[] = ['cow', 'chicken', 'bunny'];
-  for (let i = 0; i < Math.min(3, count('barn')); i++) kinds.push('cow', 'sheep');
+  const wild: Kind[] = ['bunny', 'cat', 'dog', 'fox', 'chicken'];
+  const extras = Math.min(6, 2 + state.landLevel);
+  for (let i = 0; i < extras; i++) kinds.push(wild[Math.floor(rnd() * wild.length)]);
+  for (let i = 0; i < Math.min(3, count('barn')); i++) kinds.push('cow', 'sheep', 'pig');
   for (let i = 0; i < Math.min(3, count('coop')); i++) kinds.push('chicken', 'chicken');
 
-  const critters: Critter[] = [];
-  kinds.forEach((kind, i) => {
-    for (let attempt = 0; attempt < 6; attempt++) {
-      const h = hash(i * 31 + attempt * 7 + 1);
-      const y = min + (h % side);
-      const ax = min + ((h >>> 8) % Math.max(1, side - 2));
-      const bx = Math.min(max, ax + 2 + ((h >>> 16) % 3));
-      if (isWater(ax, y) || isWater(bx, y)) continue;
-      critters.push({ kind, ax, bx, y, dur: SPEED[kind] + ((h >>> 4) % 8), delay: (h >>> 12) % 20 });
-      return;
+  const routes: Route[] = [];
+  if (land.length >= 2) {
+    for (const kind of kinds) {
+      const stops = 2 + Math.floor(rnd() * 3);
+      const first = pick(land);
+      const points: Point[] = [first];
+      // Wander locally: each next stop is within a few tiles of the last.
+      for (let i = 1; i < stops; i++) {
+        const prev = points[i - 1];
+        const near = land.filter((p) => Math.abs(p[0] - prev[0]) < 360 && Math.abs(p[1] - prev[1]) < 300);
+        points.push(pick(near.length > 1 ? near : land));
+      }
+      routes.push(buildRoute(kind, points, rnd));
     }
-  });
-
-  // Ducks paddle along the longest stretch of water in a row.
-  const waterTiles = Object.entries(state.terrain ?? {}).filter(([, t]) => t === 'water');
-  const ducks = Math.min(4, Math.ceil(waterTiles.length / 4));
-  for (let i = 0; i < ducks; i++) {
-    const [key] = waterTiles[hash(i + 99) % waterTiles.length];
-    const [wx, wy] = key.split(',').map(Number);
-    let ax = wx;
-    let bx = wx;
-    while (isWater(ax - 1, wy)) ax--;
-    while (isWater(bx + 1, wy)) bx++;
-    critters.push({ kind: 'duck', ax, bx, y: wy, dur: SPEED.duck + i * 3, delay: i * 4 });
   }
-  return critters;
+  const ducks = Math.min(4, Math.ceil(water.length / 4));
+  for (let i = 0; i < ducks && water.length; i++) {
+    const points: Point[] = [pick(water), pick(water), pick(water)];
+    routes.push(buildRoute('duck', points, rnd));
+  }
+  return routes;
 }
 
 /** Butterflies flutter over flower patches, gardens and meadows. */
@@ -153,51 +327,49 @@ function planButterflies(state: GameState): Array<{ x: number; y: number; color:
     if (t === 'meadow') spots.push(key.split(',').map(Number) as [number, number]);
   }
   const colors = ['#ffd1ea', '#fff4b0', '#c9b8ff', '#8eeaff'];
-  return spots.slice(0, 5).map(([x, y], i) => ({ x: x * 100 + 50, y: y * 100 + 30, color: colors[i % colors.length], delay: i * 1.3 }));
+  return spots.slice(0, 6).map(([x, y], i) => ({ x: x * 100 + 50, y: y * 100 + 30, color: colors[i % colors.length], delay: i * 1.3 }));
 }
 
 export function BaseCritters({ state, animate }: { state: GameState; animate: boolean }) {
-  const critters = planCritters(state);
+  // New spots and routes each time the base opens; steady while you're on it.
+  const seed = useMemo(() => Math.floor(Math.random() * 1e9), []);
+  const routes = useMemo(() => planRoutes(state, seed), [state, seed]);
   const butterflies = planButterflies(state);
   return (
     <g className="base-critters" pointerEvents="none">
-      {critters.map((c, i) => {
-        const Art = ART[c.kind];
-        const ax = c.ax * 100 + 50;
-        const bx = c.bx * 100 + 50;
-        const y = c.y * 100 + (c.kind === 'duck' ? 60 : 74);
-        if (!animate || ax === bx) {
+      {routes.map((r, i) => {
+        const Art = ART[r.kind];
+        if (!animate) {
           return (
-            <g key={i} transform={`translate(${ax} ${y}) scale(${CRITTER_SCALE})`}>
+            <g key={i} transform={`translate(${r.start[0]} ${r.start[1]}) scale(${CRITTER_SCALE})`}>
               <Art />
             </g>
           );
         }
-        const begin = `-${c.delay}s`;
+        const begin = `-${r.delay.toFixed(2)}s`;
         return (
           <g key={i}>
-            {/* Walk over, pause, walk back, pause. */}
             <animateMotion
-              dur={`${c.dur}s`}
+              dur={`${r.dur.toFixed(2)}s`}
               begin={begin}
               repeatCount="indefinite"
-              path={`M${ax},${y} L${bx},${y} L${ax},${y}`}
-              keyPoints="0;0.5;0.5;1;1"
-              keyTimes="0;0.42;0.5;0.92;1"
+              path={r.path}
+              keyPoints={r.keyPoints}
+              keyTimes={r.keyTimes}
               calcMode="linear"
             />
             <g>
               <animateTransform
                 attributeName="transform"
                 type="scale"
-                values="1 1;-1 1;1 1"
-                keyTimes="0;0.46;0.96"
+                values={r.flipValues}
+                keyTimes={r.flipTimes}
                 calcMode="discrete"
-                dur={`${c.dur}s`}
+                dur={`${r.dur.toFixed(2)}s`}
                 begin={begin}
                 repeatCount="indefinite"
               />
-              <g className={c.kind === 'duck' ? 'base-critter-float' : 'base-critter-bob'}>
+              <g className={r.kind === 'duck' ? 'base-critter-float' : 'base-critter-bob'}>
                 <g transform={`scale(${CRITTER_SCALE})`}>
                   <Art />
                 </g>
@@ -215,6 +387,52 @@ export function BaseCritters({ state, animate }: { state: GameState; animate: bo
             <ellipse cx={-3} cy={0} rx={3.5} ry={2.5} fill={b.color} />
             <ellipse cx={3} cy={0} rx={3.5} ry={2.5} fill={b.color} />
             <rect x={-0.6} y={-2} width={1.2} height={4} fill="#2a2a2a" />
+          </g>
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** Birds that fly across now and then, above everything. */
+export function BaseBirds({ state, animate }: { state: GameState; animate: boolean }) {
+  const seed = useMemo(() => Math.floor(Math.random() * 1e9), []);
+  const flights = useMemo(() => {
+    const rnd = mulberry32(seed + 7);
+    const { min, max } = buildableBounds(state.landLevel);
+    const left = min * 100 - 120;
+    const right = (max + 1) * 100 + 120;
+    return [0, 1, 2].map((i) => {
+      const y = min * 100 + 60 + rnd() * (max - min) * 100;
+      const rtl = rnd() < 0.5;
+      const dur = 9 + rnd() * 6;
+      return {
+        path: rtl ? `M${right},${y} Q${(left + right) / 2},${y - 120} ${left},${y + 40}` : `M${left},${y} Q${(left + right) / 2},${y - 120} ${right},${y + 40}`,
+        // Long gaps between flights: each bird crosses, then waits off-screen.
+        dur: dur * 3,
+        delay: i * 7 + rnd() * 10,
+        flip: rtl
+      };
+    });
+    // Birds only depend on the land size.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seed, state.landLevel]);
+  if (!animate) return null;
+  return (
+    <g className="base-birds" pointerEvents="none">
+      {flights.map((f, i) => (
+        <g key={i}>
+          <animateMotion
+            dur={`${f.dur}s`}
+            begin={`-${f.delay.toFixed(2)}s`}
+            repeatCount="indefinite"
+            path={f.path}
+            keyPoints="0;1;1"
+            keyTimes="0;0.33;1"
+            calcMode="linear"
+          />
+          <g transform={`scale(${f.flip ? -1.6 : 1.6} 1.6)`}>
+            <Bird />
           </g>
         </g>
       ))}

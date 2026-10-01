@@ -19,7 +19,6 @@ interface DashboardProps {
   coins: number;
   /** Building materials for the base, shown in a pill next to coins. */
   materials: Resources;
-  onOpenBase: () => void;
   currentStreak: number;
   longestStreak: number;
   statsLoading: boolean;
@@ -64,7 +63,6 @@ interface DashboardProps {
 export function Dashboard({
   coins,
   materials,
-  onOpenBase,
   currentStreak,
   longestStreak,
   statsLoading,
@@ -166,18 +164,18 @@ export function Dashboard({
             <SettingsIcon size={20} strokeWidth={2.5} />
           </button>
 
-          <button
-            type="button"
-            className="materials-pill"
-            onClick={onOpenBase}
+          {/* Same look as the coins pill; display only. */}
+          <div
+            className="coins-badge materials-badge flex items-center px-3 py-2"
+            role="img"
             aria-label={RESOURCE_IDS.map((id) => `${materials[id]} ${t.game.resources[id]}`).join(', ')}>
             {RESOURCE_IDS.map((id) => (
-              <span key={id} className="materials-pill-item">
-                <ResourceIcon id={id} size={16} />
-                <span className="tabular-nums">{materials[id]}</span>
+              <span key={id} className="materials-badge-item">
+                <ResourceIcon id={id} size={18} />
+                <span className="font-bold tabular-nums">{materials[id]}</span>
               </span>
             ))}
-          </button>
+          </div>
 
           {profileLoading ? (
             <div

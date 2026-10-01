@@ -575,7 +575,6 @@ export function MainApp() {
         restoreStreakCost={restoreStreakCost}
         onRestoreStreak={handleRestoreStreak}
         materials={baseGame.state.resources}
-        onOpenBase={() => handleTab('base')}
         restAllowance={restAllowance}
         recentRestDays={recentRestDays}
         shields={baseGame.state.shields}

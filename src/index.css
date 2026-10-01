@@ -4575,27 +4575,13 @@
   }
 
   /* ---------- Home header: materials pill, compact wordmark ---------- */
-  .materials-pill {
+  .materials-badge {
+    gap: 0.55rem;
+  }
+  .materials-badge-item {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 800;
-    color: #f4f4f0;
-    background: #15151d;
-    border: 1px solid rgba(111, 211, 138, 0.45);
-    box-shadow: 0 0 12px rgba(63, 168, 98, 0.18);
-  }
-  .materials-pill-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.15rem;
-  }
-  .materials-pill:focus-visible {
-    outline: 2px solid #00b2ff;
-    outline-offset: 2px;
+    gap: 0.2rem;
   }
   .hub-tab-emoji {
     margin-inline-end: 0.35rem;
@@ -4605,6 +4591,21 @@
   @media (max-width: 459px) {
     .dashboard-wordmark {
       display: none;
+    }
+  }
+
+  .base-wings {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: base-wings 0.32s ease-in-out infinite alternate;
+  }
+  @keyframes base-wings {
+    from { transform: scaleY(1); }
+    to { transform: scaleY(-0.4); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .base-wings {
+      animation: none;
     }
   }
 }
