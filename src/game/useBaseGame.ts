@@ -6,6 +6,9 @@ import {
   applyStreak,
   customizeItem,
   expandLand,
+  flipItem,
+  paintTerrain,
+  setBaseName,
   createInitialState,
   createInitialStats,
   ensureQuests,
@@ -24,7 +27,7 @@ import {
   type SetReward,
   type SetTier
 } from './engine';
-import type { Customization, ResourceId, TrainingPattern } from './catalog';
+import type { Customization, ResourceId, TerrainId, TrainingPattern } from './catalog';
 
 /**
  * Iteration 1 keeps the base on this device, per user, like owned exercises.
@@ -73,7 +76,8 @@ function load(userId: string | undefined): GameState {
       constructions: state.constructions ?? [],
       landLevel: state.landLevel ?? 0,
       quests: state.quests ?? null,
-      shields: state.shields ?? 0
+      shields: state.shields ?? 0,
+      terrain: state.terrain ?? {}
     };
   } catch {
     return createInitialState();
@@ -198,6 +202,9 @@ export function useBaseGame(
     upgrade: (uid: string, coins: number) => run(upgradeItem(stateRef.current, uid, coins)),
     expandLand: (coins: number) => run(expandLand(stateRef.current, coins)),
     customize: (uid: string, custom: Customization) => run(customizeItem(stateRef.current, uid, custom)),
+    paint: (tiles: Array<[number, number]>, terrain: TerrainId) => run(paintTerrain(stateRef.current, tiles, terrain)),
+    flip: (uid: string) => run(flipItem(stateRef.current, uid)),
+    rename: (name: string) => commit(setBaseName(stateRef.current, name)),
     move: (uid: string, x: number, y: number) => run(moveItem(stateRef.current, uid, x, y)),
     remove: (uid: string) => run(removeItem(stateRef.current, uid)),
     trade: (from: ResourceId, to: ResourceId) => run(tradeMaterials(stateRef.current, from, to)),

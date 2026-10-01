@@ -3,13 +3,19 @@ import timberIcon from '../../assets/resources/timber.png';
 import ironIcon from '../../assets/resources/iron.png';
 import crystalIcon from '../../assets/resources/crystal.png';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Check, Coins, Expand, Hammer, Move as MoveIcon, Palette, ShieldCheck, X } from 'lucide-react';
+import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, Lock, Move as MoveIcon, Palette, Share2, ShieldCheck, X } from 'lucide-react';
+import { renderShareCard, shareOrDownload } from './shareImage';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
 import { useLanguage } from '../../context/LanguageContext';
 import {
+  BASE_LEVEL_TITLES,
   CUSTOMIZE,
   DECOR,
+  DECOR_GROUPS,
+  TERRAIN,
+  type DecorGroup,
+  type TerrainId,
   DECOR_BUILD_SETS,
   GRID_SIZE,
   LAND_SIDES,
@@ -31,7 +37,9 @@ import {
 } from '../../game/catalog';
 import {
   WEEKLY_BONUS_AMOUNT,
+  baseLevel,
   busyBuilders,
+  terrainUnlocked,
   canPlaceAt,
   jobFor,
   nextLandCost,
@@ -65,7 +73,26 @@ type Mode =
   | { kind: 'placeTrophy'; trophyId: string; custom: Customization }
   | { kind: 'move'; uid: string };
 
-type SheetState = null | 'build' | 'land' | { uid: string } | { draft: Draft };
+type SheetState = null | 'build' | 'land' | 'share' | { uid: string } | { draft: Draft };
+
+/** Swatch colours for the terrain picker. */
+const TERRAIN_SWATCH: Record<TerrainId, string> = {
+  grass: '#2f6a42',
+  meadow: '#3d7a46',
+  dirt: '#6b4a2e',
+  sand: '#c9a86a',
+  plaza: '#7f8a99',
+  water: '#1f6f9c',
+  snow: '#dfe8f1'
+};
+
+/** What reaching a base level unlocks: decorations and ground types. */
+function unlocksAt(level: number): { decor: string[]; terrain: TerrainId[] } {
+  return {
+    decor: DECOR.filter((d) => d.unlockBase === level).map((d) => d.id),
+    terrain: TERRAIN.filter((t) => t.unlockBase === level).map((t) => t.id)
+  };
+}
 
 const RESOURCE_ICON: Record<ResourceId, string> = {
   stone: stoneIcon,
@@ -318,6 +345,46 @@ function hasCustomization(itemId: string): boolean {
   return !!(options?.styles?.length || options?.colors);
 }
 
+function BaseLevelCard({ game }: { game: BaseGame }) {
+  const { t } = useLanguage();
+  const g = t.game;
+  const info = baseLevel(game.state);
+  const nextLevel = info.level + 1;
+  const unlocks = info.next !== null ? unlocksAt(nextLevel) : null;
+  const unlockNames = unlocks
+    ? [...unlocks.decor.map((id) => g.items[id]?.name ?? id), ...unlocks.terrain.map((id) => g.terrainNames[id])]
+    : [];
+  const span = info.next !== null ? info.next - info.floor : 1;
+  const progress = info.next !== null ? Math.min(1, (info.score - info.floor) / span) : 1;
+  return (
+    <section className="base-level-card normal-case" aria-label={g.baseLevel.level(info.level)}>
+      <div className="base-level-head">
+        <span className="base-level-badge" aria-hidden="true">
+          {info.level}
+        </span>
+        <div className="min-w-0">
+          <p className="base-level-title">{g.baseLevel.titles[info.title]}</p>
+          <p className="base-level-sub">{g.baseLevel.level(info.level)}</p>
+        </div>
+        {info.next !== null && (
+          <span className="base-level-score tabular-nums">{g.baseLevel.progress(info.score, info.next)}</span>
+        )}
+      </div>
+      <div className="base-progress base-progress--gold" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
+        <span style={{ width: `${Math.round(progress * 100)}%` }} />
+      </div>
+      {info.next !== null ? (
+        <p className="base-level-next">
+          <strong>{g.baseLevel.next(g.baseLevel.titles[BASE_LEVEL_TITLES[info.level]])}</strong>
+          {unlockNames.length > 0 && <> · {g.baseLevel.unlocks(unlockNames.join(', '))}</>}
+        </p>
+      ) : (
+        <p className="base-level-next">{g.baseLevel.max}</p>
+      )}
+    </section>
+  );
+}
+
 export function BaseScreen({
   game,
   coins,
@@ -336,7 +403,19 @@ export function BaseScreen({
   const [buildTab, setBuildTab] = useState<'structures' | 'decor' | 'trophies'>('structures');
   const [draftCustom, setDraftCustom] = useState<Customization>({});
   const [notice, setNotice] = useState<string | null>(null);
+  const [paintWith, setPaintWith] = useState<TerrainId | null>(null);
+  const [decorGroup, setDecorGroup] = useState<DecorGroup | 'all'>('all');
   const level = hqLevel(state);
+  const levelInfo = baseLevel(state);
+  const lastLevel = useRef(levelInfo.level);
+
+  // Celebrate base level ups.
+  useEffect(() => {
+    if (levelInfo.level > lastLevel.current) {
+      setNotice(g.baseLevel.levelUp(g.baseLevel.titles[levelInfo.title]));
+    }
+    lastLevel.current = levelInfo.level;
+  }, [levelInfo.level, levelInfo.title, g.baseLevel]);
   const lit = !isQuietToday(state);
   const earnedCount = Object.keys(state.trophies).length;
 
@@ -348,7 +427,7 @@ export function BaseScreen({
 
   useEffect(() => {
     if (!notice) return;
-    const id = window.setTimeout(() => setNotice(null), 2600);
+    const id = window.setTimeout(() => setNotice(null), 3200);
     return () => window.clearTimeout(id);
   }, [notice]);
 
@@ -365,10 +444,12 @@ export function BaseScreen({
   };
 
   const errorText = (error: ActionError, itemId?: string) => {
-    if (error === 'locked' && itemId) {
-      const def = getItemDef(itemId);
-      if (def) return g.errors.unlockAt(def.unlockHq);
+    const def = itemId ? getItemDef(itemId) : undefined;
+    if (error === 'locked' && def) return g.errors.unlockAt(def.unlockHq);
+    if (error === 'needsBaseLevel' && def?.kind === 'decor' && def.unlockBase) {
+      return `${g.baseLevel.level(def.unlockBase)} · ${g.baseLevel.titles[BASE_LEVEL_TITLES[def.unlockBase - 1]]}`;
     }
+    if (error === 'blocked' && def?.kind === 'decor' && def.onWater) return g.errors.water;
     return g.errors[error];
   };
 
@@ -439,7 +520,7 @@ export function BaseScreen({
   return (
     <div className="base-screen">
       <header className="base-header">
-        <h1 className="base-title">{g.title}</h1>
+        <h1 className="base-title">{state.baseName ?? g.title}</h1>
         <div className="base-header-chips">
           <span className="base-coin-chip" title={g.coins(coins)}>
             <Coins size={15} strokeWidth={2.5} aria-hidden="true" />
@@ -459,6 +540,8 @@ export function BaseScreen({
           </div>
         ))}
       </div>
+
+      <BaseLevelCard game={game} />
 
       {!state.introSeen && (
         <section className="base-intro cyber-panel normal-case">
@@ -506,6 +589,37 @@ export function BaseScreen({
         </div>
       )}
 
+      {paintWith && (
+        <div className="base-paint-bar" role="toolbar" aria-label={g.paint.title}>
+          <div className="base-paint-head">
+            <span>{g.paint.hint}</span>
+            <button type="button" className="base-ghost-btn" onClick={() => setPaintWith(null)}>
+              {g.paint.done}
+            </button>
+          </div>
+          <div className="base-paint-swatches" role="radiogroup" aria-label={g.paint.title}>
+            {TERRAIN.map(({ id, unlockBase }) => {
+              const open = terrainUnlocked(state, id);
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={paintWith === id}
+                  disabled={!open}
+                  className={`base-paint-swatch ${paintWith === id ? 'is-active' : ''}`}
+                  onClick={() => setPaintWith(id)}>
+                  <span className="base-paint-chip" style={{ background: TERRAIN_SWATCH[id] }}>
+                    {!open && <Lock size={12} strokeWidth={3} aria-hidden="true" />}
+                  </span>
+                  <span className="base-paint-label">{open ? g.terrainNames[id] : g.paint.locked(unlockBase)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="base-board-wrap" dir="ltr">
         <BaseBoard
           state={state}
@@ -517,6 +631,9 @@ export function BaseScreen({
           tileLabel={(x, y) => `${modeItemId ? nameOf(modeItemId) : ''} ${x + 1},${y + 1}`}
           onTile={handleTile}
           onItem={(uid) => setSheet({ uid })}
+          painting={paintWith !== null}
+          onPaint={(tile) => paintWith && game.paint([tile], paintWith)}
+          svgId="base-map-svg"
         />
         {notice && (
           <p className="base-notice" role="status">
@@ -525,15 +642,23 @@ export function BaseScreen({
         )}
       </div>
 
-      {mode.kind === 'idle' && (
-        <div className="base-actions">
+      {mode.kind === 'idle' && !paintWith && (
+        <div className="base-actions base-actions--grid">
           <button type="button" className="base-primary-btn" onClick={() => setSheet('build')}>
             <Hammer size={18} strokeWidth={2.5} aria-hidden="true" />
             {g.build}
           </button>
+          <button type="button" className="base-secondary-btn" onClick={() => setPaintWith('dirt')}>
+            <Brush size={18} strokeWidth={2.5} aria-hidden="true" />
+            {g.paint.button}
+          </button>
           <button type="button" className="base-secondary-btn" onClick={() => setSheet('land')}>
             <Expand size={18} strokeWidth={2.5} aria-hidden="true" />
             {g.land.button}
+          </button>
+          <button type="button" className="base-secondary-btn" onClick={() => setSheet('share')}>
+            <Share2 size={18} strokeWidth={2.5} aria-hidden="true" />
+            {g.share.button}
           </button>
         </div>
       )}
@@ -557,9 +682,27 @@ export function BaseScreen({
             ))}
           </div>
           <p className="base-sheet-intro">{g.builders.status(busy, total)}</p>
+          {buildTab === 'decor' && (
+            <div className="base-chip-row" role="radiogroup" aria-label={g.buildTabs.decor}>
+              {(['all', ...DECOR_GROUPS] as const).map((group) => (
+                <button
+                  key={group}
+                  type="button"
+                  role="radio"
+                  aria-checked={decorGroup === group}
+                  className={`base-chip ${decorGroup === group ? 'is-active' : ''}`}
+                  onClick={() => setDecorGroup(group)}>
+                  {group === 'all' ? '★' : g.decorGroups[group]}
+                </button>
+              ))}
+            </div>
+          )}
           {buildTab !== 'trophies' ? (
             <ul className="base-catalog">
-              {(buildTab === 'structures' ? STRUCTURES.filter((s) => s.id !== 'hq') : DECOR).map((def) => {
+              {(buildTab === 'structures'
+                ? STRUCTURES.filter((s) => s.id !== 'hq')
+                : DECOR.filter((d) => decorGroup === 'all' || d.group === decorGroup)
+              ).map((def) => {
                 const blocker = placeBlocker(state, def.id);
                 const cost = def.kind === 'structure' ? def.levels[0].cost : def.cost;
                 const sets = def.kind === 'structure' ? def.levels[0].sets : DECOR_BUILD_SETS;
@@ -663,6 +806,10 @@ export function BaseScreen({
             {g.customize.place}
           </button>
         </Sheet>
+      )}
+
+      {sheet === 'share' && (
+        <ShareSheet game={game} onClose={() => setSheet(null)} />
       )}
 
       {sheet === 'land' && (
@@ -874,6 +1021,12 @@ function ItemSheet({
             </button>
           )}
           {item.itemId !== 'hq' && (
+            <button type="button" className="base-secondary-btn" onClick={() => game.flip(item.uid)}>
+              <FlipHorizontal2 size={16} strokeWidth={2.5} aria-hidden="true" />
+              {g.flip}
+            </button>
+          )}
+          {item.itemId !== 'hq' && (
             <button type="button" className="base-secondary-btn" onClick={onMove}>
               <MoveIcon size={16} strokeWidth={2.5} aria-hidden="true" />
               {g.move}
@@ -994,4 +1147,95 @@ function BuildingRole({
     default:
       return null;
   }
+}
+
+function ShareSheet({ game, onClose }: { game: BaseGame; onClose: () => void }) {
+  const { t, isRtl } = useLanguage();
+  const g = t.game;
+  const { state } = game;
+  const [name, setName] = useState(state.baseName ?? '');
+  const [image, setImage] = useState<{ url: string; blob: Blob } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const info = baseLevel(state);
+  const displayName = name.trim() || g.share.defaultName;
+
+  useEffect(() => {
+    let cancelled = false;
+    const svg = document.getElementById('base-map-svg') as SVGSVGElement | null;
+    if (!svg) return;
+    setBusy(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const blob = await renderShareCard(
+          svg,
+          {
+            name: displayName,
+            levelLine: `${g.baseLevel.titles[info.title]} · ${g.baseLevel.level(info.level)}`,
+            stats: [
+              { value: String(Object.keys(state.trophies).length), label: g.share.trophies },
+              {
+                value: String(state.placed.filter((p) => getItemDef(p.itemId)?.kind === 'structure' && p.level > 0).length),
+                label: g.share.buildings
+              },
+              { value: String(currentWeeklyStreak(state)), label: g.share.weeks }
+            ],
+            footer: g.share.footer
+          },
+          isRtl
+        );
+        if (cancelled) return;
+        setImage((prev) => {
+          if (prev) URL.revokeObjectURL(prev.url);
+          return { url: URL.createObjectURL(blob), blob };
+        });
+      } finally {
+        if (!cancelled) setBusy(false);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    // Re-render the card when the name changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayName]);
+
+  return (
+    <Sheet title={g.share.title} onClose={onClose}>
+      <label className="base-share-name">
+        <span className="base-customize-label">{g.share.name}</span>
+        <input
+          type="text"
+          value={name}
+          maxLength={32}
+          placeholder={g.share.defaultName}
+          onChange={(event) => setName(event.target.value)}
+          onBlur={() => game.rename(name)}
+        />
+      </label>
+      <div className="base-share-preview">
+        {image ? <img src={image.url} alt={displayName} /> : <p className="base-today-sub">{g.share.making}</p>}
+      </div>
+      <div className="base-item-actions">
+        <button
+          type="button"
+          className="base-primary-btn"
+          disabled={!image || busy}
+          onClick={async () => {
+            game.rename(name);
+            if (image) {
+              try {
+                await shareOrDownload(image.blob, '2failure-base.png', displayName);
+              } catch {
+                // The person closed the share sheet.
+              }
+            }
+          }}>
+          <Share2 size={18} strokeWidth={2.5} aria-hidden="true" />
+          {g.share.share}
+        </button>
+      </div>
+      <p className="base-today-sub">{g.share.hint}</p>
+    </Sheet>
+  );
 }

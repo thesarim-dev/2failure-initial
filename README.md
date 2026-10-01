@@ -560,6 +560,14 @@ Buildings go up to level 3, and each level looks different: rustic, then reinfor
 
 **Customize.** Before placing something, pick its style and colour: trim colours for buildings, styles for trees, flower beds, lamps, flags, paths, walls and fountains, and pedestals for trophies. Tap anything you've placed and choose **Customize** to change it again at any time, for free.
 
+**Base level.** Everything you build, upgrade and earn adds points to your base level, which moves through titles from Campsite to Legend (Campsite, Outpost, Hamlet, Village, Town, Stronghold, Citadel, Capital, Legend). Each level unlocks new decorations and ground types; the card at the top of the Base tab always shows what the next level unlocks.
+
+**Decorate freely.** There are 23 decorations in six groups (Nature, Comfort, Lights, Training, Paths & walls, Water), including a calisthenics park: pull-up bar, dip bars, plyo box and punching bag. Tap anything you've placed to customize, move or **Flip** it.
+
+**Paint the ground.** Tap **Paint**, pick a ground (grass, dirt, meadow, sand, plaza, water, snow) and drag across tiles. Painting is free; more grounds unlock with base level. Water holds lily pads and bridges; everything else needs land.
+
+**Share.** Tap **Share** to name your base and make an image of it with your level and stats. On a phone it opens the share menu; elsewhere it downloads.
+
 **Land.** Your plot starts at 6×6. Tap **Expand land** to grow it with coins: 8×8 for 500, 10×10 for 1,200, 12×12 for 2,500 and 14×14 for 4,000.
 
 Decorations are refunded in full if removed. **Trophies** can only be earned, never bought; tap one to see its proof. Rep trophies counted by the AI camera are marked as verified.

@@ -109,6 +109,23 @@ export const CUSTOMIZE: Record<string, { styles?: string[]; colors?: boolean }> 
   banner: { styles: ['plain', 'stripe', 'chevron'], colors: true },
   garden: { styles: ['wildflowers', 'tulips', 'roses', 'lavender'], colors: true },
   fountain: { styles: ['classic', 'tiered', 'jet'] },
+  bush: { styles: ['round', 'flowering'] },
+  rock: { styles: ['boulder', 'mossy'] },
+  flowers: { colors: true },
+  bench: { colors: true },
+  campfire: {},
+  picnic: { colors: true },
+  gazebo: { colors: true },
+  torch: {},
+  lanterns: { colors: true },
+  arch: { colors: true },
+  statue: { styles: ['flex', 'runner'] },
+  plyobox: { colors: true },
+  pullupbar: { colors: true },
+  dipbars: { colors: true },
+  punchbag: { colors: true },
+  lilypad: {},
+  bridge: {},
   trophy: { styles: ['stone', 'marble', 'neon'], colors: true }
 };
 
@@ -145,11 +162,19 @@ export type StructureDef = {
   levels: StructureLevel[];
 };
 
+export type DecorGroup = 'nature' | 'comfort' | 'lights' | 'training' | 'paths' | 'water';
+export const DECOR_GROUPS: DecorGroup[] = ['nature', 'comfort', 'lights', 'training', 'paths', 'water'];
+
 export type DecorDef = {
   kind: 'decor';
   id: string;
   size: 1;
   unlockHq: number;
+  /** Base level needed (prestige), on top of `unlockHq`. */
+  unlockBase?: number;
+  group: DecorGroup;
+  /** Water decor (lily pads, bridges) goes on water; everything else on land. */
+  onWater?: boolean;
   cost: Cost;
 };
 
@@ -233,14 +258,78 @@ export const STRUCTURES: StructureDef[] = [
 ];
 
 export const DECOR: DecorDef[] = [
-  { kind: 'decor', id: 'path', size: 1, unlockHq: 1, cost: { stone: 2 } },
-  { kind: 'decor', id: 'wall', size: 1, unlockHq: 1, cost: { stone: 4 } },
-  { kind: 'decor', id: 'pine', size: 1, unlockHq: 1, cost: { timber: 3, crystal: 1 } },
-  { kind: 'decor', id: 'lamp', size: 1, unlockHq: 1, cost: { iron: 3, crystal: 2 } },
-  { kind: 'decor', id: 'banner', size: 1, unlockHq: 1, cost: { timber: 3, iron: 2 } },
-  { kind: 'decor', id: 'garden', size: 1, unlockHq: 1, cost: { crystal: 4 } },
-  { kind: 'decor', id: 'fountain', size: 1, unlockHq: 2, cost: { stone: 12, crystal: 10 } }
+  // Paths & walls
+  { kind: 'decor', id: 'path', size: 1, unlockHq: 1, group: 'paths', cost: { stone: 2 } },
+  { kind: 'decor', id: 'wall', size: 1, unlockHq: 1, group: 'paths', cost: { stone: 4 } },
+  { kind: 'decor', id: 'arch', size: 1, unlockHq: 1, unlockBase: 4, group: 'paths', cost: { timber: 6, crystal: 4 } },
+  // Nature
+  { kind: 'decor', id: 'pine', size: 1, unlockHq: 1, group: 'nature', cost: { timber: 3, crystal: 1 } },
+  { kind: 'decor', id: 'bush', size: 1, unlockHq: 1, group: 'nature', cost: { timber: 2, crystal: 1 } },
+  { kind: 'decor', id: 'rock', size: 1, unlockHq: 1, group: 'nature', cost: { stone: 2 } },
+  { kind: 'decor', id: 'flowers', size: 1, unlockHq: 1, group: 'nature', cost: { crystal: 2 } },
+  { kind: 'decor', id: 'garden', size: 1, unlockHq: 1, group: 'nature', cost: { crystal: 4 } },
+  { kind: 'decor', id: 'statue', size: 1, unlockHq: 1, unlockBase: 5, group: 'nature', cost: { stone: 14, crystal: 6 } },
+  // Comfort
+  { kind: 'decor', id: 'bench', size: 1, unlockHq: 1, group: 'comfort', cost: { timber: 4, iron: 1 } },
+  { kind: 'decor', id: 'banner', size: 1, unlockHq: 1, group: 'comfort', cost: { timber: 3, iron: 2 } },
+  { kind: 'decor', id: 'campfire', size: 1, unlockHq: 1, unlockBase: 2, group: 'comfort', cost: { timber: 4, stone: 2 } },
+  { kind: 'decor', id: 'picnic', size: 1, unlockHq: 1, unlockBase: 2, group: 'comfort', cost: { timber: 6 } },
+  { kind: 'decor', id: 'fountain', size: 1, unlockHq: 1, unlockBase: 3, group: 'comfort', cost: { stone: 12, crystal: 10 } },
+  { kind: 'decor', id: 'gazebo', size: 1, unlockHq: 1, unlockBase: 4, group: 'comfort', cost: { timber: 10, stone: 6, crystal: 4 } },
+  // Lights
+  { kind: 'decor', id: 'lamp', size: 1, unlockHq: 1, group: 'lights', cost: { iron: 3, crystal: 2 } },
+  { kind: 'decor', id: 'torch', size: 1, unlockHq: 1, group: 'lights', cost: { timber: 2, iron: 1 } },
+  { kind: 'decor', id: 'lanterns', size: 1, unlockHq: 1, unlockBase: 2, group: 'lights', cost: { iron: 3, crystal: 3 } },
+  // Training park
+  { kind: 'decor', id: 'plyobox', size: 1, unlockHq: 1, group: 'training', cost: { timber: 4 } },
+  { kind: 'decor', id: 'pullupbar', size: 1, unlockHq: 1, unlockBase: 2, group: 'training', cost: { iron: 6, stone: 2 } },
+  { kind: 'decor', id: 'dipbars', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { iron: 6 } },
+  { kind: 'decor', id: 'punchbag', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { iron: 4, timber: 2 } },
+  // Water
+  { kind: 'decor', id: 'lilypad', size: 1, unlockHq: 1, unlockBase: 3, group: 'water', onWater: true, cost: { crystal: 2 } },
+  { kind: 'decor', id: 'bridge', size: 1, unlockHq: 1, unlockBase: 3, group: 'water', onWater: true, cost: { timber: 6 } }
 ];
+
+// ---------------------------------------------------------------------------
+// Terrain (free to paint, unlocked by base level)
+// ---------------------------------------------------------------------------
+
+export type TerrainId = 'grass' | 'meadow' | 'dirt' | 'sand' | 'plaza' | 'water' | 'snow';
+export const TERRAIN: Array<{ id: TerrainId; unlockBase: number }> = [
+  { id: 'grass', unlockBase: 1 },
+  { id: 'dirt', unlockBase: 1 },
+  { id: 'meadow', unlockBase: 2 },
+  { id: 'sand', unlockBase: 2 },
+  { id: 'plaza', unlockBase: 3 },
+  { id: 'water', unlockBase: 3 },
+  { id: 'snow', unlockBase: 6 }
+];
+
+// ---------------------------------------------------------------------------
+// Base level (prestige): the long-term goal
+// ---------------------------------------------------------------------------
+
+/** Score needed for each base level (index 0 = level 1). */
+export const BASE_LEVEL_SCORES = [0, 40, 100, 180, 300, 450, 650, 900, 1200] as const;
+export const BASE_LEVEL_TITLES = [
+  'campsite',
+  'outpost',
+  'hamlet',
+  'village',
+  'town',
+  'stronghold',
+  'citadel',
+  'capital',
+  'legend'
+] as const;
+export type BaseTitle = (typeof BASE_LEVEL_TITLES)[number];
+
+/** Points per finished building level, by level reached. HQ counts double. */
+export const SCORE_BUILDING_LEVEL = [0, 10, 25, 50] as const;
+export const SCORE_PER_DECOR = 2;
+export const SCORE_PER_TROPHY_EARNED = 4;
+export const SCORE_PER_TROPHY_PLACED = 6;
+export const SCORE_PER_LAND_LEVEL = 15;
 
 const ITEMS_BY_ID = new Map<string, ItemDef>(
   [...STRUCTURES, ...DECOR].map((item) => [item.id, item])

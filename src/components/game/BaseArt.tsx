@@ -330,6 +330,12 @@ function Lodge({ level, lit, s, m, decoration }: BuildingProps) {
       <g data-part="shadows"><Shadow rx={36} /></g>
       <g data-part="base-structure">
         {big && <Block x={60} y={20} w={8} h={20} d={5} s={m.stone} />}
+        {big && lit && (
+          <g opacity={0.5} className="base-smoke">
+            <circle cx={66} cy={14} r={3.5} fill="#c9ced6" />
+            <circle cx={70} cy={8} r={2.6} fill="#c9ced6" />
+          </g>
+        )}
         <Block x={16} y={52} w={56} h={36} d={13} s={m.wood} />
         {[60, 68, 76].map((y) => (
           <rect key={y} x={16} y={y} width={56} height={1.2} fill={m.wood.dark} opacity={0.6} />
@@ -352,7 +358,7 @@ function Forge({ level, lit, s, m, decoration }: BuildingProps) {
   const furnace = (
     <g className={lit ? 'base-light is-lit' : 'base-light-off'}>
       <path d="M36 88 V76 A10 10 0 0 1 56 76 V88 Z" fill="#2a1a12" />
-      <path d="M39 88 V77 A7 7 0 0 1 53 77 V88 Z" fill={lit ? FIRE : '#5a3020'} />
+      <path d="M39 88 V77 A7 7 0 0 1 53 77 V88 Z" fill={lit ? FIRE : '#5a3020'} className={lit ? 'base-flame' : undefined} />
       {lit && <path d="M42 88 V80 A4 4 0 0 1 50 80 V88 Z" fill={WINDOW_LIT} />}
     </g>
   );
@@ -387,7 +393,7 @@ function Forge({ level, lit, s, m, decoration }: BuildingProps) {
       <g data-part="base-structure">
         <Block x={58} y={big ? 12 : 22} w={11} h={big ? 30 : 20} d={5} s={m.stone} />
         {big && lit && (
-          <g opacity={0.55}>
+          <g opacity={0.55} className="base-smoke">
             <circle cx={66} cy={6} r={4} fill="#c9ced6" />
             <circle cx={72} cy={1} r={3} fill="#c9ced6" />
           </g>
@@ -897,6 +903,294 @@ function Decor({ id, lit, style, color }: { id: string; lit: boolean; style?: st
         </g>
       );
     }
+    case 'bush':
+      return (
+        <g>
+          <Shadow rx={26} cy={86} />
+          <ellipse cx={50} cy={70} rx={30} ry={18} fill={LEAF.dark} />
+          <circle cx={36} cy={62} r={16} fill={LEAF.base} />
+          <circle cx={58} cy={58} r={18} fill={LEAF.base} />
+          <circle cx={50} cy={50} r={10} fill={LEAF.light} opacity={0.6} />
+          {style === 'flowering' &&
+            [
+              [34, 56],
+              [52, 48],
+              [64, 60],
+              [44, 66],
+              [60, 70]
+            ].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r={3.2} fill={x % 2 ? '#ffd1ea' : '#fff4b0'} />)}
+        </g>
+      );
+    case 'rock':
+      return (
+        <g>
+          <Shadow rx={30} cy={84} />
+          <polygon points="20,80 26,52 46,38 70,44 82,66 74,82" fill={STONE.base} />
+          <polygon points="46,38 70,44 82,66 60,60" fill={STONE.dark} />
+          <polygon points="26,52 46,38 60,60 36,64" fill={STONE.light} />
+          {style === 'mossy' && <path d="M24 60 Q38 50 50 56 Q62 48 72 52 L70 58 Q56 56 44 62 Q32 58 24 66 Z" fill={LEAF.base} />}
+        </g>
+      );
+    case 'flowers': {
+      const c = accent ?? THEME_SHADES.magenta;
+      return (
+        <g>
+          {[
+            [24, 32],
+            [44, 22],
+            [66, 30],
+            [30, 58],
+            [54, 50],
+            [74, 62],
+            [40, 78],
+            [64, 82],
+            [18, 80]
+          ].map(([x, y], i) => (
+            <g key={`${x}${y}`}>
+              <rect x={x - 0.8} y={y} width={1.6} height={7} fill={LEAF.dark} />
+              <circle cx={x} cy={y} r={4.5} fill={i % 3 === 0 ? c.light : i % 3 === 1 ? c.base : '#fff4b0'} />
+              <circle cx={x} cy={y} r={1.6} fill="#fff4b0" />
+            </g>
+          ))}
+        </g>
+      );
+    }
+    case 'bench': {
+      const c = accent ?? WOOD;
+      return (
+        <g>
+          <Shadow rx={34} cy={84} />
+          <rect x={18} y={66} width={4} height={18} fill={METAL.dark} />
+          <rect x={78} y={66} width={4} height={18} fill={METAL.dark} />
+          <Block x={14} y={60} w={70} h={7} d={8} s={c} />
+          <Block x={14} y={42} w={70} h={6} d={4} s={c} />
+          <rect x={18} y={48} width={3} height={12} fill={METAL.base} />
+          <rect x={77} y={48} width={3} height={12} fill={METAL.base} />
+        </g>
+      );
+    }
+    case 'campfire':
+      return (
+        <g>
+          <Shadow rx={30} cy={84} />
+          {[0, 60, 120, 180, 240, 300].map((deg) => {
+            const rad = (deg * Math.PI) / 180;
+            return <circle key={deg} cx={50 + Math.cos(rad) * 22} cy={74 + Math.sin(rad) * 9} r={5} fill={STONE.base} />;
+          })}
+          <rect x={30} y={70} width={40} height={6} rx={3} fill={WOOD.dark} transform="rotate(-14 50 73)" />
+          <rect x={30} y={70} width={40} height={6} rx={3} fill={WOOD.base} transform="rotate(14 50 73)" />
+          <g className={lit ? 'base-flame' : undefined}>
+            <path d="M50 30 C 62 46, 64 58, 50 70 C 36 58, 40 46, 50 30 Z" fill={lit ? FIRE : '#7a3a20'} />
+            <path d="M50 46 C 56 54, 56 62, 50 68 C 44 62, 44 54, 50 46 Z" fill={lit ? WINDOW_LIT : '#a0522d'} />
+          </g>
+          {lit && <circle cx={50} cy={60} r={26} fill={FIRE} opacity={0.16} />}
+        </g>
+      );
+    case 'picnic': {
+      const cloth = accent ?? THEME_SHADES.red;
+      return (
+        <g>
+          <Shadow rx={38} cy={86} />
+          <Block x={10} y={72} w={80} h={5} d={6} s={WOOD} />
+          <rect x={22} y={56} width={4} height={24} fill={WOOD.dark} />
+          <rect x={74} y={56} width={4} height={24} fill={WOOD.dark} />
+          <Block x={14} y={50} w={72} h={7} d={10} s={cloth} />
+          {[20, 36, 52, 68].map((x) => (
+            <rect key={x} x={x} y={50} width={7} height={7} fill="#fff" opacity={0.75} />
+          ))}
+          <circle cx={42} cy={46} r={4} fill={THEME_SHADES.lime.base} />
+          <rect x={56} y={40} width={6} height={8} rx={1} fill={WINDOW_LIT} />
+        </g>
+      );
+    }
+    case 'gazebo': {
+      const roof = accent ?? THEME_SHADES.white;
+      return (
+        <g>
+          <Shadow rx={40} cy={86} />
+          <ellipse cx={50} cy={82} rx={38} ry={10} fill={STONE.dark} />
+          <ellipse cx={50} cy={79} rx={38} ry={10} fill={STONE.light} />
+          {[20, 40, 60, 80].map((x) => (
+            <rect key={x} x={x - 2} y={38} width={4} height={42} fill={x > 50 ? WOOD.dark : WOOD.light} />
+          ))}
+          <polygon points="8,40 50,8 92,40" fill={roof.base} />
+          <polygon points="50,8 92,40 60,40" fill={roof.dark} />
+          <rect x={8} y={38} width={84} height={5} fill={roof.dark} />
+          {lit && <circle cx={50} cy={50} r={4} fill={WINDOW_LIT} className="base-light is-lit" />}
+        </g>
+      );
+    }
+    case 'torch':
+      return (
+        <g>
+          <Shadow rx={12} />
+          <rect x={47} y={40} width={6} height={48} fill={WOOD.base} />
+          <rect x={50} y={40} width={3} height={48} fill={WOOD.dark} />
+          <rect x={44} y={36} width={12} height={6} fill={METAL.dark} />
+          <g className={lit ? 'base-flame' : undefined}>
+            <path d="M50 8 C 60 20, 60 30, 50 36 C 40 30, 40 20, 50 8 Z" fill={lit ? FIRE : '#7a3a20'} />
+            <path d="M50 20 C 54 26, 54 31, 50 34 C 46 31, 46 26, 50 20 Z" fill={lit ? WINDOW_LIT : '#a0522d'} />
+          </g>
+          {lit && <circle cx={50} cy={26} r={18} fill={FIRE} opacity={0.18} />}
+        </g>
+      );
+    case 'lanterns': {
+      const c = accent ?? THEME_SHADES.amber;
+      return (
+        <g>
+          <Shadow rx={40} cy={88} />
+          <rect x={10} y={20} width={4} height={68} fill={WOOD.dark} />
+          <rect x={86} y={20} width={4} height={68} fill={WOOD.dark} />
+          <path d="M12 22 Q50 46 88 22" fill="none" stroke={METAL.dark} strokeWidth={1.5} />
+          {[24, 37, 50, 63, 76].map((x, i) => {
+            const y = 22 + Math.sin((i + 1) * 0.6) * 16;
+            return (
+              <g key={x} className={lit ? 'base-light is-lit' : 'base-light-off'}>
+                <rect x={x - 4} y={y + 2} width={8} height={10} rx={2} fill={lit ? (i % 2 ? c.light : c.base) : c.dark} />
+              </g>
+            );
+          })}
+        </g>
+      );
+    }
+    case 'arch': {
+      const c = accent ?? THEME_SHADES.magenta;
+      return (
+        <g>
+          <Shadow rx={34} cy={86} />
+          <rect x={18} y={36} width={8} height={50} fill={WOOD.base} />
+          <rect x={74} y={36} width={8} height={50} fill={WOOD.dark} />
+          <path d="M18 40 A32 30 0 0 1 82 40 L74 40 A24 22 0 0 0 26 40 Z" fill={WOOD.base} />
+          {[
+            [20, 44],
+            [24, 30],
+            [34, 20],
+            [48, 14],
+            [62, 18],
+            [74, 28],
+            [80, 42],
+            [22, 60],
+            [80, 62]
+          ].map(([x, y], i) => (
+            <circle key={`${x}${y}`} cx={x} cy={y} r={5} fill={i % 2 ? c.light : c.base} />
+          ))}
+          {[30, 52, 70].map((x) => (
+            <circle key={x} cx={x} cy={x === 52 ? 12 : 24} r={4} fill={LEAF.base} />
+          ))}
+        </g>
+      );
+    }
+    case 'statue': {
+      const m = THEME_SHADES.white;
+      return (
+        <g>
+          <Shadow rx={28} cy={88} />
+          <Block x={28} y={70} w={40} h={18} d={8} s={STONE} />
+          {style === 'runner' ? (
+            <g>
+              <circle cx={52} cy={20} r={7} fill={m.base} />
+              <path d="M50 28 L46 48 L36 62 M46 48 L58 60 L60 70 M48 32 L36 40 M50 32 L64 26" stroke={m.base} strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <path d="M50 28 L46 48 M48 32 L36 40" stroke={m.dark} strokeWidth={3} strokeLinecap="round" fill="none" />
+            </g>
+          ) : (
+            <g>
+              <circle cx={50} cy={22} r={7} fill={m.base} />
+              <path d="M38 34 H62 L58 56 H42 Z" fill={m.base} />
+              <path d="M50 34 H62 L58 56 H50 Z" fill={m.dark} />
+              <path d="M38 36 L28 28 L30 16 M62 36 L72 28 L70 16" stroke={m.base} strokeWidth={7} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <path d="M44 56 L42 70 M56 56 L58 70" stroke={m.dark} strokeWidth={7} strokeLinecap="round" />
+            </g>
+          )}
+        </g>
+      );
+    }
+    case 'plyobox': {
+      const c = accent ?? WOOD;
+      return (
+        <g>
+          <Shadow rx={30} cy={86} />
+          <Block x={24} y={48} w={44} h={36} d={14} s={c} />
+          <rect x={38} y={60} width={16} height={6} rx={3} fill={c.dark} />
+        </g>
+      );
+    }
+    case 'pullupbar': {
+      const c = accent ?? METAL;
+      return (
+        <g>
+          <Shadow rx={38} cy={88} />
+          <rect x={16} y={18} width={6} height={70} fill={c.base} />
+          <rect x={19} y={18} width={3} height={70} fill={c.dark} />
+          <rect x={78} y={18} width={6} height={70} fill={c.base} />
+          <rect x={81} y={18} width={3} height={70} fill={c.dark} />
+          <rect x={12} y={16} width={76} height={5} rx={2.5} fill={METAL.light} />
+          <rect x={12} y={19} width={76} height={2} fill={METAL.dark} />
+          <rect x={14} y={84} width={10} height={4} fill={STONE.dark} />
+          <rect x={76} y={84} width={10} height={4} fill={STONE.dark} />
+        </g>
+      );
+    }
+    case 'dipbars': {
+      const c = accent ?? METAL;
+      return (
+        <g>
+          <Shadow rx={38} cy={88} />
+          {[
+            [16, 46],
+            [76, 46],
+            [26, 56],
+            [86, 56]
+          ].map(([x, y]) => (
+            <rect key={`${x}${y}`} x={x} y={y} width={5} height={88 - y} fill={y > 50 ? c.dark : c.base} />
+          ))}
+          <rect x={14} y={44} width={68} height={5} rx={2.5} fill={METAL.light} />
+          <rect x={24} y={54} width={68} height={5} rx={2.5} fill={METAL.base} />
+        </g>
+      );
+    }
+    case 'punchbag': {
+      const c = accent ?? THEME_SHADES.red;
+      return (
+        <g>
+          <Shadow rx={26} cy={88} />
+          <rect x={20} y={8} width={5} height={80} fill={METAL.dark} />
+          <rect x={20} y={8} width={42} height={5} fill={METAL.base} />
+          <line x1={56} y1={13} x2={56} y2={24} stroke={METAL.dark} strokeWidth={2} />
+          <rect x={44} y={24} width={24} height={50} rx={10} fill={c.base} />
+          <rect x={58} y={24} width={10} height={50} rx={5} fill={c.dark} />
+          <rect x={47} y={28} width={5} height={42} rx={2.5} fill={c.light} opacity={0.7} />
+          <rect x={44} y={40} width={24} height={4} fill={c.dark} opacity={0.6} />
+        </g>
+      );
+    }
+    case 'lilypad':
+      return (
+        <g>
+          <path d="M50 50 m-24 0 a24 14 0 1 0 48 0 a24 14 0 1 0 -48 0 Z M50 50 L70 44" fill={LEAF.base} />
+          <path d="M50 50 L72 42 A24 14 0 0 1 74 50 Z" fill="#1f5e3b" />
+          <ellipse cx={42} cy={47} rx={9} ry={4} fill={LEAF.light} opacity={0.6} />
+          <circle cx={36} cy={64} r={9} fill={LEAF.dark} />
+          <circle cx={60} cy={30} r={6} fill="#ffc2e6" />
+          <circle cx={60} cy={30} r={2.5} fill="#fff4b0" />
+        </g>
+      );
+    case 'bridge':
+      return (
+        <g>
+          <Shadow rx={44} cy={80} />
+          {[10, 26, 42, 58, 74].map((x) => (
+            <g key={x}>
+              <rect x={x} y={40 + 2} width={14} height={34} fill={WOOD.dark} />
+              <rect x={x} y={40} width={14} height={32} fill={WOOD.base} />
+              <rect x={x} y={40} width={14} height={3} fill={WOOD.light} />
+            </g>
+          ))}
+          <rect x={8} y={30} width={84} height={4} rx={2} fill={WOOD.dark} />
+          {[10, 50, 88].map((x) => (
+            <rect key={x} x={x - 2} y={30} width={4} height={14} fill={WOOD.dark} />
+          ))}
+        </g>
+      );
     default:
       return null;
   }
@@ -1039,4 +1333,78 @@ export function ItemArt({
     default:
       return <Decor id={item.itemId} lit={lit} style={item.style} color={item.color} />;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Terrain
+// ---------------------------------------------------------------------------
+
+const TERRAIN_COLORS: Record<string, { top: string; alt: string; detail: string }> = {
+  grass: { top: '#2a5b3a', alt: '#275536', detail: '#3c7a4e' },
+  meadow: { top: '#336b3f', alt: '#30653b', detail: '#ffd1ea' },
+  dirt: { top: '#6b4a2e', alt: '#64452b', detail: '#8a6440' },
+  sand: { top: '#c9a86a', alt: '#c2a063', detail: '#e2c78e' },
+  plaza: { top: '#7f8a99', alt: '#78838f', detail: '#a9b3c0' },
+  water: { top: '#1f6f9c', alt: '#1f6f9c', detail: '#7fd3f5' },
+  snow: { top: '#dfe8f1', alt: '#d6e0ea', detail: '#ffffff' }
+};
+
+/** Deterministic small number per tile, for scattering details. */
+function tileHash(x: number, y: number): number {
+  let h = (x * 374761393 + y * 668265263) >>> 0;
+  h = ((h ^ (h >>> 13)) * 1274126177) >>> 0;
+  return h;
+}
+
+/** One ground tile (100×100 at its grid position). */
+export function TerrainTile({ x, y, terrain }: { x: number; y: number; terrain: string }) {
+  const c = TERRAIN_COLORS[terrain] ?? TERRAIN_COLORS.grass;
+  const h = tileHash(x, y);
+  const px = x * 100;
+  const py = y * 100;
+  const fill = (x + y) % 2 ? c.alt : c.top;
+  const dx = 20 + (h % 50);
+  const dy = 20 + ((h >>> 8) % 50);
+  if (terrain === 'water') {
+    return (
+      <g pointerEvents="none">
+        <rect x={px} y={py} width={100} height={100} fill={c.top} />
+        <g className="base-shimmer">
+          <path d={`M${px + dx - 14} ${py + dy} q7 -5 14 0 t14 0`} fill="none" stroke={c.detail} strokeWidth={3} strokeLinecap="round" opacity={0.6} />
+          <path d={`M${px + 100 - dx - 10} ${py + 100 - dy} q5 -4 10 0`} fill="none" stroke={c.detail} strokeWidth={2.5} strokeLinecap="round" opacity={0.45} />
+        </g>
+      </g>
+    );
+  }
+  return (
+    <g pointerEvents="none">
+      <rect x={px + 1} y={py + 1} width={98} height={98} rx={terrain === 'plaza' ? 3 : 8} fill={fill} />
+      {terrain === 'plaza' ? (
+        <g fill="none" stroke="#5f6a78" strokeWidth={2} opacity={0.6}>
+          <line x1={px + 50} y1={py + 4} x2={px + 50} y2={py + 96} />
+          <line x1={px + 4} y1={py + 50} x2={px + 96} y2={py + 50} />
+        </g>
+      ) : terrain === 'meadow' ? (
+        <g>
+          <circle cx={px + dx} cy={py + dy} r={3} fill={c.detail} />
+          <circle cx={px + 100 - dx} cy={py + 30 + (h % 40)} r={2.6} fill="#fff4b0" />
+          <circle cx={px + 30 + ((h >>> 4) % 40)} cy={py + 100 - dy} r={2.6} fill="#c9b8ff" />
+        </g>
+      ) : (
+        <g fill={c.detail} opacity={terrain === 'grass' ? 0.7 : 0.8}>
+          {terrain === 'grass' ? (
+            <>
+              <path d={`M${px + dx} ${py + dy} l2 -7 l2 7 z M${px + dx + 5} ${py + dy} l2 -5 l2 5 z`} />
+              <path d={`M${px + 100 - dx} ${py + 100 - dy} l2 -6 l2 6 z`} />
+            </>
+          ) : (
+            <>
+              <circle cx={px + dx} cy={py + dy} r={2.5} />
+              <circle cx={px + 100 - dx} cy={py + 100 - dy} r={2} />
+            </>
+          )}
+        </g>
+      )}
+    </g>
+  );
 }

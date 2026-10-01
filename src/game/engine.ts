@@ -9,6 +9,16 @@ import {
   MAX_LAND_LEVEL,
   UPGRADE_COIN_COST,
   buildersForLevel,
+  BASE_LEVEL_SCORES,
+  BASE_LEVEL_TITLES,
+  SCORE_BUILDING_LEVEL,
+  SCORE_PER_DECOR,
+  SCORE_PER_LAND_LEVEL,
+  SCORE_PER_TROPHY_EARNED,
+  SCORE_PER_TROPHY_PLACED,
+  TERRAIN,
+  type BaseTitle,
+  type TerrainId,
   type Customization,
   PATTERN_RESOURCE,
   RESOURCE_IDS,
@@ -41,6 +51,8 @@ export type PlacedItem = {
   style?: string;
   /** Player's chosen accent colour (a PALETTE id). */
   color?: string;
+  /** Mirrored left-to-right. */
+  flip?: boolean;
 };
 
 export type Construction = {
@@ -137,6 +149,10 @@ export type GameState = {
   quests: { day: string; list: Quest[]; planKey?: string } | null;
   /** Lodge streak shields in stock. */
   shields: number;
+  /** Painted ground, keyed "x,y". Unpainted tiles are grass. */
+  terrain: Record<string, TerrainId>;
+  /** The player's name for their base. */
+  baseName?: string;
 };
 
 export function createInitialState(): GameState {
@@ -151,7 +167,8 @@ export function createInitialState(): GameState {
     unseen: [],
     nextUid: 2,
     quests: null,
-    shields: 0
+    shields: 0,
+    terrain: {}
   };
 }
 
@@ -736,9 +753,14 @@ export function canPlaceAt(
 ): boolean {
   const size = itemSize(itemId);
   const occupied = occupancy(state);
+  const def = getItemDef(itemId);
+  const wantsWater = def?.kind === 'decor' && def.onWater === true;
   return tilesOf(x, y, size).every(([tx, ty]) => {
     if (tx < 0 || ty < 0 || tx >= GRID_SIZE || ty >= GRID_SIZE) return false;
     if (!isTileBuildable(tx, ty, state.landLevel)) return false;
+    // Water decor only on water; everything else only on land.
+    const isWater = state.terrain?.[`${tx},${ty}`] === 'water';
+    if (isWater !== wantsWater) return false;
     const owner = occupied.get(`${tx},${ty}`);
     return !owner || owner === ignoreUid;
   });
@@ -770,7 +792,9 @@ export type ActionError =
   | 'needsBuilders'
   | 'needsCoins'
   | 'maxLand'
-  | 'underConstruction';
+  | 'underConstruction'
+  | 'needsBaseLevel'
+  | 'water';
 
 export type ActionResult =
   | { ok: true; state: GameState; /** Coins the caller must deduct. */ coinCost?: number }
@@ -812,6 +836,7 @@ export function placeBlocker(state: GameState, itemId: string): ActionError | nu
   if (!def) return 'locked';
   const level = hqLevel(state);
   if (level < def.unlockHq) return 'locked';
+  if (def.kind === 'decor' && def.unlockBase && baseLevel(state).level < def.unlockBase) return 'needsBaseLevel';
   if (def.kind === 'structure' && countPlaced(state, itemId) >= def.maxCount(level)) return 'maxCount';
   if (freeBuilders(state) < 1) return 'builderBusy';
   const cost = def.kind === 'structure' ? def.levels[0].cost : def.cost;
@@ -981,6 +1006,102 @@ export function tradeMaterials(
 export function spendShield(prev: GameState): ActionResult {
   if (prev.shields < 1) return { ok: false, error: 'noShield' };
   return { ok: true, state: { ...prev, shields: prev.shields - 1 } };
+}
+
+// ---------------------------------------------------------------------------
+// Decorating freedom: terrain, flipping, naming
+// ---------------------------------------------------------------------------
+
+export function terrainUnlocked(state: GameState, terrain: TerrainId): boolean {
+  const def = TERRAIN.find((t) => t.id === terrain);
+  return !!def && baseLevel(state).level >= def.unlockBase;
+}
+
+/**
+ * Paint tiles with a terrain. Free: decorating should feel open. Only owned
+ * land can be painted, and tiles under items can't become water (and water
+ * under water decor can't be painted over).
+ */
+export function paintTerrain(prev: GameState, tiles: Array<[number, number]>, terrain: TerrainId): ActionResult {
+  if (!terrainUnlocked(prev, terrain)) return { ok: false, error: 'needsBaseLevel' };
+  const occupied = occupancy(prev);
+  const state: GameState = { ...prev, terrain: { ...prev.terrain } };
+  let changed = false;
+  for (const [x, y] of tiles) {
+    if (!isTileBuildable(x, y, prev.landLevel)) continue;
+    const key = `${x},${y}`;
+    const current = prev.terrain[key] ?? 'grass';
+    if (current === terrain) continue;
+    const ownerUid = occupied.get(key);
+    if (ownerUid) {
+      const owner = prev.placed.find((p) => p.uid === ownerUid);
+      const ownerDef = owner && getItemDef(owner.itemId);
+      const ownerOnWater = ownerDef?.kind === 'decor' && ownerDef.onWater === true;
+      // Keep items on the ground they need.
+      if ((terrain === 'water') !== ownerOnWater) continue;
+    }
+    if (terrain === 'grass') delete state.terrain[key];
+    else state.terrain[key] = terrain;
+    changed = true;
+  }
+  return changed ? { ok: true, state } : { ok: false, error: 'blocked' };
+}
+
+export function flipItem(prev: GameState, uid: string): ActionResult {
+  if (!prev.placed.some((p) => p.uid === uid)) return { ok: false, error: 'notRemovable' };
+  const state = structuredClone(prev);
+  const item = state.placed.find((p) => p.uid === uid)!;
+  item.flip = !item.flip;
+  return { ok: true, state };
+}
+
+export function setBaseName(prev: GameState, name: string): GameState {
+  return { ...prev, baseName: name.trim().slice(0, 32) || undefined };
+}
+
+// ---------------------------------------------------------------------------
+// Base level (prestige)
+// ---------------------------------------------------------------------------
+
+/** Everything the player built, upgraded and earned adds to the base score. */
+export function baseScore(state: GameState): number {
+  let score = 0;
+  for (const item of state.placed) {
+    const def = getItemDef(item.itemId);
+    if (item.itemId.startsWith(TROPHY_ITEM_PREFIX)) {
+      if (item.level > 0) score += SCORE_PER_TROPHY_PLACED;
+    } else if (def?.kind === 'structure') {
+      const points = SCORE_BUILDING_LEVEL[Math.min(item.level, 3)] ?? 0;
+      score += def.id === 'hq' ? points * 2 : points;
+    } else if (def?.kind === 'decor' && item.level > 0) {
+      score += SCORE_PER_DECOR;
+    }
+  }
+  score += Object.keys(state.trophies).length * SCORE_PER_TROPHY_EARNED;
+  score += state.landLevel * SCORE_PER_LAND_LEVEL;
+  return score;
+}
+
+export type BaseLevelInfo = {
+  level: number;
+  title: BaseTitle;
+  score: number;
+  /** Score where this level started, and where the next begins (null at max). */
+  floor: number;
+  next: number | null;
+};
+
+export function baseLevel(state: GameState): BaseLevelInfo {
+  const score = baseScore(state);
+  let index = 0;
+  for (let i = 0; i < BASE_LEVEL_SCORES.length; i++) if (score >= BASE_LEVEL_SCORES[i]) index = i;
+  return {
+    level: index + 1,
+    title: BASE_LEVEL_TITLES[index],
+    score,
+    floor: BASE_LEVEL_SCORES[index],
+    next: BASE_LEVEL_SCORES[index + 1] ?? null
+  };
 }
 
 /** A base goes quiet (lights dim) on days without a set. Nothing is lost. */

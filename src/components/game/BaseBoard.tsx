@@ -6,8 +6,10 @@ import {
   getItemDef,
   isTileBuildable
 } from '../../game/catalog';
-import { hqLevel, itemSize, type GameState, type PlacedItem, type TodayPlan } from '../../game/engine';
-import { ItemArt, THEME_SHADES, themeFor } from './BaseArt';
+import { itemSize, type GameState, type PlacedItem, type TodayPlan } from '../../game/engine';
+import { ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
+import { MAX_LAND_LEVEL } from '../../game/catalog';
+import { useRef } from 'react';
 
 export { ItemArt, TrophyArt } from './BaseArt';
 
@@ -61,6 +63,10 @@ type BoardProps = {
   onTile: (x: number, y: number) => void;
   onItem: (uid: string) => void;
   tileLabel: (x: number, y: number) => string;
+  /** Paint mode: drag across tiles to paint terrain. */
+  painting?: boolean;
+  onPaint?: (tile: [number, number]) => void;
+  svgId?: string;
 };
 
 function onKeyActivate(event: KeyboardEvent, action: () => void) {
@@ -79,9 +85,13 @@ export function BaseBoard({
   labelForItem,
   onTile,
   onItem,
-  tileLabel
+  tileLabel,
+  painting = false,
+  onPaint,
+  svgId
 }: BoardProps) {
-  const level = hqLevel(state);
+  // Land is bought with coins, separately from HQ level.
+  const land = state.landLevel;
   const placing = validTiles !== null;
   const items = [...state.placed].sort((a, b) => a.y + itemSize(a.itemId) - (b.y + itemSize(b.itemId)) || a.x - b.x);
   const jobs = new Map(state.constructions.map((job) => [job.uid, job]));
@@ -89,46 +99,82 @@ export function BaseBoard({
   const tiles: ReactNode[] = [];
   for (let y = 0; y < GRID_SIZE; y++) {
     for (let x = 0; x < GRID_SIZE; x++) {
-      const open = isTileBuildable(x, y, level);
-      tiles.push(
-        <rect
-          key={`${x},${y}`}
-          x={x * T + 1}
-          y={y * T + 1}
-          width={T - 2}
-          height={T - 2}
-          rx={8}
-          className={open ? ((x + y) % 2 ? 'base-tile' : 'base-tile base-tile--alt') : 'base-tile base-tile--locked'}
-          onClick={placing ? undefined : () => onTile(x, y)}
-        />
-      );
-      if (!open) {
+      const open = isTileBuildable(x, y, land);
+      if (open) {
+        tiles.push(<TerrainTile key={`t${x},${y}`} x={x} y={y} terrain={state.terrain?.[`${x},${y}`] ?? 'grass'} />);
         tiles.push(
           <rect
-            key={`h${x},${y}`}
-            x={x * T + 1}
-            y={y * T + 1}
-            width={T - 2}
-            height={T - 2}
-            rx={8}
-            fill="url(#base-hatch)"
-            pointerEvents="none"
+            key={`${x},${y}`}
+            x={x * T}
+            y={y * T}
+            width={T}
+            height={T}
+            fill="transparent"
+            onClick={placing || painting ? undefined : () => onTile(x, y)}
           />
+        );
+      } else {
+        tiles.push(
+          <rect key={`${x},${y}`} x={x * T + 1} y={y * T + 1} width={T - 2} height={T - 2} rx={8} className="base-tile base-tile--locked" />,
+          <rect key={`h${x},${y}`} x={x * T + 1} y={y * T + 1} width={T - 2} height={T - 2} rx={8} fill="url(#base-hatch)" pointerEvents="none" />
         );
       }
     }
   }
 
-  // Frame the land you own, plus a sliver of locked land to hint at what HQ unlocks.
-  const { min, max } = buildableBounds(level);
-  const pad = level >= 3 ? 0 : T * 0.45;
+  // Frame the land you own, plus a sliver of locked land and the island's cliff edge.
+  const { min, max } = buildableBounds(land);
+  const pad = land >= MAX_LAND_LEVEL ? T * 0.3 : T * 0.45;
+  const cliff = 34;
   const viewStart = min * T - pad;
   const viewSize = (max - min + 1) * T + pad * 2;
+  const landX = min * T;
+  const landEnd = (max + 1) * T;
+
+  // Drag to paint terrain.
+  const svgRef = useRef<SVGSVGElement>(null);
+  const lastPainted = useRef<string | null>(null);
+  const tileFromEvent = (event: React.PointerEvent): [number, number] | null => {
+    const svg = svgRef.current;
+    const ctm = svg?.getScreenCTM();
+    if (!svg || !ctm) return null;
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm.inverse());
+    const x = Math.floor(point.x / T);
+    const y = Math.floor(point.y / T);
+    return isTileBuildable(x, y, land) ? [x, y] : null;
+  };
+  const paintAt = (event: React.PointerEvent) => {
+    const tile = tileFromEvent(event);
+    if (!tile || !onPaint) return;
+    const key = `${tile[0]},${tile[1]}`;
+    if (lastPainted.current === key) return;
+    lastPainted.current = key;
+    onPaint(tile);
+  };
+
+  const fireflies = [0, 1, 2, 3, 4, 5].map((i) => {
+    const fx = landX + 40 + ((i * 397) % Math.max(1, landEnd - landX - 80));
+    const fy = landX + 40 + ((i * 613) % Math.max(1, landEnd - landX - 80));
+    return <circle key={i} cx={fx} cy={fy} r={3} className="base-firefly" style={{ animationDelay: `${i * 0.9}s` }} />;
+  });
 
   return (
     <svg
-      viewBox={`${viewStart} ${viewStart} ${viewSize} ${viewSize}`}
-      className={`base-board ${lit ? 'is-lit' : 'is-quiet'} ${placing ? 'is-placing' : ''}`}
+      ref={svgRef}
+      id={svgId}
+      viewBox={`${viewStart} ${viewStart} ${viewSize} ${viewSize + cliff}`}
+      onPointerDown={
+        painting
+          ? (event) => {
+              (event.target as Element).setPointerCapture?.(event.pointerId);
+              lastPainted.current = null;
+              paintAt(event);
+            }
+          : undefined
+      }
+      onPointerMove={painting ? (event) => event.buttons && paintAt(event) : undefined}
+      onPointerUp={painting ? () => (lastPainted.current = null) : undefined}
+      className={`base-board ${lit ? 'is-lit' : 'is-quiet'} ${placing ? 'is-placing' : ''} ${painting ? 'is-painting' : ''}`}
       role="group">
       <defs>
         <pattern id="base-hatch" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -138,8 +184,15 @@ export function BaseBoard({
           <line x1="0" y1="0" x2="0" y2="16" className="base-scaffold-line" strokeWidth="3" />
         </pattern>
       </defs>
-      <rect width={GRID_SIZE * T} height={GRID_SIZE * T} className="base-ground" />
+      <rect x={-T} y={-T} width={(GRID_SIZE + 2) * T} height={(GRID_SIZE + 2) * T} className="base-ground" />
+      <rect x={landX - 4} y={landX - 4} width={landEnd - landX + 8} height={landEnd - landX + 8} rx={12} fill="#1b3a26" />
       {tiles}
+      {/* The owned land is a raised island: an earthy cliff under its front edge. */}
+      <g pointerEvents="none">
+        <rect x={landX} y={landEnd} width={landEnd - landX} height={cliff} rx={6} fill="#5a3d24" />
+        <rect x={landX} y={landEnd + cliff * 0.5} width={landEnd - landX} height={cliff * 0.5} rx={6} fill="#432c19" />
+        <rect x={landX} y={landEnd} width={landEnd - landX} height={5} fill="#2a5b3a" />
+      </g>
 
       {items.map((item) => {
         const size = itemSize(item.itemId);
@@ -155,12 +208,13 @@ export function BaseBoard({
           <g
             key={item.uid}
             transform={`translate(${item.x * T} ${item.y * T})`}
-            className={`base-item group ${selected ? 'is-selected' : ''} ${placing ? 'is-inert' : ''}`}
-            role={placing ? undefined : 'button'}
-            tabIndex={placing ? -1 : 0}
+            className={`base-item group ${selected ? 'is-selected' : ''} ${placing || painting ? 'is-inert' : ''}`}
+            role={placing || painting ? undefined : 'button'}
+            tabIndex={placing || painting ? -1 : 0}
             aria-label={labelForItem(item)}
-            onClick={placing ? undefined : () => onItem(item.uid)}
-            onKeyDown={placing ? undefined : (e) => onKeyActivate(e, () => onItem(item.uid))}>
+            pointerEvents={painting ? 'none' : undefined}
+            onClick={placing || painting ? undefined : () => onItem(item.uid)}
+            onKeyDown={placing || painting ? undefined : (e) => onKeyActivate(e, () => onItem(item.uid))}>
             <rect width={size * T} height={size * T} fill="transparent" />
             {selected && (
               <rect x={3} y={3} width={size * T - 6} height={size * T - 6} rx={12} className="base-selection" />
@@ -169,7 +223,9 @@ export function BaseBoard({
               {building && item.level === 0 ? (
                 <rect x={14} y={30} width={size * T - 28} height={size * T - 40} rx={4} className="base-foundation" />
               ) : (
-                <ItemArt item={item} lit={lit} verified={verified} plan={plan} />
+                <g transform={item.flip ? `translate(${size * T} 0) scale(-1 1)` : undefined}>
+                  <ItemArt item={item} lit={lit} verified={verified} plan={plan} />
+                </g>
               )}
             </g>
             {def?.kind === 'structure' && !building && (
@@ -193,6 +249,8 @@ export function BaseBoard({
           </g>
         );
       })}
+
+      <g className="base-fireflies" pointerEvents="none">{fireflies}</g>
 
       {placing &&
         [...validTiles].map((key) => {

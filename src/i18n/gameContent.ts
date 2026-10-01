@@ -129,6 +129,34 @@ export type GameCopy = {
     why: string;
   };
   coins: (amount: number) => string;
+  baseLevel: {
+    level: (level: number) => string;
+    titles: Record<import('../game/catalog').BaseTitle, string>;
+    progress: (score: number, next: number) => string;
+    next: (title: string) => string;
+    unlocks: (list: string) => string;
+    max: string;
+    levelUp: (title: string) => string;
+    how: string;
+  };
+  paint: { button: string; title: string; hint: string; done: string; locked: (level: number) => string };
+  terrainNames: Record<import('../game/catalog').TerrainId, string>;
+  decorGroups: Record<import('../game/catalog').DecorGroup, string>;
+  share: {
+    button: string;
+    title: string;
+    name: string;
+    defaultName: string;
+    share: string;
+    save: string;
+    making: string;
+    hint: string;
+    trophies: string;
+    buildings: string;
+    weeks: string;
+    footer: string;
+  };
+  flip: string;
 };
 
 const en: GameCopy = {
@@ -174,7 +202,24 @@ const en: GameCopy = {
     lamp: { name: 'Lamp', description: 'Lights up on days you train.' },
     banner: { name: 'Banner', description: 'Fly your colours.' },
     garden: { name: 'Garden bed', description: 'A small bed of flowers.' },
-    fountain: { name: 'Fountain', description: 'A crystal fountain for the town square.' }
+    fountain: { name: 'Fountain', description: 'A crystal fountain for the town square.' },
+    bush: { name: 'Bush', description: 'A round leafy bush.' },
+    rock: { name: 'Rock', description: 'A big boulder, plain or mossy.' },
+    flowers: { name: 'Flower patch', description: 'Wild flowers right in the grass.' },
+    bench: { name: 'Bench', description: 'A place to rest between sets.' },
+    campfire: { name: 'Campfire', description: 'Crackles on training nights.' },
+    picnic: { name: 'Picnic table', description: 'With a cloth in your colour.' },
+    gazebo: { name: 'Gazebo', description: 'An open pavilion for the garden.' },
+    torch: { name: 'Torch', description: 'A flickering torch.' },
+    lanterns: { name: 'String lights', description: 'Lanterns strung between two posts.' },
+    arch: { name: 'Flower arch', description: 'An arch covered in blossoms.' },
+    statue: { name: 'Hero statue', description: 'A champion in stone.' },
+    plyobox: { name: 'Plyo box', description: 'For box jumps and step-ups.' },
+    pullupbar: { name: 'Pull-up bar', description: 'Every park needs one.' },
+    dipbars: { name: 'Dip bars', description: 'Parallel bars for dips.' },
+    punchbag: { name: 'Punching bag', description: 'For cardio days.' },
+    lilypad: { name: 'Lily pad', description: 'Goes on water.' },
+    bridge: { name: 'Bridge', description: 'Goes on water.' },
   },
   level: (level) => `Level ${level}`,
   maxLevel: 'Max level',
@@ -204,7 +249,9 @@ const en: GameCopy = {
     needsBuilders: 'Not enough free builders. Level N needs N builders; the Lodge adds more.',
     needsCoins: 'Not enough coins yet',
     maxLand: 'Your land is as big as it gets',
-    underConstruction: 'Already being built'
+    underConstruction: 'Already being built',
+    needsBaseLevel: 'Unlocks at a higher base level',
+    water: 'Needs water (paint some first)'
   },
   trophyShelf: {
     title: 'Trophies',
@@ -306,7 +353,8 @@ const en: GameCopy = {
     plain: 'Plain', stripe: 'Stripe', chevron: 'Chevron',
     wildflowers: 'Wildflowers', tulips: 'Tulips', roses: 'Roses', lavender: 'Lavender',
     tiered: 'Tiered', jet: 'Jet', marble: 'Marble',
-    banners: 'Banners', plated: 'Plating', glow: 'Glow'
+    banners: 'Banners', plated: 'Plating', glow: 'Glow',
+    round: 'Round', flowering: 'Flowering', boulder: 'Boulder', mossy: 'Mossy', flex: 'Flex', runner: 'Runner'
   },
   colorNames: {
     cyan: 'Cyan', lime: 'Lime', magenta: 'Magenta', amber: 'Amber', violet: 'Violet', red: 'Red', white: 'White'
@@ -328,6 +376,43 @@ const en: GameCopy = {
     why: 'Land is paid with coins from your sets, and it is meant to take a while.'
   },
   coins: (amount) => `${amount} coins`,
+  baseLevel: {
+    level: (level) => `Base level ${level}`,
+    titles: {
+      campsite: 'Campsite', outpost: 'Outpost', hamlet: 'Hamlet', village: 'Village', town: 'Town',
+      stronghold: 'Stronghold', citadel: 'Citadel', capital: 'Capital', legend: 'Legend'
+    },
+    progress: (score, next) => `${score} / ${next} points`,
+    next: (title) => `Next: ${title}`,
+    unlocks: (list) => `Unlocks ${list}`,
+    max: 'Max base level. Your base is legendary.',
+    levelUp: (title) => `Base level up! You're now a ${title}.`,
+    how: 'Points come from buildings, upgrades, decorations, trophies and land.'
+  },
+  paint: {
+    button: 'Paint',
+    title: 'Paint the ground',
+    hint: 'Pick a ground and drag across tiles. Painting is free.',
+    done: 'Done',
+    locked: (level) => `Base level ${level}`
+  },
+  terrainNames: { grass: 'Grass', meadow: 'Meadow', dirt: 'Dirt', sand: 'Sand', plaza: 'Plaza', water: 'Water', snow: 'Snow' },
+  decorGroups: { nature: 'Nature', comfort: 'Comfort', lights: 'Lights', training: 'Training', paths: 'Paths & walls', water: 'Water' },
+  share: {
+    button: 'Share',
+    title: 'Share your base',
+    name: 'Base name',
+    defaultName: 'My base',
+    share: 'Share image',
+    save: 'Save image',
+    making: 'Making your image…',
+    hint: 'Long-press the image to save it if the buttons don’t work here.',
+    trophies: 'trophies',
+    buildings: 'buildings',
+    weeks: 'weeks on target',
+    footer: 'Built by training on 2failure'
+  },
+  flip: 'Flip',
   trainingDays: {
     title: 'Training days per week',
     description: (days) =>
@@ -381,7 +466,24 @@ const he: GameCopy = {
     lamp: { name: 'פנס', description: 'נדלק בימים שבהם אתה מתאמן.' },
     banner: { name: 'דגל', description: 'הנף את הצבעים שלך.' },
     garden: { name: 'ערוגה', description: 'ערוגת פרחים קטנה.' },
-    fountain: { name: 'מזרקה', description: 'מזרקת קריסטל לכיכר העיר.' }
+    fountain: { name: 'מזרקה', description: 'מזרקת קריסטל לכיכר העיר.' },
+    bush: { name: 'שיח', description: 'שיח עגול ועבות.' },
+    rock: { name: 'סלע', description: 'סלע גדול, חלק או עם טחב.' },
+    flowers: { name: 'כתם פרחים', description: 'פרחי בר בתוך הדשא.' },
+    bench: { name: 'ספסל', description: 'מקום לנוח בין סטים.' },
+    campfire: { name: 'מדורה', description: 'מתלקחת בערבי אימון.' },
+    picnic: { name: 'שולחן פיקניק', description: 'עם מפה בצבע שלך.' },
+    gazebo: { name: 'ביתן', description: 'ביתן פתוח לגינה.' },
+    torch: { name: 'לפיד', description: 'לפיד מהבהב.' },
+    lanterns: { name: 'שרשרת אורות', description: 'פנסים בין שני עמודים.' },
+    arch: { name: 'קשת פרחים', description: 'קשת מכוסה פריחה.' },
+    statue: { name: 'פסל גיבור', description: 'אלוף מאבן.' },
+    plyobox: { name: 'קופסת קפיצה', description: 'לקפיצות ועליות.' },
+    pullupbar: { name: 'מתקן מתח', description: 'כל פארק צריך אחד.' },
+    dipbars: { name: 'מקבילים', description: 'מוטות מקבילים לשכיבות.' },
+    punchbag: { name: 'שק אגרוף', description: 'לימי קרדיו.' },
+    lilypad: { name: 'עלה נופר', description: 'מונח על מים.' },
+    bridge: { name: 'גשר', description: 'מונח על מים.' },
   },
   level: (level) => `שלב ${level}`,
   maxLevel: 'שלב מקסימלי',
@@ -411,7 +513,9 @@ const he: GameCopy = {
     needsBuilders: 'אין מספיק בנאים פנויים. שלב N דורש N בנאים, והבקתה מוסיפה עוד.',
     needsCoins: 'עדיין אין מספיק מטבעות',
     maxLand: 'השטח שלך בגודל המקסימלי',
-    underConstruction: 'כבר בבנייה'
+    underConstruction: 'כבר בבנייה',
+    needsBaseLevel: 'נפתח ברמת בסיס גבוהה יותר',
+    water: 'צריך מים (צבע קודם קצת)'
   },
   trophyShelf: {
     title: 'גביעים',
@@ -513,7 +617,8 @@ const he: GameCopy = {
     plain: 'חלק', stripe: 'פס', chevron: 'שברון',
     wildflowers: 'פרחי בר', tulips: 'צבעונים', roses: 'ורדים', lavender: 'לבנדר',
     tiered: 'קומות', jet: 'סילון', marble: 'שיש',
-    banners: 'דגלונים', plated: 'ציפוי מתכת', glow: 'זוהר'
+    banners: 'דגלונים', plated: 'ציפוי מתכת', glow: 'זוהר',
+    round: 'עגול', flowering: 'פורח', boulder: 'סלע', mossy: 'עם טחב', flex: 'כפיפה', runner: 'רץ'
   },
   colorNames: {
     cyan: 'טורקיז', lime: 'ליים', magenta: 'מג׳נטה', amber: 'ענבר', violet: 'סגול', red: 'אדום', white: 'לבן'
@@ -535,6 +640,43 @@ const he: GameCopy = {
     why: 'משלמים על שטח במטבעות מהסטים שלך, וזה אמור לקחת זמן.'
   },
   coins: (amount) => `${amount} מטבעות`,
+  baseLevel: {
+    level: (level) => `רמת בסיס ${level}`,
+    titles: {
+      campsite: 'מחנה', outpost: 'מוצב', hamlet: 'כפרון', village: 'כפר', town: 'עיירה',
+      stronghold: 'מבצר', citadel: 'מצודה', capital: 'בירה', legend: 'אגדה'
+    },
+    progress: (score, next) => `${score} / ${next} נקודות`,
+    next: (title) => `הבא: ${title}`,
+    unlocks: (list) => `פותח ${list}`,
+    max: 'רמת בסיס מקסימלית. הבסיס שלך אגדי.',
+    levelUp: (title) => `עלית רמה! הבסיס שלך עכשיו ${title}.`,
+    how: 'נקודות מגיעות ממבנים, שדרוגים, קישוטים, גביעים ושטח.'
+  },
+  paint: {
+    button: 'צביעה',
+    title: 'צביעת הקרקע',
+    hint: 'בחר סוג קרקע וגרור על המשבצות. הצביעה בחינם.',
+    done: 'סיום',
+    locked: (level) => `רמת בסיס ${level}`
+  },
+  terrainNames: { grass: 'דשא', meadow: 'אחו', dirt: 'עפר', sand: 'חול', plaza: 'רחבה', water: 'מים', snow: 'שלג' },
+  decorGroups: { nature: 'טבע', comfort: 'נוחות', lights: 'תאורה', training: 'אימון', paths: 'שבילים וחומות', water: 'מים' },
+  share: {
+    button: 'שיתוף',
+    title: 'שתף את הבסיס שלך',
+    name: 'שם הבסיס',
+    defaultName: 'הבסיס שלי',
+    share: 'שתף תמונה',
+    save: 'שמור תמונה',
+    making: 'מכין את התמונה…',
+    hint: 'אם הכפתורים לא עובדים כאן, לחיצה ארוכה על התמונה שומרת אותה.',
+    trophies: 'גביעים',
+    buildings: 'מבנים',
+    weeks: 'שבועות ביעד',
+    footer: 'נבנה מאימונים ב־2failure'
+  },
+  flip: 'היפוך',
   trainingDays: {
     title: 'ימי אימון בשבוע',
     description: (days) =>
@@ -588,7 +730,24 @@ const ar: GameCopy = {
     lamp: { name: 'مصباح', description: 'يضيء في الأيام التي تتدرب فيها.' },
     banner: { name: 'راية', description: 'ارفع ألوانك.' },
     garden: { name: 'حوض زهور', description: 'حوض صغير من الزهور.' },
-    fountain: { name: 'نافورة', description: 'نافورة كريستال لساحة البلدة.' }
+    fountain: { name: 'نافورة', description: 'نافورة كريستال لساحة البلدة.' },
+    bush: { name: 'شجيرة', description: 'شجيرة مستديرة كثيفة.' },
+    rock: { name: 'صخرة', description: 'صخرة كبيرة، عادية أو مكسوة بالطحالب.' },
+    flowers: { name: 'بقعة زهور', description: 'زهور برية وسط العشب.' },
+    bench: { name: 'مقعد', description: 'مكان للراحة بين المجموعات.' },
+    campfire: { name: 'نار المخيم', description: 'تشتعل في ليالي التدريب.' },
+    picnic: { name: 'طاولة نزهة', description: 'بمفرش بلونك.' },
+    gazebo: { name: 'عريشة', description: 'جناح مفتوح للحديقة.' },
+    torch: { name: 'شعلة', description: 'شعلة متراقصة.' },
+    lanterns: { name: 'أضواء معلقة', description: 'فوانيس بين عمودين.' },
+    arch: { name: 'قوس زهور', description: 'قوس مغطى بالأزهار.' },
+    statue: { name: 'تمثال البطل', description: 'بطل من حجر.' },
+    plyobox: { name: 'صندوق القفز', description: 'للقفز والصعود.' },
+    pullupbar: { name: 'عقلة', description: 'كل حديقة تحتاج واحدة.' },
+    dipbars: { name: 'متوازي', description: 'قضبان متوازية للدفع.' },
+    punchbag: { name: 'كيس ملاكمة', description: 'لأيام الكارديو.' },
+    lilypad: { name: 'ورقة زنبق', description: 'توضع على الماء.' },
+    bridge: { name: 'جسر', description: 'يوضع على الماء.' },
   },
   level: (level) => `المستوى ${level}`,
   maxLevel: 'أعلى مستوى',
@@ -618,7 +777,9 @@ const ar: GameCopy = {
     needsBuilders: 'لا يوجد بنّاؤون متاحون بما يكفي. المستوى N يحتاج N بنّائين، والكوخ يضيف المزيد.',
     needsCoins: 'لا توجد عملات كافية بعد',
     maxLand: 'أرضك في أكبر حجم ممكن',
-    underConstruction: 'قيد البناء بالفعل'
+    underConstruction: 'قيد البناء بالفعل',
+    needsBaseLevel: 'يُفتح عند مستوى قاعدة أعلى',
+    water: 'يحتاج إلى ماء (لوّن بعضه أولاً)'
   },
   trophyShelf: {
     title: 'الكؤوس',
@@ -720,7 +881,8 @@ const ar: GameCopy = {
     plain: 'سادة', stripe: 'خط', chevron: 'شيفرون',
     wildflowers: 'زهور برية', tulips: 'توليب', roses: 'ورود', lavender: 'لافندر',
     tiered: 'طبقات', jet: 'نافورة عالية', marble: 'رخام',
-    banners: 'رايات', plated: 'تصفيح', glow: 'توهج'
+    banners: 'رايات', plated: 'تصفيح', glow: 'توهج',
+    round: 'مستدير', flowering: 'مزهر', boulder: 'جلمود', mossy: 'بالطحالب', flex: 'استعراض', runner: 'عدّاء'
   },
   colorNames: {
     cyan: 'سماوي', lime: 'ليموني', magenta: 'أرجواني', amber: 'كهرماني', violet: 'بنفسجي', red: 'أحمر', white: 'أبيض'
@@ -742,6 +904,43 @@ const ar: GameCopy = {
     why: 'تُدفع الأرض بالعملات من مجموعاتك، ومن المفترض أن يستغرق ذلك وقتاً.'
   },
   coins: (amount) => `${amount} عملة`,
+  baseLevel: {
+    level: (level) => `مستوى القاعدة ${level}`,
+    titles: {
+      campsite: 'مخيّم', outpost: 'مخفر', hamlet: 'نجع', village: 'قرية', town: 'بلدة',
+      stronghold: 'معقل', citadel: 'قلعة', capital: 'عاصمة', legend: 'أسطورة'
+    },
+    progress: (score, next) => `${score} / ${next} نقطة`,
+    next: (title) => `التالي: ${title}`,
+    unlocks: (list) => `يفتح ${list}`,
+    max: 'أعلى مستوى للقاعدة. قاعدتك أسطورية.',
+    levelUp: (title) => `ارتفع مستوى قاعدتك! أصبحت ${title}.`,
+    how: 'تأتي النقاط من المباني والتطويرات والزينة والكؤوس والأرض.'
+  },
+  paint: {
+    button: 'تلوين',
+    title: 'لوّن الأرض',
+    hint: 'اختر نوع الأرض واسحب فوق المربعات. التلوين مجاني.',
+    done: 'تم',
+    locked: (level) => `مستوى القاعدة ${level}`
+  },
+  terrainNames: { grass: 'عشب', meadow: 'مرج', dirt: 'تراب', sand: 'رمل', plaza: 'ساحة', water: 'ماء', snow: 'ثلج' },
+  decorGroups: { nature: 'طبيعة', comfort: 'راحة', lights: 'إضاءة', training: 'تدريب', paths: 'ممرات وأسوار', water: 'ماء' },
+  share: {
+    button: 'مشاركة',
+    title: 'شارك قاعدتك',
+    name: 'اسم القاعدة',
+    defaultName: 'قاعدتي',
+    share: 'شارك الصورة',
+    save: 'احفظ الصورة',
+    making: 'جارٍ تجهيز صورتك…',
+    hint: 'إذا لم تعمل الأزرار هنا، اضغط مطولاً على الصورة لحفظها.',
+    trophies: 'كؤوس',
+    buildings: 'مبانٍ',
+    weeks: 'أسابيع على الهدف',
+    footer: 'بُنيت بالتدريب على 2failure'
+  },
+  flip: 'قلب',
   trainingDays: {
     title: 'أيام التدريب في الأسبوع',
     description: (days) =>
