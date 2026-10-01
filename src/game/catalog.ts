@@ -36,7 +36,7 @@ export const STARTING_RESOURCES: Resources = { stone: 30, timber: 25, crystal: 2
 // Plot and headquarters
 // ---------------------------------------------------------------------------
 
-export const GRID_SIZE = 14;
+export const GRID_SIZE = 20;
 export const MAX_HQ_LEVEL = 3;
 export const MAX_STRUCTURE_LEVEL = 3;
 
@@ -44,8 +44,8 @@ export const MAX_STRUCTURE_LEVEL = 3;
  * Land is bought with coins (the workout currency) and is deliberately
  * expensive. Index = land level; side = buildable square, centred on the plot.
  */
-export const LAND_SIDES = [6, 8, 10, 12, 14] as const;
-export const LAND_COIN_COST = [0, 500, 1200, 2500, 4000] as const;
+export const LAND_SIDES = [10, 12, 14, 16, 18, 20] as const;
+export const LAND_COIN_COST = [0, 500, 1200, 2500, 4000, 6000] as const;
 export const MAX_LAND_LEVEL = LAND_SIDES.length - 1;
 
 export function buildableBounds(landLevel: number): { min: number; max: number } {
@@ -60,7 +60,7 @@ export function isTileBuildable(x: number, y: number, landLevel: number): boolea
 }
 
 /** HQ sits in the middle of the plot and is always there. */
-export const HQ_POSITION = { x: 6, y: 6 };
+export const HQ_POSITION = { x: 9, y: 9 };
 
 /** Coins for upgrading a building to each level (index = target level). */
 export const UPGRADE_COIN_COST: Record<number, number> = { 2: 150, 3: 400 };
@@ -128,6 +128,20 @@ export const CUSTOMIZE: Record<string, { styles?: string[]; colors?: boolean }> 
   punchbag: { colors: true },
   lilypad: {},
   bridge: {},
+  hay: {},
+  barrels: {},
+  pumpkins: {},
+  birdhouse: { colors: true },
+  coop: { colors: true },
+  beehive: {},
+  well: {},
+  barn: { colors: true },
+  windmill: { colors: true },
+  signpost: {},
+  tent: { colors: true },
+  parasol: { colors: true },
+  sandcastle: {},
+  snowman: { colors: true },
   trophy: { styles: ['stone', 'marble', 'neon'], colors: true }
 };
 
@@ -164,8 +178,8 @@ export type StructureDef = {
   levels: StructureLevel[];
 };
 
-export type DecorGroup = 'nature' | 'comfort' | 'lights' | 'training' | 'paths' | 'water';
-export const DECOR_GROUPS: DecorGroup[] = ['nature', 'comfort', 'lights', 'training', 'paths', 'water'];
+export type DecorGroup = 'nature' | 'farm' | 'comfort' | 'fun' | 'lights' | 'training' | 'paths' | 'water';
+export const DECOR_GROUPS: DecorGroup[] = ['nature', 'farm', 'comfort', 'fun', 'lights', 'training', 'paths', 'water'];
 
 export type DecorDef = {
   kind: 'decor';
@@ -287,6 +301,22 @@ export const DECOR: DecorDef[] = [
   { kind: 'decor', id: 'pullupbar', size: 1, unlockHq: 1, unlockBase: 2, group: 'training', cost: { stone: 8 } },
   { kind: 'decor', id: 'dipbars', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { stone: 6 } },
   { kind: 'decor', id: 'punchbag', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { stone: 4, timber: 2 } },
+  // Farm (barns and coops bring animals that wander around the base)
+  { kind: 'decor', id: 'hay', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 2 } },
+  { kind: 'decor', id: 'barrels', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 3 } },
+  { kind: 'decor', id: 'pumpkins', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 1, crystal: 1 } },
+  { kind: 'decor', id: 'birdhouse', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 2 } },
+  { kind: 'decor', id: 'coop', size: 1, unlockHq: 1, unlockBase: 2, group: 'farm', cost: { timber: 6, stone: 2 } },
+  { kind: 'decor', id: 'beehive', size: 1, unlockHq: 1, unlockBase: 2, group: 'farm', cost: { timber: 3, crystal: 2 } },
+  { kind: 'decor', id: 'well', size: 1, unlockHq: 1, unlockBase: 2, group: 'farm', cost: { stone: 6, timber: 2 } },
+  { kind: 'decor', id: 'barn', size: 1, unlockHq: 1, unlockBase: 3, group: 'farm', cost: { timber: 12, stone: 4 } },
+  { kind: 'decor', id: 'windmill', size: 1, unlockHq: 1, unlockBase: 4, group: 'farm', cost: { timber: 10, stone: 6 } },
+  // Fun
+  { kind: 'decor', id: 'signpost', size: 1, unlockHq: 1, group: 'fun', cost: { timber: 2 } },
+  { kind: 'decor', id: 'tent', size: 1, unlockHq: 1, unlockBase: 2, group: 'fun', cost: { timber: 4, crystal: 2 } },
+  { kind: 'decor', id: 'parasol', size: 1, unlockHq: 1, unlockBase: 2, group: 'fun', cost: { timber: 2, crystal: 2 } },
+  { kind: 'decor', id: 'sandcastle', size: 1, unlockHq: 1, unlockBase: 3, group: 'fun', cost: { stone: 3 } },
+  { kind: 'decor', id: 'snowman', size: 1, unlockHq: 1, unlockBase: 6, group: 'fun', cost: { crystal: 3 } },
   // Water
   { kind: 'decor', id: 'lilypad', size: 1, unlockHq: 1, unlockBase: 3, group: 'water', onWater: true, cost: { crystal: 2 } },
   { kind: 'decor', id: 'bridge', size: 1, unlockHq: 1, unlockBase: 3, group: 'water', onWater: true, cost: { timber: 6 } }

@@ -2,8 +2,7 @@ import stoneIcon from '../../assets/resources/stone.png';
 import timberIcon from '../../assets/resources/timber.png';
 import crystalIcon from '../../assets/resources/crystal.png';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, Lock, Move as MoveIcon, Palette, Share2, ShieldCheck, X } from 'lucide-react';
-import { renderShareCard, shareOrDownload } from './shareImage';
+import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, Lock, Move as MoveIcon, Palette, ShieldCheck, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
 import { useLanguage } from '../../context/LanguageContext';
@@ -72,7 +71,7 @@ type Mode =
   | { kind: 'placeTrophy'; trophyId: string; custom: Customization }
   | { kind: 'move'; uid: string };
 
-type SheetState = null | 'build' | 'land' | 'share' | { uid: string } | { draft: Draft };
+type SheetState = null | 'build' | 'land' | { uid: string } | { draft: Draft };
 
 /** Swatch colours for the terrain picker. */
 const TERRAIN_SWATCH: Record<TerrainId, string> = {
@@ -402,6 +401,7 @@ export function BaseScreen({
   const [draftCustom, setDraftCustom] = useState<Customization>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [paintWith, setPaintWith] = useState<TerrainId | null>(null);
+  const [zoomed, setZoomed] = useState(false);
   const [decorGroup, setDecorGroup] = useState<DecorGroup | 'all'>('all');
   const level = hqLevel(state);
   const levelInfo = baseLevel(state);
@@ -619,6 +619,15 @@ export function BaseScreen({
       )}
 
       <div className="base-board-wrap" dir="ltr">
+        <button
+          type="button"
+          className="base-zoom-btn"
+          onClick={() => setZoomed((z) => !z)}
+          aria-label={zoomed ? g.zoomOut : g.zoomIn}
+          aria-pressed={zoomed}>
+          {zoomed ? <ZoomOut size={18} strokeWidth={2.5} /> : <ZoomIn size={18} strokeWidth={2.5} />}
+        </button>
+        <div className={zoomed ? 'base-board-scroll is-zoomed' : 'base-board-scroll'}>
         <BaseBoard
           state={state}
           plan={game.plan}
@@ -633,6 +642,7 @@ export function BaseScreen({
           onPaint={(tile) => paintWith && game.paint([tile], paintWith)}
           svgId="base-map-svg"
         />
+        </div>
         {notice && (
           <p className="base-notice" role="status">
             {notice}
@@ -642,21 +652,17 @@ export function BaseScreen({
 
       {mode.kind === 'idle' && !paintWith && (
         <div className="base-actions base-actions--grid">
-          <button type="button" className="base-primary-btn" onClick={() => setSheet('build')}>
+          <button type="button" className="base-primary-btn base-actions-wide" onClick={() => setSheet('build')}>
             <Hammer size={18} strokeWidth={2.5} aria-hidden="true" />
             {g.build}
-          </button>
-          <button type="button" className="base-secondary-btn" onClick={() => setPaintWith('dirt')}>
-            <Brush size={18} strokeWidth={2.5} aria-hidden="true" />
-            {g.paint.button}
           </button>
           <button type="button" className="base-secondary-btn" onClick={() => setSheet('land')}>
             <Expand size={18} strokeWidth={2.5} aria-hidden="true" />
             {g.land.button}
           </button>
-          <button type="button" className="base-secondary-btn" onClick={() => setSheet('share')}>
-            <Share2 size={18} strokeWidth={2.5} aria-hidden="true" />
-            {g.share.button}
+          <button type="button" className="base-secondary-btn" onClick={() => setPaintWith('dirt')}>
+            <Brush size={18} strokeWidth={2.5} aria-hidden="true" />
+            {g.paint.button}
           </button>
         </div>
       )}
@@ -804,10 +810,6 @@ export function BaseScreen({
             {g.customize.place}
           </button>
         </Sheet>
-      )}
-
-      {sheet === 'share' && (
-        <ShareSheet game={game} onClose={() => setSheet(null)} />
       )}
 
       {sheet === 'land' && (
@@ -1145,95 +1147,4 @@ function BuildingRole({
     default:
       return null;
   }
-}
-
-function ShareSheet({ game, onClose }: { game: BaseGame; onClose: () => void }) {
-  const { t, isRtl } = useLanguage();
-  const g = t.game;
-  const { state } = game;
-  const [name, setName] = useState(state.baseName ?? '');
-  const [image, setImage] = useState<{ url: string; blob: Blob } | null>(null);
-  const [busy, setBusy] = useState(false);
-  const info = baseLevel(state);
-  const displayName = name.trim() || g.share.defaultName;
-
-  useEffect(() => {
-    let cancelled = false;
-    const svg = document.getElementById('base-map-svg') as SVGSVGElement | null;
-    if (!svg) return;
-    setBusy(true);
-    const timer = window.setTimeout(async () => {
-      try {
-        const blob = await renderShareCard(
-          svg,
-          {
-            name: displayName,
-            levelLine: `${g.baseLevel.titles[info.title]} · ${g.baseLevel.level(info.level)}`,
-            stats: [
-              { value: String(Object.keys(state.trophies).length), label: g.share.trophies },
-              {
-                value: String(state.placed.filter((p) => getItemDef(p.itemId)?.kind === 'structure' && p.level > 0).length),
-                label: g.share.buildings
-              },
-              { value: String(currentWeeklyStreak(state)), label: g.share.weeks }
-            ],
-            footer: g.share.footer
-          },
-          isRtl
-        );
-        if (cancelled) return;
-        setImage((prev) => {
-          if (prev) URL.revokeObjectURL(prev.url);
-          return { url: URL.createObjectURL(blob), blob };
-        });
-      } finally {
-        if (!cancelled) setBusy(false);
-      }
-    }, 250);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-    // Re-render the card when the name changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [displayName]);
-
-  return (
-    <Sheet title={g.share.title} onClose={onClose}>
-      <label className="base-share-name">
-        <span className="base-customize-label">{g.share.name}</span>
-        <input
-          type="text"
-          value={name}
-          maxLength={32}
-          placeholder={g.share.defaultName}
-          onChange={(event) => setName(event.target.value)}
-          onBlur={() => game.rename(name)}
-        />
-      </label>
-      <div className="base-share-preview">
-        {image ? <img src={image.url} alt={displayName} /> : <p className="base-today-sub">{g.share.making}</p>}
-      </div>
-      <div className="base-item-actions">
-        <button
-          type="button"
-          className="base-primary-btn"
-          disabled={!image || busy}
-          onClick={async () => {
-            game.rename(name);
-            if (image) {
-              try {
-                await shareOrDownload(image.blob, '2failure-base.png', displayName);
-              } catch {
-                // The person closed the share sheet.
-              }
-            }
-          }}>
-          <Share2 size={18} strokeWidth={2.5} aria-hidden="true" />
-          {g.share.share}
-        </button>
-      </div>
-      <p className="base-today-sub">{g.share.hint}</p>
-    </Sheet>
-  );
 }

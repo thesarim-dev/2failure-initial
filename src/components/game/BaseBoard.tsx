@@ -9,7 +9,8 @@ import {
 import { itemSize, type GameState, type PlacedItem, type TodayPlan } from '../../game/engine';
 import { ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
 import { MAX_LAND_LEVEL } from '../../game/catalog';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
+import { BaseCritters } from './Critters';
 
 export { ItemArt, TrophyArt } from './BaseArt';
 
@@ -131,6 +132,11 @@ export function BaseBoard({
   const landX = min * T;
   const landEnd = (max + 1) * T;
 
+  const animate = useMemo(
+    () => typeof window === 'undefined' || !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+    []
+  );
+
   // Drag to paint terrain.
   const svgRef = useRef<SVGSVGElement>(null);
   const lastPainted = useRef<string | null>(null);
@@ -194,6 +200,8 @@ export function BaseBoard({
         <rect x={landX} y={landEnd} width={landEnd - landX} height={5} fill="#2a5b3a" />
       </g>
 
+      <BaseCritters state={state} animate={animate} />
+
       {items.map((item) => {
         const size = itemSize(item.itemId);
         const construction = jobs.get(item.uid);
@@ -223,8 +231,10 @@ export function BaseBoard({
               {building && item.level === 0 ? (
                 <rect x={14} y={30} width={size * T - 28} height={size * T - 40} rx={4} className="base-foundation" />
               ) : (
-                <g transform={item.flip ? `translate(${size * T} 0) scale(-1 1)` : undefined}>
-                  <ItemArt item={item} lit={lit} verified={verified} plan={plan} />
+                <g className="base-pop">
+                  <g transform={item.flip ? `translate(${size * T} 0) scale(-1 1)` : undefined}>
+                    <ItemArt item={item} lit={lit} verified={verified} plan={plan} />
+                  </g>
                 </g>
               )}
             </g>

@@ -142,20 +142,8 @@ export type GameCopy = {
   paint: { button: string; title: string; hint: string; done: string; locked: (level: number) => string };
   terrainNames: Record<import('../game/catalog').TerrainId, string>;
   decorGroups: Record<import('../game/catalog').DecorGroup, string>;
-  share: {
-    button: string;
-    title: string;
-    name: string;
-    defaultName: string;
-    share: string;
-    save: string;
-    making: string;
-    hint: string;
-    trophies: string;
-    buildings: string;
-    weeks: string;
-    footer: string;
-  };
+  zoomIn: string;
+  zoomOut: string;
   flip: string;
 };
 
@@ -219,6 +207,20 @@ const en: GameCopy = {
     punchbag: { name: 'Punching bag', description: 'For cardio days.' },
     lilypad: { name: 'Lily pad', description: 'Goes on water.' },
     bridge: { name: 'Bridge', description: 'Goes on water.' },
+    hay: { name: 'Hay bale', description: 'Cows love it.' },
+    barrels: { name: 'Barrels', description: 'A stack of wooden barrels.' },
+    pumpkins: { name: 'Pumpkins', description: 'A little pumpkin patch.' },
+    birdhouse: { name: 'Birdhouse', description: 'A home for the birds.' },
+    coop: { name: 'Chicken coop', description: 'Brings chickens to your base.' },
+    beehive: { name: 'Beehive', description: 'Buzzing with bees.' },
+    well: { name: 'Well', description: 'An old stone well.' },
+    barn: { name: 'Barn', description: 'Brings cows and sheep to your base.' },
+    windmill: { name: 'Windmill', description: 'Its sails turn in the breeze.' },
+    signpost: { name: 'Signpost', description: 'Points the way.' },
+    tent: { name: 'Tent', description: 'A cosy camping tent.' },
+    parasol: { name: 'Beach parasol', description: 'Shade for the sand.' },
+    sandcastle: { name: 'Sandcastle', description: 'Best on sand.' },
+    snowman: { name: 'Snowman', description: 'Best on snow.' },
   },
   level: (level) => `Level ${level}`,
   maxLevel: 'Max level',
@@ -396,21 +398,10 @@ const en: GameCopy = {
     locked: (level) => `Base level ${level}`
   },
   terrainNames: { grass: 'Grass', meadow: 'Meadow', dirt: 'Dirt', sand: 'Sand', plaza: 'Plaza', water: 'Water', snow: 'Snow' },
-  decorGroups: { nature: 'Nature', comfort: 'Comfort', lights: 'Lights', training: 'Training', paths: 'Paths & walls', water: 'Water' },
-  share: {
-    button: 'Share',
-    title: 'Share your base',
-    name: 'Base name',
-    defaultName: 'My base',
-    share: 'Share image',
-    save: 'Save image',
-    making: 'Making your image…',
-    hint: 'Long-press the image to save it if the buttons don’t work here.',
-    trophies: 'trophies',
-    buildings: 'buildings',
-    weeks: 'weeks on target',
-    footer: 'Built by training on 2failure'
-  },
+  decorGroups: { nature: 'Nature', farm: 'Farm', fun: 'Fun', comfort: 'Comfort', lights: 'Lights', training: 'Training', paths: 'Paths & walls', water: 'Water' },
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+
   flip: 'Flip',
   trainingDays: {
     title: 'Training days per week',
@@ -482,6 +473,20 @@ const he: GameCopy = {
     punchbag: { name: 'שק אגרוף', description: 'לימי קרדיו.' },
     lilypad: { name: 'עלה נופר', description: 'מונח על מים.' },
     bridge: { name: 'גשר', description: 'מונח על מים.' },
+    hay: { name: 'חבילת חציר', description: 'הפרות אוהבות אותה.' },
+    barrels: { name: 'חביות', description: 'ערימת חביות עץ.' },
+    pumpkins: { name: 'דלעות', description: 'ערוגת דלעות קטנה.' },
+    birdhouse: { name: 'בית ציפורים', description: 'בית לציפורים.' },
+    coop: { name: 'לול', description: 'מביא תרנגולות לבסיס שלך.' },
+    beehive: { name: 'כוורת', description: 'מזמזמת בדבורים.' },
+    well: { name: 'באר', description: 'באר אבן ישנה.' },
+    barn: { name: 'אסם', description: 'מביא פרות וכבשים לבסיס שלך.' },
+    windmill: { name: 'טחנת רוח', description: 'הכנפיים מסתובבות ברוח.' },
+    signpost: { name: 'שלט הכוונה', description: 'מראה את הדרך.' },
+    tent: { name: 'אוהל', description: 'אוהל קמפינג נעים.' },
+    parasol: { name: 'שמשיית חוף', description: 'צל לחול.' },
+    sandcastle: { name: 'ארמון חול', description: 'הכי טוב על חול.' },
+    snowman: { name: 'איש שלג', description: 'הכי טוב על שלג.' },
   },
   level: (level) => `שלב ${level}`,
   maxLevel: 'שלב מקסימלי',
@@ -659,21 +664,10 @@ const he: GameCopy = {
     locked: (level) => `רמת בסיס ${level}`
   },
   terrainNames: { grass: 'דשא', meadow: 'אחו', dirt: 'עפר', sand: 'חול', plaza: 'רחבה', water: 'מים', snow: 'שלג' },
-  decorGroups: { nature: 'טבע', comfort: 'נוחות', lights: 'תאורה', training: 'אימון', paths: 'שבילים וחומות', water: 'מים' },
-  share: {
-    button: 'שיתוף',
-    title: 'שתף את הבסיס שלך',
-    name: 'שם הבסיס',
-    defaultName: 'הבסיס שלי',
-    share: 'שתף תמונה',
-    save: 'שמור תמונה',
-    making: 'מכין את התמונה…',
-    hint: 'אם הכפתורים לא עובדים כאן, לחיצה ארוכה על התמונה שומרת אותה.',
-    trophies: 'גביעים',
-    buildings: 'מבנים',
-    weeks: 'שבועות ביעד',
-    footer: 'נבנה מאימונים ב־2failure'
-  },
+  decorGroups: { nature: 'טבע', farm: 'חווה', fun: 'כיף', comfort: 'נוחות', lights: 'תאורה', training: 'אימון', paths: 'שבילים וחומות', water: 'מים' },
+  zoomIn: 'הגדלה',
+  zoomOut: 'הקטנה',
+
   flip: 'היפוך',
   trainingDays: {
     title: 'ימי אימון בשבוע',
@@ -745,6 +739,20 @@ const ar: GameCopy = {
     punchbag: { name: 'كيس ملاكمة', description: 'لأيام الكارديو.' },
     lilypad: { name: 'ورقة زنبق', description: 'توضع على الماء.' },
     bridge: { name: 'جسر', description: 'يوضع على الماء.' },
+    hay: { name: 'بالة قش', description: 'الأبقار تحبها.' },
+    barrels: { name: 'براميل', description: 'كومة من البراميل الخشبية.' },
+    pumpkins: { name: 'قرع', description: 'حقل قرع صغير.' },
+    birdhouse: { name: 'بيت طيور', description: 'بيت للطيور.' },
+    coop: { name: 'قن الدجاج', description: 'يجلب الدجاج إلى قاعدتك.' },
+    beehive: { name: 'خلية نحل', description: 'تطنّ بالنحل.' },
+    well: { name: 'بئر', description: 'بئر حجري قديم.' },
+    barn: { name: 'حظيرة', description: 'تجلب الأبقار والأغنام إلى قاعدتك.' },
+    windmill: { name: 'طاحونة هواء', description: 'تدور أشرعتها مع النسيم.' },
+    signpost: { name: 'لافتة إرشاد', description: 'تدلّ على الطريق.' },
+    tent: { name: 'خيمة', description: 'خيمة تخييم مريحة.' },
+    parasol: { name: 'مظلة شاطئ', description: 'ظل فوق الرمل.' },
+    sandcastle: { name: 'قلعة رملية', description: 'أجمل على الرمل.' },
+    snowman: { name: 'رجل الثلج', description: 'أجمل على الثلج.' },
   },
   level: (level) => `المستوى ${level}`,
   maxLevel: 'أعلى مستوى',
@@ -922,21 +930,10 @@ const ar: GameCopy = {
     locked: (level) => `مستوى القاعدة ${level}`
   },
   terrainNames: { grass: 'عشب', meadow: 'مرج', dirt: 'تراب', sand: 'رمل', plaza: 'ساحة', water: 'ماء', snow: 'ثلج' },
-  decorGroups: { nature: 'طبيعة', comfort: 'راحة', lights: 'إضاءة', training: 'تدريب', paths: 'ممرات وأسوار', water: 'ماء' },
-  share: {
-    button: 'مشاركة',
-    title: 'شارك قاعدتك',
-    name: 'اسم القاعدة',
-    defaultName: 'قاعدتي',
-    share: 'شارك الصورة',
-    save: 'احفظ الصورة',
-    making: 'جارٍ تجهيز صورتك…',
-    hint: 'إذا لم تعمل الأزرار هنا، اضغط مطولاً على الصورة لحفظها.',
-    trophies: 'كؤوس',
-    buildings: 'مبانٍ',
-    weeks: 'أسابيع على الهدف',
-    footer: 'بُنيت بالتدريب على 2failure'
-  },
+  decorGroups: { nature: 'طبيعة', farm: 'مزرعة', fun: 'مرح', comfort: 'راحة', lights: 'إضاءة', training: 'تدريب', paths: 'ممرات وأسوار', water: 'ماء' },
+  zoomIn: 'تكبير',
+  zoomOut: 'تصغير',
+
   flip: 'قلب',
   trainingDays: {
     title: 'أيام التدريب في الأسبوع',

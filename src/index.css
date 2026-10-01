@@ -3769,37 +3769,11 @@
   .base-ground {
     fill: transparent;
   }
-  .base-share-name {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-  .base-share-name input {
-    min-height: 2.6rem;
-    padding: 0 0.8rem;
-    border-radius: 0.7rem;
-    font-weight: 700;
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-  }
-  .dark .base-share-name input {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-  .base-share-preview {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 14rem;
-    border-radius: 1rem;
-    background: #0b1020;
-    overflow: hidden;
-  }
-  .base-share-preview img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
+
+
+
+
+
 
   /* Ambience: chimney smoke, flickering fire, shimmering water, fireflies. */
   .base-smoke {
@@ -3846,6 +3820,106 @@
     }
     .base-firefly {
       opacity: 0.6;
+    }
+  }
+
+  /* ---------- Buttons, zoom, critters and cute motion ---------- */
+  .base-actions-wide {
+    grid-column: 1 / -1;
+  }
+  .base-zoom-btn {
+    position: absolute;
+    top: 0.5rem;
+    inset-inline-end: 0.5rem;
+    z-index: 2;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    color: #f4f4f0;
+    background: rgba(13, 19, 16, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(6px);
+  }
+  .base-zoom-btn:focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
+  .base-board-scroll {
+    overflow: hidden;
+  }
+  .base-board-scroll.is-zoomed {
+    overflow: auto;
+    max-height: 70vh;
+    -webkit-overflow-scrolling: touch;
+  }
+  .base-board-scroll.is-zoomed .base-board {
+    width: 190%;
+    max-width: none;
+  }
+  .base-critter-bob {
+    animation: base-critter-bob 0.5s ease-in-out infinite alternate;
+  }
+  @keyframes base-critter-bob {
+    from { transform: translateY(0); }
+    to { transform: translateY(-1.5px); }
+  }
+  .base-critter-float {
+    animation: base-critter-float 2.4s ease-in-out infinite alternate;
+  }
+  @keyframes base-critter-float {
+    from { transform: translateY(0); }
+    to { transform: translateY(2px); }
+  }
+  .base-butterfly {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: base-flap 0.25s ease-in-out infinite alternate;
+  }
+  @keyframes base-flap {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0.3); }
+  }
+  .base-spin {
+    animation: base-spin 9s linear infinite;
+  }
+  @keyframes base-spin {
+    to { transform: rotate(360deg); }
+  }
+  .base-buzz {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: base-buzz 1.6s ease-in-out infinite;
+  }
+  @keyframes base-buzz {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(3px, -3px); }
+    50% { transform: translate(-2px, -5px); }
+    75% { transform: translate(-3px, 1px); }
+  }
+  .base-bob {
+    animation: base-critter-bob 0.7s ease-in-out infinite alternate;
+  }
+  .base-pop {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: base-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes base-pop {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .base-critter-bob,
+    .base-critter-float,
+    .base-butterfly,
+    .base-spin,
+    .base-buzz,
+    .base-bob,
+    .base-pop {
+      animation: none;
     }
   }
 }

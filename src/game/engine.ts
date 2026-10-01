@@ -132,7 +132,7 @@ export type TodayPlan = {
 };
 
 export type GameState = {
-  version: 2;
+  version: 3;
   resources: Resources;
   placed: PlacedItem[];
   /** Jobs in progress; several can run at once if there are free builders. */
@@ -157,7 +157,7 @@ export type GameState = {
 
 export function createInitialState(): GameState {
   return {
-    version: 2,
+    version: 3,
     resources: { ...STARTING_RESOURCES },
     placed: [{ uid: 'u1', itemId: 'hq', x: HQ_POSITION.x, y: HQ_POSITION.y, level: 1 }],
     constructions: [],

@@ -44,7 +44,30 @@ type SaveV1 = Omit<GameState, 'version' | 'constructions' | 'landLevel'> & {
  * v1 bases lived on a 10×10 plot where HQ level set the land. v2 uses a 14×14
  * plot with land bought by coins: re-centre everything and keep the land they had.
  */
-function migrateV1(save: SaveV1): GameState {
+type SaveV2 = Omit<GameState, 'version'> & { version: 2 };
+
+/**
+ * v2 bases lived on a 14×14 plot with land sides 6–14. v3 uses a 20×20 plot
+ * with land sides 10–20: re-centre everything (+3) and keep at least the land
+ * the player had (their land never shrinks).
+ */
+function migrateV2(save: SaveV2): GameState {
+  const shift = (key: string) => {
+    const [x, y] = key.split(',').map(Number);
+    return `${x + 3},${y + 3}`;
+  };
+  const terrain: GameState['terrain'] = {};
+  for (const [key, value] of Object.entries(save.terrain ?? {})) terrain[shift(key)] = value;
+  return {
+    ...save,
+    version: 3,
+    placed: save.placed.map((p) => ({ ...p, x: p.x + 3, y: p.y + 3 })),
+    terrain,
+    landLevel: Math.max(0, (save.landLevel ?? 0) - 2)
+  };
+}
+
+function migrateV1(save: SaveV1): SaveV2 {
   const hq = save.placed.find((p) => p.itemId === 'hq')?.level ?? 1;
   const placed: PlacedItem[] = save.placed.map((p) => ({ ...p, x: p.x + 2, y: p.y + 2 }));
   const job = save.construction;
@@ -64,9 +87,16 @@ function load(userId: string | undefined): GameState {
   try {
     const raw = window.localStorage.getItem(storageKeyFor(userId, STORAGE_KEY));
     if (!raw) return createInitialState();
-    const parsed = JSON.parse(raw) as GameState | SaveV1;
+    const parsed = JSON.parse(raw) as GameState | SaveV2 | SaveV1;
     if (!parsed || !Array.isArray(parsed.placed)) return createInitialState();
-    const state = parsed.version === 1 ? migrateV1(parsed) : parsed.version === 2 ? parsed : null;
+    const state =
+      parsed.version === 1
+        ? migrateV2(migrateV1(parsed))
+        : parsed.version === 2
+          ? migrateV2(parsed)
+          : parsed.version === 3
+            ? parsed
+            : null;
     if (!state) return createInitialState();
     // Iron was retired: its stock becomes timber (both came from leg sets).
     const resources = { ...(state.resources as Record<string, number>) };

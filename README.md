@@ -562,13 +562,13 @@ Buildings go up to level 3, and each level looks different: rustic, then reinfor
 
 **Base level.** Everything you build, upgrade and earn adds points to your base level, which moves through titles from Campsite to Legend (Campsite, Outpost, Hamlet, Village, Town, Stronghold, Citadel, Capital, Legend). Each level unlocks new decorations and ground types; the card at the top of the Base tab always shows what the next level unlocks.
 
-**Decorate freely.** There are 23 decorations in six groups (Nature, Comfort, Lights, Training, Paths & walls, Water), including a calisthenics park: pull-up bar, dip bars, plyo box and punching bag. Tap anything you've placed to customize, move or **Flip** it.
+**Decorate freely.** There are 37 decorations in eight groups (Nature, Farm, Comfort, Fun, Lights, Training, Paths & walls, Water), including a calisthenics park (pull-up bar, dip bars, plyo box, punching bag) and a farm (barn, chicken coop, windmill, well, hay and more). Tap anything you've placed to customize, move or **Flip** it.
+
+**Animals.** A cow, a chicken and a bunny wander around your base. Each **Barn** brings more cows and sheep, each **Chicken coop** more chickens, and ponds get ducks. Butterflies flutter over flowers and meadows.
 
 **Paint the ground.** Tap **Paint**, pick a ground (grass, dirt, meadow, sand, plaza, water, snow) and drag across tiles. Painting is free; more grounds unlock with base level. Water holds lily pads and bridges; everything else needs land.
 
-**Share.** Tap **Share** to name your base and make an image of it with your level and stats. On a phone it opens the share menu; elsewhere it downloads.
-
-**Land.** Your plot starts at 6×6. Tap **Expand land** to grow it with coins: 8×8 for 500, 10×10 for 1,200, 12×12 for 2,500 and 14×14 for 4,000.
+**Land.** Your plot starts at 10×10. Tap **Expand land** to grow it with coins: 12×12 for 500, 14×14 for 1,200, 16×16 for 2,500, 18×18 for 4,000 and 20×20 for 6,000. Use the magnifier on the map to zoom in on big bases.
 
 Decorations are refunded in full if removed. **Trophies** can only be earned, never bought; tap one to see its proof. Rep trophies counted by the AI camera are marked as verified.
 

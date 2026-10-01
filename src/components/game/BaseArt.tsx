@@ -1191,6 +1191,229 @@ function Decor({ id, lit, style, color }: { id: string; lit: boolean; style?: st
           ))}
         </g>
       );
+    case 'hay':
+      return (
+        <g>
+          <Shadow rx={30} cy={86} />
+          <Block x={18} y={52} w={56} h={32} d={14} s={{ light: '#f6df8a', base: '#e2bf5a', dark: '#a8862f' }} />
+          {[60, 70].map((y) => (
+            <rect key={y} x={18} y={y} width={56} height={2.5} fill="#a8862f" opacity={0.7} />
+          ))}
+          <path d="M22 52 l3 -6 M34 52 l2 -7 M48 52 l3 -6 M62 52 l2 -6" stroke="#f6df8a" strokeWidth={2} strokeLinecap="round" />
+        </g>
+      );
+    case 'barrels':
+      return (
+        <g>
+          <Shadow rx={32} cy={86} />
+          {[
+            [32, 62],
+            [62, 62],
+            [47, 40]
+          ].map(([cx, cy]) => (
+            <g key={`${cx}${cy}`}>
+              <rect x={cx - 13} y={cy - 4} width={26} height={26} rx={6} fill={WOOD.base} />
+              <rect x={cx + 3} y={cy - 4} width={10} height={26} rx={4} fill={WOOD.dark} />
+              <ellipse cx={cx} cy={cy - 4} rx={13} ry={5} fill={WOOD.light} />
+              <rect x={cx - 13} y={cy + 3} width={26} height={2.5} fill={METAL.dark} />
+              <rect x={cx - 13} y={cy + 14} width={26} height={2.5} fill={METAL.dark} />
+            </g>
+          ))}
+        </g>
+      );
+    case 'pumpkins':
+      return (
+        <g>
+          <Shadow rx={32} cy={86} />
+          {[
+            [34, 70, 14],
+            [62, 72, 11],
+            [50, 56, 9]
+          ].map(([cx, cy, r]) => (
+            <g key={`${cx}${cy}`}>
+              <ellipse cx={cx} cy={cy} rx={r * 1.15} ry={r} fill="#d9661f" />
+              <ellipse cx={cx - r * 0.35} cy={cy} rx={r * 0.45} ry={r * 0.95} fill="#f08a2e" />
+              <ellipse cx={cx + r * 0.45} cy={cy} rx={r * 0.35} ry={r * 0.9} fill="#b8521a" />
+              <rect x={cx - 1.5} y={cy - r - 5} width={3} height={6} rx={1} fill={LEAF.dark} />
+            </g>
+          ))}
+        </g>
+      );
+    case 'birdhouse': {
+      const c = accent ?? THEME_SHADES.red;
+      return (
+        <g>
+          <Shadow rx={14} />
+          <rect x={47} y={50} width={6} height={38} fill={WOOD.dark} />
+          <Block x={36} y={30} w={24} h={22} d={8} s={WOOD} />
+          <circle cx={48} cy={40} r={4} fill="#2a1a10" />
+          <polygon points="32,32 48,16 64,32" fill={c.base} />
+          <polygon points="48,16 64,32 72,27 56,11" fill={c.dark} />
+          <circle cx={68} cy={22} r={3.5} fill="#ffd76a" className="base-bob" />
+        </g>
+      );
+    }
+    case 'coop': {
+      const c = accent ?? THEME_SHADES.red;
+      return (
+        <g>
+          <Shadow rx={36} cy={86} />
+          <Block x={18} y={50} w={52} h={34} d={14} s={WOOD} />
+          {[58, 66, 74].map((y) => (
+            <rect key={y} x={18} y={y} width={52} height={1.2} fill={WOOD.dark} opacity={0.6} />
+          ))}
+          <rect x={36} y={66} width={14} height={18} rx={7} fill="#2a1a10" />
+          <rect x={30} y={78} width={26} height={3} fill={WOOD.light} transform="rotate(-12 43 80)" />
+          <GableRoof x={18} y={50} w={52} d={14} rise={20} s={c} />
+        </g>
+      );
+    }
+    case 'beehive':
+      return (
+        <g>
+          <Shadow rx={22} />
+          <rect x={44} y={64} width={6} height={24} fill={WOOD.dark} />
+          {[0, 1, 2, 3].map((i) => (
+            <ellipse key={i} cx={47} cy={62 - i * 9} rx={20 - i * 3.5} ry={6} fill={i % 2 ? '#e2bf5a' : '#f6d36b'} />
+          ))}
+          <ellipse cx={47} cy={34} rx={7} ry={4} fill="#f6df8a" />
+          <ellipse cx={47} cy={58} rx={4} ry={3} fill="#5a3a10" />
+          <g className="base-buzz">
+            <circle cx={70} cy={30} r={2.5} fill="#2a2a2a" />
+            <circle cx={70} cy={30} r={1.2} fill="#ffd76a" />
+            <circle cx={26} cy={42} r={2.5} fill="#2a2a2a" />
+            <circle cx={26} cy={42} r={1.2} fill="#ffd76a" />
+          </g>
+        </g>
+      );
+    case 'well':
+      return (
+        <g>
+          <Shadow rx={30} cy={86} />
+          <ellipse cx={50} cy={78} rx={26} ry={9} fill={STONE.dark} />
+          <rect x={24} y={58} width={52} height={20} fill={STONE.base} />
+          <rect x={56} y={58} width={20} height={20} fill={STONE.dark} />
+          <ellipse cx={50} cy={58} rx={26} ry={9} fill={STONE.light} />
+          <ellipse cx={50} cy={58} rx={18} ry={5.5} fill="#1f3a52" />
+          <rect x={24} y={20} width={4} height={40} fill={WOOD.dark} />
+          <rect x={72} y={20} width={4} height={40} fill={WOOD.dark} />
+          <polygon points="18,24 50,8 82,24" fill={THEME_SHADES.red.base} />
+          <polygon points="50,8 82,24 66,24" fill={THEME_SHADES.red.dark} />
+          <rect x={46} y={30} width={8} height={10} rx={1} fill={WOOD.base} />
+        </g>
+      );
+    case 'barn': {
+      const c = accent ?? THEME_SHADES.red;
+      const walls = { light: mixHex(c.light, '#ffffff', 0.25), base: c.base, dark: c.dark };
+      return (
+        <g>
+          <Shadow rx={40} cy={88} />
+          <Block x={12} y={46} w={64} h={42} d={14} s={walls} />
+          <rect x={30} y={60} width={28} height={28} fill="#ffffff" opacity={0.9} />
+          <rect x={33} y={63} width={22} height={25} fill={c.dark} />
+          <path d="M33 63 L55 88 M55 63 L33 88" stroke="#ffffff" strokeWidth={2.5} />
+          <polygon points="10,48 22,28 44,18 66,28 78,48" fill={STONE.dark} />
+          <polygon points="44,18 66,28 78,48 92,40 80,22 58,12" fill={STONE.base} />
+          <rect x={38} y={30} width={12} height={10} rx={1.5} fill={WINDOW_LIT} opacity={0.85} />
+        </g>
+      );
+    }
+    case 'windmill': {
+      const c = accent ?? THEME_SHADES.white;
+      return (
+        <g>
+          <Shadow rx={26} cy={88} />
+          <polygon points="34,88 40,30 60,30 66,88" fill={STONE.base} />
+          <polygon points="52,30 60,30 66,88 56,88" fill={STONE.dark} />
+          <polygon points="36,32 50,16 64,32" fill={c.base} />
+          <polygon points="50,16 64,32 56,32" fill={c.dark} />
+          <rect x={44} y={66} width={12} height={22} rx={6} fill={WOOD.dark} />
+          <g transform="translate(50 32)">
+            <g className="base-spin">
+              {[0, 90, 180, 270].map((deg) => (
+                <g key={deg} transform={`rotate(${deg})`}>
+                  <rect x={-2} y={-34} width={4} height={34} fill={WOOD.dark} />
+                  <rect x={2} y={-32} width={10} height={24} fill={WOOD.light} opacity={0.95} />
+                </g>
+              ))}
+            </g>
+            <circle r={4} fill={METAL.dark} />
+          </g>
+        </g>
+      );
+    }
+    case 'signpost':
+      return (
+        <g>
+          <Shadow rx={16} />
+          <rect x={46} y={20} width={7} height={68} fill={WOOD.base} />
+          <rect x={50} y={20} width={3} height={68} fill={WOOD.dark} />
+          <polygon points="24,26 66,26 74,33 66,40 24,40" fill={WOOD.light} />
+          <polygon points="76,46 34,46 26,53 34,60 76,60" fill={WOOD.base} />
+          <rect x={32} y={31} width={26} height={3} rx={1.5} fill={WOOD.dark} opacity={0.6} />
+          <rect x={40} y={51} width={28} height={3} rx={1.5} fill={WOOD.dark} opacity={0.6} />
+        </g>
+      );
+    case 'tent': {
+      const c = accent ?? THEME_SHADES.amber;
+      return (
+        <g>
+          <Shadow rx={38} cy={86} />
+          <polygon points="12,84 46,26 80,84" fill={c.base} />
+          <polygon points="46,26 80,84 92,76 58,20" fill={c.dark} />
+          <polygon points="38,84 46,56 54,84" fill="#2a1a10" />
+          <polygon points="46,26 30,56 36,56" fill={c.light} opacity={0.6} />
+          <line x1={46} y1={26} x2={46} y2={14} stroke={WOOD.dark} strokeWidth={3} />
+          <polygon points="46,14 58,17 46,20" fill={THEME_SHADES.lime.base} />
+        </g>
+      );
+    }
+    case 'parasol': {
+      const c = accent ?? THEME_SHADES.cyan;
+      return (
+        <g>
+          <ellipse cx={50} cy={84} rx={34} ry={8} fill="#000" opacity={0.2} />
+          <rect x={48} y={30} width={4} height={56} fill="#f4f4f0" />
+          <path d="M14 34 Q50 4 86 34 Z" fill={c.base} />
+          {[26, 50, 74].map((x) => (
+            <path key={x} d={`M${x - 12} 34 Q${x} 14 ${x + 12} 34`} fill="#ffffff" opacity={x === 50 ? 0.9 : 0} />
+          ))}
+          <path d="M14 34 Q32 28 38 34 Q50 28 62 34 Q68 28 86 34" fill="none" stroke={c.dark} strokeWidth={3} />
+          <rect x={20} y={72} width={36} height={8} rx={3} fill={THEME_SHADES.lime.light} transform="rotate(-8 38 76)" />
+        </g>
+      );
+    }
+    case 'sandcastle':
+      return (
+        <g>
+          <Shadow rx={34} cy={86} />
+          <Block x={22} y={56} w={48} h={28} d={10} s={{ light: '#f3dca4', base: '#d9b672', dark: '#a8864a' }} />
+          {[22, 38, 54].map((x) => (
+            <Block key={x} x={x} y={46} w={12} h={10} d={4} s={{ light: '#f3dca4', base: '#d9b672', dark: '#a8864a' }} />
+          ))}
+          <rect x={40} y={68} width={10} height={16} rx={5} fill="#a8864a" />
+          <line x1={46} y1={46} x2={46} y2={28} stroke={WOOD.dark} strokeWidth={2} />
+          <polygon points="46,28 58,32 46,36" fill={THEME_SHADES.red.base} />
+        </g>
+      );
+    case 'snowman': {
+      const scarf = accent ?? THEME_SHADES.red;
+      return (
+        <g>
+          <Shadow rx={22} />
+          <circle cx={50} cy={70} r={18} fill="#eef3f8" />
+          <circle cx={56} cy={72} r={14} fill="#d6e0ea" opacity={0.6} />
+          <circle cx={50} cy={42} r={13} fill="#ffffff" />
+          <rect x={38} y={50} width={24} height={6} rx={3} fill={scarf.base} />
+          <rect x={52} y={52} width={6} height={14} rx={3} fill={scarf.dark} />
+          <circle cx={46} cy={39} r={1.8} fill="#2a2a2a" />
+          <circle cx={54} cy={39} r={1.8} fill="#2a2a2a" />
+          <polygon points="50,43 62,45 50,47" fill="#f08a2e" />
+          <rect x={40} y={22} width={20} height={6} fill="#2a2a2a" />
+          <rect x={44} y={12} width={12} height={12} fill="#2a2a2a" />
+        </g>
+      );
+    }
     default:
       return null;
   }
