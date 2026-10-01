@@ -1,6 +1,5 @@
 import stoneIcon from '../../assets/resources/stone.png';
 import timberIcon from '../../assets/resources/timber.png';
-import ironIcon from '../../assets/resources/iron.png';
 import crystalIcon from '../../assets/resources/crystal.png';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, Lock, Move as MoveIcon, Palette, Share2, ShieldCheck, X } from 'lucide-react';
@@ -97,7 +96,6 @@ function unlocksAt(level: number): { decor: string[]; terrain: TerrainId[] } {
 const RESOURCE_ICON: Record<ResourceId, string> = {
   stone: stoneIcon,
   timber: timberIcon,
-  iron: ironIcon,
   crystal: crystalIcon
 };
 
@@ -254,7 +252,7 @@ function TodayPanel({ game, plan }: { game: BaseGame; plan: TodayPlan | null }) 
                     )
                   )}
                 </span>
-                <CostList cost={quest.reward} resources={{ stone: 1e9, timber: 1e9, iron: 1e9, crystal: 1e9 }} />
+                <CostList cost={quest.reward} resources={{ stone: 1e9, timber: 1e9, crystal: 1e9 }} />
               </li>
             ))}
           </ul>
@@ -1061,7 +1059,7 @@ function BuildingRole({
   const g = t.game;
   const { state, plan } = game;
   const nameOf = useExerciseName();
-  const [from, setFrom] = useState<ResourceId>('iron');
+  const [from, setFrom] = useState<ResourceId>('stone');
   const [to, setTo] = useState<ResourceId>('timber');
 
   switch (item.itemId) {

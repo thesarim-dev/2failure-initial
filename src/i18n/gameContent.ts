@@ -163,11 +163,10 @@ const en: GameCopy = {
   tabs: { train: 'Train', base: 'Base' },
   title: 'Your base',
   hqLevel: (level) => `HQ level ${level}`,
-  resources: { stone: 'Stone', timber: 'Timber', iron: 'Iron', crystal: 'Crystal' },
+  resources: { stone: 'Stone', timber: 'Timber', crystal: 'Crystal' },
   resourceSource: {
-    stone: 'from push sets',
-    timber: 'from pull sets',
-    iron: 'from leg sets',
+    stone: 'from upper-body sets',
+    timber: 'from lower-body sets',
     crystal: 'from core sets'
   },
   status: {
@@ -193,7 +192,7 @@ const en: GameCopy = {
     },
     watchtower: { name: 'Watchtower', description: 'A stone lookout, built mostly from push sets.' },
     lodge: { name: 'Lodge', description: 'A timber lodge, built mostly from pull sets.' },
-    forge: { name: 'Forge', description: 'An iron forge, built mostly from leg sets.' },
+    forge: { name: 'Forge', description: 'A forge of stone and timber.' },
     spring: { name: 'Crystal Spring', description: 'A calm spring, built mostly from core sets.' },
     yard: { name: 'Training Yard', description: "Your training ground. It shows today's workout as stations." },
     path: { name: 'Path', description: 'Stone paving to connect your buildings.' },
@@ -420,7 +419,7 @@ const en: GameCopy = {
   },
   intro: {
     title: 'Welcome to your base',
-    body: 'Every set you finish earns materials. Push sets earn stone, pull sets timber, leg sets iron, and core sets crystal. Spend them on buildings, which finish as you train, and on decorations.',
+    body: 'Every set you finish earns materials: upper-body sets earn stone, lower-body sets timber, and core sets crystal. Bigger sets earn more. Spend them on buildings, which finish as you train, and on decorations.',
     rule: "Trophies can't be bought. You earn them by training, then show them off here.",
     ok: "Let's build"
   }
@@ -430,11 +429,10 @@ const he: GameCopy = {
   tabs: { train: 'אימון', base: 'בסיס' },
   title: 'הבסיס שלך',
   hqLevel: (level) => `מפקדה שלב ${level}`,
-  resources: { stone: 'אבן', timber: 'עץ', iron: 'ברזל', crystal: 'קריסטל' },
+  resources: { stone: 'אבן', timber: 'עץ', crystal: 'קריסטל' },
   resourceSource: {
-    stone: 'מסטים של דחיפה',
-    timber: 'מסטים של משיכה',
-    iron: 'מסטים של רגליים',
+    stone: 'מסטים של פלג גוף עליון',
+    timber: 'מסטים של פלג גוף תחתון',
     crystal: 'מסטים של ליבה'
   },
   status: {
@@ -457,7 +455,7 @@ const he: GameCopy = {
     hq: { name: 'מפקדה', description: 'הלב של הבסיס. שדרג אותה כדי לפתוח עוד שטח ומבנים חדשים.' },
     watchtower: { name: 'מגדל תצפית', description: 'מגדל אבן, נבנה בעיקר מסטים של דחיפה.' },
     lodge: { name: 'בקתה', description: 'בקתת עץ, נבנית בעיקר מסטים של משיכה.' },
-    forge: { name: 'נפחייה', description: 'נפחיית ברזל, נבנית בעיקר מסטים של רגליים.' },
+    forge: { name: 'נפחייה', description: 'נפחייה מאבן ועץ.' },
     spring: { name: 'מעיין קריסטל', description: 'מעיין רגוע, נבנה בעיקר מסטים של ליבה.' },
     yard: { name: 'חצר אימונים', description: 'מגרש האימונים שלך. מציג את האימון של היום כתחנות.' },
     path: { name: 'שביל', description: 'ריצוף אבן שמחבר בין המבנים.' },
@@ -684,7 +682,7 @@ const he: GameCopy = {
   },
   intro: {
     title: 'ברוך הבא לבסיס שלך',
-    body: 'כל סט שאתה מסיים מזכה בחומרים. סטים של דחיפה נותנים אבן, משיכה עץ, רגליים ברזל וליבה קריסטל. השתמש בהם כדי לבנות מבנים, שנגמרים ככל שאתה מתאמן, ולקנות קישוטים.',
+    body: 'כל סט שאתה מסיים מזכה בחומרים: פלג גוף עליון נותן אבן, פלג גוף תחתון עץ, וליבה קריסטל. סטים גדולים יותר מזכים ביותר. השתמש בהם כדי לבנות מבנים, שנגמרים ככל שאתה מתאמן, ולקנות קישוטים.',
     rule: 'אי אפשר לקנות גביעים. משיגים אותם באימונים, ומציגים אותם כאן.',
     ok: 'בוא נבנה'
   }
@@ -694,11 +692,10 @@ const ar: GameCopy = {
   tabs: { train: 'تدريب', base: 'القاعدة' },
   title: 'قاعدتك',
   hqLevel: (level) => `المقر مستوى ${level}`,
-  resources: { stone: 'حجر', timber: 'خشب', iron: 'حديد', crystal: 'كريستال' },
+  resources: { stone: 'حجر', timber: 'خشب', crystal: 'كريستال' },
   resourceSource: {
-    stone: 'من مجموعات الدفع',
-    timber: 'من مجموعات السحب',
-    iron: 'من مجموعات الساقين',
+    stone: 'من مجموعات الجزء العلوي',
+    timber: 'من مجموعات الجزء السفلي',
     crystal: 'من مجموعات الجذع'
   },
   status: {
@@ -721,7 +718,7 @@ const ar: GameCopy = {
     hq: { name: 'المقر', description: 'قلب قاعدتك. طوّره لتفتح أرضاً أكبر ومبانيَ جديدة.' },
     watchtower: { name: 'برج المراقبة', description: 'برج حجري، يُبنى غالباً من مجموعات الدفع.' },
     lodge: { name: 'الكوخ', description: 'كوخ خشبي، يُبنى غالباً من مجموعات السحب.' },
-    forge: { name: 'الحدادة', description: 'ورشة حدادة، تُبنى غالباً من مجموعات الساقين.' },
+    forge: { name: 'الحدادة', description: 'ورشة حدادة من الحجر والخشب.' },
     spring: { name: 'نبع الكريستال', description: 'نبع هادئ، يُبنى غالباً من مجموعات الجذع.' },
     yard: { name: 'ساحة التدريب', description: 'ساحة تدريبك. تعرض تمرين اليوم كمحطات.' },
     path: { name: 'ممر', description: 'رصف حجري يربط بين مبانيك.' },
@@ -948,7 +945,7 @@ const ar: GameCopy = {
   },
   intro: {
     title: 'مرحباً بك في قاعدتك',
-    body: 'كل مجموعة تنهيها تمنحك مواد. مجموعات الدفع تمنح حجراً، والسحب خشباً، والساقان حديداً، والجذع كريستالاً. استخدمها لبناء مبانٍ تكتمل كلما تدربت، ولشراء الزينة.',
+    body: 'كل مجموعة تنهيها تمنحك مواد: الجزء العلوي يمنح حجراً، والجزء السفلي خشباً، والجذع كريستالاً. المجموعات الأكبر تمنح أكثر. استخدمها لبناء مبانٍ تكتمل كلما تدربت، ولشراء الزينة.',
     rule: 'لا يمكن شراء الكؤوس. تحصل عليها بالتدريب، ثم تعرضها هنا.',
     ok: 'لنبدأ البناء'
   }

@@ -290,7 +290,7 @@ export function MainApp() {
   const finishWorkoutSession = (
     duration: number,
     repsLogged?: number,
-    options?: { setContext?: typeof summarySetContext; verified?: boolean }
+    options?: { setContext?: typeof summarySetContext; verified?: boolean; weightKg?: number }
   ) => {
     if (!currentMove) return;
     const categoryId = currentMove.categoryId;
@@ -298,7 +298,8 @@ export function MainApp() {
       move: currentMove,
       durationSeconds: duration,
       reps: repsLogged,
-      verified: options?.verified
+      verified: options?.verified,
+      weightKg: options?.weightKg
     });
     if (categoryId === 'pushups' && repsLogged && repsLogged > 0) {
       addPushupReps(repsLogged);
@@ -401,6 +402,7 @@ export function MainApp() {
       );
       setLastSetResult(result);
       finishWorkoutSession(lastDuration, reps, {
+        weightKg,
         setContext: {
           setNumber: setContext.setNumber,
           totalSets: setContext.totalSets,

@@ -537,7 +537,7 @@ If the home screen shows a red error banner:
 
 Every set you finish earns materials for your own base. Tap **Base** in the bottom bar to see it.
 
-**Materials** come from the kind of set you do: push sets earn stone, pull sets timber, leg sets iron, core sets crystal, and stretches a little of each.
+**Materials** come from the kind of set you do: upper-body sets (push and pull) earn stone, lower-body sets earn timber, core sets earn crystal, and stretches earn 1 of each. A typical set earns about 3; bigger sets earn more, scaled to how hard the exercise is (10 pushups ≈ 3, 30 ≈ 9; 12 pull-ups ≈ 6), and longer holds or a heavier backpack earn more too, up to 12 per set. Coins are separate and still pay for land, upgrades and the store.
 
 **Today's plan** is exactly what the Train tab shows: your rotating-program day, or your equipped lineup when the program is off. Sets in today's plan earn full materials. A few sets beyond the plan earn half, then nothing, because rest is part of training. Finishing the whole plan earns a session bonus. Sets under 10 seconds don't earn anything.
 

@@ -9,8 +9,9 @@
  * - Trophies can only be earned, never bought.
  */
 
-export type ResourceId = 'stone' | 'timber' | 'iron' | 'crystal';
-export const RESOURCE_IDS: ResourceId[] = ['stone', 'timber', 'iron', 'crystal'];
+/** Building materials. Coins (the workout currency) are separate. */
+export type ResourceId = 'stone' | 'timber' | 'crystal';
+export const RESOURCE_IDS: ResourceId[] = ['stone', 'timber', 'crystal'];
 
 export type Resources = Record<ResourceId, number>;
 export type Cost = Partial<Resources>;
@@ -18,17 +19,18 @@ export type Cost = Partial<Resources>;
 /** Where a set's resource comes from. */
 export type TrainingPattern = 'push' | 'pull' | 'legs' | 'core' | 'recovery';
 
+/** Upper body (push and pull) earns stone, lower body timber, core crystal. */
 export const PATTERN_RESOURCE: Record<Exclude<TrainingPattern, 'recovery'>, ResourceId> = {
   push: 'stone',
-  pull: 'timber',
-  legs: 'iron',
+  pull: 'stone',
+  legs: 'timber',
   core: 'crystal'
 };
 
-export const EMPTY_RESOURCES: Resources = { stone: 0, timber: 0, iron: 0, crystal: 0 };
+export const EMPTY_RESOURCES: Resources = { stone: 0, timber: 0, crystal: 0 };
 
 /** Enough to place a first building and a few decorations right away. */
-export const STARTING_RESOURCES: Resources = { stone: 25, timber: 25, iron: 25, crystal: 15 };
+export const STARTING_RESOURCES: Resources = { stone: 30, timber: 25, crystal: 20 };
 
 // ---------------------------------------------------------------------------
 // Plot and headquarters
@@ -189,8 +191,8 @@ export const STRUCTURES: StructureDef[] = [
     maxCount: () => 1,
     levels: [
       { cost: {}, sets: 0 },
-      { cost: { stone: 40, timber: 40, iron: 40, crystal: 20 }, sets: 3 },
-      { cost: { stone: 90, timber: 90, iron: 90, crystal: 50 }, sets: 5 }
+      { cost: { stone: 60, timber: 50, crystal: 30 }, sets: 3 },
+      { cost: { stone: 130, timber: 110, crystal: 70 }, sets: 5 }
     ]
   },
   {
@@ -200,9 +202,9 @@ export const STRUCTURES: StructureDef[] = [
     unlockHq: 1,
     maxCount: (hq) => hq,
     levels: [
-      { cost: { stone: 15, timber: 10 }, sets: 1 },
-      { cost: { stone: 35, timber: 20, crystal: 10 }, sets: 2 },
-      { cost: { stone: 60, timber: 40, crystal: 20 }, sets: 3 }
+      { cost: { stone: 20, timber: 5 }, sets: 1 },
+      { cost: { stone: 45, timber: 10, crystal: 10 }, sets: 2 },
+      { cost: { stone: 80, timber: 20, crystal: 20 }, sets: 3 }
     ]
   },
   {
@@ -213,9 +215,9 @@ export const STRUCTURES: StructureDef[] = [
     // One Lodge per base: each of its levels adds a builder.
     maxCount: () => 1,
     levels: [
-      { cost: { timber: 15, stone: 10 }, sets: 1 },
-      { cost: { timber: 35, stone: 20, iron: 10 }, sets: 2 },
-      { cost: { timber: 60, stone: 40, iron: 20 }, sets: 3 }
+      { cost: { timber: 20, stone: 5 }, sets: 1 },
+      { cost: { timber: 45, stone: 10, crystal: 10 }, sets: 2 },
+      { cost: { timber: 80, stone: 20, crystal: 20 }, sets: 3 }
     ]
   },
   {
@@ -225,9 +227,9 @@ export const STRUCTURES: StructureDef[] = [
     unlockHq: 1,
     maxCount: () => 1,
     levels: [
-      { cost: { iron: 15, stone: 10 }, sets: 1 },
-      { cost: { iron: 35, stone: 20, timber: 10 }, sets: 2 },
-      { cost: { iron: 60, stone: 40, timber: 20 }, sets: 3 }
+      { cost: { stone: 15, timber: 10 }, sets: 1 },
+      { cost: { stone: 35, timber: 20, crystal: 10 }, sets: 2 },
+      { cost: { stone: 60, timber: 40, crystal: 20 }, sets: 3 }
     ]
   },
   {
@@ -238,9 +240,9 @@ export const STRUCTURES: StructureDef[] = [
     unlockHq: 1,
     maxCount: () => 1,
     levels: [
-      { cost: { stone: 10, timber: 10, iron: 10, crystal: 5 }, sets: 2 },
-      { cost: { stone: 30, timber: 30, iron: 30, crystal: 15 }, sets: 3 },
-      { cost: { stone: 60, timber: 60, iron: 60, crystal: 30 }, sets: 4 }
+      { cost: { stone: 13, timber: 13, crystal: 9 }, sets: 2 },
+      { cost: { stone: 40, timber: 40, crystal: 25 }, sets: 3 },
+      { cost: { stone: 80, timber: 80, crystal: 50 }, sets: 4 }
     ]
   },
   {
@@ -270,21 +272,21 @@ export const DECOR: DecorDef[] = [
   { kind: 'decor', id: 'garden', size: 1, unlockHq: 1, group: 'nature', cost: { crystal: 4 } },
   { kind: 'decor', id: 'statue', size: 1, unlockHq: 1, unlockBase: 5, group: 'nature', cost: { stone: 14, crystal: 6 } },
   // Comfort
-  { kind: 'decor', id: 'bench', size: 1, unlockHq: 1, group: 'comfort', cost: { timber: 4, iron: 1 } },
-  { kind: 'decor', id: 'banner', size: 1, unlockHq: 1, group: 'comfort', cost: { timber: 3, iron: 2 } },
+  { kind: 'decor', id: 'bench', size: 1, unlockHq: 1, group: 'comfort', cost: { timber: 4, stone: 1 } },
+  { kind: 'decor', id: 'banner', size: 1, unlockHq: 1, group: 'comfort', cost: { timber: 3, stone: 2 } },
   { kind: 'decor', id: 'campfire', size: 1, unlockHq: 1, unlockBase: 2, group: 'comfort', cost: { timber: 4, stone: 2 } },
   { kind: 'decor', id: 'picnic', size: 1, unlockHq: 1, unlockBase: 2, group: 'comfort', cost: { timber: 6 } },
   { kind: 'decor', id: 'fountain', size: 1, unlockHq: 1, unlockBase: 3, group: 'comfort', cost: { stone: 12, crystal: 10 } },
   { kind: 'decor', id: 'gazebo', size: 1, unlockHq: 1, unlockBase: 4, group: 'comfort', cost: { timber: 10, stone: 6, crystal: 4 } },
   // Lights
-  { kind: 'decor', id: 'lamp', size: 1, unlockHq: 1, group: 'lights', cost: { iron: 3, crystal: 2 } },
-  { kind: 'decor', id: 'torch', size: 1, unlockHq: 1, group: 'lights', cost: { timber: 2, iron: 1 } },
-  { kind: 'decor', id: 'lanterns', size: 1, unlockHq: 1, unlockBase: 2, group: 'lights', cost: { iron: 3, crystal: 3 } },
+  { kind: 'decor', id: 'lamp', size: 1, unlockHq: 1, group: 'lights', cost: { stone: 3, crystal: 2 } },
+  { kind: 'decor', id: 'torch', size: 1, unlockHq: 1, group: 'lights', cost: { timber: 2, stone: 1 } },
+  { kind: 'decor', id: 'lanterns', size: 1, unlockHq: 1, unlockBase: 2, group: 'lights', cost: { stone: 3, crystal: 3 } },
   // Training park
   { kind: 'decor', id: 'plyobox', size: 1, unlockHq: 1, group: 'training', cost: { timber: 4 } },
-  { kind: 'decor', id: 'pullupbar', size: 1, unlockHq: 1, unlockBase: 2, group: 'training', cost: { iron: 6, stone: 2 } },
-  { kind: 'decor', id: 'dipbars', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { iron: 6 } },
-  { kind: 'decor', id: 'punchbag', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { iron: 4, timber: 2 } },
+  { kind: 'decor', id: 'pullupbar', size: 1, unlockHq: 1, unlockBase: 2, group: 'training', cost: { stone: 8 } },
+  { kind: 'decor', id: 'dipbars', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { stone: 6 } },
+  { kind: 'decor', id: 'punchbag', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { stone: 4, timber: 2 } },
   // Water
   { kind: 'decor', id: 'lilypad', size: 1, unlockHq: 1, unlockBase: 3, group: 'water', onWater: true, cost: { crystal: 2 } },
   { kind: 'decor', id: 'bridge', size: 1, unlockHq: 1, unlockBase: 3, group: 'water', onWater: true, cost: { timber: 6 } }

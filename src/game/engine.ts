@@ -249,9 +249,12 @@ export const EXTRA_HALF_SETS = 4;
 export const FULL_RATE_SETS = 12;
 export const DAILY_SET_LIMIT = 20;
 
-const TIER_AMOUNT = { BASE: 4, PRO: 6, ELITE: 8 } as const;
+/** A typical set earns about this much of its material. */
+export const BASE_SET_AMOUNT = 3;
+/** The most one set can earn, however big it is. */
+export const MAX_SET_AMOUNT = 12;
 
-export type SetTier = keyof typeof TIER_AMOUNT;
+export type SetTier = 'BASE' | 'PRO' | 'ELITE';
 
 export type SetEvent = {
   exerciseId: string;
@@ -263,6 +266,15 @@ export type SetEvent = {
   verified?: boolean;
   /** The exercise uses a loaded backpack. */
   loaded?: boolean;
+  /**
+   * Effort references for this exercise: the reps (or hold seconds) that make
+   * a typical set. More than that earns more; harder moves have smaller refs,
+   * so each rep is worth more.
+   */
+  refReps?: number;
+  refSeconds?: number;
+  /** Backpack load, which adds to the effort. */
+  weightKg?: number;
   /** Today's plan with set counts from *before* this set. */
   plan?: TodayPlan;
   now?: Date;
@@ -289,23 +301,36 @@ export type SetReward = {
 };
 
 function each(amount: number): Resources {
-  return { stone: amount, timber: amount, iron: amount, crystal: amount };
+  return { stone: amount, timber: amount, crystal: amount };
 }
 
 function addTo(target: Resources, add: Cost) {
   for (const id of RESOURCE_IDS) target[id] += add[id] ?? 0;
 }
 
-export function earnedForSet(pattern: TrainingPattern, tier: SetTier, rate: EarnRate): Resources {
+/**
+ * How much a set earns, scaled to effort: about 3 for a typical set, more for
+ * more reps (relative to how hard the exercise is), longer holds or a heavier
+ * backpack, up to a cap.
+ */
+export function effortAmount(event: Pick<SetEvent, 'reps' | 'durationSeconds' | 'refReps' | 'refSeconds' | 'weightKg'>): number {
+  let ratio = 1;
+  if (event.reps && event.refReps) ratio = event.reps / event.refReps;
+  else if (event.refSeconds && event.durationSeconds) ratio = event.durationSeconds / event.refSeconds;
+  if (event.weightKg && event.weightKg > 0) ratio *= 1 + event.weightKg / 20;
+  return Math.min(MAX_SET_AMOUNT, Math.max(1, Math.round(BASE_SET_AMOUNT * ratio)));
+}
+
+export function earnedForSet(event: SetEvent, rate: EarnRate): Resources {
   const earned = { ...EMPTY_RESOURCES };
   if (rate === 'tooShort' || rate === 'limit') return earned;
-  const factor = rate === 'half' ? 0.5 : 1;
-  if (pattern === 'recovery') {
+  if (event.pattern === 'recovery') {
     // Stretching earns a little of everything: rest days count.
-    for (const id of RESOURCE_IDS) earned[id] = Math.ceil(1 * factor);
+    for (const id of RESOURCE_IDS) earned[id] = 1;
     return earned;
   }
-  earned[PATTERN_RESOURCE[pattern]] = Math.ceil(TIER_AMOUNT[tier] * factor);
+  const amount = effortAmount(event);
+  earned[PATTERN_RESOURCE[event.pattern]] = rate === 'half' ? Math.ceil(amount / 2) : amount;
   return earned;
 }
 
@@ -624,7 +649,7 @@ export function applySet(prev: GameState, event: SetEvent): { state: GameState; 
   stats.patternSetsToday[event.pattern] = (stats.patternSetsToday[event.pattern] ?? 0) + 1;
   if (!stats.weekPatterns.includes(event.pattern)) stats.weekPatterns.push(event.pattern);
 
-  reward.earned = earnedForSet(event.pattern, event.tier, reward.rate);
+  reward.earned = earnedForSet(event, reward.rate);
 
   // Crystal Spring: stretching earns more, and so does the first set after rest.
   const spring = structureLevel(state, 'spring');

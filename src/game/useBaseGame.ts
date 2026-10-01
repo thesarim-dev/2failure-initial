@@ -68,10 +68,17 @@ function load(userId: string | undefined): GameState {
     if (!parsed || !Array.isArray(parsed.placed)) return createInitialState();
     const state = parsed.version === 1 ? migrateV1(parsed) : parsed.version === 2 ? parsed : null;
     if (!state) return createInitialState();
+    // Iron was retired: its stock becomes timber (both came from leg sets).
+    const resources = { ...(state.resources as Record<string, number>) };
+    if ('iron' in resources) {
+      resources.timber = (resources.timber ?? 0) + (resources.iron ?? 0);
+      delete resources.iron;
+    }
     // Fill in fields added after the save was made.
     return {
       ...createInitialState(),
       ...state,
+      resources: { stone: resources.stone ?? 0, timber: resources.timber ?? 0, crystal: resources.crystal ?? 0 },
       stats: { ...createInitialStats(), ...state.stats },
       constructions: state.constructions ?? [],
       landLevel: state.landLevel ?? 0,
@@ -104,6 +111,8 @@ export type RecordSetInput = {
   durationSeconds: number;
   reps?: number;
   verified?: boolean;
+  /** Backpack load for loaded sets. */
+  weightKg?: number;
 };
 
 /**
@@ -152,9 +161,14 @@ export function useBaseGame(
   }, [currentStreak, commit]);
 
   const recordSet = useCallback(
-    ({ move, durationSeconds, reps, verified }: RecordSetInput): SetReward => {
+    ({ move, durationSeconds, reps, verified, weightKg }: RecordSetInput): SetReward => {
       const variant = getVariantById(move.categoryId);
       const tier: SetTier = variant?.tier ?? move.tier ?? 'BASE';
+      const loaded = isWeightedEquipmentCategory(move.categoryId);
+      // Half the top of the useful rep range is a typical set (3 materials);
+      // harder moves have lower ceilings, so each rep counts for more.
+      const refReps = variant?.repCeiling ? Math.max(3, variant.repCeiling / 2) : loaded ? 6 : undefined;
+      const refSeconds = variant?.holdCeilingSeconds ? variant.holdCeilingSeconds / 2 : undefined;
       const { state: next, reward } = applySet(stateRef.current, {
         exerciseId: move.categoryId,
         pattern: patternForMove(move),
@@ -162,7 +176,10 @@ export function useBaseGame(
         durationSeconds,
         reps,
         verified,
-        loaded: isWeightedEquipmentCategory(move.categoryId),
+        loaded,
+        refReps,
+        refSeconds,
+        weightKg,
         plan: planRef.current ?? undefined
       });
       if (next !== stateRef.current) commit(next);
