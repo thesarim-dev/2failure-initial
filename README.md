@@ -439,6 +439,10 @@ The FAQ section answers common training questions:
 - Weekly volume targets
 - Nutrition and sleep basics
 
+### Sounds
+
+Soft chimes play for key moments (starting a workout, finishing a set, completing a workout, personal records, trophies, building and base level-ups), with a light vibration on phones that support it. Turn them off with **Settings → Sounds**. All sounds are generated in the app, so there are no audio files to download.
+
 ### App tour
 
 Tap **Replay tour** to walk through the home screen again.

@@ -1,5 +1,5 @@
 import { TRAINING_DAY_OPTIONS, type TrainingDaysPerWeek } from '../hooks/useTrainingDaysPerWeek';
-import { ArrowLeft, Compass, LogOut, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, Compass, LogOut, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { SettingsFaq } from './SettingsFaq';
 import { ProgramTrainingGuide } from './ProgramTrainingGuide';
@@ -35,6 +35,8 @@ interface SettingsProps {
   weightUnit: 'kg' | 'lb';
   onWeightUnitChange: (unit: 'kg' | 'lb') => void;
   onReplayTour?: () => void;
+  soundOn: boolean;
+  onToggleSound: () => void;
   onBack: () => void;
 }
 
@@ -58,6 +60,8 @@ export function Settings({
   weightUnit,
   onWeightUnitChange,
   onReplayTour,
+  soundOn,
+  onToggleSound,
   onBack
 }: SettingsProps) {
   const { signOut } = useAuth();
@@ -230,6 +234,23 @@ export function Settings({
                   </span>
                 </>
               )}
+            </button>
+          </div>
+        </section>
+
+        <section className="cyber-panel p-5 normal-case">
+          <div className="settings-appearance-row">
+            <div className="settings-appearance-copy">
+              <h2 className="settings-section-title">{t.game.sound.title}</h2>
+              <p className="text-sm font-medium opacity-70">{t.game.sound.description}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onToggleSound}
+              aria-pressed={soundOn}
+              className="settings-theme-toggle">
+              {soundOn ? <Volume2 size={18} strokeWidth={2.35} /> : <VolumeX size={18} strokeWidth={2.35} />}
+              <span className="settings-theme-toggle__label">{soundOn ? t.game.sound.on : t.game.sound.off}</span>
             </button>
           </div>
         </section>

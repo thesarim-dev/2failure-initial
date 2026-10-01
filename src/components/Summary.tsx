@@ -1,5 +1,30 @@
-import { useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { fx } from '../lib/feedback';
+
+/** Counts a number up from 0 for a satisfying reveal (instant with reduced motion). */
+function useCountUp(target: number, durationMs: number, delayMs: number, skip: boolean): number {
+  const [value, setValue] = useState(skip ? target : 0);
+  useEffect(() => {
+    if (skip) {
+      setValue(target);
+      return;
+    }
+    let frame = 0;
+    const startAt = performance.now() + delayMs;
+    const tick = (now: number) => {
+      const t = Math.min(1, Math.max(0, (now - startAt) / durationMs));
+      // Ease out so it slows into the final number.
+      setValue(Math.round(target * (1 - Math.pow(1 - t, 3))));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target, durationMs, delayMs, skip]);
+  return value;
+}
+
+const POP = { type: 'spring', stiffness: 420, damping: 22 } as const;
 import { Move, getLevelUpAdvice, getVariantById } from './moves';
 import { ArrowRight, TrendingUp } from 'lucide-react';
 import { localizeVariant } from '../i18n/localize';
@@ -181,6 +206,25 @@ export function Summary({
     showCoinsCapRecommendation && t.summary.coinsCapRecommendation
   ].filter((note): note is string => Boolean(note));
 
+  const reduceMotion = useReducedMotion() ?? false;
+  const coinsShown = useCountUp(coinsEarned, 650, 250, reduceMotion);
+  const repsTarget = setResult && !isWeighted ? setResult.reps : 0;
+  const repsShown = useCountUp(repsTarget, 750, 350, reduceMotion);
+
+  // The win sound: a chime, then a sparkle for records, trophies and bonuses.
+  useEffect(() => {
+    const timers: number[] = [];
+    if (isMidExercise) fx.coin();
+    else fx.success();
+    if (isNewRecord) timers.push(window.setTimeout(() => fx.record(), 500));
+    if (baseReward && (baseReward.newTrophies.length || baseReward.weekly || baseReward.session || baseReward.questsDone.length)) {
+      timers.push(window.setTimeout(() => fx.record(), isNewRecord ? 1000 : 600));
+    }
+    return () => timers.forEach((id) => window.clearTimeout(id));
+    // Once, when the receipt appears.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const baseChips: Array<{ key: string; text: string; tone?: 'quest' | 'trophy' }> = [];
   if (baseReward) {
     baseReward.questsDone.forEach((quest) =>
@@ -239,18 +283,28 @@ export function Summary({
         <p className="summary-exercise">{move.name}</p>
 
         <div className="summary-tiles">
-          <div className="summary-tile">
+          <motion.div
+            className="summary-tile"
+            initial={{ opacity: 0, scale: 0.85, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ ...POP, delay: 0.2 }}>
             <span className="summary-tile-label">{t.summary.compact.coins}</span>
-            <span className={`summary-tile-value tabular-nums ${SUMMARY_ACCENT_TEXT[slot]}`}>+{coinsEarned}</span>
+            <span className={`summary-tile-value tabular-nums ${SUMMARY_ACCENT_TEXT[slot]}`}>+{coinsShown}</span>
             <span className="summary-tile-sub tabular-nums">{formatTime(duration)}</span>
-          </div>
-          <div className="summary-tile">
+          </motion.div>
+          <motion.div
+            className={`summary-tile ${isNewRecord ? 'is-record' : ''}`}
+            initial={{ opacity: 0, scale: 0.85, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ ...POP, delay: 0.3 }}>
             <span className="summary-tile-label">
               {repsValue ? (isWeighted ? t.summary.compact.load : t.summary.compact.reps) : t.summary.compact.hold}
             </span>
-            <span className="summary-tile-value tabular-nums">{repsValue ?? formatTime(duration)}</span>
+            <span className="summary-tile-value tabular-nums">
+              {repsValue ? (isWeighted ? repsValue : repsShown) : formatTime(duration)}
+            </span>
             {isNewRecord ? (
-              <span className={`summary-tile-sub summary-tile-record ${SUMMARY_ACCENT_TEXT[slot]}`}>
+              <span className={`summary-tile-sub summary-tile-record summary-record-shine ${SUMMARY_ACCENT_TEXT[slot]}`}>
                 {t.summary.compact.newRecord}
               </span>
             ) : (
@@ -261,7 +315,7 @@ export function Summary({
                 </span>
               )
             )}
-          </div>
+          </motion.div>
         </div>
 
         {notes.length > 0 && (
@@ -290,21 +344,29 @@ export function Summary({
               )}
             </div>
             <div className="summary-base-chips">
-              {resourcesOf(baseReward).map(([id, amount]) => (
-                <span key={id} className="summary-base-chip">
+              {resourcesOf(baseReward).map(([id, amount], i) => (
+                <motion.span
+                  key={id}
+                  className="summary-base-chip"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ ...POP, delay: 0.5 + i * 0.07 }}>
                   <ResourceIcon id={id} size={16} />+{amount}
                   <span className="sr-only"> {t.game.resources[id]}</span>
-                </span>
+                </motion.span>
               ))}
               {baseReward.springBonus ? (
                 <span className="summary-base-chip">{t.game.rewardExtra.spring(baseReward.springBonus)}</span>
               ) : null}
-              {baseChips.map((chip) => (
-                <span
+              {baseChips.map((chip, i) => (
+                <motion.span
                   key={chip.key}
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ ...POP, delay: 0.62 + i * 0.08 }}
                   className={`summary-base-pill ${chip.tone === 'quest' ? 'is-quest' : chip.tone === 'trophy' ? 'is-trophy' : ''}`}>
                   {chip.text}
-                </span>
+                </motion.span>
               ))}
             </div>
             {baseNote && <p className="summary-base-note">{baseNote}</p>}

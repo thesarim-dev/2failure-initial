@@ -6,6 +6,7 @@ import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, Lock, Move as Mov
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
 import { useLanguage } from '../../context/LanguageContext';
+import { fx } from '../../lib/feedback';
 import {
   BASE_LEVEL_TITLES,
   CUSTOMIZE,
@@ -402,6 +403,7 @@ export function BaseScreen({
   const [notice, setNotice] = useState<string | null>(null);
   const [paintWith, setPaintWith] = useState<TerrainId | null>(null);
   const [zoomed, setZoomed] = useState(false);
+  const lastPaintSound = useRef(0);
   const [decorGroup, setDecorGroup] = useState<DecorGroup | 'all'>('all');
   const level = hqLevel(state);
   const levelInfo = baseLevel(state);
@@ -410,6 +412,7 @@ export function BaseScreen({
   // Celebrate base level ups.
   useEffect(() => {
     if (levelInfo.level > lastLevel.current) {
+      fx.levelUp();
       setNotice(g.baseLevel.levelUp(g.baseLevel.titles[levelInfo.title]));
     }
     lastLevel.current = levelInfo.level;
@@ -484,9 +487,11 @@ export function BaseScreen({
           ? game.placeTrophy(mode.trophyId, x, y, mode.custom)
           : game.move(mode.uid, x, y);
     if (!result.ok) {
+      fx.error();
       setNotice(errorText(result.error, modeItemId ?? undefined));
       return;
     }
+    fx.place();
     setMode({ kind: 'idle' });
   };
 
@@ -639,7 +644,16 @@ export function BaseScreen({
           onTile={handleTile}
           onItem={(uid) => setSheet({ uid })}
           painting={paintWith !== null}
-          onPaint={(tile) => paintWith && game.paint([tile], paintWith)}
+          onPaint={(tile) => {
+            if (!paintWith) return;
+            const result = game.paint([tile], paintWith);
+            // A light tick per painted tile, throttled so drags don't buzz.
+            const now = performance.now();
+            if (result.ok && now - lastPaintSound.current > 90) {
+              lastPaintSound.current = now;
+              fx.tick();
+            }
+          }}
           svgId="base-map-svg"
         />
         </div>
@@ -832,9 +846,11 @@ export function BaseScreen({
                 onClick={() => {
                   const result = game.expandLand(coins);
                   if (!result.ok) {
+                    fx.error();
                     setNotice(errorText(result.error));
                     return;
                   }
+                  fx.levelUp();
                   if (result.coinCost) onSpendCoins(result.coinCost);
                   setSheet(null);
                 }}>
@@ -924,6 +940,7 @@ function ItemSheet({
             className="base-primary-btn"
             onClick={() => {
               game.customize(item.uid, custom);
+              fx.confirm();
               setEditing(false);
             }}>
             {g.customize.save}
@@ -996,9 +1013,11 @@ function ItemSheet({
                     onClick={() => {
                       const result = game.upgrade(item.uid, coins);
                       if (!result.ok) {
+                        fx.error();
                         onNotice(errorText(result.error));
-                      } else if (result.coinCost) {
-                        onSpendCoins(result.coinCost);
+                      } else {
+                        fx.place();
+                        if (result.coinCost) onSpendCoins(result.coinCost);
                       }
                       onClose();
                     }}>
@@ -1135,7 +1154,12 @@ function BuildingRole({
             disabled={from === to || state.resources[from] < rate * out}
             onClick={() => {
               const result = game.trade(from, to);
-              if (!result.ok) onNotice(g.errors[result.error]);
+              if (!result.ok) {
+                fx.error();
+                onNotice(g.errors[result.error]);
+              } else {
+                fx.coin();
+              }
             }}>
             <ResourceIcon id={from} size={16} />
             {g.forge.trade(rate * out, out)}

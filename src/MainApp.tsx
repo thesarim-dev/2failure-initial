@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useScreenInit } from './useScreenInit';
@@ -46,6 +47,7 @@ import { FirstSetCoach, type FirstSetStage } from './components/FirstSetCoach';
 import { isPoseAiTrackingEnabled } from './config/features';
 import { isPoseExerciseId } from './lib/pose/repCounterFactory';
 import { patternForMove, useBaseGame } from './game/useBaseGame';
+import { fx, useSoundSetting } from './lib/feedback';
 import { BaseScreen } from './components/game/BaseScreen';
 import { AppTabBar } from './components/AppTabBar';
 
@@ -132,6 +134,7 @@ export function MainApp() {
   const [guidingFirstSet, setGuidingFirstSet] = useState(false);
   const { weightUnit, setWeightUnit } = useWeightUnit();
   const { trainingDaysPerWeek, setTrainingDaysPerWeek } = useTrainingDaysPerWeek();
+  const { soundOn, toggleSound } = useSoundSetting();
   // Training days per week: the program's split, or the player's own setting.
   // The rest of the week is planned rest, which keeps the streak alive.
   const weeklyTarget = rotatingProgramEnabled ? rotationCycle.length : trainingDaysPerWeek;
@@ -263,6 +266,7 @@ export function MainApp() {
   );
 
   const handleSelectMove = (move: Move) => {
+    fx.start();
     finishingRef.current = false;
     setIsFinishing(false);
     setPendingTrackedReps(undefined);
@@ -326,6 +330,7 @@ export function MainApp() {
   ) => {
     if (finishingRef.current) return;
     finishingRef.current = true;
+    fx.tap();
     setIsFinishing(true);
     setLastDuration(duration);
     setLastSetResult(null);
@@ -442,12 +447,16 @@ export function MainApp() {
   const handleUseShield = async () => {
     if (!user || restoringStreak || baseGame.state.shields < 1) return;
     const result = await restoreUserStreak({ free: true });
-    if (result) baseGame.spendShield();
+    if (result) {
+      baseGame.spendShield();
+      fx.success();
+    }
   };
   const handleRestoreStreak = async () => {
     if (!user || restoringStreak || coins < restoreStreakCost) return;
 
     const result = await restoreUserStreak();
+    if (result) fx.success();
     if (result?.cost) {
       void setCoins((current) => Math.max(0, current - result.cost));
     }
@@ -458,6 +467,7 @@ export function MainApp() {
   const handleOpenSettings = () => setAppState('SETTINGS');
   const handleCloseSettings = () => setAppState('HOME');
   const handleTab = (tab: 'train' | 'base') => {
+    fx.tick();
     setAppState(tab === 'base' ? 'BASE' : 'HOME');
     window.scrollTo({ top: 0 });
   };
@@ -476,7 +486,11 @@ export function MainApp() {
     if (started) setGuidingFirstSet(true);
   };
   const handleBuy = (_categoryId: string, variant: Variant) => {
-    if (coins < variant.price || owned.includes(variant.id)) return;
+    if (coins < variant.price || owned.includes(variant.id)) {
+      fx.error();
+      return;
+    }
+    fx.coin();
     void setCoins((c) => c - variant.price);
     setOwned((o) => {
       const next = [...o, variant.id];
@@ -539,6 +553,12 @@ export function MainApp() {
       className={`min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#BEF028] selection:text-black ${
         showTabBar ? 'has-tab-bar' : ''
       }`}>
+      {/* Screens fade in. Opacity only: a transform would break fixed-position screens. */}
+      <motion.div
+        key={appState}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}>
       {appState === 'HOME' &&
       <Dashboard
         coins={coins}
@@ -573,7 +593,10 @@ export function MainApp() {
         isRestDayToday={isRestDayToday}
         canTakeRestDay={canTakeRestDay}
         restDaysRemainingThisWeek={restDaysRemainingThisWeek}
-        onTakeRestDay={markTodayAsRestDay}
+        onTakeRestDay={() => {
+          fx.rest();
+          markTodayAsRestDay();
+        }}
         pushupRepsToday={pushupRepsToday}
         pushupRepsLoading={pushupRepsLoading}
         onSelectMove={handleSelectMove}
@@ -617,6 +640,8 @@ export function MainApp() {
         weightUnit={weightUnit}
         onWeightUnitChange={setWeightUnit}
         onReplayTour={handleReplayTour}
+        soundOn={soundOn}
+        onToggleSound={toggleSound}
         trainingDaysPerWeek={trainingDaysPerWeek}
         onTrainingDaysChange={setTrainingDaysPerWeek}
         onBack={handleCloseSettings} />
@@ -678,6 +703,7 @@ export function MainApp() {
           onSpendCoins={(amount) => void setCoins((current) => Math.max(0, current - amount))}
         />
       )}
+      </motion.div>
 
       {showTabBar && (
         <AppTabBar

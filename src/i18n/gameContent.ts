@@ -144,6 +144,7 @@ export type GameCopy = {
   decorGroups: Record<import('../game/catalog').DecorGroup, string>;
   zoomIn: string;
   zoomOut: string;
+  sound: { title: string; description: string; on: string; off: string };
   flip: string;
 };
 
@@ -399,6 +400,7 @@ const en: GameCopy = {
   },
   terrainNames: { grass: 'Grass', meadow: 'Meadow', dirt: 'Dirt', sand: 'Sand', plaza: 'Plaza', water: 'Water', snow: 'Snow' },
   decorGroups: { nature: 'Nature', farm: 'Farm', fun: 'Fun', comfort: 'Comfort', lights: 'Lights', training: 'Training', paths: 'Paths & walls', water: 'Water' },
+  sound: { title: 'Sounds', description: 'Soft chimes and light vibrations for taps and wins.', on: 'sounds on', off: 'sounds off' },
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
 
@@ -665,6 +667,7 @@ const he: GameCopy = {
   },
   terrainNames: { grass: 'דשא', meadow: 'אחו', dirt: 'עפר', sand: 'חול', plaza: 'רחבה', water: 'מים', snow: 'שלג' },
   decorGroups: { nature: 'טבע', farm: 'חווה', fun: 'כיף', comfort: 'נוחות', lights: 'תאורה', training: 'אימון', paths: 'שבילים וחומות', water: 'מים' },
+  sound: { title: 'צלילים', description: 'צלצולים רכים ורטט קל להקשות ולהצלחות.', on: 'צלילים פועלים', off: 'צלילים כבויים' },
   zoomIn: 'הגדלה',
   zoomOut: 'הקטנה',
 
@@ -931,6 +934,7 @@ const ar: GameCopy = {
   },
   terrainNames: { grass: 'عشب', meadow: 'مرج', dirt: 'تراب', sand: 'رمل', plaza: 'ساحة', water: 'ماء', snow: 'ثلج' },
   decorGroups: { nature: 'طبيعة', farm: 'مزرعة', fun: 'مرح', comfort: 'راحة', lights: 'إضاءة', training: 'تدريب', paths: 'ممرات وأسوار', water: 'ماء' },
+  sound: { title: 'الأصوات', description: 'نغمات ناعمة واهتزاز خفيف للنقرات والإنجازات.', on: 'الأصوات مفعّلة', off: 'الأصوات متوقفة' },
   zoomIn: 'تكبير',
   zoomOut: 'تصغير',
 
