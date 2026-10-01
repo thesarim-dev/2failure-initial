@@ -4608,4 +4608,73 @@
       animation: none;
     }
   }
+
+  /* ---------- Workout card: name + reward ---------- */
+  .dashboard-move-name-row {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  /* The name only takes the room it needs, so the reward sits right after it. */
+  .dashboard-move-name-row .dashboard-move-title {
+    flex: 0 1 auto;
+  }
+  .dashboard-move-reward {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 0.15rem 0.3rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.16);
+  }
+
+  /* ---------- Calmer main UI: about half the neon ---------- */
+  .dashboard-logo-glow {
+    text-shadow: 0 0 6px rgba(0, 178, 255, 0.22);
+  }
+  .dark .dashboard-logo-glow {
+    text-shadow: 0 0 8px rgba(0, 178, 255, 0.32);
+  }
+  .dark .store-title-glow {
+    text-shadow: 0 0 8px rgba(0, 178, 255, 0.25);
+  }
+  .dark .dashboard-skull-glow,
+  .dark .failure-logo-glow {
+    filter: drop-shadow(0 0 4px rgba(0, 178, 255, 0.3));
+  }
+  .dark .coins-badge,
+  .dark .cyber-icon-btn--store,
+  .dark .cyber-icon-btn--settings,
+  .dark .cyber-panel {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .dark .cyber-icon-btn--store:not(:disabled):hover,
+  .dark .cyber-icon-btn--settings:not(:disabled):hover {
+    border-color: rgba(0, 178, 255, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 178, 255, 0.12);
+  }
+  .dark .coins-badge svg,
+  .dark .coins-badge > span {
+    color: #7fd6f2;
+  }
+  .dark .cyber-icon-btn--store svg {
+    color: #b2d65a;
+  }
+  .dark .cyber-icon-btn--settings svg {
+    color: #e8b35a;
+  }
+  @keyframes streak-pulse-dark {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 1px #e8653a, 0 0 8px rgba(255, 102, 51, 0.35);
+    }
+    50% {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 1px #e8653a, 0 0 12px rgba(255, 102, 51, 0.45);
+    }
+  }
 }

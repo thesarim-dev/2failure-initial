@@ -1,5 +1,6 @@
 import { ResourceIcon } from './game/BaseScreen';
-import { RESOURCE_IDS, type Resources } from '../game/catalog';
+import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog';
+import { patternForMove } from '../game/useBaseGame';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { BedDouble, Flame, Loader2, Settings as SettingsIcon, ShoppingBag } from 'lucide-react';
@@ -102,6 +103,11 @@ export function Dashboard({
   onOpenSettings
 }: DashboardProps) {
   const { t, language, isRtl } = useLanguage();
+  const rewardFor = (move: Move) => {
+    const pattern = patternForMove(move);
+    return pattern === 'recovery' ? RESOURCE_IDS : [PATTERN_RESOURCE[pattern]];
+  };
+  const rewardLabel = (move: Move) => rewardFor(move).map((id) => t.game.resources[id]).join(' · ');
   const funFact = useMemo(
     () => pickFunFact(t.dashboard.funFacts.facts, t.dashboard.funFacts.loading),
     [language, t.dashboard.funFacts.facts, t.dashboard.funFacts.loading]
@@ -356,9 +362,16 @@ export function Dashboard({
               className={`dashboard-move-card w-full text-start rounded-2xl ${move.color} ${move.glow} border-4 p-5 relative overflow-visible disabled:cursor-default`}>
               <div className="relative z-10">
                 <div className="dashboard-move-header mb-2 min-w-0">
-                  <h3 className="dashboard-move-title flex-1 min-w-0 uppercase">
-                    {move.name}
-                  </h3>
+                  <div className="dashboard-move-name-row">
+                    <h3 className="dashboard-move-title min-w-0 uppercase">{move.name}</h3>
+                    {/* What this exercise earns for the base. */}
+                    <span className="dashboard-move-reward" title={rewardLabel(move)}>
+                      {rewardFor(move).map((id) => (
+                        <ResourceIcon key={id} id={id} size={20} />
+                      ))}
+                      <span className="sr-only">{rewardLabel(move)}</span>
+                    </span>
+                  </div>
                   <span
                     data-tour={i === 0 ? 'lineup' : undefined}
                     className="dashboard-move-sets bg-black text-white px-2.5 py-1 text-xs font-bold tabular-nums rounded-md normal-case shrink-0">

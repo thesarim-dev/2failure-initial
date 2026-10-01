@@ -62,9 +62,9 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
   muscleGroup: 'upper body',
   equipHint: 'Equip 1 Push + 1 Pull for balanced upper body work.',
   color:
-    'bg-[#C8F032] text-black dark:bg-[#C8E838] dark:text-black',
+    'bg-[#C9E27A] text-black dark:bg-[#B5CC5C] dark:text-black',
   glow:
-    'border-[#7AB800] shadow-[4px_4px_0_0_#7AB800,0_0_20px_rgba(200,240,50,0.45)] dark:border-[#C8E838] dark:shadow-[0_0_0_1px_#C8E838,0_0_18px_rgba(200,232,56,0.85),0_0_36px_rgba(200,232,56,0.5)]',
+    'border-[#8AAA3E] shadow-[3px_3px_0_0_#8AAA3E] dark:border-[#9DB34E] dark:shadow-[0_6px_16px_rgba(0,0,0,0.35),0_0_10px_rgba(181,204,92,0.16)]',
   variants: [
     // Push ladder (easiest → hardest)
     {
@@ -230,9 +230,9 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
   muscleGroup: 'lower body',
   equipHint: 'Equip 2 lower body exercises for your daily lineup.',
   color:
-    'bg-[#FF66EE] text-black dark:bg-[#FF66FF] dark:text-black',
+    'bg-[#EE95DF] text-black dark:bg-[#D586C9] dark:text-black',
   glow:
-    'border-[#E040C8] shadow-[4px_4px_0_0_#E040C8,0_0_20px_rgba(255,102,238,0.45)] dark:border-[#FF66FF] dark:shadow-[0_0_0_1px_#FF66FF,0_0_18px_rgba(255,102,255,0.8),0_0_36px_rgba(255,102,255,0.45)]',
+    'border-[#C26AB3] shadow-[3px_3px_0_0_#C26AB3] dark:border-[#BE72B2] dark:shadow-[0_6px_16px_rgba(0,0,0,0.35),0_0_10px_rgba(213,134,201,0.16)]',
   variants: [
     {
       id: 'squats',
@@ -331,9 +331,9 @@ export const CORE_STORE_CATEGORY: MoveCategory = {
   muscleGroup: 'core',
   equipHint: 'Equip 2 core exercises for your daily lineup.',
   color:
-    'bg-[#38E8E8] text-black dark:bg-[#4DFFFF] dark:text-black',
+    'bg-[#7DD9D9] text-black dark:bg-[#69C3C8] dark:text-black',
   glow:
-    'border-[#18C0C0] shadow-[4px_4px_0_0_#18C0C0,0_0_20px_rgba(56,232,232,0.45)] dark:border-[#4DFFFF] dark:shadow-[0_0_0_1px_#4DFFFF,0_0_18px_rgba(77,255,255,0.8),0_0_36px_rgba(77,255,255,0.45)]',
+    'border-[#43A8A8] shadow-[3px_3px_0_0_#43A8A8] dark:border-[#54ABB0] dark:shadow-[0_6px_16px_rgba(0,0,0,0.35),0_0_10px_rgba(105,195,200,0.16)]',
   variants: [
     {
       id: 'planks',
@@ -416,9 +416,9 @@ export const RECOVERY_STORE_CATEGORY: MoveCategory = {
   muscleGroup: 'recovery',
   equipHint: 'Deep stretching on rest days — no lifting.',
   color:
-    'bg-[#C8B0FF] text-black dark:bg-[#C4B8FF] dark:text-black',
+    'bg-[#CABCF4] text-black dark:bg-[#B2A5E2] dark:text-black',
   glow:
-    'border-[#9070E0] shadow-[4px_4px_0_0_#9070E0,0_0_20px_rgba(200,176,255,0.45)] dark:border-[#C4B8FF] dark:shadow-[0_0_0_1px_#C4B8FF,0_0_18px_rgba(196,184,255,0.8),0_0_36px_rgba(196,184,255,0.45)]',
+    'border-[#9482D2] shadow-[3px_3px_0_0_#9482D2] dark:border-[#9A8CD0] dark:shadow-[0_6px_16px_rgba(0,0,0,0.35),0_0_10px_rgba(178,165,226,0.16)]',
   variants: [
     {
       id: 'cobra-stretch',
