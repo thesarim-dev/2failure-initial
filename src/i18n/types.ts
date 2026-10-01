@@ -332,6 +332,7 @@ export interface AppTranslations {
     cameraStart: string;
   };
   game: import('./gameContent').GameCopy;
+  hub: import('./hubContent').HubCopy;
   tutorial: {
     skip: string;
     back: string;

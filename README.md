@@ -103,8 +103,8 @@ The first time you sign in, 2failure dims the home screen and walks you through 
 | 2 | Set counter on the first card | Each card is one of today's exercises; the counter shows sets done out of today's goal |
 | 3 | Streak badge | 2 sets a day keeps your streak alive |
 | 4 | Coins badge | Every finished set earns coins |
-| 5 | Store (bag icon) | Unlock harder exercises and choose your lineup |
-| 6 | Settings (gear icon) | Program, daily set target, language, units, night mode |
+| 5 | Training (bag icon) | Plan your week and unlock exercises |
+| 6 | Settings (gear icon) | Language, units, sounds, night mode |
 | 7 | Program banner | Only shown when the rotating program is on; explains rest days |
 | 8 | First exercise card | Tap **Start** to begin your first set |
 
@@ -278,66 +278,30 @@ When you finish all sets for an exercise, confetti appears on the summary screen
 
 ---
 
-## 9. Use the store and build your lineup
+## 9. Plan your training and shop for exercises
 
-The store is where you unlock new exercises and choose which ones appear on your home screen.
+Tap the **bag icon** on the home screen to open **Training**. It has two tabs.
 
-### Open the store
+### Plan tab: how you train
 
-Tap the **bag icon** in the home screen header.
+1. **Choose how you want to train**:
+   - **Build my own**: you pick your exercises, training days and sets.
+   - **Follow a program**: a ready-made split rotates your workouts and builds in rest (see section 10).
+2. **Build my own** gives you:
+   - **Quick start presets** that set days and sets in one tap: **Starter** (3 days · 2 sets), **Balanced** (4 days · 3 sets), **Committed** (5 days · 3 sets).
+   - **Training days per week** (2–6). The other days are rest days, and they keep your streak alive.
+   - **Sets per exercise** (2 or 3).
+   - **Your lineup**: six slots (Push, Pull, Legs, Legs, Core, Core). Tap a slot to pick a different exercise for it; you can buy one right there if you don't own it yet.
+3. A summary line always shows your week, for example "4 days a week · 6 exercises × 3 sets · about 30 min".
 
-### Buy an exercise
+### Shop tab: unlock exercises
 
-Every exercise in the store works at a park, at home, or anywhere with floor space. There is no gym equipment.
+- **Ready for the next step** suggests the next exercise up from one in your lineup, with its price.
+- Filter by **Push**, **Pull**, **Legs** or **Core**, and switch on **No gear only** for exercises you can do anywhere.
+- Each exercise shows its step in its progression ("Step 3 of 7"), the gear it needs and when to level up. Buy it with coins, or tap **Use** to put an owned exercise in your lineup.
+- Tap an exercise to see its full progression ladder.
 
-1. Browse sections: **Upperbody** (a push ladder, then a pull ladder), **Lowerbody**, and **Core**. Within each section, moves are ordered easiest to hardest.
-2. Locked exercises show a price in coins. Tap the price button to purchase.
-3. You must have enough coins. Earn coins by completing sets (see [Track progress](#12-track-progress-over-time)).
-4. Exercises priced at **0** are free and available immediately.
-5. Each card shows the gear it needs (**no gear**, **bench or step**, **pull-up bar**, **dip bars**, **backpack**). Moves you own also show their **Next step**.
-
-### Exercise tiers
-
-Exercises in the Store are labeled by difficulty under the **equip** or **buy** button:
-
-- **base** — starter moves (e.g. incline pushups, pushups, squats, planks)
-- **pro** — intermediate (e.g. dips, inverted rows, chin-ups, Bulgarian splits, backpack moves)
-- **elite** — advanced (e.g. pull-ups, archer pushups, pistol squats, L-sit, hanging leg raises)
-
-Unlock harder variations with coins as you progress.
-
-### Progression ladders
-
-| Ladder | Easiest → hardest |
-|---|---|
-| **Push** | Incline pushups → Pushups → Pike pushups → Diamond pushups → Dips → Backpack pushups → Archer pushups |
-| **Pull** | Superman pulls → Doorway rows → Inverted floor rows → Inverted rows → Negative pull-ups → Chin-ups → Pull-ups → Backpack pull-ups |
-| **Legs** | Squats / Lunges / Glute bridges → Step-ups → Single-leg bridges → Jump squats → Burpees → Bulgarian splits → Backpack squats → Pistol squats |
-| **Core** | Planks / Crunches → Side planks → Leg raises → Hollow body hold → Hanging knee raises → L-sit → Hanging leg raises |
-
-Players who joined before this store update keep dips, pull-ups, burpees, L-sit and leg raises, which used to be free.
-
-### Equip exercises for your daily lineup
-
-Each section lets you choose which unlocked exercises appear on the home screen:
-
-| Section | Slots | Rule |
-|---|---|---|
-| **Upperbody** | 2 | Must include **1 push** and **1 pull** movement |
-| **Lowerbody** | 2 | Any two lower-body exercises |
-| **Core** | 2 | Any two core exercises |
-
-**To equip:**
-
-1. Expand a section (tap the header).
-2. Tap **ACTIVE** on an equipped exercise to unequip.
-3. Tap **EQUIP** on one of the highlighted exercises.
-
-Equipped exercises show an **Active** badge.
-
-### Rotating program lock
-
-When the rotating program is on, lineup changes are **locked**. The program assigns exercises automatically. Turn the program off in Settings if you want manual control of your lineup again.
+When you follow a program, the program chooses your exercises, so the lineup is shown but can't be edited.
 
 ---
 
@@ -383,7 +347,7 @@ Tap **How hard should each set feel?** in Settings for the full breakdown.
 
 ### Browse program days
 
-In Settings, use the program day carousel to preview upcoming days without changing today's workout.
+In **Training → Plan**, use the program day carousel to preview upcoming days without changing today's workout.
 
 ### Rest (stretch) days
 
@@ -408,13 +372,9 @@ When the limit is reached, the button disappears until a used rest day falls out
 
 Open Settings from the gear icon on the home screen.
 
-### Daily set target
+### Training plan
 
-Choose how many sets you aim to complete per exercise each day (when the rotating program is off). Options typically range from 1 to 5 sets.
-
-### Rotating program
-
-Toggle the plan on or off and pick your **training split** (3, 4, or 5 days). When on, set targets and exercise selection are managed by the program. Use the home-screen **Rest day** button when you want a stretch day — your split decides how many you get per week.
+The program, training split, training days per week, sets per exercise and your lineup all live in **Training → Plan** (section 9). The **Training plan** card at the top of Settings opens it.
 
 ### Appearance
 

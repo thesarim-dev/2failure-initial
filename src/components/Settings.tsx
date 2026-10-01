@@ -1,67 +1,35 @@
-import { TRAINING_DAY_OPTIONS, type TrainingDaysPerWeek } from '../hooks/useTrainingDaysPerWeek';
-import { ArrowLeft, Compass, LogOut, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Compass, LogOut, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { SettingsFaq } from './SettingsFaq';
-import { ProgramTrainingGuide } from './ProgramTrainingGuide';
-import { ProgramDayCarousel } from './ProgramDayCarousel';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { LANGUAGE_OPTIONS } from '../i18n/translations';
-import type { DailySetGoal } from '../hooks/useDailySetGoal';
 import type { Language } from '../i18n/types';
-import {
-  ROTATION_TEMPLATE_IDS,
-  type RotatingProgramPhase,
-  type RotatingProgramTemplateId
-} from '../lib/rotatingProgram';
 
 interface SettingsProps {
   coins: number;
-  dailySetGoal: DailySetGoal;
-  rotatingProgramEnabled: boolean;
-  rotatingProgramPhase: RotatingProgramPhase | null;
-  rotatingProgramCycleDay: number | null;
-  rotatingProgramTemplate: RotatingProgramTemplateId;
-  onSelectProgramTemplate: (template: RotatingProgramTemplateId) => void;
-  rotationCycle: readonly RotatingProgramPhase[];
-  isRestDayToday: boolean;
-  onSelectProgramCycleDay: (cycleDay: number) => void;
   isDark: boolean;
-  onDailySetGoalChange: (goal: DailySetGoal) => void;
-  trainingDaysPerWeek: number;
-  onTrainingDaysChange: (days: TrainingDaysPerWeek) => void;
-  onRotatingProgramEnabledChange: (enabled: boolean) => void;
   onToggleDark: () => void;
   weightUnit: 'kg' | 'lb';
   onWeightUnitChange: (unit: 'kg' | 'lb') => void;
   onReplayTour?: () => void;
   soundOn: boolean;
   onToggleSound: () => void;
+  /** Opens the Training screen on its Plan tab. */
+  onOpenPlan: () => void;
   onBack: () => void;
 }
 
 export function Settings({
   coins,
-  dailySetGoal,
-  rotatingProgramEnabled,
-  rotatingProgramPhase,
-  rotatingProgramCycleDay,
-  rotatingProgramTemplate,
-  onSelectProgramTemplate,
-  rotationCycle,
-  isRestDayToday,
-  onSelectProgramCycleDay,
   isDark,
-  onDailySetGoalChange,
-  trainingDaysPerWeek,
-  onTrainingDaysChange,
-  onRotatingProgramEnabledChange,
   onToggleDark,
   weightUnit,
   onWeightUnitChange,
   onReplayTour,
   soundOn,
   onToggleSound,
+  onOpenPlan,
   onBack
 }: SettingsProps) {
   const { signOut } = useAuth();
@@ -86,120 +54,17 @@ export function Settings({
 
       <div className="space-y-6">
         <section className="cyber-panel p-5 normal-case">
-          <h2 className="settings-section-title">{s.rotatingProgram.title}</h2>
-          <p className="text-sm font-medium opacity-70 mb-4">
-            {s.rotatingProgram.description}
-          </p>
-          <div className="settings-toggle-group flex gap-2">
-            <button
-              type="button"
-              onClick={() => onRotatingProgramEnabledChange(false)}
-              className={`store-btn flex-1 justify-center ${
-                !rotatingProgramEnabled
-                  ? 'store-btn--active'
-                  : 'store-btn--equip'
-              }`}>
-              {s.rotatingProgram.off}
-            </button>
-            <button
-              type="button"
-              onClick={() => onRotatingProgramEnabledChange(true)}
-              className={`store-btn flex-1 justify-center ${
-                rotatingProgramEnabled
-                  ? 'store-btn--active'
-                  : 'store-btn--equip'
-              }`}>
-              {s.rotatingProgram.on}
+          <div className="settings-appearance-row">
+            <div className="settings-appearance-copy">
+              <h2 className="settings-section-title">{t.hub.settingsLink.title}</h2>
+              <p className="text-sm font-medium opacity-70">{t.hub.settingsLink.description}</p>
+            </div>
+            <button type="button" onClick={onOpenPlan} className="settings-theme-toggle">
+              <CalendarDays size={18} strokeWidth={2.35} />
+              <span className="settings-theme-toggle__label">{t.hub.settingsLink.open}</span>
             </button>
           </div>
-          {rotatingProgramEnabled &&
-            rotatingProgramPhase !== null &&
-            rotatingProgramCycleDay !== null && (
-              <>
-                <div className="mt-4">
-                  <h3 className="text-sm font-bold uppercase tracking-wide opacity-80 mb-2">
-                    {s.rotatingProgram.template.title}
-                  </h3>
-                  <div className="settings-toggle-group flex gap-2">
-                    {ROTATION_TEMPLATE_IDS.map((templateId) => (
-                      <button
-                        key={templateId}
-                        type="button"
-                        onClick={() => onSelectProgramTemplate(templateId)}
-                        className={`store-btn flex-1 justify-center ${
-                          rotatingProgramTemplate === templateId
-                            ? 'store-btn--active'
-                            : 'store-btn--equip'
-                        }`}>
-                        {s.rotatingProgram.template.options[templateId]}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs font-medium opacity-60 mt-2">
-                    {s.rotatingProgram.template.descriptions[rotatingProgramTemplate]}
-                  </p>
-                </div>
-                <ProgramDayCarousel
-                  cycle={rotationCycle}
-                  cycleDay={rotatingProgramCycleDay}
-                  onSelectCycleDay={onSelectProgramCycleDay}
-                  getPhaseLabel={(phase) => s.rotatingProgram.phases[phase]}
-                  isDark={isDark}
-                  isRestDay={isRestDayToday}
-                  restTitle={s.rotatingProgram.restDay.carouselTitle}
-                  restKicker={s.rotatingProgram.restDay.carouselKicker}
-                />
-                <ProgramTrainingGuide />
-              </>
-            )}
         </section>
-
-        {!rotatingProgramEnabled && (
-          <section className="cyber-panel p-5 normal-case">
-            <h2 className="settings-section-title">{s.dailySetTarget.title}</h2>
-            <p className="text-sm font-medium opacity-70 mb-4">
-              {s.dailySetTarget.description}
-            </p>
-            <div className="settings-toggle-group flex gap-2">
-              {([2, 3] as const).map((goal) => (
-                <button
-                  key={goal}
-                  type="button"
-                  onClick={() => onDailySetGoalChange(goal)}
-                  className={`store-btn flex-1 justify-center ${
-                    dailySetGoal === goal
-                      ? 'store-btn--active'
-                      : 'store-btn--equip'
-                  }`}>
-                  {s.dailySetTarget.sets(goal)}
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {!rotatingProgramEnabled && (
-          <section className="cyber-panel p-5 normal-case">
-            <h2 className="settings-section-title">{t.game.trainingDays.title}</h2>
-            <p className="text-sm font-medium opacity-70 mb-4">
-              {t.game.trainingDays.description(trainingDaysPerWeek)}
-            </p>
-            <div className="settings-toggle-group flex gap-2">
-              {TRAINING_DAY_OPTIONS.map((days) => (
-                <button
-                  key={days}
-                  type="button"
-                  aria-pressed={trainingDaysPerWeek === days}
-                  onClick={() => onTrainingDaysChange(days)}
-                  className={`store-btn flex-1 justify-center ${
-                    trainingDaysPerWeek === days ? 'store-btn--active' : 'store-btn--equip'
-                  }`}>
-                  {days}
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
 
         <section className="cyber-panel p-5 normal-case">
           <div className="settings-appearance-row">

@@ -28,12 +28,12 @@ const en: TutorialContent = {
       body: 'Every finished set earns coins. Longer sets earn more, up to 2 minutes.'
     },
     store: {
-      title: 'Store',
-      body: 'Spend coins here to unlock harder exercises and choose which ones show up each day.'
+      title: 'Training',
+      body: 'Plan your week here (your own plan or a program), and unlock harder exercises with coins.'
     },
     settings: {
       title: 'Settings',
-      body: 'Turn on the rotating program, set your daily set target, and change language, units or night mode.'
+      body: 'Language, units, sounds and night mode live here.'
     },
     base: {
       title: 'Your base',
@@ -89,12 +89,12 @@ const he: TutorialContent = {
       body: 'כל סט שמסתיים מזכה במטבעות. סט ארוך יותר מזכה ביותר, עד 2 דקות.'
     },
     store: {
-      title: 'חנות',
-      body: 'כאן מוציאים מטבעות כדי לפתוח תרגילים קשים יותר ולבחור אילו תרגילים יופיעו בכל יום.'
+      title: 'אימון',
+      body: 'כאן מתכננים את השבוע (תוכנית משלכם או תוכנית מוכנה) ופותחים תרגילים קשים יותר עם מטבעות.'
     },
     settings: {
       title: 'הגדרות',
-      body: 'כאן מפעילים את התוכנית המתחלפת, קובעים יעד סטים יומי ומשנים שפה, יחידות או מצב לילה.'
+      body: 'כאן נמצאים שפה, יחידות, צלילים ומצב לילה.'
     },
     base: {
       title: 'הבסיס שלכם',
@@ -150,12 +150,12 @@ const ar: TutorialContent = {
       body: 'كل مجموعة تكملها تمنحك عملات. المجموعة الأطول تمنح أكثر، حتى دقيقتين.'
     },
     store: {
-      title: 'المتجر',
-      body: 'أنفق العملات هنا لفتح تمارين أصعب واختيار التمارين التي تظهر كل يوم.'
+      title: 'التدريب',
+      body: 'خطّط لأسبوعك هنا (خطتك الخاصة أو برنامج جاهز)، وافتح تمارين أصعب بالعملات.'
     },
     settings: {
       title: 'الإعدادات',
-      body: 'فعّل البرنامج المتناوب، وحدّد هدف المجموعات اليومي، وغيّر اللغة أو الوحدات أو الوضع الليلي.'
+      body: 'هنا تجد اللغة والوحدات والأصوات والوضع الليلي.'
     },
     base: {
       title: 'قاعدتك',

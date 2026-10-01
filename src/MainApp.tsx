@@ -10,7 +10,7 @@ import { useUserStats } from './hooks/useUserStats';
 import { useWorkoutProgress } from './hooks/useWorkoutProgress';
 import { Workout } from './components/Workout';
 import { Summary } from './components/Summary';
-import { Store } from './components/Store';
+import { TrainingHub, type HubTab } from './components/TrainingHub';
 import { Settings } from './components/Settings';
 import {
   LINEUP_EQUIP_COUNT,
@@ -125,9 +125,8 @@ export function MainApp() {
     equippedLower,
     equippedCore,
     setEquippedUpper,
-    toggleEquipUpper,
-    toggleEquipLower,
-    toggleEquipCore
+    setEquippedLower,
+    setEquippedCore
   } = useEquippedLineup(user?.id);
   const { showTutorial, dismissTutorial, replayTutorial } = useOnboarding(user?.id);
   // True from the moment the tour starts the first workout until the user is back home.
@@ -462,7 +461,12 @@ export function MainApp() {
     }
   };
 
+  const [hubTab, setHubTab] = useState<HubTab>('plan');
   const handleOpenStore = () => setAppState('STORE');
+  const handleOpenPlan = () => {
+    setHubTab('plan');
+    setAppState('STORE');
+  };
   const handleCloseStore = () => setAppState('HOME');
   const handleOpenSettings = () => setAppState('SETTINGS');
   const handleCloseSettings = () => setAppState('HOME');
@@ -499,32 +503,31 @@ export function MainApp() {
     });
   };
 
-  const handleToggleEquipUpper = (exerciseId: string) => {
-    if (rotatingProgramEnabled || !owned.includes(exerciseId)) return;
-
-    if (equippedUpper.includes(exerciseId)) {
-      toggleEquipUpper(exerciseId);
+  /**
+   * Put `toId` in the lineup in place of `fromId` (same category). If `toId`
+   * is already in the lineup, the two swap places instead.
+   */
+  const handleSwapLineup = (category: 'upper' | 'lower' | 'core', fromId: string | null, toId: string) => {
+    if (rotatingProgramEnabled || !owned.includes(toId)) return;
+    const [list, setList] =
+      category === 'upper'
+        ? [equippedUpper, setEquippedUpper]
+        : category === 'lower'
+          ? [equippedLower, setEquippedLower]
+          : [equippedCore, setEquippedCore];
+    if (fromId === toId) return;
+    let next: string[];
+    if (list.includes(toId)) {
+      if (!fromId || !list.includes(fromId)) return;
+      next = list.map((id) => (id === fromId ? toId : id === toId ? fromId : id));
+    } else if (fromId && list.includes(fromId)) {
+      next = list.map((id) => (id === fromId ? toId : id));
+    } else if (list.length < LINEUP_EQUIP_COUNT) {
+      next = [...list, toId];
+    } else {
       return;
     }
-
-    if (equippedUpper.length >= LINEUP_EQUIP_COUNT) {
-      const nextUpper = [...equippedUpper];
-      nextUpper.splice(0, 1, exerciseId);
-      setEquippedUpper(nextUpper);
-      return;
-    }
-
-    toggleEquipUpper(exerciseId);
-  };
-
-  const handleToggleEquipLower = (exerciseId: string) => {
-    if (rotatingProgramEnabled || !owned.includes(exerciseId)) return;
-    toggleEquipLower(exerciseId);
-  };
-
-  const handleToggleEquipCore = (exerciseId: string) => {
-    if (rotatingProgramEnabled || !owned.includes(exerciseId)) return;
-    toggleEquipCore(exerciseId);
+    setList(next);
   };
 
   const firstSetStage: FirstSetStage | null = (() => {
@@ -606,44 +609,46 @@ export function MainApp() {
       }
 
       {appState === 'STORE' &&
-      <Store
+      <TrainingHub
+        tab={hubTab}
+        onTabChange={setHubTab}
+        onBack={handleCloseStore}
         coins={coins}
         owned={owned}
         equippedUpper={equippedUpper}
         equippedLower={equippedLower}
         equippedCore={equippedCore}
-        onBack={handleCloseStore}
-        onBuy={handleBuy}
-        onToggleEquipUpper={handleToggleEquipUpper}
-        onToggleEquipLower={handleToggleEquipLower}
-        onToggleEquipCore={handleToggleEquipCore}
-        rotatingProgramEnabled={rotatingProgramEnabled} />
+        programLineup={{ upper: lineupForToday.upper, lower: lineupForToday.lower, core: lineupForToday.core }}
+        onBuy={(variant) => handleBuy(variant.id, variant)}
+        onSwap={handleSwapLineup}
+        rotatingProgramEnabled={rotatingProgramEnabled}
+        onRotatingProgramEnabledChange={setRotatingProgramEnabled}
+        rotatingProgramTemplate={rotatingProgramTemplate}
+        onSelectProgramTemplate={setRotatingProgramTemplate}
+        rotationCycle={rotationCycle}
+        rotatingProgramCycleDay={rotatingProgramCycleDay}
+        rotatingProgramPhase={rotatingProgramPhase}
+        onSelectProgramCycleDay={selectProgramCycleDay}
+        isRestDayToday={isRestDayToday}
+        isDark={isDark}
+        dailySetGoal={dailySetGoal}
+        onDailySetGoalChange={setDailySetGoal}
+        trainingDaysPerWeek={trainingDaysPerWeek}
+        onTrainingDaysChange={setTrainingDaysPerWeek} />
 
       }
 
       {appState === 'SETTINGS' &&
       <Settings
         coins={coins}
-        dailySetGoal={dailySetGoal}
-        rotatingProgramEnabled={rotatingProgramEnabled}
-        rotatingProgramPhase={rotatingProgramPhase}
-        rotatingProgramCycleDay={rotatingProgramCycleDay}
-        rotatingProgramTemplate={rotatingProgramTemplate}
-        onSelectProgramTemplate={setRotatingProgramTemplate}
-        rotationCycle={rotationCycle}
-        isRestDayToday={isRestDayToday}
-        onSelectProgramCycleDay={selectProgramCycleDay}
         isDark={isDark}
-        onDailySetGoalChange={setDailySetGoal}
-        onRotatingProgramEnabledChange={setRotatingProgramEnabled}
         onToggleDark={toggleDark}
         weightUnit={weightUnit}
         onWeightUnitChange={setWeightUnit}
         onReplayTour={handleReplayTour}
         soundOn={soundOn}
         onToggleSound={toggleSound}
-        trainingDaysPerWeek={trainingDaysPerWeek}
-        onTrainingDaysChange={setTrainingDaysPerWeek}
+        onOpenPlan={handleOpenPlan}
         onBack={handleCloseSettings} />
 
       }
