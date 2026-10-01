@@ -4678,4 +4678,74 @@
       box-shadow: 0 0 0 1px #e8653a, 0 0 12px rgba(255, 102, 51, 0.45);
     }
   }
+
+  /* ---------- Home: "Edit your workout" card ---------- */
+  .plan-card.cyber-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.8rem;
+  }
+  .plan-card-main {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-align: start;
+    border-radius: 0.8rem;
+  }
+  .plan-card-icon {
+    flex-shrink: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: #d3f25c;
+    color: #0c0f02;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  }
+  .plan-card-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .plan-card-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 0.98rem;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+  .plan-card-line {
+    font-size: 0.78rem;
+    font-weight: 700;
+    opacity: 0.72;
+    line-height: 1.3;
+  }
+  .plan-card-chevron {
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .plan-card-shop {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #8a6200;
+    background: rgba(247, 201, 72, 0.18);
+    border: 1px solid rgba(247, 201, 72, 0.55);
+  }
+  .dark .plan-card-shop {
+    color: #f7c948;
+  }
+  :is(.plan-card-main, .plan-card-shop):focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
 }

@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, Compass, LogOut, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
+import { CalendarDays, Compass, LogOut, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { SettingsFaq } from './SettingsFaq';
 import { useAuth } from '../context/AuthContext';
@@ -17,7 +17,6 @@ interface SettingsProps {
   onToggleSound: () => void;
   /** Opens the Training screen on its Plan tab. */
   onOpenPlan: () => void;
-  onBack: () => void;
 }
 
 export function Settings({
@@ -29,8 +28,7 @@ export function Settings({
   onReplayTour,
   soundOn,
   onToggleSound,
-  onOpenPlan,
-  onBack
+  onOpenPlan
 }: SettingsProps) {
   const { signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -39,13 +37,6 @@ export function Settings({
   return (
     <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
       <header className="flex justify-between items-center mb-8 gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="cyber-icon-btn cyber-icon-btn--back"
-          aria-label={s.back}>
-          <ArrowLeft size={22} strokeWidth={2.5} />
-        </button>
         <h1 className="text-2xl md:text-3xl tracking-tighter store-title-glow text-[#00A8D8] dark:text-[#00B2FF] uppercase">
           {s.title}
         </h1>

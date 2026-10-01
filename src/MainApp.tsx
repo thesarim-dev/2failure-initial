@@ -462,18 +462,22 @@ export function MainApp() {
   };
 
   const [hubTab, setHubTab] = useState<HubTab>('plan');
-  const handleOpenStore = () => setAppState('STORE');
+  const handleOpenShop = () => {
+    fx.tick();
+    setHubTab('shop');
+    setAppState('STORE');
+  };
   const handleOpenPlan = () => {
+    fx.tick();
     setHubTab('plan');
     setAppState('STORE');
   };
   const handleCloseStore = () => setAppState('HOME');
-  const handleOpenSettings = () => setAppState('SETTINGS');
-  const handleCloseSettings = () => setAppState('HOME');
-  const handleTab = (tab: 'train' | 'base') => {
+  const handleTab = (tab: 'train' | 'base' | 'settings') => {
     if (tab === 'base') fx.baseTab();
+    else if (tab === 'settings') fx.tick();
     else fx.trainTab();
-    setAppState(tab === 'base' ? 'BASE' : 'HOME');
+    setAppState(tab === 'base' ? 'BASE' : tab === 'settings' ? 'SETTINGS' : 'HOME');
     window.scrollTo({ top: 0 });
   };
   const handleSeeBase = () => {
@@ -550,7 +554,7 @@ export function MainApp() {
       ? getWeightedSetContext(currentMove.categoryId)
       : null;
 
-  const showTabBar = appState === 'HOME' || appState === 'BASE';
+  const showTabBar = appState === 'HOME' || appState === 'BASE' || appState === 'SETTINGS';
 
   return (
     <div
@@ -605,8 +609,9 @@ export function MainApp() {
         pushupRepsToday={pushupRepsToday}
         pushupRepsLoading={pushupRepsLoading}
         onSelectMove={handleSelectMove}
-        onOpenStore={handleOpenStore}
-        onOpenSettings={handleOpenSettings} />
+        onOpenPlan={handleOpenPlan}
+        onOpenShop={handleOpenShop}
+        trainingDaysPerWeek={trainingDaysPerWeek} />
 
       }
 
@@ -650,8 +655,7 @@ export function MainApp() {
         onReplayTour={handleReplayTour}
         soundOn={soundOn}
         onToggleSound={toggleSound}
-        onOpenPlan={handleOpenPlan}
-        onBack={handleCloseSettings} />
+        onOpenPlan={handleOpenPlan} />
 
       }
 
@@ -714,7 +718,7 @@ export function MainApp() {
 
       {showTabBar && (
         <AppTabBar
-          active={appState === 'BASE' ? 'base' : 'train'}
+          active={appState === 'BASE' ? 'base' : appState === 'SETTINGS' ? 'settings' : 'train'}
           onChange={handleTab}
           baseHasNews={baseGame.hasNews}
         />

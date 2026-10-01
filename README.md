@@ -103,8 +103,8 @@ The first time you sign in, 2failure dims the home screen and walks you through 
 | 2 | Set counter on the first card | Each card is one of today's exercises; the counter shows sets done out of today's goal |
 | 3 | Streak badge | 2 sets a day keeps your streak alive |
 | 4 | Coins badge | Every finished set earns coins |
-| 5 | Training (bag icon) | Plan your week and unlock exercises |
-| 6 | Settings (gear icon) | Language, units, sounds, night mode |
+| 5 | Edit your workout card | Plan your week and unlock exercises |
+| 6 | Settings tab | Language, units, sounds, night mode |
 | 7 | Program banner | Only shown when the rotating program is on; explains rest days |
 | 8 | First exercise card | Tap **Start** to begin your first set |
 
@@ -280,7 +280,7 @@ When you finish all sets for an exercise, confetti appears on the summary screen
 
 ## 9. Plan your training and shop for exercises
 
-Tap the **bag icon** on the home screen to open **Training**. It has two tabs.
+Tap the **Edit your workout** card at the top of the home screen to open **Training** (or its **🛍️ Shop** chip to go straight to the shop). It has two tabs.
 
 ### Plan tab: how you train
 
@@ -369,7 +369,7 @@ When the limit is reached, the button disappears until a used rest day falls out
 
 ## 11. Adjust settings
 
-Open Settings from the gear icon on the home screen.
+Open **Settings** from the bottom bar (Train · Base · Settings).
 
 ### Training plan
 

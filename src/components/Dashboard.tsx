@@ -3,14 +3,13 @@ import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog'
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BedDouble, Flame, Loader2, Settings as SettingsIcon, ShoppingBag } from 'lucide-react';
+import { BedDouble, ChevronRight, Dumbbell, Flame, Loader2 } from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
 import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeMove } from '../i18n/localize';
 import type { DailySetGoal } from '../hooks/useDailySetGoal';
 import type { RotatingProgramPhase } from '../lib/rotatingProgram';
-import { pickFunFact } from '../lib/funFacts';
 import { PUSHUP_DAILY_GOAL } from '../lib/pushupDailyProgress';
 import { canOfferStreakRestore } from '../lib/userStats';
 import { sumDailySets } from '../lib/workoutProgress';
@@ -57,8 +56,10 @@ interface DashboardProps {
   pushupRepsToday: number;
   pushupRepsLoading: boolean;
   onSelectMove: (move: Move) => void;
-  onOpenStore: () => void;
-  onOpenSettings: () => void;
+  /** Training screen, Plan tab / Shop tab. */
+  onOpenPlan: () => void;
+  onOpenShop: () => void;
+  trainingDaysPerWeek: number;
 }
 
 export function Dashboard({
@@ -99,8 +100,9 @@ export function Dashboard({
   pushupRepsToday,
   pushupRepsLoading,
   onSelectMove,
-  onOpenStore,
-  onOpenSettings
+  onOpenPlan,
+  onOpenShop,
+  trainingDaysPerWeek
 }: DashboardProps) {
   const { t, language, isRtl } = useLanguage();
   const rewardFor = (move: Move) => {
@@ -108,10 +110,15 @@ export function Dashboard({
     return pattern === 'recovery' ? RESOURCE_IDS : [PATTERN_RESOURCE[pattern]];
   };
   const rewardLabel = (move: Move) => rewardFor(move).map((id) => t.game.resources[id]).join(' · ');
-  const funFact = useMemo(
-    () => pickFunFact(t.dashboard.funFacts.facts, t.dashboard.funFacts.loading),
-    [language, t.dashboard.funFacts.facts, t.dashboard.funFacts.loading]
-  );
+  const planLine = rotatingProgramEnabled
+    ? isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
+      ? t.hub.dashCard.programRest(rotationCycleLength)
+      : t.hub.dashCard.program(rotationCycleLength, t.settings.rotatingProgram.phases[rotatingProgramPhase])
+    : t.hub.dashCard.own(
+        trainingDaysPerWeek,
+        dailySetGoal,
+        equippedUpper.length + equippedLower.length + equippedCore.length
+      );
 
   const totalSetsToday = useMemo(
     () => sumDailySets(setsCompleted),
@@ -153,23 +160,6 @@ export function Dashboard({
         </div>
 
         <div className="relative z-10 flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={onOpenStore}
-            data-tour="store"
-            className="cyber-icon-btn cyber-icon-btn--store"
-            aria-label={t.dashboard.aria.openStore}>
-            <ShoppingBag size={20} strokeWidth={2.5} />
-          </button>
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            data-tour="settings"
-            className="cyber-icon-btn cyber-icon-btn--settings"
-            aria-label={t.dashboard.aria.openSettings}>
-            <SettingsIcon size={20} strokeWidth={2.5} />
-          </button>
-
           {/* Same look as the coins pill; display only. */}
           <div
             className="coins-badge materials-badge flex items-center px-3 py-2"
@@ -212,10 +202,20 @@ export function Dashboard({
       <section
         className="mb-6 flex items-center gap-4 normal-case"
         aria-label={t.dashboard.aria.funFactAndStreak}>
-        <div className="cyber-panel flex-1 min-w-0 p-5 normal-case text-start">
-          <p className="font-medium text-base leading-snug opacity-90">
-            {funFact}
-          </p>
+        <div className="plan-card cyber-panel flex-1 min-w-0 normal-case text-start">
+          <button type="button" className="plan-card-main" data-tour="store" onClick={onOpenPlan}>
+            <span className="plan-card-icon" aria-hidden="true">
+              <Dumbbell size={20} strokeWidth={2.5} />
+            </span>
+            <span className="plan-card-text">
+              <span className="plan-card-title">{t.hub.dashCard.title}</span>
+              <span className="plan-card-line">{planLine}</span>
+            </span>
+            <ChevronRight size={18} strokeWidth={2.5} className="plan-card-chevron tour-icon-flip" aria-hidden="true" />
+          </button>
+          <button type="button" className="plan-card-shop" onClick={onOpenShop}>
+            <span aria-hidden="true">🛍️</span> {t.hub.dashCard.shop}
+          </button>
         </div>
 
         <div className="flex flex-col items-end gap-2">

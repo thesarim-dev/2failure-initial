@@ -1,7 +1,7 @@
-import { Activity, Castle } from 'lucide-react';
+import { Activity, Castle, Settings as SettingsIcon } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export type AppTab = 'train' | 'base';
+export type AppTab = 'train' | 'base' | 'settings';
 
 interface AppTabBarProps {
   active: AppTab;
@@ -14,11 +14,12 @@ export function AppTabBar({ active, onChange, baseHasNews }: AppTabBarProps) {
   const { t } = useLanguage();
   const tabs: Array<{ id: AppTab; label: string; icon: typeof Activity }> = [
     { id: 'train', label: t.game.tabs.train, icon: Activity },
-    { id: 'base', label: t.game.tabs.base, icon: Castle }
+    { id: 'base', label: t.game.tabs.base, icon: Castle },
+    { id: 'settings', label: t.hub.settingsTab, icon: SettingsIcon }
   ];
 
   return (
-    <nav className="app-tab-bar" aria-label={`${t.game.tabs.train} / ${t.game.tabs.base}`}>
+    <nav className="app-tab-bar" aria-label={tabs.map((tab) => tab.label).join(' / ')}>
       {tabs.map(({ id, label, icon: Icon }) => {
         const isActive = active === id;
         return (
@@ -27,7 +28,7 @@ export function AppTabBar({ active, onChange, baseHasNews }: AppTabBarProps) {
             type="button"
             className={`app-tab ${isActive ? 'is-active' : ''}`}
             aria-current={isActive ? 'page' : undefined}
-            data-tour={id === 'base' ? 'base-tab' : undefined}
+            data-tour={id === 'base' ? 'base-tab' : id === 'settings' ? 'settings' : undefined}
             onClick={() => onChange(id)}>
             <span className="app-tab-icon">
               <Icon size={22} strokeWidth={2.4} aria-hidden="true" />
