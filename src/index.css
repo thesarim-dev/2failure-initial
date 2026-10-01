@@ -4657,15 +4657,16 @@
     border-color: rgba(0, 178, 255, 0.3);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 178, 255, 0.12);
   }
+  /* Bright colours, no halo. */
   .dark .coins-badge svg,
   .dark .coins-badge > span {
-    color: #7fd6f2;
+    color: #3ad6ff;
   }
   .dark .cyber-icon-btn--store svg {
-    color: #b2d65a;
+    color: #a8f02a;
   }
   .dark .cyber-icon-btn--settings svg {
-    color: #e8b35a;
+    color: #ffb820;
   }
   @keyframes streak-pulse-dark {
     0%, 100% {
