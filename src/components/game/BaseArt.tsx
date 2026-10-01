@@ -1562,70 +1562,128 @@ export function ItemArt({
 // Terrain
 // ---------------------------------------------------------------------------
 
-const TERRAIN_COLORS: Record<string, { top: string; alt: string; detail: string }> = {
-  grass: { top: '#2a5b3a', alt: '#275536', detail: '#3c7a4e' },
-  meadow: { top: '#336b3f', alt: '#30653b', detail: '#ffd1ea' },
-  dirt: { top: '#6b4a2e', alt: '#64452b', detail: '#8a6440' },
-  sand: { top: '#c9a86a', alt: '#c2a063', detail: '#e2c78e' },
-  plaza: { top: '#7f8a99', alt: '#78838f', detail: '#a9b3c0' },
-  water: { top: '#1f6f9c', alt: '#1f6f9c', detail: '#7fd3f5' },
-  snow: { top: '#dfe8f1', alt: '#d6e0ea', detail: '#ffffff' }
+const TERRAIN_COLORS: Record<string, { base: string; light: string; dark: string; detail: string }> = {
+  grass: { base: '#2c5e3c', light: '#357049', dark: '#24502f', detail: '#4a8f5d' },
+  meadow: { base: '#33683f', light: '#3d7a4b', dark: '#2a5a35', detail: '#ffd1ea' },
+  dirt: { base: '#6b4a2e', light: '#7a5636', dark: '#5a3d25', detail: '#8f6a45' },
+  sand: { base: '#c9a86a', light: '#d6b87c', dark: '#b8975a', detail: '#e8d29d' },
+  plaza: { base: '#7f8a99', light: '#8c97a6', dark: '#727d8c', detail: '#a9b3c0' },
+  water: { base: '#1f6f9c', light: '#2a80ad', dark: '#1a5f88', detail: '#7fd3f5' },
+  snow: { base: '#dfe8f1', light: '#eef3f8', dark: '#cfdae6', detail: '#ffffff' }
 };
 
 /** Deterministic small number per tile, for scattering details. */
-function tileHash(x: number, y: number): number {
-  let h = (x * 374761393 + y * 668265263) >>> 0;
+function tileHash(x: number, y: number, salt = 0): number {
+  let h = (x * 374761393 + y * 668265263 + salt * 2147483647) >>> 0;
   h = ((h ^ (h >>> 13)) * 1274126177) >>> 0;
-  return h;
+  return (h ^ (h >>> 16)) >>> 0;
 }
 
-/** One ground tile (100×100 at its grid position). */
+/** A blade-of-grass tuft; some sway in the breeze. */
+function Tuft({ x, y, color, sway, delay }: { x: number; y: number; color: string; sway: boolean; delay: number }) {
+  return (
+    <g className={sway ? 'base-sway' : undefined} style={sway ? { animationDelay: `${delay}s` } : undefined}>
+      <path d={`M${x} ${y} q-2 -7 -4 -9 M${x} ${y} q0 -8 1 -11 M${x} ${y} q2 -6 5 -8`} stroke={color} strokeWidth={2} strokeLinecap="round" fill="none" />
+    </g>
+  );
+}
+
+/**
+ * One ground tile, drawn edge to edge so neighbouring tiles of the same
+ * ground blend into one seamless surface. Soft blotches and scattered
+ * details (tufts, flowers, pebbles, ripples) are placed by a per-tile hash
+ * so the ground looks natural rather than tiled; a few of them move.
+ */
 export function TerrainTile({ x, y, terrain }: { x: number; y: number; terrain: string }) {
   const c = TERRAIN_COLORS[terrain] ?? TERRAIN_COLORS.grass;
   const h = tileHash(x, y);
+  const h2 = tileHash(x, y, 1);
   const px = x * 100;
   const py = y * 100;
-  const fill = (x + y) % 2 ? c.alt : c.top;
-  const dx = 20 + (h % 50);
-  const dy = 20 + ((h >>> 8) % 50);
+  const at = (n: number, salt: number) => 12 + (tileHash(x, y, salt) % 76) + 0 * n;
+  const delay = (h % 30) / 10;
+
+  // Soft light/dark blotches give the ground texture without visible squares.
+  // Kept inside the tile (centre 30–70, radius ≤ 28) so they never stain a different neighbour.
+  const mid = (salt: number) => 30 + (tileHash(x, y, salt) % 41);
+  const blotches = (
+    <>
+      <ellipse cx={px + mid(2)} cy={py + mid(3)} rx={16 + (h % 12)} ry={10 + (h2 % 10)} fill={c.light} opacity={0.45} />
+      <ellipse cx={px + mid(4)} cy={py + mid(5)} rx={14 + (h2 % 12)} ry={9 + (h % 9)} fill={c.dark} opacity={0.4} />
+    </>
+  );
+
   if (terrain === 'water') {
     return (
       <g pointerEvents="none">
-        <rect x={px} y={py} width={100} height={100} fill={c.top} />
-        <g className="base-shimmer">
-          <path d={`M${px + dx - 14} ${py + dy} q7 -5 14 0 t14 0`} fill="none" stroke={c.detail} strokeWidth={3} strokeLinecap="round" opacity={0.6} />
-          <path d={`M${px + 100 - dx - 10} ${py + 100 - dy} q5 -4 10 0`} fill="none" stroke={c.detail} strokeWidth={2.5} strokeLinecap="round" opacity={0.45} />
+        <rect x={px - 0.5} y={py - 0.5} width={101} height={101} fill={c.base} />
+        {blotches}
+        <g className="base-shimmer" style={{ animationDelay: `${delay}s` }}>
+          <path d={`M${px + at(0, 6) - 14} ${py + at(0, 7)} q7 -5 14 0 t14 0`} fill="none" stroke={c.detail} strokeWidth={3} strokeLinecap="round" opacity={0.6} />
+          <path d={`M${px + at(0, 8) - 10} ${py + at(0, 9)} q5 -4 10 0`} fill="none" stroke={c.detail} strokeWidth={2.5} strokeLinecap="round" opacity={0.45} />
         </g>
       </g>
     );
   }
+
   return (
     <g pointerEvents="none">
-      <rect x={px + 1} y={py + 1} width={98} height={98} rx={terrain === 'plaza' ? 3 : 8} fill={fill} />
-      {terrain === 'plaza' ? (
-        <g fill="none" stroke="#5f6a78" strokeWidth={2} opacity={0.6}>
-          <line x1={px + 50} y1={py + 4} x2={px + 50} y2={py + 96} />
-          <line x1={px + 4} y1={py + 50} x2={px + 96} y2={py + 50} />
-        </g>
-      ) : terrain === 'meadow' ? (
+      <rect x={px - 0.5} y={py - 0.5} width={101} height={101} fill={c.base} />
+      {terrain !== 'plaza' && blotches}
+      {terrain === 'plaza' && (
         <g>
-          <circle cx={px + dx} cy={py + dy} r={3} fill={c.detail} />
-          <circle cx={px + 100 - dx} cy={py + 30 + (h % 40)} r={2.6} fill="#fff4b0" />
-          <circle cx={px + 30 + ((h >>> 4) % 40)} cy={py + 100 - dy} r={2.6} fill="#c9b8ff" />
-        </g>
-      ) : (
-        <g fill={c.detail} opacity={terrain === 'grass' ? 0.7 : 0.8}>
-          {terrain === 'grass' ? (
-            <>
-              <path d={`M${px + dx} ${py + dy} l2 -7 l2 7 z M${px + dx + 5} ${py + dy} l2 -5 l2 5 z`} />
-              <path d={`M${px + 100 - dx} ${py + 100 - dy} l2 -6 l2 6 z`} />
-            </>
-          ) : (
-            <>
-              <circle cx={px + dx} cy={py + dy} r={2.5} />
-              <circle cx={px + 100 - dx} cy={py + 100 - dy} r={2} />
-            </>
+          {[0, 1].flatMap((i) =>
+            [0, 1].map((j) => (
+              <rect key={`${i}${j}`} x={px + 3 + i * 50} y={py + 3 + j * 50} width={44} height={44} rx={3}
+                fill={(i + j + (h % 2)) % 2 ? c.light : c.base} opacity={0.9} />
+            ))
           )}
+        </g>
+      )}
+      {terrain === 'grass' &&
+        [0, 1, 2].map((i) => (
+          <Tuft key={i} x={px + at(i, 10 + i)} y={py + at(i, 20 + i)} color={i === 1 ? c.light : c.detail} sway={(h >>> i) % 3 === 0} delay={delay + i * 0.4} />
+        ))}
+      {terrain === 'meadow' && (
+        <g>
+          <Tuft x={px + at(0, 30)} y={py + at(0, 31)} color={c.light} sway delay={delay} />
+          {[0, 1, 2].map((i) => {
+            const fx = px + at(i, 40 + i);
+            const fy = py + at(i, 50 + i);
+            const colors = ['#ffd1ea', '#fff4b0', '#c9b8ff'];
+            return (
+              <g key={i} className="base-sway" style={{ animationDelay: `${delay + i * 0.6}s` }}>
+                <path d={`M${fx} ${fy + 8} q1 -4 0 -8`} stroke="#3c7a4e" strokeWidth={1.6} fill="none" />
+                <circle cx={fx} cy={fy} r={3.2} fill={colors[(h + i) % 3]} />
+                <circle cx={fx} cy={fy} r={1.2} fill="#fff4b0" />
+              </g>
+            );
+          })}
+        </g>
+      )}
+      {terrain === 'dirt' && (
+        <g>
+          <circle cx={px + at(0, 60)} cy={py + at(0, 61)} r={2.6} fill={c.detail} />
+          <circle cx={px + at(0, 62)} cy={py + at(0, 63)} r={1.8} fill={c.light} />
+          <ellipse cx={px + at(0, 64)} cy={py + at(0, 65)} rx={3.5} ry={2.2} fill={c.dark} />
+          <path d={`M${px + at(0, 66)} ${py + at(0, 67)} l6 3 l4 -2`} stroke={c.dark} strokeWidth={1.5} fill="none" strokeLinecap="round" />
+        </g>
+      )}
+      {terrain === 'sand' && (
+        <g>
+          <path d={`M${px + 10} ${py + at(0, 70)} q12 -5 24 0 t24 0 t24 0`} stroke={c.dark} strokeWidth={1.6} fill="none" opacity={0.5} />
+          <path d={`M${px + 18} ${py + at(0, 71)} q10 -4 20 0 t20 0`} stroke={c.light} strokeWidth={1.4} fill="none" opacity={0.7} />
+          {h % 3 === 0 && (
+            <circle cx={px + at(0, 72)} cy={py + at(0, 73)} r={2} fill="#fffbe6" className="base-sparkle" style={{ animationDelay: `${delay}s` }} />
+          )}
+        </g>
+      )}
+      {terrain === 'snow' && (
+        <g>
+          <ellipse cx={px + at(0, 80)} cy={py + at(0, 81)} rx={10} ry={4} fill="#c3d0de" opacity={0.6} />
+          {[0, 1].map((i) => (
+            <circle key={i} cx={px + at(i, 82 + i)} cy={py + at(i, 84 + i)} r={1.8} fill={c.detail} className="base-sparkle" style={{ animationDelay: `${delay + i}s` }} />
+          ))}
         </g>
       )}
     </g>

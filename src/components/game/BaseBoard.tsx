@@ -100,26 +100,19 @@ export function BaseBoard({
   const tiles: ReactNode[] = [];
   for (let y = 0; y < GRID_SIZE; y++) {
     for (let x = 0; x < GRID_SIZE; x++) {
-      const open = isTileBuildable(x, y, land);
-      if (open) {
-        tiles.push(<TerrainTile key={`t${x},${y}`} x={x} y={y} terrain={state.terrain?.[`${x},${y}`] ?? 'grass'} />);
-        tiles.push(
-          <rect
-            key={`${x},${y}`}
-            x={x * T}
-            y={y * T}
-            width={T}
-            height={T}
-            fill="transparent"
-            onClick={placing || painting ? undefined : () => onTile(x, y)}
-          />
-        );
-      } else {
-        tiles.push(
-          <rect key={`${x},${y}`} x={x * T + 1} y={y * T + 1} width={T - 2} height={T - 2} rx={8} className="base-tile base-tile--locked" />,
-          <rect key={`h${x},${y}`} x={x * T + 1} y={y * T + 1} width={T - 2} height={T - 2} rx={8} fill="url(#base-hatch)" pointerEvents="none" />
-        );
-      }
+      if (!isTileBuildable(x, y, land)) continue;
+      tiles.push(<TerrainTile key={`t${x},${y}`} x={x} y={y} terrain={state.terrain?.[`${x},${y}`] ?? 'grass'} />);
+      tiles.push(
+        <rect
+          key={`${x},${y}`}
+          x={x * T}
+          y={y * T}
+          width={T}
+          height={T}
+          fill="transparent"
+          onClick={placing || painting ? undefined : () => onTile(x, y)}
+        />
+      );
     }
   }
 
@@ -192,6 +185,9 @@ export function BaseBoard({
       </defs>
       <rect x={-T} y={-T} width={(GRID_SIZE + 2) * T} height={(GRID_SIZE + 2) * T} className="base-ground" />
       <rect x={landX - 4} y={landX - 4} width={landEnd - landX + 8} height={landEnd - landX + 8} rx={12} fill="#1b3a26" />
+      {/* Land you don't own yet: one seamless foggy layer. */}
+      <rect x={0} y={0} width={GRID_SIZE * T} height={GRID_SIZE * T} className="base-tile--locked" />
+      <rect x={0} y={0} width={GRID_SIZE * T} height={GRID_SIZE * T} fill="url(#base-hatch)" pointerEvents="none" />
       {tiles}
       {/* The owned land is a raised island: an earthy cliff under its front edge. */}
       <g pointerEvents="none">
@@ -261,6 +257,18 @@ export function BaseBoard({
       })}
 
       <g className="base-fireflies" pointerEvents="none">{fireflies}</g>
+
+      {/* The grid only shows while building, moving or painting. */}
+      {(placing || painting) && (
+        <g className="base-grid" pointerEvents="none">
+          {Array.from({ length: max - min + 2 }, (_, i) => (min + i) * T).map((v) => (
+            <g key={v}>
+              <line x1={v} y1={landX} x2={v} y2={landEnd} />
+              <line x1={landX} y1={v} x2={landEnd} y2={v} />
+            </g>
+          ))}
+        </g>
+      )}
 
       {placing &&
         [...validTiles].map((key) => {
