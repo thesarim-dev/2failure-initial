@@ -656,7 +656,6 @@ export function MainApp() {
       {appState === 'BASE' && (
         <BaseScreen
           game={baseGame}
-          onGoTrain={() => handleTab('train')}
           coins={coins}
           onSpendCoins={(amount) => void setCoins((current) => Math.max(0, current - amount))}
         />

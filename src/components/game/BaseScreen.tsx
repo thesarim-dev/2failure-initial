@@ -1,3 +1,7 @@
+import stoneIcon from '../../assets/resources/stone.png';
+import timberIcon from '../../assets/resources/timber.png';
+import ironIcon from '../../assets/resources/iron.png';
+import crystalIcon from '../../assets/resources/crystal.png';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Check, Coins, Expand, Hammer, Move as MoveIcon, Palette, ShieldCheck, X } from 'lucide-react';
 import { getVariantById } from '../moves';
@@ -51,7 +55,7 @@ import {
   type TodayPlan
 } from '../../game/engine';
 import type { BaseGame } from '../../game/useBaseGame';
-import { BaseBoard, ItemPreview, RESOURCE_COLOR } from './BaseBoard';
+import { BaseBoard, ItemPreview } from './BaseBoard';
 
 type Draft = { kind: 'item'; itemId: string } | { kind: 'trophy'; trophyId: string };
 
@@ -63,20 +67,24 @@ type Mode =
 
 type SheetState = null | 'build' | 'land' | { uid: string } | { draft: Draft };
 
+const RESOURCE_ICON: Record<ResourceId, string> = {
+  stone: stoneIcon,
+  timber: timberIcon,
+  iron: ironIcon,
+  crystal: crystalIcon
+};
+
 export function ResourceIcon({ id, size = 18 }: { id: ResourceId; size?: number }) {
-  const c = RESOURCE_COLOR[id];
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" className="base-resource-icon">
-      {id === 'stone' && <path d="M5 15 L8 7 L15 5 L20 11 L18 18 L9 19 Z" fill={c} />}
-      {id === 'timber' && (
-        <g>
-          <rect x={3} y={8} width={16} height={9} rx={4.5} fill={c} />
-          <circle cx={18} cy={12.5} r={4.5} fill="#7a4b12" stroke={c} strokeWidth={1.5} />
-        </g>
-      )}
-      {id === 'iron' && <path d="M4 17 L7 8 H17 L20 17 Z" fill={c} />}
-      {id === 'crystal' && <path d="M12 3 L18 10 L12 21 L6 10 Z" fill={c} />}
-    </svg>
+    <img
+      src={RESOURCE_ICON[id]}
+      width={size}
+      height={size}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+      className="base-resource-icon"
+    />
   );
 }
 
@@ -150,7 +158,7 @@ export function useQuestText() {
   };
 }
 
-function TodayPanel({ game, plan, onGoTrain }: { game: BaseGame; plan: TodayPlan | null; onGoTrain: () => void }) {
+function TodayPanel({ game, plan }: { game: BaseGame; plan: TodayPlan | null }) {
   const { t } = useLanguage();
   const g = t.game;
   const { state } = game;
@@ -168,11 +176,6 @@ function TodayPanel({ game, plan, onGoTrain }: { game: BaseGame; plan: TodayPlan
     <section className="base-today cyber-panel normal-case" aria-label={g.today.title}>
       <div className="base-today-head">
         <h2 className="base-today-title">{g.today.title}</h2>
-        {!plan?.isRestDay && !sessionDone && (
-          <button type="button" className="base-status-btn" onClick={onGoTrain}>
-            {g.goTrain}
-          </button>
-        )}
       </div>
 
       {plan?.isRestDay ? (
@@ -317,12 +320,10 @@ function hasCustomization(itemId: string): boolean {
 
 export function BaseScreen({
   game,
-  onGoTrain,
   coins,
   onSpendCoins
 }: {
   game: BaseGame;
-  onGoTrain: () => void;
   /** The workout currency, used for land and upgrades. */
   coins: number;
   onSpendCoins: (amount: number) => void;
@@ -452,7 +453,7 @@ export function BaseScreen({
       <div className="base-resources" role="list">
         {RESOURCE_IDS.map((id) => (
           <div key={id} role="listitem" className="base-resource" title={g.resourceSource[id]}>
-            <ResourceIcon id={id} />
+            <ResourceIcon id={id} size={24} />
             <span className="base-resource-count tabular-nums">{state.resources[id]}</span>
             <span className="base-resource-label">{g.resources[id]}</span>
           </div>
@@ -491,13 +492,8 @@ export function BaseScreen({
               );
             })}
           </div>
-          <button type="button" className="base-status-btn" onClick={onGoTrain}>
-            {g.goTrain}
-          </button>
         </section>
       )}
-
-      <TodayPanel game={game} plan={game.plan} onGoTrain={onGoTrain} />
 
       {mode.kind !== 'idle' && modeItemId && (
         <div className="base-mode-bar" role="status">
@@ -541,6 +537,8 @@ export function BaseScreen({
           </button>
         </div>
       )}
+
+      <TodayPanel game={game} plan={game.plan} />
 
       {sheet === 'build' && (
         <Sheet title={g.build} onClose={() => setSheet(null)}>
