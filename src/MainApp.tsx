@@ -471,7 +471,8 @@ export function MainApp() {
   const handleOpenSettings = () => setAppState('SETTINGS');
   const handleCloseSettings = () => setAppState('HOME');
   const handleTab = (tab: 'train' | 'base') => {
-    fx.tick();
+    if (tab === 'base') fx.baseTab();
+    else fx.trainTab();
     setAppState(tab === 'base' ? 'BASE' : 'HOME');
     window.scrollTo({ top: 0 });
   };
@@ -573,6 +574,8 @@ export function MainApp() {
         lastWorkoutDate={lastWorkoutDate}
         restoreStreakCost={restoreStreakCost}
         onRestoreStreak={handleRestoreStreak}
+        materials={baseGame.state.resources}
+        onOpenBase={() => handleTab('base')}
         restAllowance={restAllowance}
         recentRestDays={recentRestDays}
         shields={baseGame.state.shields}

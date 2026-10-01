@@ -1,3 +1,5 @@
+import { ResourceIcon } from './game/BaseScreen';
+import { RESOURCE_IDS, type Resources } from '../game/catalog';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { BedDouble, Flame, Loader2, Settings as SettingsIcon, ShoppingBag } from 'lucide-react';
@@ -15,6 +17,9 @@ import { Move, getVariantById, resolveLineupMove } from './moves';
 
 interface DashboardProps {
   coins: number;
+  /** Building materials for the base, shown in a pill next to coins. */
+  materials: Resources;
+  onOpenBase: () => void;
   currentStreak: number;
   longestStreak: number;
   statsLoading: boolean;
@@ -58,6 +63,8 @@ interface DashboardProps {
 
 export function Dashboard({
   coins,
+  materials,
+  onOpenBase,
   currentStreak,
   longestStreak,
   statsLoading,
@@ -136,7 +143,7 @@ export function Dashboard({
       <header className="relative flex justify-between items-center mb-8 gap-3">
         <div className="flex items-center gap-2 min-w-0 pe-2 pointer-events-none select-none">
           <FailureLogo size={32} className="failure-logo-glow shrink-0" />
-          <h1 className="logo-brand text-3xl tracking-tighter text-[#00A8D8] dark:text-[#00B2FF] normal-case whitespace-nowrap dashboard-logo-glow">
+          <h1 className="logo-brand dashboard-wordmark text-3xl tracking-tighter text-[#00A8D8] dark:text-[#00B2FF] normal-case whitespace-nowrap dashboard-logo-glow">
             2failure
           </h1>
         </div>
@@ -157,6 +164,19 @@ export function Dashboard({
             className="cyber-icon-btn cyber-icon-btn--settings"
             aria-label={t.dashboard.aria.openSettings}>
             <SettingsIcon size={20} strokeWidth={2.5} />
+          </button>
+
+          <button
+            type="button"
+            className="materials-pill"
+            onClick={onOpenBase}
+            aria-label={RESOURCE_IDS.map((id) => `${materials[id]} ${t.game.resources[id]}`).join(', ')}>
+            {RESOURCE_IDS.map((id) => (
+              <span key={id} className="materials-pill-item">
+                <ResourceIcon id={id} size={16} />
+                <span className="tabular-nums">{materials[id]}</span>
+              </span>
+            ))}
           </button>
 
           {profileLoading ? (

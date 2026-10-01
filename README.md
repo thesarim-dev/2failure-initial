@@ -288,8 +288,7 @@ Tap the **bag icon** on the home screen to open **Training**. It has two tabs.
    - **Build my own**: you pick your exercises, training days and sets.
    - **Follow a program**: a ready-made split rotates your workouts and builds in rest (see section 10).
 2. **Build my own** gives you:
-   - **Quick start presets** that set days and sets in one tap: **Starter** (3 days · 2 sets), **Balanced** (4 days · 3 sets), **Committed** (5 days · 3 sets).
-   - **Training days per week** (2–6). The other days are rest days, and they keep your streak alive.
+   - **Training days per week** (4, 5 or 6). The other days are rest days, and they keep your streak alive.
    - **Sets per exercise** (2 or 3).
    - **Your lineup**: six slots (Push, Pull, Legs, Legs, Core, Core). Tap a slot to pick a different exercise for it; you can buy one right there if you don't own it yet.
 3. A summary line always shows your week, for example "4 days a week · 6 exercises × 3 sets · about 30 min".
@@ -505,7 +504,7 @@ Every set you finish earns materials for your own base. Tap **Base** in the bott
 
 **Today's plan** is exactly what the Train tab shows: your rotating-program day, or your equipped lineup when the program is off. Sets in today's plan earn full materials. A few sets beyond the plan earn half, then nothing, because rest is part of training. Finishing the whole plan earns a session bonus. Sets under 10 seconds don't earn anything.
 
-**Your week**: hitting your weekly training target (the program split, or **Settings → Training days per week** when the program is off) earns the biggest reward of the week and builds a weekly streak.
+**Your week**: hitting your weekly training target (the program split, or **Training → Plan → Training days per week** when the program is off) earns the biggest reward of the week and builds a weekly streak.
 
 **Streaks respect rest.** Days off within your weekly rest allowance (7 minus your training days) keep your streak alive and count as days on plan. Only going beyond the allowance breaks it.
 

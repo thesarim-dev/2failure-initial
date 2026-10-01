@@ -87,6 +87,49 @@ function play(notes: Note[]) {
   }
 }
 
+let noiseBuffer: AudioBuffer | null = null;
+
+/** A short burst of filtered noise: the "body" of an impact (a strike, a knock). */
+function noise({
+  at = 0,
+  dur = 0.08,
+  filter = 'bandpass',
+  freq = 2000,
+  q = 1,
+  gain = 0.05
+}: {
+  at?: number;
+  dur?: number;
+  filter?: BiquadFilterType;
+  freq?: number;
+  q?: number;
+  gain?: number;
+}) {
+  const a = audio();
+  if (!a) return;
+  if (!noiseBuffer) {
+    noiseBuffer = a.ctx.createBuffer(1, Math.floor(a.ctx.sampleRate * 0.5), a.ctx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  }
+  const start = a.ctx.currentTime + 0.01 + at;
+  const src = a.ctx.createBufferSource();
+  src.buffer = noiseBuffer;
+  const bq = a.ctx.createBiquadFilter();
+  bq.type = filter;
+  bq.frequency.value = freq;
+  bq.Q.value = q;
+  const env = a.ctx.createGain();
+  env.gain.setValueAtTime(0.0001, start);
+  env.gain.exponentialRampToValueAtTime(gain, start + 0.004);
+  env.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  src.connect(bq);
+  bq.connect(env);
+  env.connect(a.out);
+  src.start(start);
+  src.stop(start + dur + 0.02);
+}
+
 /** A tiny vibration on phones that support it (most Android devices). */
 function haptic(ms: number | number[]) {
   if (!isSoundOn()) return;
@@ -109,6 +152,31 @@ const C5 = 523.25;
 const E5 = 659.25;
 
 export const fx = {
+  /**
+   * Train tab: an anvil being set down. A bright metallic strike (noise) with
+   * a few inharmonic ringing partials, like struck iron, over a low thunk.
+   */
+  trainTab() {
+    noise({ dur: 0.05, filter: 'highpass', freq: 2500, gain: 0.05 });
+    noise({ dur: 0.09, filter: 'lowpass', freq: 400, gain: 0.08 });
+    play([
+      { f: 150, dur: 0.12, gain: 0.07, slideTo: 90 },
+      { f: 1180, dur: 0.45, type: 'triangle', gain: 0.022 },
+      { f: 1873, dur: 0.38, gain: 0.018 },
+      { f: 2690, dur: 0.3, gain: 0.014 },
+      { f: 3510, dur: 0.22, gain: 0.01 }
+    ]);
+    haptic(14);
+  },
+  /** Base tab: "thud thud thud", three soft hammer knocks of something being built. */
+  baseTab() {
+    [0, 0.13, 0.26].forEach((at, i) => {
+      noise({ at, dur: 0.07, filter: 'lowpass', freq: 600 - i * 60, gain: 0.07 });
+      noise({ at, dur: 0.025, filter: 'bandpass', freq: 1500, q: 2, gain: 0.03 });
+      play([{ f: 130 - i * 8, at, dur: 0.11, gain: 0.08, slideTo: 70 }]);
+    });
+    haptic([10, 90, 10, 90, 10]);
+  },
   /** A light tick for small taps (tabs, toggles). */
   tick() {
     play([{ f: E7, dur: 0.05, type: 'triangle', gain: 0.025 }]);

@@ -6,7 +6,7 @@ import { storageKeyFor } from '../lib/persistedSettings';
  * How many days a week a player without the rotating program plans to train.
  * The rest of the week is planned rest, which keeps the streak alive.
  */
-export const TRAINING_DAY_OPTIONS = [2, 3, 4, 5, 6] as const;
+export const TRAINING_DAY_OPTIONS = [4, 5, 6] as const;
 export type TrainingDaysPerWeek = (typeof TRAINING_DAY_OPTIONS)[number];
 export const DEFAULT_TRAINING_DAYS: TrainingDaysPerWeek = 4;
 

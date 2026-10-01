@@ -6,7 +6,6 @@ export type HubCopy = {
   title: string;
   tabs: { plan: string; shop: string };
   mode: { title: string; own: string; ownDesc: string; program: string; programDesc: string };
-  presets: { title: string; starter: string; balanced: string; committed: string; detail: (days: number, sets: number) => string };
   days: { title: string; hint: (rest: number) => string };
   sets: { title: string; hint: string };
   lineup: { title: string; hint: string; slots: Record<Slot, string>; programNote: string; empty: string };
@@ -44,13 +43,6 @@ const en: HubCopy = {
     ownDesc: 'Choose your exercises, training days and sets.',
     program: 'Follow a program',
     programDesc: 'A ready-made split that rotates your workouts and builds in rest.'
-  },
-  presets: {
-    title: 'Quick start',
-    starter: 'Starter',
-    balanced: 'Balanced',
-    committed: 'Committed',
-    detail: (days, sets) => `${days} days · ${sets} sets`
   },
   days: { title: 'Training days per week', hint: (rest) => `${rest} rest days a week. Rest keeps your streak alive.` },
   sets: { title: 'Sets per exercise', hint: 'How many sets you aim for on each exercise, every training day.' },
@@ -103,13 +95,6 @@ const he: HubCopy = {
     program: 'אעקוב אחרי תוכנית',
     programDesc: 'חלוקה מוכנה שמחליפה את האימונים ומשלבת מנוחה.'
   },
-  presets: {
-    title: 'התחלה מהירה',
-    starter: 'מתחיל',
-    balanced: 'מאוזן',
-    committed: 'מחויב',
-    detail: (days, sets) => `${days} ימים · ${sets} סטים`
-  },
   days: { title: 'ימי אימון בשבוע', hint: (rest) => `${rest} ימי מנוחה בשבוע. מנוחה שומרת על הרצף שלך.` },
   sets: { title: 'סטים לכל תרגיל', hint: 'כמה סטים אתה שואף לעשות בכל תרגיל, בכל יום אימון.' },
   lineup: {
@@ -160,13 +145,6 @@ const ar: HubCopy = {
     ownDesc: 'اختر تمارينك وأيام التدريب والمجموعات.',
     program: 'سأتبع برنامجاً',
     programDesc: 'تقسيم جاهز يبدّل تمارينك ويتضمن الراحة.'
-  },
-  presets: {
-    title: 'بداية سريعة',
-    starter: 'مبتدئ',
-    balanced: 'متوازن',
-    committed: 'ملتزم',
-    detail: (days, sets) => `${days} أيام · ${sets} مجموعات`
   },
   days: { title: 'أيام التدريب في الأسبوع', hint: (rest) => `${rest} أيام راحة في الأسبوع. الراحة تحافظ على سلسلتك.` },
   sets: { title: 'المجموعات لكل تمرين', hint: 'عدد المجموعات التي تستهدفها لكل تمرين في كل يوم تدريب.' },

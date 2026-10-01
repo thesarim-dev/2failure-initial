@@ -32,11 +32,6 @@ function slotOf(id: string): Slot | null {
   return null;
 }
 
-const PRESETS: Array<{ id: 'starter' | 'balanced' | 'committed'; days: TrainingDaysPerWeek; sets: DailySetGoal }> = [
-  { id: 'starter', days: 3, sets: 2 },
-  { id: 'balanced', days: 4, sets: 3 },
-  { id: 'committed', days: 5, sets: 3 }
-];
 
 type LineupEntry = { slot: Slot; category: Category; id: string | null };
 
@@ -122,6 +117,9 @@ export function TrainingHub(props: TrainingHubProps) {
               fx.tick();
               onTabChange(id);
             }}>
+            <span className="hub-tab-emoji" aria-hidden="true">
+              {id === 'plan' ? '🗓️' : '🛍️'}
+            </span>
             {h.tabs[id]}
           </button>
         ))}
@@ -166,7 +164,6 @@ function PlanTab(props: TrainingHubProps) {
   const programIds = [...props.programLineup.upper, ...props.programLineup.lower, ...props.programLineup.core];
   const exercises = ownLineup.filter((e) => e.id).length;
   const minutes = Math.max(10, Math.round((exercises * props.dailySetGoal * 1.6) / 5) * 5);
-  const activePreset = PRESETS.find((p) => p.days === props.trainingDaysPerWeek && p.sets === props.dailySetGoal)?.id;
 
   return (
     <div className="hub-body">
@@ -237,27 +234,6 @@ function PlanTab(props: TrainingHubProps) {
         </section>
       ) : (
         <>
-          <section className="hub-card">
-            <h3 className="hub-card-title">{h.presets.title}</h3>
-            <div className="hub-preset-row">
-              {PRESETS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  aria-pressed={activePreset === p.id}
-                  className={`hub-preset ${activePreset === p.id ? 'is-active' : ''}`}
-                  onClick={() => {
-                    fx.confirm();
-                    props.onTrainingDaysChange(p.days);
-                    props.onDailySetGoalChange(p.sets);
-                  }}>
-                  <span className="hub-preset-name">{h.presets[p.id]}</span>
-                  <span className="hub-preset-detail">{h.presets.detail(p.days, p.sets)}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
           <section className="hub-card">
             <h3 className="hub-card-title">{h.days.title}</h3>
             <div className="hub-segment" role="radiogroup" aria-label={h.days.title}>
