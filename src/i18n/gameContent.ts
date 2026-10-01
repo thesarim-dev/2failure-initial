@@ -331,7 +331,7 @@ const en: GameCopy = {
   trainingDays: {
     title: 'Training days per week',
     description: (days) =>
-      `Plan ${days} training days. The other ${7 - days} are rest days, and they keep your streak alive.`
+      `Plan ${days} training days. The other ${7 - days} are rest days, and they keep your streak alive. You can also tap Rest day on the Train tab up to twice a week.`
   },
   intro: {
     title: 'Welcome to your base',
@@ -538,7 +538,7 @@ const he: GameCopy = {
   trainingDays: {
     title: 'ימי אימון בשבוע',
     description: (days) =>
-      `תכנן ${days} ימי אימון. ${7 - days} הימים האחרים הם ימי מנוחה, והם שומרים על הרצף שלך.`
+      `תכנן ${days} ימי אימון. ${7 - days} הימים האחרים הם ימי מנוחה, והם שומרים על הרצף שלך. אפשר גם להקיש על יום מנוחה בלשונית האימון עד פעמיים בשבוע.`
   },
   intro: {
     title: 'ברוך הבא לבסיס שלך',
@@ -745,7 +745,7 @@ const ar: GameCopy = {
   trainingDays: {
     title: 'أيام التدريب في الأسبوع',
     description: (days) =>
-      `خطط لـ${days} أيام تدريب. الأيام الـ${7 - days} الأخرى أيام راحة، وهي تحافظ على سلسلتك.`
+      `خطط لـ${days} أيام تدريب. الأيام الـ${7 - days} الأخرى أيام راحة، وهي تحافظ على سلسلتك. يمكنك أيضاً الضغط على يوم راحة في تبويب التدريب حتى مرتين في الأسبوع.`
   },
   intro: {
     title: 'مرحباً بك في قاعدتك',

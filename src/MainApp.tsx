@@ -28,6 +28,7 @@ import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { calculateCoinsEarned } from './lib/coinRewards';
 import { shouldCountStreakForDay, toLocalDateString } from './lib/userStats';
 import { useTrainingDaysPerWeek } from './hooks/useTrainingDaysPerWeek';
+import { FREE_REST_DAYS_PER_WEEK, useFreeRestDays } from './hooks/useFreeRestDays';
 import type { TodayPlan } from './game/engine';
 import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { sumDailySets } from './lib/workoutProgress';
@@ -72,10 +73,10 @@ export function MainApp() {
     setRotatingProgramTemplate,
     rotationCycle,
     selectProgramCycleDay,
-    isRestDayToday,
-    canTakeRestDay,
-    restDaysRemainingThisWeek,
-    markTodayAsRestDay
+    isRestDayToday: programRestDayToday,
+    canTakeRestDay: programCanTakeRestDay,
+    restDaysRemainingThisWeek: programRestDaysRemaining,
+    markTodayAsRestDay: programMarkRestDay
   } = useRotatingProgram();
   const {
     coins,
@@ -134,7 +135,8 @@ export function MainApp() {
   // Training days per week: the program's split, or the player's own setting.
   // The rest of the week is planned rest, which keeps the streak alive.
   const weeklyTarget = rotatingProgramEnabled ? rotationCycle.length : trainingDaysPerWeek;
-  const restAllowance = Math.max(0, 7 - weeklyTarget);
+  // Without the program, the 2 rest-day uses a week are always covered.
+  const restAllowance = Math.max(rotatingProgramEnabled ? 0 : FREE_REST_DAYS_PER_WEEK, 7 - weeklyTarget);
 
   useEffect(() => {
     if (statsLoading || setsLoading) return;
@@ -152,9 +154,22 @@ export function MainApp() {
     restAllowance
   ]);
 
+  // Rest days: the program's own, or (without the program) up to 2 a week.
+  const freeRest = useFreeRestDays(!rotatingProgramEnabled);
+  const isRestDayToday = rotatingProgramEnabled ? programRestDayToday : freeRest.isRestDayToday;
+  const canTakeRestDay = rotatingProgramEnabled ? programCanTakeRestDay : freeRest.canTakeRestDay;
+  const restDaysRemainingThisWeek = rotatingProgramEnabled
+    ? programRestDaysRemaining
+    : freeRest.restDaysRemainingThisWeek;
+  const markTodayAsRestDay = rotatingProgramEnabled ? programMarkRestDay : freeRest.markTodayAsRestDay;
+
   const lineupForToday = useMemo(() => {
     if (rotatingProgramEnabled && rotatingProgramPhase) {
       return resolveRotatingProgramLineup(rotatingProgramPhase);
+    }
+    // A rest day without the program: today becomes stretches.
+    if (!rotatingProgramEnabled && freeRest.isRestDayToday) {
+      return resolveRotatingProgramLineup('recovery');
     }
 
     return {
@@ -167,6 +182,7 @@ export function MainApp() {
   }, [
     rotatingProgramEnabled,
     rotatingProgramPhase,
+    freeRest.isRestDayToday,
     equippedUpper,
     equippedLower,
     equippedCore

@@ -131,6 +131,7 @@ export interface AppTranslations {
       button: string;
       remaining: (count: number) => string;
       active: string;
+      activeFree: string;
     };
     setsProgress: (completed: number, goal: number) => string;
     pushupDailyProgress: (completed: number, goal: number) => string;

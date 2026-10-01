@@ -20,6 +20,8 @@ interface DashboardUiContent {
     button: string;
     remaining: (count: number) => string;
     active: string;
+    /** Without the program there's nothing to move to tomorrow. */
+    activeFree: string;
   };
   setsProgress: (completed: number, goal: number) => string;
   pushupDailyProgress: (completed: number, goal: number) => string;
@@ -79,7 +81,8 @@ const en: UiContent = {
     restDay: {
       button: 'Rest day',
       remaining: (count) => `(${count} left this week)`,
-      active: 'Rest day — today\'s workouts moved to tomorrow. Stretch it out.'
+      active: 'Rest day — today\'s workouts moved to tomorrow. Stretch it out.',
+      activeFree: 'Rest day. Recovery counts and your streak is safe. Stretch it out.'
     },
     setsProgress: (completed, goal) => `${completed} / ${goal} sets`,
     pushupDailyProgress: (completed, goal) => `${completed} / ${goal} pushups`,
@@ -350,7 +353,8 @@ const he: UiContent = {
     restDay: {
       button: 'יום מנוחה',
       remaining: (count) => `(נותרו ${count} השבוע)`,
-      active: 'יום מנוחה — האימונים של היום הועברו למחר. זמן למתיחות.'
+      active: 'יום מנוחה — האימונים של היום הועברו למחר. זמן למתיחות.',
+      activeFree: 'יום מנוחה. גם התאוששות נחשבת, והרצף שלך מוגן. זמן למתיחות.'
     },
     setsProgress: (completed, goal) => `${completed} / ${goal} סטים`,
     pushupDailyProgress: (completed, goal) => `${completed} / ${goal} שכ״ס`,
@@ -621,7 +625,8 @@ const ar: UiContent = {
     restDay: {
       button: 'يوم راحة',
       remaining: (count) => `(متبقٍ ${count} هذا الأسبوع)`,
-      active: 'يوم راحة — تم نقل تمارين اليوم إلى الغد. وقت التمدد.'
+      active: 'يوم راحة — تم نقل تمارين اليوم إلى الغد. وقت التمدد.',
+      activeFree: 'يوم راحة. التعافي يُحتسب وسلسلتك في أمان. وقت التمدد.'
     },
     setsProgress: (completed, goal) => `${completed} / ${goal} مجموعات`,
     pushupDailyProgress: (completed, goal) => `${completed} / ${goal} ضغط`,
