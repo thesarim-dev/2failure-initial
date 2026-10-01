@@ -302,7 +302,7 @@ export interface AppTranslations {
       reps: string;
       load: string;
       hold: string;
-      record: (value: string, date: string) => string;
+      record: (value: string) => string;
       newRecord: string;
       levelUp: string;
     };

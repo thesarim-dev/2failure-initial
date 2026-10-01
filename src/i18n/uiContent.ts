@@ -266,7 +266,7 @@ const en: UiContent = {
       reps: 'Reps',
       load: 'Load × reps',
       hold: 'Hold',
-      record: (value, date) => `Personal record: ${value} · ${date}`,
+      record: (value) => `Personal record: ${value}`,
       newRecord: 'New personal record!',
       levelUp: 'Level up'
     },
@@ -537,7 +537,7 @@ const he: UiContent = {
       reps: 'חזרות',
       load: 'משקל × חזרות',
       hold: 'החזקה',
-      record: (value, date) => `שיא אישי: ${value} · ${date}`,
+      record: (value) => `שיא אישי: ${value}`,
       newRecord: 'שיא אישי חדש!',
       levelUp: 'עלה רמה'
     },
@@ -809,7 +809,7 @@ const ar: UiContent = {
       reps: 'التكرارات',
       load: 'الوزن × التكرارات',
       hold: 'الثبات',
-      record: (value, date) => `الرقم الشخصي: ${value} · ${date}`,
+      record: (value) => `الرقم الشخصي: ${value}`,
       newRecord: 'رقم شخصي جديد!',
       levelUp: 'ارفع المستوى'
     },

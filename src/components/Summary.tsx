@@ -156,21 +156,22 @@ export function Summary({
       : String(setResult.reps)
     : null;
   const isNewRecord = isWeighted ? setResult?.isNewWeightPersonalBest : setResult?.isNewPersonalBest;
-  const recordLine = (() => {
+  // Personal record: the value on one line, the date on the line below.
+  const record = (() => {
     if (!setResult || isNewRecord) return null;
     if (isWeighted) {
       const best = setResult.weightPersonalBest;
       if (!best?.weightKg || !best.reps) return null;
-      return t.summary.compact.record(
-        `${formatWeight(best.weightKg, weightUnit)} × ${best.reps}`,
-        formatPersonalBestDate(best.achievedAt, language)
-      );
+      return {
+        text: t.summary.compact.record(`${formatWeight(best.weightKg, weightUnit)} × ${best.reps}`),
+        date: formatPersonalBestDate(best.achievedAt, language)
+      };
     }
     if (setResult.personalBest.reps === null) return null;
-    return t.summary.compact.record(
-      String(setResult.personalBest.reps),
-      formatPersonalBestDate(setResult.personalBest.achievedAt, language)
-    );
+    return {
+      text: t.summary.compact.record(String(setResult.personalBest.reps)),
+      date: formatPersonalBestDate(setResult.personalBest.achievedAt, language)
+    };
   })();
 
   // One-line notes, only when they apply.
@@ -253,7 +254,12 @@ export function Summary({
                 {t.summary.compact.newRecord}
               </span>
             ) : (
-              recordLine && <span className="summary-tile-sub">{recordLine}</span>
+              record && (
+                <span className="summary-tile-sub">
+                  {record.text}
+                  <span className="summary-tile-date">{record.date}</span>
+                </span>
+              )
             )}
           </div>
         </div>
