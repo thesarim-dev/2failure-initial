@@ -91,14 +91,17 @@ export const PALETTE_IDS = Object.keys(PALETTE) as PaletteId[];
 
 export type Customization = { style?: string; color?: PaletteId };
 
+/** Add-ons any building can wear (drawn over its front wall). */
+const STRUCTURE_DECORATIONS = ['plain', 'banners', 'plated', 'glow'];
+
 /** What each item lets the player change. `colors: true` shows the palette. */
 export const CUSTOMIZE: Record<string, { styles?: string[]; colors?: boolean }> = {
-  hq: { colors: true },
-  watchtower: { colors: true },
-  lodge: { colors: true },
-  forge: { colors: true },
-  spring: { colors: true },
-  yard: { colors: true },
+  hq: { styles: STRUCTURE_DECORATIONS, colors: true },
+  watchtower: { styles: STRUCTURE_DECORATIONS, colors: true },
+  lodge: { styles: STRUCTURE_DECORATIONS, colors: true },
+  forge: { styles: STRUCTURE_DECORATIONS, colors: true },
+  spring: { styles: STRUCTURE_DECORATIONS, colors: true },
+  yard: { styles: STRUCTURE_DECORATIONS, colors: true },
   path: { styles: ['stone', 'wood', 'tiles'] },
   wall: { styles: ['stone', 'hedge', 'fence'] },
   pine: { styles: ['pine', 'oak', 'palm', 'cherry'] },

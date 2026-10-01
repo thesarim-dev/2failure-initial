@@ -2554,9 +2554,9 @@
     position: relative;
     border-radius: 1.25rem;
     overflow: hidden;
-    border: 1px solid rgba(55, 216, 255, 0.25);
-    box-shadow: 0 0 24px rgba(0, 178, 255, 0.12);
-    background: #0e1016;
+    border: 1px solid rgba(111, 211, 138, 0.25);
+    box-shadow: 0 0 24px rgba(63, 168, 98, 0.12);
+    background: #0d1310;
   }
   .base-notice {
     position: absolute;
@@ -2646,20 +2646,24 @@
   .base-board.is-quiet {
     filter: saturate(0.75) brightness(0.88);
   }
+  /* Night-time grass: two tones so the grid reads without lines. */
   .base-ground {
-    fill: #0e1016;
+    fill: #0d1310;
   }
   .base-tile {
-    fill: #1b1e29;
+    fill: #1d3326;
   }
   .base-tile--alt {
-    fill: #181b25;
+    fill: #1a2e22;
   }
   .base-tile--locked {
-    fill: #101218;
+    fill: #101712;
   }
   .base-hatch-line {
-    stroke: #171a22;
+    stroke: #0b100d;
+  }
+  .base-item-art {
+    transform-box: fill-box;
   }
   .base-body {
     fill: #242836;
@@ -2689,7 +2693,7 @@
   }
   .base-light.is-lit {
     opacity: 1;
-    filter: drop-shadow(0 0 5px rgba(200, 240, 50, 0.75));
+    filter: drop-shadow(0 0 4px rgba(255, 215, 106, 0.7));
   }
   .base-item {
     cursor: pointer;
@@ -2754,7 +2758,7 @@
   .base-preview {
     flex-shrink: 0;
     border-radius: 0.8rem;
-    background: #1b1e29;
+    background: #1d3326;
   }
 
   /* Sheets */
@@ -3365,7 +3369,7 @@
     justify-content: center;
     padding: 0.5rem;
     border-radius: 1rem;
-    background: #0e1016;
+    background: #1d3326;
   }
   .base-customize-preview .base-preview {
     background: transparent;

@@ -305,7 +305,8 @@ const en: GameCopy = {
     classic: 'Classic', lantern: 'Lantern', neon: 'Neon',
     plain: 'Plain', stripe: 'Stripe', chevron: 'Chevron',
     wildflowers: 'Wildflowers', tulips: 'Tulips', roses: 'Roses', lavender: 'Lavender',
-    tiered: 'Tiered', jet: 'Jet', marble: 'Marble'
+    tiered: 'Tiered', jet: 'Jet', marble: 'Marble',
+    banners: 'Banners', plated: 'Plating', glow: 'Glow'
   },
   colorNames: {
     cyan: 'Cyan', lime: 'Lime', magenta: 'Magenta', amber: 'Amber', violet: 'Violet', red: 'Red', white: 'White'
@@ -511,7 +512,8 @@ const he: GameCopy = {
     classic: 'קלאסי', lantern: 'עששית', neon: 'ניאון',
     plain: 'חלק', stripe: 'פס', chevron: 'שברון',
     wildflowers: 'פרחי בר', tulips: 'צבעונים', roses: 'ורדים', lavender: 'לבנדר',
-    tiered: 'קומות', jet: 'סילון', marble: 'שיש'
+    tiered: 'קומות', jet: 'סילון', marble: 'שיש',
+    banners: 'דגלונים', plated: 'ציפוי מתכת', glow: 'זוהר'
   },
   colorNames: {
     cyan: 'טורקיז', lime: 'ליים', magenta: 'מג׳נטה', amber: 'ענבר', violet: 'סגול', red: 'אדום', white: 'לבן'
@@ -717,7 +719,8 @@ const ar: GameCopy = {
     classic: 'كلاسيكي', lantern: 'فانوس', neon: 'نيون',
     plain: 'سادة', stripe: 'خط', chevron: 'شيفرون',
     wildflowers: 'زهور برية', tulips: 'توليب', roses: 'ورود', lavender: 'لافندر',
-    tiered: 'طبقات', jet: 'نافورة عالية', marble: 'رخام'
+    tiered: 'طبقات', jet: 'نافورة عالية', marble: 'رخام',
+    banners: 'رايات', plated: 'تصفيح', glow: 'توهج'
   },
   colorNames: {
     cyan: 'سماوي', lime: 'ليموني', magenta: 'أرجواني', amber: 'كهرماني', violet: 'بنفسجي', red: 'أحمر', white: 'أبيض'
