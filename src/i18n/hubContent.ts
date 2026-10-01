@@ -34,10 +34,11 @@ export type HubCopy = {
   settingsLink: { title: string; description: string; open: string };
   dashCard: {
     title: string;
-    own: (days: number, sets: number, exercises: number) => string;
-    program: (days: number, phase: string) => string;
+    ownBadge: string;
+    programBadge: string;
+    own: (sets: number, days: number) => string;
+    program: (days: number, day: number, phase: string) => string;
     programRest: (days: number) => string;
-    shop: string;
   };
   settingsTab: string;
 };
@@ -93,10 +94,11 @@ const en: HubCopy = {
   settingsLink: { title: 'Training plan', description: 'Program, training days, sets and your lineup.', open: 'Open' },
   dashCard: {
     title: 'Edit your workout',
-    own: (days, sets, exercises) => `${days} days a week · ${sets} sets · ${exercises} exercises`,
-    program: (days, phase) => `${days}-day program · today: ${phase}`,
-    programRest: (days) => `${days}-day program · rest day`,
-    shop: 'Shop'
+    ownBadge: 'Own plan',
+    programBadge: 'Program',
+    own: (sets, days) => `${sets} sets a day · ${days} days a week`,
+    program: (days, day, phase) => `${days}-day program · Day ${day} of ${days}: ${phase}`,
+    programRest: (days) => `${days}-day program · rest day`
   },
   settingsTab: 'Settings'
 };
@@ -152,10 +154,11 @@ const he: HubCopy = {
   settingsLink: { title: 'תוכנית אימון', description: 'תוכנית, ימי אימון, סטים וההרכב שלך.', open: 'פתח' },
   dashCard: {
     title: 'ערוך את האימון',
-    own: (days, sets, exercises) => `${days} ימים בשבוע · ${sets} סטים · ${exercises} תרגילים`,
-    program: (days, phase) => `תוכנית ${days} ימים · היום: ${phase}`,
-    programRest: (days) => `תוכנית ${days} ימים · יום מנוחה`,
-    shop: 'חנות'
+    ownBadge: 'תוכנית אישית',
+    programBadge: 'תוכנית מוכנה',
+    own: (sets, days) => `${sets} סטים ביום · ${days} ימים בשבוע`,
+    program: (days, day, phase) => `תוכנית ${days} ימים · יום ${day} מתוך ${days}: ${phase}`,
+    programRest: (days) => `תוכנית ${days} ימים · יום מנוחה`
   },
   settingsTab: 'הגדרות'
 };
@@ -211,10 +214,11 @@ const ar: HubCopy = {
   settingsLink: { title: 'خطة التدريب', description: 'البرنامج وأيام التدريب والمجموعات وتشكيلتك.', open: 'فتح' },
   dashCard: {
     title: 'عدّل تمرينك',
-    own: (days, sets, exercises) => `${days} أيام في الأسبوع · ${sets} مجموعات · ${exercises} تمارين`,
-    program: (days, phase) => `برنامج ${days} أيام · اليوم: ${phase}`,
-    programRest: (days) => `برنامج ${days} أيام · يوم راحة`,
-    shop: 'المتجر'
+    ownBadge: 'خطة خاصة',
+    programBadge: 'برنامج',
+    own: (sets, days) => `${sets} مجموعات يومياً · ${days} أيام في الأسبوع`,
+    program: (days, day, phase) => `برنامج ${days} أيام · اليوم ${day} من ${days}: ${phase}`,
+    programRest: (days) => `برنامج ${days} أيام · يوم راحة`
   },
   settingsTab: 'الإعدادات'
 };

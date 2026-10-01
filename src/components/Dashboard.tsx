@@ -3,7 +3,8 @@ import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog'
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BedDouble, ChevronRight, Dumbbell, Flame, Loader2 } from 'lucide-react';
+import { BedDouble, ChevronRight, Flame, Loader2 } from 'lucide-react';
+import planIcon from '../assets/plan-icon.png';
 import { FailureLogo } from './FailureLogo';
 import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
@@ -56,9 +57,8 @@ interface DashboardProps {
   pushupRepsToday: number;
   pushupRepsLoading: boolean;
   onSelectMove: (move: Move) => void;
-  /** Training screen, Plan tab / Shop tab. */
+  /** Training screen, Plan tab. */
   onOpenPlan: () => void;
-  onOpenShop: () => void;
   trainingDaysPerWeek: number;
 }
 
@@ -101,7 +101,6 @@ export function Dashboard({
   pushupRepsLoading,
   onSelectMove,
   onOpenPlan,
-  onOpenShop,
   trainingDaysPerWeek
 }: DashboardProps) {
   const { t, language, isRtl } = useLanguage();
@@ -110,15 +109,17 @@ export function Dashboard({
     return pattern === 'recovery' ? RESOURCE_IDS : [PATTERN_RESOURCE[pattern]];
   };
   const rewardLabel = (move: Move) => rewardFor(move).map((id) => t.game.resources[id]).join(' · ');
+  // The current plan, in one line: own plan (sets a day) or program (which day).
   const planLine = rotatingProgramEnabled
     ? isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
       ? t.hub.dashCard.programRest(rotationCycleLength)
-      : t.hub.dashCard.program(rotationCycleLength, t.settings.rotatingProgram.phases[rotatingProgramPhase])
-    : t.hub.dashCard.own(
-        trainingDaysPerWeek,
-        dailySetGoal,
-        equippedUpper.length + equippedLower.length + equippedCore.length
-      );
+      : t.hub.dashCard.program(
+          rotationCycleLength,
+          // Already 1-based, matching the program banner ("Program day 1/5").
+          rotatingProgramCycleDay ?? 1,
+          t.settings.rotatingProgram.phases[rotatingProgramPhase]
+        )
+    : t.hub.dashCard.own(dailySetGoal, trainingDaysPerWeek);
 
   const totalSetsToday = useMemo(
     () => sumDailySets(setsCompleted),
@@ -202,21 +203,21 @@ export function Dashboard({
       <section
         className="mb-6 flex items-center gap-4 normal-case"
         aria-label={t.dashboard.aria.funFactAndStreak}>
-        <div className="plan-card cyber-panel flex-1 min-w-0 normal-case text-start">
-          <button type="button" className="plan-card-main" data-tour="store" onClick={onOpenPlan}>
-            <span className="plan-card-icon" aria-hidden="true">
-              <Dumbbell size={20} strokeWidth={2.5} />
+        <button
+          type="button"
+          className="plan-card cyber-panel flex-1 min-w-0 normal-case text-start"
+          data-tour="store"
+          onClick={onOpenPlan}>
+          <img src={planIcon} alt="" aria-hidden="true" className="plan-card-icon" width={52} height={52} />
+          <span className="plan-card-text">
+            <span className={`plan-card-badge ${rotatingProgramEnabled ? 'is-program' : 'is-own'}`}>
+              {rotatingProgramEnabled ? t.hub.dashCard.programBadge : t.hub.dashCard.ownBadge}
             </span>
-            <span className="plan-card-text">
-              <span className="plan-card-title">{t.hub.dashCard.title}</span>
-              <span className="plan-card-line">{planLine}</span>
-            </span>
-            <ChevronRight size={18} strokeWidth={2.5} className="plan-card-chevron tour-icon-flip" aria-hidden="true" />
-          </button>
-          <button type="button" className="plan-card-shop" onClick={onOpenShop}>
-            <span aria-hidden="true">🛍️</span> {t.hub.dashCard.shop}
-          </button>
-        </div>
+            <span className="plan-card-title">{t.hub.dashCard.title}</span>
+            <span className="plan-card-line">{planLine}</span>
+          </span>
+          <ChevronRight size={20} strokeWidth={2.5} className="plan-card-chevron tour-icon-flip" aria-hidden="true" />
+        </button>
 
         <div className="flex flex-col items-end gap-2">
           <div

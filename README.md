@@ -280,7 +280,7 @@ When you finish all sets for an exercise, confetti appears on the summary screen
 
 ## 9. Plan your training and shop for exercises
 
-Tap the **Edit your workout** card at the top of the home screen to open **Training** (or its **🛍️ Shop** chip to go straight to the shop). It has two tabs.
+Tap the **Edit your workout** card at the top of the home screen to open **Training**. The card shows your current plan: your own plan (sets a day and days a week) or the program and which day you're on. Training has two tabs.
 
 ### Plan tab: how you train
 

@@ -4682,69 +4682,71 @@
   /* ---------- Home: "Edit your workout" card ---------- */
   .plan-card.cyber-panel {
     display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    padding: 0.8rem;
-  }
-  .plan-card-main {
-    display: flex;
     align-items: center;
-    gap: 0.65rem;
-    text-align: start;
-    border-radius: 0.8rem;
+    gap: 0.75rem;
+    padding: 0.8rem 0.75rem 0.8rem 0.8rem;
+    border-radius: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .plan-card.cyber-panel:hover {
+    border-color: rgba(211, 242, 92, 0.55);
   }
   .plan-card-icon {
     flex-shrink: 0;
-    width: 2.4rem;
-    height: 2.4rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.75rem;
-    background: #d3f25c;
-    color: #0c0f02;
-    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    width: 3.25rem;
+    height: 3.25rem;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
   }
   .plan-card-text {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+  .plan-card-badge {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+  }
+  .plan-card-badge.is-own {
+    color: #4f7a00;
+    background: rgba(211, 242, 92, 0.3);
+  }
+  .dark .plan-card-badge.is-own {
+    color: #d3f25c;
+    background: rgba(211, 242, 92, 0.12);
+  }
+  .plan-card-badge.is-program {
+    color: #006d8f;
+    background: rgba(58, 214, 255, 0.18);
+  }
+  .dark .plan-card-badge.is-program {
+    color: #3ad6ff;
+    background: rgba(58, 214, 255, 0.12);
   }
   .plan-card-title {
     font-family: 'Archivo Black', sans-serif;
-    font-size: 0.98rem;
+    font-size: 1rem;
     line-height: 1.1;
     text-transform: uppercase;
   }
   .plan-card-line {
     font-size: 0.78rem;
     font-weight: 700;
-    opacity: 0.72;
+    opacity: 0.75;
     line-height: 1.3;
   }
   .plan-card-chevron {
     flex-shrink: 0;
-    opacity: 0.6;
+    opacity: 0.55;
   }
-  .plan-card-shop {
-    align-self: flex-start;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.3rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 800;
-    color: #8a6200;
-    background: rgba(247, 201, 72, 0.18);
-    border: 1px solid rgba(247, 201, 72, 0.55);
-  }
-  .dark .plan-card-shop {
-    color: #f7c948;
-  }
-  :is(.plan-card-main, .plan-card-shop):focus-visible {
+  .plan-card.cyber-panel:focus-visible {
     outline: 2px solid #00b2ff;
     outline-offset: 2px;
   }

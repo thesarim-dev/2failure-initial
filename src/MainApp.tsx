@@ -462,11 +462,6 @@ export function MainApp() {
   };
 
   const [hubTab, setHubTab] = useState<HubTab>('plan');
-  const handleOpenShop = () => {
-    fx.tick();
-    setHubTab('shop');
-    setAppState('STORE');
-  };
   const handleOpenPlan = () => {
     fx.tick();
     setHubTab('plan');
@@ -610,7 +605,6 @@ export function MainApp() {
         pushupRepsLoading={pushupRepsLoading}
         onSelectMove={handleSelectMove}
         onOpenPlan={handleOpenPlan}
-        onOpenShop={handleOpenShop}
         trainingDaysPerWeek={trainingDaysPerWeek} />
 
       }
