@@ -572,7 +572,7 @@ Buildings go up to level 3, and each level looks different: rustic, then reinfor
 
 Decorations are refunded in full if removed. **Trophies** can only be earned, never bought; tap one to see its proof. Rep trophies counted by the AI camera are marked as verified.
 
-The base is saved on this device for now.
+The base is saved to your account in Supabase (table `base_games`), so it follows you across devices. A copy stays on the device so it opens instantly and works offline; it syncs again when you're back online.
 
 ---
 

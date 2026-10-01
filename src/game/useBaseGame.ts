@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { storageKeyFor } from '../lib/persistedSettings';
+import { fetchRemoteBase, saveRemoteBase } from '../lib/baseGameRemote';
 import { getVariantById, isWeightedEquipmentCategory, type Move } from '../components/moves';
 import {
   applySet,
@@ -30,10 +31,14 @@ import {
 import type { Customization, ResourceId, TerrainId, TrainingPattern } from './catalog';
 
 /**
- * Iteration 1 keeps the base on this device, per user, like owned exercises.
- * Everything goes through `load`/`save`, so moving to Supabase later is one file.
+ * The base is saved in Supabase (table `base_games`) so it follows the player
+ * across devices. A copy is kept on the device so the base opens instantly and
+ * keeps working offline; whichever copy is newer wins when the app starts.
  */
 const STORAGE_KEY = 'base-game';
+const SAVED_AT_KEY = 'base-game-saved-at';
+/** Wait this long after the last change before writing to Supabase. */
+const REMOTE_SAVE_DELAY_MS = 1200;
 
 type SaveV1 = Omit<GameState, 'version' | 'constructions' | 'landLevel'> & {
   version: 1;
@@ -83,11 +88,10 @@ function migrateV1(save: SaveV1): SaveV2 {
   };
 }
 
-function load(userId: string | undefined): GameState {
+/** Turns any saved base (local or from Supabase, any version) into current state. */
+function parseSave(input: unknown): GameState {
   try {
-    const raw = window.localStorage.getItem(storageKeyFor(userId, STORAGE_KEY));
-    if (!raw) return createInitialState();
-    const parsed = JSON.parse(raw) as GameState | SaveV2 | SaveV1;
+    const parsed = input as GameState | SaveV2 | SaveV1;
     if (!parsed || !Array.isArray(parsed.placed)) return createInitialState();
     const state =
       parsed.version === 1
@@ -121,9 +125,21 @@ function load(userId: string | undefined): GameState {
   }
 }
 
-function save(userId: string | undefined, state: GameState) {
+function loadLocal(userId: string | undefined): { state: GameState; savedAt: number } {
+  try {
+    const raw = window.localStorage.getItem(storageKeyFor(userId, STORAGE_KEY));
+    const savedAt = Number(window.localStorage.getItem(storageKeyFor(userId, SAVED_AT_KEY))) || 0;
+    return { state: raw ? parseSave(JSON.parse(raw)) : createInitialState(), savedAt };
+  } catch {
+    return { state: createInitialState(), savedAt: 0 };
+  }
+}
+
+
+function saveLocal(userId: string | undefined, state: GameState, savedAt: number) {
   try {
     window.localStorage.setItem(storageKeyFor(userId, STORAGE_KEY), JSON.stringify(state));
+    window.localStorage.setItem(storageKeyFor(userId, SAVED_AT_KEY), String(savedAt));
   } catch {
     // Storage full or blocked: the game keeps working for this session.
   }
@@ -154,22 +170,91 @@ export function useBaseGame(
   currentStreak: number,
   plan: TodayPlan | null
 ) {
-  const [state, setState] = useState<GameState>(() => load(userId));
+  const [state, setState] = useState<GameState>(() => loadLocal(userId).state);
   const [lastReward, setLastReward] = useState<SetReward | null>(null);
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  useEffect(() => {
-    setState(load(userId));
+  // --- Supabase sync -------------------------------------------------------
+  const remoteTimer = useRef<number | null>(null);
+  const pendingRemote = useRef(false);
+  const changedSinceLoad = useRef(false);
+
+  const pushRemote = useCallback(async () => {
+    if (!userId) return;
+    if (remoteTimer.current) window.clearTimeout(remoteTimer.current);
+    remoteTimer.current = null;
+    pendingRemote.current = true;
+    try {
+      const savedAt = await saveRemoteBase(userId, stateRef.current);
+      pendingRemote.current = false;
+      saveLocal(userId, stateRef.current, savedAt);
+    } catch {
+      // Offline or Supabase unavailable: keep the local copy and retry later.
+    }
   }, [userId]);
+
+  const scheduleRemote = useCallback(() => {
+    if (!userId) return;
+    pendingRemote.current = true;
+    if (remoteTimer.current) window.clearTimeout(remoteTimer.current);
+    remoteTimer.current = window.setTimeout(() => void pushRemote(), REMOTE_SAVE_DELAY_MS);
+  }, [userId, pushRemote]);
+
+  // On start: load the device copy instantly, then use whichever copy is newer.
+  useEffect(() => {
+    const local = loadLocal(userId);
+    stateRef.current = local.state;
+    setState(local.state);
+    changedSinceLoad.current = false;
+    if (!userId) return;
+    let cancelled = false;
+    fetchRemoteBase(userId)
+      .then((remote) => {
+        if (cancelled) return;
+        if (remote && remote.updatedAt > local.savedAt && !changedSinceLoad.current) {
+          const next = parseSave(remote.state);
+          stateRef.current = next;
+          setState(next);
+          saveLocal(userId, next, remote.updatedAt);
+        } else if (!remote || local.savedAt > remote.updatedAt || changedSinceLoad.current) {
+          // First time on Supabase (uploads the existing base), or this device is newer.
+          void pushRemote();
+        }
+      })
+      .catch(() => {
+        // Offline: play on the device copy; it uploads on the next change.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, pushRemote]);
+
+  // Don't lose the last change when the app is closed or backgrounded, or come back online.
+  useEffect(() => {
+    const flush = () => {
+      if (pendingRemote.current) void pushRemote();
+    };
+    const onVisibility = () => document.visibilityState === 'hidden' && flush();
+    window.addEventListener('pagehide', flush);
+    window.addEventListener('online', flush);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      window.removeEventListener('online', flush);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [pushRemote]);
 
   const commit = useCallback(
     (next: GameState) => {
       stateRef.current = next;
+      changedSinceLoad.current = true;
       setState(next);
-      save(userId, next);
+      saveLocal(userId, next, Date.now());
+      scheduleRemote();
     },
-    [userId]
+    [userId, scheduleRemote]
   );
 
   const planRef = useRef(plan);
