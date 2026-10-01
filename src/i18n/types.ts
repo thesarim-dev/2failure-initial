@@ -297,6 +297,15 @@ export interface AppTranslations {
     statusCooked: string;
     emptyValue: string;
     backHome: string;
+    compact: {
+      coins: string;
+      reps: string;
+      load: string;
+      hold: string;
+      record: (value: string, date: string) => string;
+      newRecord: string;
+      levelUp: string;
+    };
     snarky: {
       pathetic: string;
       mid: string;

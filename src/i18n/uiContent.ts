@@ -261,6 +261,15 @@ const en: UiContent = {
     statusCooked: 'done',
     emptyValue: '—',
     backHome: 'back home',
+    compact: {
+      coins: 'Coins',
+      reps: 'Reps',
+      load: 'Load × reps',
+      hold: 'Hold',
+      record: (value, date) => `Personal record: ${value} · ${date}`,
+      newRecord: 'New personal record!',
+      levelUp: 'Level up'
+    },
     snarky: {
       pathetic: 'Nice start! Every rep counts.',
       mid: 'Good effort! Keep it up.',
@@ -523,6 +532,15 @@ const he: UiContent = {
     statusCooked: 'סיימת',
     emptyValue: '—',
     backHome: 'חזרה הביתה',
+    compact: {
+      coins: 'מטבעות',
+      reps: 'חזרות',
+      load: 'משקל × חזרות',
+      hold: 'החזקה',
+      record: (value, date) => `שיא אישי: ${value} · ${date}`,
+      newRecord: 'שיא אישי חדש!',
+      levelUp: 'עלה רמה'
+    },
     snarky: {
       pathetic: 'התחלה יפה! כל חזרה נחשבת.',
       mid: 'מאמץ טוב! המשך כך.',
@@ -786,6 +804,15 @@ const ar: UiContent = {
     statusCooked: 'انتهيت',
     emptyValue: '—',
     backHome: 'العودة للرئيسية',
+    compact: {
+      coins: 'العملات',
+      reps: 'التكرارات',
+      load: 'الوزن × التكرارات',
+      hold: 'الثبات',
+      record: (value, date) => `الرقم الشخصي: ${value} · ${date}`,
+      newRecord: 'رقم شخصي جديد!',
+      levelUp: 'ارفع المستوى'
+    },
     snarky: {
       pathetic: 'بداية رائعة! كل تكرار يُحسب.',
       mid: 'جهد جيد! واصل هكذا.',

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Move, getLevelUpAdvice, getVariantById } from './moves';
 import { ArrowRight, TrendingUp } from 'lucide-react';
@@ -54,9 +54,6 @@ export function Summary({
 }: SummaryProps) {
   const { t, language } = useLanguage();
   const questText = useQuestText();
-  const [quote] = useState(
-    () => t.summary.quotes[Math.floor(Math.random() * t.summary.quotes.length)]
-  );
   const slot = move.lineupSlot;
   const isMidExercise = setsRemaining > 0;
 
@@ -119,6 +116,7 @@ export function Summary({
       .join(', ');
     const copy = t.summary.levelUp;
     return {
+      names,
       why:
         advice.kind === 'reps'
           ? copy.reps(setResult?.reps ?? 0)
@@ -151,253 +149,173 @@ export function Summary({
       ? t.summary.setLogged(setNumber, totalSets)
       : t.summary.title;
 
+  const isWeighted = !!(setResult?.weightKg && setResult.weightKg > 0);
+  const repsValue = setResult
+    ? isWeighted
+      ? `${formatWeight(setResult.weightKg ?? 0, weightUnit)} × ${setResult.reps}`
+      : String(setResult.reps)
+    : null;
+  const isNewRecord = isWeighted ? setResult?.isNewWeightPersonalBest : setResult?.isNewPersonalBest;
+  const recordLine = (() => {
+    if (!setResult || isNewRecord) return null;
+    if (isWeighted) {
+      const best = setResult.weightPersonalBest;
+      if (!best?.weightKg || !best.reps) return null;
+      return t.summary.compact.record(
+        `${formatWeight(best.weightKg, weightUnit)} × ${best.reps}`,
+        formatPersonalBestDate(best.achievedAt, language)
+      );
+    }
+    if (setResult.personalBest.reps === null) return null;
+    return t.summary.compact.record(
+      String(setResult.personalBest.reps),
+      formatPersonalBestDate(setResult.personalBest.achievedAt, language)
+    );
+  })();
+
+  // One-line notes, only when they apply.
+  const notes = [
+    levelUp && (levelUp.names ? `${t.summary.compact.levelUp}: ${levelUp.names}` : levelUp.next),
+    progressionMessage,
+    showCoinsCapRecommendation && t.summary.coinsCapRecommendation
+  ].filter((note): note is string => Boolean(note));
+
+  const baseChips: Array<{ key: string; text: string; tone?: 'quest' | 'trophy' }> = [];
+  if (baseReward) {
+    baseReward.questsDone.forEach((quest) =>
+      baseChips.push({ key: quest.id, text: t.game.rewardExtra.quest(questText(quest)), tone: 'quest' })
+    );
+    if (baseReward.session) baseChips.push({ key: 'session', text: t.game.rewardExtra.session, tone: 'quest' });
+    if (baseReward.weekly) baseChips.push({ key: 'weekly', text: t.game.rewardExtra.weekly, tone: 'trophy' });
+    if (baseReward.shieldEarned) baseChips.push({ key: 'shield', text: t.game.rewardExtra.shield });
+    baseReward.constructions.forEach((job, index) => {
+      const name = job.itemId.startsWith('trophy:')
+        ? t.game.trophyNames[job.itemId.slice(7)]?.name ?? ''
+        : t.game.items[job.itemId]?.name ?? '';
+      baseChips.push({
+        key: `job-${index}`,
+        text: job.setsRemaining === 0 ? t.game.reward.built(name) : t.game.reward.construction(name, job.setsRemaining)
+      });
+    });
+    baseReward.newTrophies.forEach((id) =>
+      baseChips.push({ key: `t-${id}`, text: t.game.reward.newTrophy(t.game.trophyNames[id]?.name ?? id), tone: 'trophy' })
+    );
+  }
+  const baseNote =
+    baseReward && baseReward.rate !== 'full'
+      ? baseReward.rate === 'tooShort'
+        ? t.game.reward.tooShort
+        : baseReward.beyondPlan
+          ? t.game.rewardExtra.beyondPlan
+          : baseReward.rate === 'half'
+            ? t.game.reward.half
+            : t.game.reward.limit
+      : null;
+
   return (
-    <div className="flex flex-col w-full min-h-screen p-4 md:p-8 max-w-2xl mx-auto pb-24">
-      <div className="flex-1 flex flex-col items-center justify-center w-full">
-        <motion.div
+    <div className="summary-compact flex flex-col w-full min-h-screen max-w-md mx-auto">
+      <motion.header
+        initial={{ y: 12, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="summary-compact-head normal-case">
+        <motion.span
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', damping: 15 }}
-          className="mb-6">
-          <FailureLogo size={72} className={SUMMARY_LOGO} />
-        </motion.div>
+          transition={{ type: 'spring', damping: 15 }}>
+          <FailureLogo size={40} className={SUMMARY_LOGO} />
+        </motion.span>
+        <div className="min-w-0">
+          <h1 className={`${SUMMARY_TITLE[slot]} summary-compact-title normal-case`}>{headline}</h1>
+          <p className="summary-compact-sub">{snarkyMessage}</p>
+        </div>
+      </motion.header>
 
-        <motion.h1
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className={`${SUMMARY_TITLE[slot]} mb-2 normal-case`}>
-          {headline}
-        </motion.h1>
+      <motion.section
+        initial={{ y: 24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.15 }}
+        className="summary-card cyber-panel normal-case">
+        <p className="summary-exercise">{move.name}</p>
 
-        <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-base text-center mb-8 opacity-70 font-semibold normal-case max-w-sm">
-          {snarkyMessage}
-        </motion.p>
-
-        <motion.div
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="w-full cyber-panel p-5 mb-8 normal-case">
-          <div className="summary-receipt-divider">
-            <h3 className="text-xl font-bold uppercase tracking-wide text-center normal-case">
-              {t.summary.receiptTitle}
-            </h3>
-            <p className="text-center text-sm font-medium mt-1 opacity-70">
-              {t.summary.receiptTagline}
-            </p>
+        <div className="summary-tiles">
+          <div className="summary-tile">
+            <span className="summary-tile-label">{t.summary.compact.coins}</span>
+            <span className={`summary-tile-value tabular-nums ${SUMMARY_ACCENT_TEXT[slot]}`}>+{coinsEarned}</span>
+            <span className="summary-tile-sub tabular-nums">{formatTime(duration)}</span>
           </div>
-
-          <div className="space-y-3 font-semibold text-base">
-            <div className="flex justify-between gap-3">
-              <span className="opacity-70">{t.summary.item}</span>
-              <span className="uppercase text-right normal-case">{move.name}</span>
-            </div>
-            <div className="flex justify-between gap-3">
-              <span className="opacity-70">{t.summary.duration}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-            <div className="flex justify-between gap-3">
-              <span className="opacity-70">{t.summary.coinsEarned}</span>
-              <span className={`tabular-nums ${SUMMARY_ACCENT_TEXT[slot]}`}>
-                +{coinsEarned}
+          <div className="summary-tile">
+            <span className="summary-tile-label">
+              {repsValue ? (isWeighted ? t.summary.compact.load : t.summary.compact.reps) : t.summary.compact.hold}
+            </span>
+            <span className="summary-tile-value tabular-nums">{repsValue ?? formatTime(duration)}</span>
+            {isNewRecord ? (
+              <span className={`summary-tile-sub summary-tile-record ${SUMMARY_ACCENT_TEXT[slot]}`}>
+                {t.summary.compact.newRecord}
               </span>
-            </div>
-            {showCoinsCapRecommendation && (
-              <p className={`summary-progression-hint ${SUMMARY_ACCENT_TEXT[slot]}`}>
-                {t.summary.coinsCapRecommendation}
-              </p>
+            ) : (
+              recordLine && <span className="summary-tile-sub">{recordLine}</span>
             )}
-            {setResult && (
-              <>
-                {setResult.weightKg && setResult.weightKg > 0 ? (
-                  <div className="flex justify-between gap-3">
-                    <span className="opacity-70">{t.summary.weightThisSet}</span>
-                    <span>
-                      {formatWeight(setResult.weightKg, weightUnit)} ×{' '}
-                      {setResult.reps}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex justify-between gap-3">
-                    <span className="opacity-70">{t.summary.repsThisSet}</span>
-                    <span>{setResult.reps}</span>
-                  </div>
-                )}
-                {setResult.weightKg && setResult.weightKg > 0 ? (
-                  <div className="flex justify-between items-start gap-4">
-                    <span className="opacity-70 shrink-0">
-                      {t.summary.weightPersonalBest}
-                    </span>
-                    <span className="text-right">
-                      {setResult.weightPersonalBest?.weightKg &&
-                      setResult.weightPersonalBest.reps
-                        ? `${formatWeight(setResult.weightPersonalBest.weightKg, weightUnit)} × ${setResult.weightPersonalBest.reps}`
-                        : t.summary.emptyValue}
-                      {setResult.weightPersonalBest?.weightKg && (
-                        <span className="block text-sm font-medium opacity-70 normal-case">
-                          (
-                          {formatPersonalBestDate(
-                            setResult.weightPersonalBest.achievedAt,
-                            language
-                          )}
-                          )
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex justify-between items-start gap-4">
-                    <span className="opacity-70 shrink-0">{t.summary.personalBest}</span>
-                    <span className="text-right">
-                      {setResult.personalBest.reps ?? t.summary.emptyValue}
-                      {setResult.personalBest.reps !== null && (
-                        <span className="block text-sm font-medium opacity-70 normal-case">
-                          (
-                          {formatPersonalBestDate(
-                            setResult.personalBest.achievedAt,
-                            language
-                          )}
-                          )
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                )}
-                {setResult.isNewPersonalBest && !setResult.weightKg && (
-                  <p className={`summary-pb-badge ${SUMMARY_ACCENT_TEXT[slot]}`}>
-                    {t.summary.newPersonalBest}
-                  </p>
-                )}
-                {setResult.isNewWeightPersonalBest && (
-                  <p className={`summary-pb-badge ${SUMMARY_ACCENT_TEXT[slot]}`}>
-                    {t.summary.newWeightPersonalBest}
-                  </p>
-                )}
-                {progressionMessage && (
-                  <p className={`summary-progression-hint ${SUMMARY_ACCENT_TEXT[slot]}`}>
-                    {progressionMessage}
-                  </p>
-                )}
-              </>
-            )}
-            {levelUp && (
-              <div className="summary-level-up normal-case" role="note">
-                <p className={`summary-level-up-title ${SUMMARY_ACCENT_TEXT[slot]}`}>
-                  <TrendingUp size={16} strokeWidth={2.75} aria-hidden="true" />
-                  {t.summary.levelUp.title}
-                </p>
-                <p className="summary-level-up-body">{levelUp.why}</p>
-                <p className="summary-level-up-next">{levelUp.next}</p>
-              </div>
-            )}
-            <div className="flex justify-between gap-3">
-              <span className="opacity-70">{t.summary.status}</span>
-              <span className={`uppercase font-bold ${SUMMARY_ACCENT_TEXT[slot]} normal-case`}>
-                {t.summary.statusCooked}
-              </span>
-            </div>
           </div>
+        </div>
 
-          <div className="summary-receipt-footer text-center">
-            <p className="text-sm font-medium leading-snug opacity-90">
-              {quote.text}
-            </p>
-            <p className="text-xs font-semibold mt-1.5 opacity-70">
-              — {quote.author}
-            </p>
-          </div>
-        </motion.div>
-
-        {baseReward && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="summary-base cyber-panel normal-case"
-            aria-label={t.game.reward.title}>
-            <p className="summary-base-title">
-              <Castle size={16} strokeWidth={2.5} aria-hidden="true" />
-              {t.game.reward.title}
-            </p>
-            {resourcesOf(baseReward).length > 0 && (
-              <p className="summary-base-earned">
-                {resourcesOf(baseReward).map(([id, amount]) => (
-                  <span key={id} className="summary-base-chip">
-                    <ResourceIcon id={id} size={16} />+{amount} {t.game.resources[id]}
-                  </span>
-                ))}
-              </p>
-            )}
-            {baseReward.rate !== 'full' && (
-              <p className="summary-base-note">
-                {baseReward.rate === 'tooShort'
-                  ? t.game.reward.tooShort
-                  : baseReward.beyondPlan
-                    ? t.game.rewardExtra.beyondPlan
-                    : baseReward.rate === 'half'
-                      ? t.game.reward.half
-                      : t.game.reward.limit}
-              </p>
-            )}
-            {baseReward.springBonus ? (
-              <p className="summary-base-note">{t.game.rewardExtra.spring(baseReward.springBonus)}</p>
-            ) : null}
-            {baseReward.questsDone.map((quest) => (
-              <p key={quest.id} className="summary-base-line summary-base-quest">
-                {t.game.rewardExtra.quest(questText(quest))}
-              </p>
+        {notes.length > 0 && (
+          <ul className="summary-notes">
+            {notes.map((note) => (
+              <li key={note} className={SUMMARY_ACCENT_TEXT[slot]}>
+                <TrendingUp size={14} strokeWidth={2.75} aria-hidden="true" />
+                <span>{note}</span>
+              </li>
             ))}
-            {baseReward.session && (
-              <p className="summary-base-line summary-base-quest">{t.game.rewardExtra.session}</p>
-            )}
-            {baseReward.weekly && (
-              <p className="summary-base-line summary-base-trophy">{t.game.rewardExtra.weekly}</p>
-            )}
-            {baseReward.shieldEarned && (
-              <p className="summary-base-line">{t.game.rewardExtra.shield}</p>
-            )}
-            {baseReward.constructions.map((job, index) => {
-              const name = job.itemId.startsWith('trophy:')
-                ? t.game.trophyNames[job.itemId.slice(7)]?.name ?? ''
-                : t.game.items[job.itemId]?.name ?? '';
-              return (
-                <p key={`${job.itemId}-${index}`} className="summary-base-line">
-                  {job.setsRemaining === 0
-                    ? t.game.reward.built(name)
-                    : t.game.reward.construction(name, job.setsRemaining)}
-                </p>
-              );
-            })}
-            {baseReward.newTrophies.map((id) => (
-              <p key={id} className="summary-base-line summary-base-trophy">
-                {t.game.reward.newTrophy(t.game.trophyNames[id]?.name ?? id)}
-              </p>
-            ))}
-            {onSeeBase && (
-              <button type="button" className="summary-base-btn" onClick={onSeeBase}>
-                {t.game.reward.seeBase}
-                <ArrowRight size={16} strokeWidth={2.5} className="tour-icon-flip" aria-hidden="true" />
-              </button>
-            )}
-          </motion.section>
+          </ul>
         )}
 
-        <motion.button
-          type="button"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          onClick={onHome}
-          className={`${SUMMARY_HOME_BTN[slot]} normal-case`}>
-          {t.summary.backHome}
-          <ArrowRight size={22} strokeWidth={2.5} />
-        </motion.button>
-      </div>
+        {baseReward && (
+          <div className="summary-base-row" aria-label={t.game.reward.title}>
+            <div className="summary-base-head">
+              <span className="summary-base-title">
+                <Castle size={15} strokeWidth={2.5} aria-hidden="true" />
+                {t.game.reward.title}
+              </span>
+              {onSeeBase && (
+                <button type="button" className="summary-base-link" onClick={onSeeBase}>
+                  {t.game.reward.seeBase}
+                  <ArrowRight size={14} strokeWidth={2.5} className="tour-icon-flip" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+            <div className="summary-base-chips">
+              {resourcesOf(baseReward).map(([id, amount]) => (
+                <span key={id} className="summary-base-chip">
+                  <ResourceIcon id={id} size={16} />+{amount}
+                  <span className="sr-only"> {t.game.resources[id]}</span>
+                </span>
+              ))}
+              {baseReward.springBonus ? (
+                <span className="summary-base-chip">{t.game.rewardExtra.spring(baseReward.springBonus)}</span>
+              ) : null}
+              {baseChips.map((chip) => (
+                <span
+                  key={chip.key}
+                  className={`summary-base-pill ${chip.tone === 'quest' ? 'is-quest' : chip.tone === 'trophy' ? 'is-trophy' : ''}`}>
+                  {chip.text}
+                </span>
+              ))}
+            </div>
+            {baseNote && <p className="summary-base-note">{baseNote}</p>}
+          </div>
+        )}
+      </motion.section>
+
+      <motion.button
+        type="button"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        onClick={onHome}
+        className={`${SUMMARY_HOME_BTN[slot]} summary-compact-home normal-case`}>
+        {t.summary.backHome}
+        <ArrowRight size={22} strokeWidth={2.5} />
+      </motion.button>
     </div>
   );
 }
