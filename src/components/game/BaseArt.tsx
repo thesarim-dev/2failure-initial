@@ -51,6 +51,45 @@ const WINDOW_LIT = '#ffd76a';
 const WINDOW_DARK = '#2b3346';
 const FIRE = '#ff8a3d';
 
+/** Wall materials a building is made of. */
+export type Materials = { stone: Shades; wood: Shades; metal: Shades };
+
+const NATURAL: Materials = { stone: STONE, wood: WOOD, metal: METAL };
+
+function mixHex(a: string, b: string, amount: number): string {
+  const pa = parseInt(a.slice(1), 16);
+  const pb = parseInt(b.slice(1), 16);
+  const ch = (shift: number) => {
+    const x = (pa >> shift) & 255;
+    const y = (pb >> shift) & 255;
+    return Math.round(x + (y - x) * amount);
+  };
+  return `#${((ch(16) << 16) | (ch(8) << 8) | ch(0)).toString(16).padStart(6, '0')}`;
+}
+
+/** Blend a material toward the theme, shade by shade, so depth is kept. */
+function tint(material: Shades, theme: Shades, amount: number): Shades {
+  return {
+    light: mixHex(material.light, theme.light, amount),
+    base: mixHex(material.base, theme.base, amount),
+    dark: mixHex(material.dark, theme.dark, amount)
+  };
+}
+
+/**
+ * When the player picks a colour, the walls take it on too (pink wood,
+ * violet stone, cyan steel), a little softer than the roof so the roof
+ * still reads as the accent.
+ */
+export function materialsFor(color: string | undefined, theme: Shades): Materials {
+  if (!color) return NATURAL;
+  return {
+    stone: tint(STONE, theme, 0.5),
+    wood: tint(WOOD, theme, 0.55),
+    metal: tint(METAL, theme, 0.45)
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Building blocks
 // ---------------------------------------------------------------------------
@@ -210,26 +249,26 @@ function Decorations({
   );
 }
 
-type BuildingProps = { level: number; lit: boolean; s: Shades; decoration?: string };
+type BuildingProps = { level: number; lit: boolean; s: Shades; m: Materials; decoration?: string };
 
 // ---------------------------------------------------------------------------
 // Buildings
 // ---------------------------------------------------------------------------
 
-function Watchtower({ level, lit, s, decoration }: BuildingProps) {
+function Watchtower({ level, lit, s, m, decoration }: BuildingProps) {
   if (level >= 3) {
     return (
       <g>
         <g data-part="shadows"><Shadow rx={24} /></g>
         <g data-part="base-structure">
-          <Block x={42} y={44} w={16} h={44} d={6} s={METAL} />
-          <rect x={48} y={46} width={3} height={40} fill={METAL.light} opacity={0.5} />
-          <Block x={26} y={24} w={42} h={20} d={10} s={METAL} />
+          <Block x={42} y={44} w={16} h={44} d={6} s={m.metal} />
+          <rect x={48} y={46} width={3} height={40} fill={m.metal.light} opacity={0.5} />
+          <Block x={26} y={24} w={42} h={20} d={10} s={m.metal} />
           <GlassPane x={29} y={27} w={36} h={14} lit={lit} />
         </g>
         <g data-part="roof">
           <Block x={23} y={20} w={48} h={4} d={11} s={s} />
-          <rect x={52} y={6} width={2} height={10} fill={METAL.dark} />
+          <rect x={52} y={6} width={2} height={10} fill={m.metal.dark} />
           <Beacon cx={53} cy={5} s={s} lit={lit} />
         </g>
         <g data-part="decorations"><Decorations kind={decoration} x={26} y={24} w={42} h={20} s={s} lit={lit} /></g>
@@ -241,18 +280,18 @@ function Watchtower({ level, lit, s, decoration }: BuildingProps) {
     <g>
       <g data-part="shadows"><Shadow rx={24} /></g>
       <g data-part="base-structure">
-        <Block x={36} y={42} w={24} h={46} d={8} s={STONE} />
+        <Block x={36} y={42} w={24} h={46} d={8} s={m.stone} />
         {tall && (
           <g>
-            <rect x={36} y={58} width={24} height={2.5} fill={STONE.dark} />
-            <rect x={36} y={73} width={24} height={2.5} fill={STONE.dark} />
+            <rect x={36} y={58} width={24} height={2.5} fill={m.stone.dark} />
+            <rect x={36} y={73} width={24} height={2.5} fill={m.stone.dark} />
           </g>
         )}
         <Window x={43} y={tall ? 46 : 58} w={10} h={13} lit={lit} arch />
         {tall && <Window x={43} y={63} w={10} h={8} lit={lit} arch />}
-        <Block x={30} y={32} w={36} h={10} d={9} s={STONE} />
+        <Block x={30} y={32} w={36} h={10} d={9} s={m.stone} />
         {[30, 41, 52].map((x) => (
-          <Block key={x} x={x} y={26} w={7} h={6} d={3} s={STONE} />
+          <Block key={x} x={x} y={26} w={7} h={6} d={3} s={m.stone} />
         ))}
       </g>
       <g data-part="roof">
@@ -264,21 +303,21 @@ function Watchtower({ level, lit, s, decoration }: BuildingProps) {
   );
 }
 
-function Lodge({ level, lit, s, decoration }: BuildingProps) {
+function Lodge({ level, lit, s, m, decoration }: BuildingProps) {
   if (level >= 3) {
     return (
       <g>
         <g data-part="shadows"><Shadow rx={38} /></g>
         <g data-part="base-structure">
-          <Block x={12} y={44} w={62} h={44} d={14} s={WOOD} />
+          <Block x={12} y={44} w={62} h={44} d={14} s={m.wood} />
           <GlassPane x={18} y={50} w={34} h={34} lit={lit} />
-          <rect x={58} y={60} width={11} height={28} fill={WOOD.dark} />
-          <circle cx={66} cy={74} r={1.2} fill={METAL.light} />
+          <rect x={58} y={60} width={11} height={28} fill={m.wood.dark} />
+          <circle cx={66} cy={74} r={1.2} fill={m.metal.light} />
         </g>
         <g data-part="roof">
           <Block x={9} y={38} w={68} h={6} d={16} s={s} />
           {[14, 34].map((x) => (
-            <polygon key={x} points={`${x},${33} ${x + 6},${29.7} ${x + 22},${29.7} ${x + 16},${33}`} fill="#1d3557" stroke={METAL.light} strokeWidth={0.8} />
+            <polygon key={x} points={`${x},${33} ${x + 6},${29.7} ${x + 22},${29.7} ${x + 16},${33}`} fill="#1d3557" stroke={m.metal.light} strokeWidth={0.8} />
           ))}
         </g>
         <g data-part="decorations"><Decorations kind={decoration} x={12} y={44} w={62} h={44} s={s} lit={lit} /></g>
@@ -290,16 +329,16 @@ function Lodge({ level, lit, s, decoration }: BuildingProps) {
     <g>
       <g data-part="shadows"><Shadow rx={36} /></g>
       <g data-part="base-structure">
-        {big && <Block x={60} y={20} w={8} h={20} d={5} s={STONE} />}
-        <Block x={16} y={52} w={56} h={36} d={13} s={WOOD} />
+        {big && <Block x={60} y={20} w={8} h={20} d={5} s={m.stone} />}
+        <Block x={16} y={52} w={56} h={36} d={13} s={m.wood} />
         {[60, 68, 76].map((y) => (
-          <rect key={y} x={16} y={y} width={56} height={1.2} fill={WOOD.dark} opacity={0.6} />
+          <rect key={y} x={16} y={y} width={56} height={1.2} fill={m.wood.dark} opacity={0.6} />
         ))}
-        <rect x={38} y={66} width={12} height={22} rx={1.5} fill={WOOD.dark} />
+        <rect x={38} y={66} width={12} height={22} rx={1.5} fill={m.wood.dark} />
         <circle cx={47} cy={78} r={1.2} fill={WINDOW_LIT} />
         <Window x={21} y={62} w={11} h={9} lit={lit} />
         {big && <Window x={56} y={62} w={11} h={9} lit={lit} />}
-        {big && <Block x={14} y={86} w={60} h={3} d={13} s={WOOD} />}
+        {big && <Block x={14} y={86} w={60} h={3} d={13} s={m.wood} />}
       </g>
       <g data-part="roof">
         <GableRoof x={16} y={52} w={56} d={13} rise={big ? 28 : 24} s={s} />
@@ -309,7 +348,7 @@ function Lodge({ level, lit, s, decoration }: BuildingProps) {
   );
 }
 
-function Forge({ level, lit, s, decoration }: BuildingProps) {
+function Forge({ level, lit, s, m, decoration }: BuildingProps) {
   const furnace = (
     <g className={lit ? 'base-light is-lit' : 'base-light-off'}>
       <path d="M36 88 V76 A10 10 0 0 1 56 76 V88 Z" fill="#2a1a12" />
@@ -322,7 +361,7 @@ function Forge({ level, lit, s, decoration }: BuildingProps) {
       <g>
         <g data-part="shadows"><Shadow rx={38} /></g>
         <g data-part="base-structure">
-          <Block x={10} y={46} w={66} h={42} d={14} s={METAL} />
+          <Block x={10} y={46} w={66} h={42} d={14} s={m.metal} />
           {[54, 62, 70].map((y) => (
             <rect key={y} x={14} y={y} width={58} height={3} rx={1.5} fill={lit ? s.light : s.dark} className={lit ? 'base-light is-lit' : undefined} opacity={0.9} />
           ))}
@@ -346,19 +385,19 @@ function Forge({ level, lit, s, decoration }: BuildingProps) {
     <g>
       <g data-part="shadows"><Shadow rx={36} /></g>
       <g data-part="base-structure">
-        <Block x={58} y={big ? 12 : 22} w={11} h={big ? 30 : 20} d={5} s={STONE} />
+        <Block x={58} y={big ? 12 : 22} w={11} h={big ? 30 : 20} d={5} s={m.stone} />
         {big && lit && (
           <g opacity={0.55}>
             <circle cx={66} cy={6} r={4} fill="#c9ced6" />
             <circle cx={72} cy={1} r={3} fill="#c9ced6" />
           </g>
         )}
-        <Block x={14} y={50} w={60} h={38} d={13} s={STONE} />
+        <Block x={14} y={50} w={60} h={38} d={13} s={m.stone} />
         {furnace}
         {big && (
           <g>
-            <polygon points="16,82 30,82 27,86 19,86" fill={METAL.base} />
-            <rect x={21} y={86} width={4} height={2} fill={METAL.dark} />
+            <polygon points="16,82 30,82 27,86 19,86" fill={m.metal.base} />
+            <rect x={21} y={86} width={4} height={2} fill={m.metal.dark} />
           </g>
         )}
       </g>
@@ -381,13 +420,13 @@ function Crystal({ x, y, h, s }: { x: number; y: number; h: number; s: Shades })
   );
 }
 
-function Spring({ level, lit, s, decoration }: BuildingProps) {
+function Spring({ level, lit, s, m, decoration }: BuildingProps) {
   return (
     <g>
       <g data-part="shadows"><Shadow rx={38} cy={84} /></g>
       <g data-part="base-structure">
-        <ellipse cx={50} cy={68} rx={38} ry={18} fill={STONE.dark} />
-        <ellipse cx={50} cy={64} rx={38} ry={18} fill={STONE.base} />
+        <ellipse cx={50} cy={68} rx={38} ry={18} fill={m.stone.dark} />
+        <ellipse cx={50} cy={64} rx={38} ry={18} fill={m.stone.base} />
         <ellipse cx={50} cy={63} rx={31} ry={13} fill={s.dark} />
         <ellipse cx={50} cy={64} rx={28} ry={11} fill={s.base} className={lit ? 'base-light is-lit' : undefined} />
         <ellipse cx={42} cy={61} rx={10} ry={3} fill={s.light} opacity={0.7} />
@@ -399,7 +438,7 @@ function Spring({ level, lit, s, decoration }: BuildingProps) {
         {level >= 3 && (
           <g>
             {[14, 82].map((x) => (
-              <Block key={x} x={x} y={18} w={4} h={52} d={3} s={STONE} />
+              <Block key={x} x={x} y={18} w={4} h={52} d={3} s={m.stone} />
             ))}
             <Block x={10} y={12} w={78} h={6} d={6} s={s} />
             <rect x={12} y={18} width={74} height={1.5} fill={lit ? WINDOW_LIT : s.dark} className={lit ? 'base-light is-lit' : undefined} />
@@ -411,7 +450,7 @@ function Spring({ level, lit, s, decoration }: BuildingProps) {
   );
 }
 
-function Headquarters({ level, lit, s, decoration }: BuildingProps) {
+function Headquarters({ level, lit, s, m, decoration }: BuildingProps) {
   if (level >= 3) {
     return (
       <g>
@@ -419,15 +458,15 @@ function Headquarters({ level, lit, s, decoration }: BuildingProps) {
         <g data-part="base-structure">
           {[20, 150].map((x) => (
             <g key={x}>
-              <Block x={x} y={56} w={24} h={120} d={10} s={METAL} />
+              <Block x={x} y={56} w={24} h={120} d={10} s={m.metal} />
               <GlassPane x={x + 4} y={64} w={16} h={80} lit={lit} />
             </g>
           ))}
-          <Block x={46} y={98} w={104} h={78} d={22} s={METAL} />
+          <Block x={46} y={98} w={104} h={78} d={22} s={m.metal} />
           <GlassPane x={54} y={106} w={88} h={40} lit={lit} />
-          <Block x={64} y={64} w={70} h={34} d={18} s={METAL} />
+          <Block x={64} y={64} w={70} h={34} d={18} s={m.metal} />
           <GlassPane x={70} y={70} w={58} h={24} lit={lit} />
-          <rect x={84} y={152} width={28} height={24} fill={METAL.dark} />
+          <rect x={84} y={152} width={28} height={24} fill={m.metal.dark} />
           <rect x={86} y={154} width={24} height={22} fill={lit ? WINDOW_LIT : WINDOW_DARK} className={lit ? 'base-light is-lit' : undefined} />
         </g>
         <g data-part="roof">
@@ -435,7 +474,7 @@ function Headquarters({ level, lit, s, decoration }: BuildingProps) {
           {[20, 150].map((x) => (
             <Block key={x} x={x - 2} y={52} w={28} h={4} d={11} s={s} />
           ))}
-          <rect x={107} y={16} width={3} height={40} fill={METAL.dark} />
+          <rect x={107} y={16} width={3} height={40} fill={m.metal.dark} />
           <Beacon cx={108.5} cy={14} s={s} lit={lit} r={6} />
         </g>
         <g data-part="decorations"><Decorations kind={decoration} x={46} y={98} w={104} h={78} s={s} lit={lit} /></g>
@@ -450,14 +489,14 @@ function Headquarters({ level, lit, s, decoration }: BuildingProps) {
       <g data-part="base-structure">
         {[18, 150].map((x) => (
           <g key={x}>
-            <Block x={x} y={towerTop} w={26} h={176 - towerTop} d={10} s={STONE} />
+            <Block x={x} y={towerTop} w={26} h={176 - towerTop} d={10} s={m.stone} />
             <Window x={x + 8} y={towerTop + 16} w={10} h={14} lit={lit} arch />
           </g>
         ))}
-        <Block x={44} y={84} w={106} h={92} d={22} s={STONE} />
-        <rect x={44} y={128} width={106} height={3} fill={STONE.dark} opacity={0.7} />
+        <Block x={44} y={84} w={106} h={92} d={22} s={m.stone} />
+        <rect x={44} y={128} width={106} height={3} fill={m.stone.dark} opacity={0.7} />
         <path d="M82 176 V146 A16 16 0 0 1 114 146 V176 Z" fill="#3a2a1c" />
-        <path d="M86 176 V147 A12 12 0 0 1 110 147 V176 Z" fill={lit ? WINDOW_LIT : WOOD.dark} className={lit ? 'base-light is-lit' : undefined} />
+        <path d="M86 176 V147 A12 12 0 0 1 110 147 V176 Z" fill={lit ? WINDOW_LIT : m.wood.dark} className={lit ? 'base-light is-lit' : undefined} />
         <Window x={56} y={100} w={14} h={16} lit={lit} arch />
         <Window x={124} y={100} w={14} h={16} lit={lit} arch />
       </g>
@@ -514,7 +553,7 @@ function Station({ pattern, x, y, done }: { pattern: string; x: number; y: numbe
   );
 }
 
-function TrainingYard({ level, lit, s, decoration, plan }: BuildingProps & { plan?: TodayPlan | null }) {
+function TrainingYard({ level, lit, s, m, decoration, plan }: BuildingProps & { plan?: TodayPlan | null }) {
   const stations = (plan?.exercises ?? []).slice(0, 6);
   const slots: Array<[number, number]> = [
     [56, 76],
@@ -548,17 +587,17 @@ function TrainingYard({ level, lit, s, decoration, plan }: BuildingProps & { pla
         {[16, 50, 84, 116, 150, 184].map((x) => (
           <rect key={x} x={x - 2.5} y={level >= 2 ? 22 : 28} width={5} height={level >= 2 ? 16 : 10} fill={s.base} />
         ))}
-        <rect x={14} y={level >= 2 ? 26 : 30} width={172} height={3} fill={level >= 2 ? METAL.light : WOOD.base} />
+        <rect x={14} y={level >= 2 ? 26 : 30} width={172} height={3} fill={level >= 2 ? m.metal.light : m.wood.base} />
         {level >= 2 &&
           [16, 184].map((x) => (
             <g key={x}>
-              <rect x={x - 1.5} y={4} width={3} height={22} fill={METAL.dark} />
+              <rect x={x - 1.5} y={4} width={3} height={22} fill={m.metal.dark} />
               <Beacon cx={x} cy={4} s={s} lit={lit} r={4} />
             </g>
           ))}
         {level >= 3 && (
           <g>
-            <Block x={76} y={8} w={48} h={14} d={6} s={METAL} />
+            <Block x={76} y={8} w={48} h={14} d={6} s={m.metal} />
             <rect x={80} y={11} width={40} height={8} fill={lit ? s.light : s.dark} className={lit ? 'base-light is-lit' : undefined} />
           </g>
         )}
@@ -976,10 +1015,12 @@ export function ItemArt({
       <TrophyArt trophyId={item.itemId.slice(TROPHY_ITEM_PREFIX.length)} verified={verified} style={item.style} color={item.color} />
     );
   }
+  const s = themeFor(item.itemId, item.color);
   const props: BuildingProps = {
     level: Math.max(item.level, 1),
     lit,
-    s: themeFor(item.itemId, item.color),
+    s,
+    m: materialsFor(item.color, s),
     decoration: item.style
   };
   switch (item.itemId) {
