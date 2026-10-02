@@ -41,6 +41,11 @@ export type HubCopy = {
     programRest: (days: number) => string;
   };
   settingsTab: string;
+  week: {
+    title: string;
+    line: (done: number, target: number) => string;
+    days: [string, string, string, string, string, string, string];
+  };
 };
 
 const en: HubCopy = {
@@ -100,7 +105,12 @@ const en: HubCopy = {
     program: (days, day, phase) => `Day ${day} of ${days} · ${phase}`,
     programRest: (days) => `Rest day · ${days}-day split`
   },
-  settingsTab: 'Settings'
+  settingsTab: 'Settings',
+  week: {
+    title: 'This week',
+    line: (done, target) => `${done} of ${target} training days`,
+    days: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+  }
 };
 
 const he: HubCopy = {
@@ -160,7 +170,12 @@ const he: HubCopy = {
     program: (days, day, phase) => `יום ${day} מתוך ${days} · ${phase}`,
     programRest: (days) => `יום מנוחה · חלוקת ${days} ימים`
   },
-  settingsTab: 'הגדרות'
+  settingsTab: 'הגדרות',
+  week: {
+    title: 'השבוע',
+    line: (done, target) => `${done} מתוך ${target} ימי אימון`,
+    days: ['ב', 'ג', 'ד', 'ה', 'ו', 'ש', 'א']
+  }
 };
 
 const ar: HubCopy = {
@@ -220,7 +235,12 @@ const ar: HubCopy = {
     program: (days, day, phase) => `اليوم ${day} من ${days} · ${phase}`,
     programRest: (days) => `يوم راحة · تقسيم ${days} أيام`
   },
-  settingsTab: 'الإعدادات'
+  settingsTab: 'الإعدادات',
+  week: {
+    title: 'هذا الأسبوع',
+    line: (done, target) => `${done} من ${target} أيام تدريب`,
+    days: ['ن', 'ث', 'ر', 'خ', 'ج', 'س', 'ح']
+  }
 };
 
 export const hubContent: Record<Language, HubCopy> = { en, he, ar };

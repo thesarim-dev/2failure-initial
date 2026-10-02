@@ -1,3 +1,4 @@
+import { WeekStrip } from './WeekStrip';
 import { StreakFlame } from './StreakFlame';
 import { ResourceIcon } from './game/BaseScreen';
 import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog';
@@ -61,6 +62,9 @@ interface DashboardProps {
   /** Training screen, Plan tab. */
   onOpenPlan: () => void;
   trainingDaysPerWeek: number;
+  /** App days trained this week, and the weekly target, for "This week". */
+  weekTrainingDays: string[];
+  weeklyTarget: number;
 }
 
 export function Dashboard({
@@ -102,7 +106,9 @@ export function Dashboard({
   pushupRepsLoading,
   onSelectMove,
   onOpenPlan,
-  trainingDaysPerWeek
+  trainingDaysPerWeek,
+  weekTrainingDays,
+  weeklyTarget
 }: DashboardProps) {
   const { t, language, isRtl } = useLanguage();
   const rewardFor = (move: Move) => {
@@ -259,6 +265,15 @@ export function Dashboard({
         </div>
       </section>
 
+      <div className="mb-6">
+        <WeekStrip
+          weekTrainingDays={weekTrainingDays}
+          recentRestDays={recentRestDays}
+          isRestDayToday={isRestDayToday}
+          totalSetsToday={totalSetsToday}
+          weeklyTarget={weeklyTarget}
+        />
+      </div>
       <div>
         {rotatingProgramEnabled &&
           rotatingProgramPhase !== null &&

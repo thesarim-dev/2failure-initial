@@ -5167,4 +5167,79 @@
       opacity: 0.8;
     }
   }
+
+  /* ---------- "This week" strip ---------- */
+  .home-week {
+    padding: 0.9rem;
+    border-radius: 1.1rem;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .dark .home-week {
+    background: #15151d;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  .home-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+  }
+  .home-section-title {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    text-transform: none;
+  }
+  .home-section-meta {
+    font-size: 0.8rem;
+    font-weight: 700;
+    opacity: 0.6;
+  }
+  .home-week-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+  .home-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .home-day-letter {
+    font-size: 0.7rem;
+    font-weight: 800;
+    opacity: 0.55;
+  }
+  .home-day-mark {
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.06);
+  }
+  .dark .home-day-mark {
+    background: rgba(255, 255, 255, 0.07);
+  }
+  .home-day.is-trained .home-day-mark {
+    background: #c8f032;
+    color: #0c0f02;
+  }
+  .home-day.is-rest .home-day-mark {
+    background: rgba(0, 168, 216, 0.16);
+    color: #007a9e;
+  }
+  .dark .home-day.is-rest .home-day-mark {
+    color: #7adcff;
+  }
+  .home-day.is-today .home-day-mark {
+    box-shadow: 0 0 0 2px #00a8d8;
+  }
+  .home-day.is-today .home-day-letter {
+    opacity: 1;
+    color: #00a8d8;
+  }
 }

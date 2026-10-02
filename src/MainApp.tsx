@@ -47,6 +47,7 @@ import { FirstSetCoach, type FirstSetStage } from './components/FirstSetCoach';
 import { isPoseAiTrackingEnabled } from './config/features';
 import { isPoseExerciseId } from './lib/pose/repCounterFactory';
 import { patternForMove, useBaseGame } from './game/useBaseGame';
+import { weekKeyForDay } from './game/engine';
 import { fx, useSoundSetting } from './lib/feedback';
 import { BaseScreen } from './components/game/BaseScreen';
 import { AppTabBar } from './components/AppTabBar';
@@ -605,7 +606,9 @@ export function MainApp() {
         pushupRepsLoading={pushupRepsLoading}
         onSelectMove={handleSelectMove}
         onOpenPlan={handleOpenPlan}
-        trainingDaysPerWeek={trainingDaysPerWeek} />
+        trainingDaysPerWeek={trainingDaysPerWeek}
+        weekTrainingDays={baseGame.state.stats.week === weekKeyForDay(toLocalDateString()) ? baseGame.state.stats.weekTrainingDays : []}
+        weeklyTarget={weeklyTarget} />
 
       }
 
