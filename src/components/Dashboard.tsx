@@ -210,11 +210,13 @@ export function Dashboard({
           onClick={onOpenPlan}>
           <img src={planIcon} alt="" aria-hidden="true" className="plan-card-icon" width={52} height={52} />
           <span className="plan-card-text">
-            <span className={`plan-card-badge ${rotatingProgramEnabled ? 'is-program' : 'is-own'}`}>
-              {rotatingProgramEnabled ? t.hub.dashCard.programBadge : t.hub.dashCard.ownBadge}
-            </span>
             <span className="plan-card-title">{t.hub.dashCard.title}</span>
-            <span className="plan-card-line">{planLine}</span>
+            <span className="plan-card-meta">
+              <span className={`plan-card-badge ${rotatingProgramEnabled ? 'is-program' : 'is-own'}`}>
+                {rotatingProgramEnabled ? t.hub.dashCard.programBadge : t.hub.dashCard.ownBadge}
+              </span>
+              <span className="plan-card-line">{planLine}</span>
+            </span>
           </span>
           <ChevronRight size={20} strokeWidth={2.5} className="plan-card-chevron tour-icon-flip" aria-hidden="true" />
         </button>

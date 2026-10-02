@@ -97,8 +97,8 @@ const en: HubCopy = {
     ownBadge: 'Own plan',
     programBadge: 'Program',
     own: (sets, days) => `${sets} sets a day · ${days} days a week`,
-    program: (days, day, phase) => `${days}-day program · Day ${day} of ${days}: ${phase}`,
-    programRest: (days) => `${days}-day program · rest day`
+    program: (days, day, phase) => `Day ${day} of ${days} · ${phase}`,
+    programRest: (days) => `Rest day · ${days}-day split`
   },
   settingsTab: 'Settings'
 };
@@ -157,8 +157,8 @@ const he: HubCopy = {
     ownBadge: 'תוכנית אישית',
     programBadge: 'תוכנית מוכנה',
     own: (sets, days) => `${sets} סטים ביום · ${days} ימים בשבוע`,
-    program: (days, day, phase) => `תוכנית ${days} ימים · יום ${day} מתוך ${days}: ${phase}`,
-    programRest: (days) => `תוכנית ${days} ימים · יום מנוחה`
+    program: (days, day, phase) => `יום ${day} מתוך ${days} · ${phase}`,
+    programRest: (days) => `יום מנוחה · חלוקת ${days} ימים`
   },
   settingsTab: 'הגדרות'
 };
@@ -217,8 +217,8 @@ const ar: HubCopy = {
     ownBadge: 'خطة خاصة',
     programBadge: 'برنامج',
     own: (sets, days) => `${sets} مجموعات يومياً · ${days} أيام في الأسبوع`,
-    program: (days, day, phase) => `برنامج ${days} أيام · اليوم ${day} من ${days}: ${phase}`,
-    programRest: (days) => `برنامج ${days} أيام · يوم راحة`
+    program: (days, day, phase) => `اليوم ${day} من ${days} · ${phase}`,
+    programRest: (days) => `يوم راحة · تقسيم ${days} أيام`
   },
   settingsTab: 'الإعدادات'
 };

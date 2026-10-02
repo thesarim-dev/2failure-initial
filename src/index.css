@@ -4706,7 +4706,24 @@
     align-items: flex-start;
     gap: 0.2rem;
   }
+  /* Under the title: mode badge on the left, the plan right after it. */
+  .plan-card-meta {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+  /* Inline, so the plan text starts on the badge's line and wraps under it. */
+  .plan-card-meta .plan-card-badge {
+    display: inline-block;
+    margin-inline-end: 0.4rem;
+    vertical-align: 0.05em;
+  }
+  .plan-card-meta .plan-card-line {
+    display: inline;
+  }
   .plan-card-badge {
+    flex-shrink: 0;
     font-size: 0.62rem;
     font-weight: 800;
     letter-spacing: 0.05em;
