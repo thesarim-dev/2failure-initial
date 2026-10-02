@@ -4802,7 +4802,8 @@
   .base-board-wrap {
     width: 100vw;
     margin-inline: calc(50% - 50vw);
-    height: clamp(380px, 66vh, 780px);
+    /* Sized to the land's wide diamond: tall enough to feel big, no empty band. */
+    height: max(300px, min(66vh, 92vw, 780px));
     border-radius: 0;
     overflow: hidden;
   }
@@ -4836,5 +4837,13 @@
   /* The full-width map must not cause sideways scrolling. */
   .has-tab-bar {
     overflow-x: clip;
+  }
+
+  /* ---------- Floating land on the page itself ---------- */
+  .base-board-wrap {
+    background: transparent;
+  }
+  .base-board-wrap::after {
+    content: none;
   }
 }

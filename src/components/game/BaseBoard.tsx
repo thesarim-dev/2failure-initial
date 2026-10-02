@@ -1,13 +1,12 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import {
-  GRID_SIZE,
   TROPHY_ITEM_PREFIX,
   buildableBounds,
   getItemDef,
   isTileBuildable
 } from '../../game/catalog';
 import { itemSize, type GameState, type PlacedItem, type TodayPlan } from '../../game/engine';
-import { ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
+import { ArtDefs, ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseBirds, BaseCritters } from './Critters';
 
@@ -43,6 +42,7 @@ export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, 
   const box = itemSize(id) * T;
   return (
     <svg viewBox={`0 0 ${box} ${box}`} width={size} height={size} aria-hidden="true" className="base-preview">
+      <ArtDefs />
       <ItemArt item={{ uid: 'preview', itemId: id, x: 0, y: 0, level, style, color }} lit verified={verified} />
     </svg>
   );
@@ -87,20 +87,6 @@ export function project([x, y]: [number, number]): [number, number] {
   return [(x - y) * 0.5, (x + y) * 0.25];
 }
 
-function hash2(x: number, y: number): number {
-  let h = (x * 374761393 + y * 668265263) >>> 0;
-  h = ((h ^ (h >>> 13)) * 1274126177) >>> 0;
-  return (h ^ (h >>> 16)) >>> 0;
-}
-
-const WILD_PROPS: Array<{ itemId: string; style?: string }> = [
-  { itemId: 'pine', style: 'pine' },
-  { itemId: 'pine', style: 'oak' },
-  { itemId: 'pine', style: 'pine' },
-  { itemId: 'bush', style: 'round' },
-  { itemId: 'rock', style: 'mossy' },
-  { itemId: 'rock', style: 'boulder' }
-];
 
 export function BaseBoard({
   state,
@@ -140,9 +126,13 @@ export function BaseBoard({
     observer.observe(svg);
     return () => observer.disconnect();
   }, []);
-  const viewW = Math.max(span * 1.06, (span * 0.66) / aspect);
+  // The land is a floating block: diamond top, dirt sides, a shadow below.
+  const SLAB = 46;
+  const topY = a * 0.5 - 95; // room for tall buildings at the back
+  const bottomY = b * 0.5 + SLAB + 28;
+  const viewW = Math.max(span * 1.1, (bottomY - topY) / aspect);
   const viewH = viewW * aspect;
-  const centerY = (a + b) * 0.25 - span * 0.06;
+  const centerY = (topY + bottomY) / 2;
 
   // --- Camera: pinch / wheel to zoom, drag to pan ---------------------------
   const MIN_ZOOM = 1;
@@ -172,55 +162,21 @@ export function BaseBoard({
     []
   );
 
-  // Ground tiles: your land, and darker wild land around it.
+  // Ground tiles: only the land you own. It grows as you expand.
   const ground: ReactNode[] = [];
-  for (let y = 0; y < GRID_SIZE; y++) {
-    for (let x = 0; x < GRID_SIZE; x++) {
-      const owned = isTileBuildable(x, y, land);
+  for (let y = min; y <= max; y++) {
+    for (let x = min; x <= max; x++) {
+      ground.push(<TerrainTile key={`t${x},${y}`} x={x} y={y} terrain={state.terrain?.[`${x},${y}`] ?? 'grass'} />);
       ground.push(
-        <TerrainTile key={`t${x},${y}`} x={x} y={y} terrain={owned ? state.terrain?.[`${x},${y}`] ?? 'grass' : 'wild'} />
+        <rect key={`c${x},${y}`} x={x * T} y={y * T} width={T} height={T} fill="transparent"
+          onClick={inert ? undefined : () => onTile(x, y)} />
       );
-      if (owned) {
-        ground.push(
-          <rect key={`c${x},${y}`} x={x * T} y={y * T} width={T} height={T} fill="transparent"
-            onClick={inert ? undefined : () => onTile(x, y)} />
-        );
-      }
     }
   }
-
-  // Trees and rocks scattered over land you don't own yet, like a forest edge.
-  const wildProps = useMemo(() => {
-    const props: Array<{ x: number; y: number; itemId: string; style?: string }> = [];
-    // Reach well past the plot so the map never shows bare edges.
-    for (let y = -10; y < GRID_SIZE + 10; y++) {
-      for (let x = -10; x < GRID_SIZE + 10; x++) {
-        if (isTileBuildable(x, y, land)) continue;
-        const gap = Math.max(min - x, x - max, min - y, y - max);
-        const h = hash2(x, y);
-        // Sparse right next to your land, a little denser further out.
-        if (gap < 1 || h % (gap > 2 ? 5 : 6) !== 0) continue;
-        props.push({ x, y, ...WILD_PROPS[(h >>> 4) % WILD_PROPS.length] });
-      }
-    }
-    return props;
-  }, [land, min, max]);
 
   // Everything upright, sorted back to front so nearer things overlap.
   type Sprite = { key: string; depth: number; node: ReactNode };
   const sprites: Sprite[] = [];
-  for (const p of wildProps) {
-    const [cx, cy] = project([(p.x + 0.5) * T, (p.y + 0.5) * T]);
-    sprites.push({
-      key: `w${p.x},${p.y}`,
-      depth: p.x + p.y + 1,
-      node: (
-        <g key={`w${p.x},${p.y}`} transform={`translate(${cx - 50} ${cy - 88})`} pointerEvents="none" className="base-wild-prop">
-          <ItemArt item={{ uid: 'wild', itemId: p.itemId, x: 0, y: 0, level: 1, style: p.style }} lit={lit} />
-        </g>
-      )
-    });
-  }
   for (const item of state.placed) {
     const size = itemSize(item.itemId);
     const construction = jobs.get(item.uid);
@@ -444,15 +400,57 @@ export function BaseBoard({
       className={`base-board is-iso ${lit ? 'is-lit' : 'is-quiet'} ${placing ? 'is-placing' : ''} ${painting ? 'is-painting' : ''} ${cam.zoom > 1.02 ? 'is-zoomed' : ''}`}
       role="group">
       <defs>
+ <radialGradient id="base-land-light" cx="0.5" cy="0.5" r="0.7">
+          <stop offset="0" stopColor="#fff6c8" stopOpacity="0.12" />
+          <stop offset="0.7" stopColor="#000" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity="0.22" />
+        </radialGradient>
+        <linearGradient id="base-slab-left" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#8a6040" />
+          <stop offset="1" stopColor="#5a3c25" />
+        </linearGradient>
+        <linearGradient id="base-slab-right" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#6e4a2f" />
+          <stop offset="1" stopColor="#3f2a19" />
+        </linearGradient>
+        <radialGradient id="base-slab-shadow" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#000" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#000" stopOpacity="0" />
+        </radialGradient>
         <pattern id="base-scaffold-hatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
           <line x1="0" y1="0" x2="0" y2="16" className="base-scaffold-line" strokeWidth="3" />
         </pattern>
       </defs>
+      <ArtDefs />
+
+      {/* The block of land: soft shadow, then its dirt sides. */}
+      {(() => {
+        const [lx, ly] = project([a, b]);
+        const [bx, by] = project([b, b]);
+        const [rx, ry] = project([b, a]);
+        const strata = [0.35, 0.65];
+        return (
+          <g pointerEvents="none">
+            <ellipse cx={bx} cy={by + SLAB + 6} rx={span * 0.55} ry={span * 0.09} fill="url(#base-slab-shadow)" />
+            <polygon points={`${lx},${ly} ${bx},${by} ${bx},${by + SLAB} ${lx},${ly + SLAB}`} fill="url(#base-slab-left)" />
+            <polygon points={`${bx},${by} ${rx},${ry} ${rx},${ry + SLAB} ${bx},${by + SLAB}`} fill="url(#base-slab-right)" />
+            {strata.map((t) => (
+              <g key={t} stroke="#2a1a0e" strokeOpacity={0.35} strokeWidth={1.2} fill="none">
+                <line x1={lx} y1={ly + SLAB * t} x2={bx} y2={by + SLAB * t} />
+                <line x1={bx} y1={by + SLAB * t} x2={rx} y2={ry + SLAB * t} />
+              </g>
+            ))}
+            {/* A grassy lip where the turf hangs over the dirt. */}
+            <polygon points={`${lx},${ly} ${bx},${by} ${rx},${ry} ${rx},${ry + 7} ${bx},${by + 7} ${lx},${ly + 7}`} fill="#2f6a39" />
+            <line x1={bx} y1={by} x2={bx} y2={by + SLAB} stroke="#000" strokeOpacity={0.25} strokeWidth={1.5} />
+          </g>
+        );
+      })()}
 
       {/* The ground, in world units, tilted into diamonds. */}
       <g ref={groundRef} transform={ISO}>
-        <rect x={-30 * T} y={-30 * T} width={(GRID_SIZE + 60) * T} height={(GRID_SIZE + 60) * T} className="base-wild-ground" />
         {ground}
+        <rect x={a} y={a} width={span} height={span} fill="url(#base-land-light)" pointerEvents="none" />
         {selected && (
           <rect
             x={selected.x * T + 4}

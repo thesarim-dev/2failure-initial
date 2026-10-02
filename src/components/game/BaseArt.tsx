@@ -98,13 +98,90 @@ export function materialsFor(color: string | undefined, theme: Shades): Material
 const DEPTH_Y = 0.55;
 
 /** A solid block with a front, a right side and a top. */
+/**
+ * Shared gradients and filters for the high-fidelity look. Render once inside
+ * any SVG that draws base art (the map, previews).
+ */
+export function ArtDefs() {
+  return (
+    <defs>
+      {/* Walls: lit from above, darker toward the ground (ambient occlusion). */}
+      <linearGradient id="hf-face" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.22" />
+        <stop offset="0.45" stopColor="#ffffff" stopOpacity="0" />
+        <stop offset="1" stopColor="#000000" stopOpacity="0.28" />
+      </linearGradient>
+      <linearGradient id="hf-side" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stopColor="#000000" stopOpacity="0.02" />
+        <stop offset="1" stopColor="#000000" stopOpacity="0.32" />
+      </linearGradient>
+      <linearGradient id="hf-top" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.35" />
+        <stop offset="1" stopColor="#ffffff" stopOpacity="0.05" />
+      </linearGradient>
+      <linearGradient id="hf-roof" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.28" />
+        <stop offset="1" stopColor="#000000" stopOpacity="0.22" />
+      </linearGradient>
+      {/* Soft contact shadows. */}
+      <radialGradient id="hf-shadow" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stopColor="#000000" stopOpacity="0.5" />
+        <stop offset="0.65" stopColor="#000000" stopOpacity="0.28" />
+        <stop offset="1" stopColor="#000000" stopOpacity="0" />
+      </radialGradient>
+      {/* Round bodies (animals, bushes): light top, shaded underside. */}
+      <linearGradient id="hf-body" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.3" />
+        <stop offset="0.5" stopColor="#ffffff" stopOpacity="0" />
+        <stop offset="1" stopColor="#000000" stopOpacity="0.25" />
+      </linearGradient>
+    </defs>
+  );
+}
+
+/**
+ * A solid block with a front, a right side and a top, shaded like a real
+ * object: gradient walls, a lit top edge, and faint courses (stone rows /
+ * wood planks) on the front.
+ */
 function Block({ x, y, w, h, d, s }: { x: number; y: number; w: number; h: number; d: number; s: Shades }) {
   const dy = d * DEPTH_Y;
+  const side = `${x + w},${y} ${x + w + d},${y - dy} ${x + w + d},${y + h - dy} ${x + w},${y + h}`;
+  const top = `${x},${y} ${x + d},${y - dy} ${x + w + d},${y - dy} ${x + w},${y}`;
+  const courses: number[] = [];
+  for (let cy = y + 7; cy < y + h - 2; cy += 7) courses.push(cy);
   return (
     <g>
-      <polygon points={`${x + w},${y} ${x + w + d},${y - dy} ${x + w + d},${y + h - dy} ${x + w},${y + h}`} fill={s.dark} />
-      <polygon points={`${x},${y} ${x + d},${y - dy} ${x + w + d},${y - dy} ${x + w},${y}`} fill={s.light} />
+      <polygon points={side} fill={s.dark} />
+      <polygon points={side} fill="url(#hf-side)" />
+      <polygon points={top} fill={s.light} />
+      <polygon points={top} fill="url(#hf-top)" />
       <rect x={x} y={y} width={w} height={h} fill={s.base} />
+      {h > 12 &&
+        courses.map((cy) => (
+          <line key={cy} x1={x} y1={cy} x2={x + w} y2={cy} stroke="#000" strokeOpacity={0.07} strokeWidth={0.9} />
+        ))}
+      <rect x={x} y={y} width={w} height={h} fill="url(#hf-face)" />
+      {/* Crisp lit edges sell the volume. */}
+      <line x1={x} y1={y} x2={x + w} y2={y} stroke="#fff" strokeOpacity={0.45} strokeWidth={1.1} />
+      <line x1={x + w} y1={y} x2={x + w + d} y2={y - dy} stroke="#fff" strokeOpacity={0.25} strokeWidth={0.9} />
+      <line x1={x + w} y1={y} x2={x + w} y2={y + h} stroke="#000" strokeOpacity={0.18} strokeWidth={0.9} />
+    </g>
+  );
+}
+
+/** Shingle rows between two edges of a roof face, from top to bottom. */
+function Shingles({ a, b, c, e, rows }: { a: [number, number]; b: [number, number]; c: [number, number]; e: [number, number]; rows: number }) {
+  // a→c is one edge (top→bottom), b→e the other.
+  const lerp = (p: [number, number], q: [number, number], t: number) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+  return (
+    <g stroke="#000" strokeOpacity={0.14} strokeWidth={0.9}>
+      {Array.from({ length: rows }, (_, i) => {
+        const t = (i + 1) / (rows + 1);
+        const [x1, y1] = lerp(a, c, t);
+        const [x2, y2] = lerp(b, e, t);
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />;
+      })}
     </g>
   );
 }
@@ -114,15 +191,22 @@ function GableRoof({ x, y, w, d, rise, s }: { x: number; y: number; w: number; d
   const dy = d * DEPTH_Y;
   const peakX = x + w / 2;
   const peakY = y - rise;
+  const slope = `${peakX},${peakY} ${peakX + d},${peakY - dy} ${x + w + d + 3},${y - dy + 2} ${x + w + 3},${y + 2}`;
   return (
     <g>
-      {/* Roof slope going back */}
-      <polygon points={`${peakX},${peakY} ${peakX + d},${peakY - dy} ${x + w + d + 3},${y - dy + 2} ${x + w + 3},${y + 2}`} fill={s.base} />
+      {/* Roof slope going back, with shingle rows */}
+      <polygon points={slope} fill={s.base} />
+      <Shingles a={[peakX, peakY]} b={[peakX + d, peakY - dy]} c={[x + w + 3, y + 2]} e={[x + w + d + 3, y - dy + 2]} rows={Math.max(3, Math.round(rise / 6))} />
+      <polygon points={slope} fill="url(#hf-roof)" />
+      <line x1={peakX} y1={peakY} x2={peakX + d} y2={peakY - dy} stroke="#fff" strokeOpacity={0.5} strokeWidth={1.4} />
       {/* Front gable */}
       <polygon points={`${x - 3},${y + 2} ${peakX},${peakY} ${x + w + 3},${y + 2}`} fill={s.light} />
+      <Shingles a={[peakX, peakY]} b={[peakX, peakY]} c={[x - 3, y + 2]} e={[x + w + 3, y + 2]} rows={Math.max(3, Math.round(rise / 6))} />
+      <polygon points={`${x - 3},${y + 2} ${peakX},${peakY} ${x + w + 3},${y + 2}`} fill="url(#hf-roof)" />
       {/* Eave trim */}
       <polygon points={`${x - 3},${y + 2} ${peakX},${peakY} ${peakX},${peakY + 5} ${x + 2},${y + 2}`} fill={s.dark} opacity={0.35} />
       <rect x={x - 3} y={y} width={w + 6} height={3} fill={s.dark} />
+      <rect x={x - 3} y={y + 3} width={w + 6} height={2} fill="#000" opacity={0.18} />
     </g>
   );
 }
@@ -136,23 +220,30 @@ function PyramidRoof({ x, y, w, d, rise, s }: { x: number; y: number; w: number;
     <g>
       <polygon points={`${x + w},${y} ${x + w + d},${y - dy} ${apexX},${apexY}`} fill={s.dark} />
       <polygon points={`${x},${y} ${x + w},${y} ${apexX},${apexY}`} fill={s.base} />
+      <Shingles a={[apexX, apexY]} b={[apexX, apexY]} c={[x, y]} e={[x + w, y]} rows={Math.max(3, Math.round(rise / 5))} />
       <polygon points={`${x},${y} ${x + w * 0.42},${y} ${apexX},${apexY}`} fill={s.light} opacity={0.55} />
+      <polygon points={`${x},${y} ${x + w},${y} ${apexX},${apexY}`} fill="url(#hf-roof)" />
+      <line x1={x + w} y1={y} x2={apexX} y2={apexY} stroke="#fff" strokeOpacity={0.35} strokeWidth={1} />
     </g>
   );
 }
 
+/** A soft, blurred-looking contact shadow. */
 function Shadow({ cx = 50, cy = 88, rx = 34 }: { cx?: number; cy?: number; rx?: number }) {
-  return <ellipse cx={cx} cy={cy} rx={rx} ry={rx * 0.26} fill="#000" opacity={0.35} />;
+  return <ellipse cx={cx} cy={cy} rx={rx * 1.12} ry={rx * 0.32} fill="url(#hf-shadow)" />;
 }
 
-/** A window that glows on training days and goes dark on quiet ones. */
+/** A framed window with a sill; glows on training days, dark on quiet ones. */
 function Window({ x, y, w, h, lit, arch = false }: { x: number; y: number; w: number; h: number; lit: boolean; arch?: boolean }) {
   const r = arch ? w / 2 : 1.5;
   return (
     <g className={lit ? 'base-light is-lit' : 'base-light-off'}>
-      <rect x={x - 1.5} y={y - 1.5} width={w + 3} height={h + 3} rx={r + 1} fill="#000" opacity={0.25} />
+      <rect x={x - 2} y={y - 2} width={w + 4} height={h + 4} rx={r + 1.5} fill="#3a2a1c" opacity={0.75} />
       <rect x={x} y={y} width={w} height={h} rx={r} fill={lit ? WINDOW_LIT : WINDOW_DARK} />
-      {lit && <rect x={x + 1} y={y + 1} width={w * 0.35} height={h - 2} rx={r} fill="#fff" opacity={0.45} />}
+      {lit && <rect x={x} y={y} width={w} height={h} rx={r} fill="url(#hf-face)" />}
+      <line x1={x + w / 2} y1={y + (arch ? w / 2 : 1)} x2={x + w / 2} y2={y + h} stroke="#3a2a1c" strokeOpacity={0.6} strokeWidth={1} />
+      {lit && <rect x={x + 1} y={y + 1} width={w * 0.3} height={h - 2} rx={r} fill="#fff" opacity={0.4} />}
+      <rect x={x - 2.5} y={y + h} width={w + 5} height={2.2} rx={1} fill="#e8dcc8" opacity={0.9} />
     </g>
   );
 }
@@ -1642,10 +1733,18 @@ export function TerrainTile({ x, y, terrain }: { x: number; y: number; terrain: 
           )}
         </g>
       )}
-      {terrain === 'grass' &&
-        [0, 1, 2].map((i) => (
-          <Tuft key={i} x={px + at(i, 10 + i)} y={py + at(i, 20 + i)} color={i === 1 ? c.light : c.detail} sway={(h >>> i) % 3 === 0} delay={delay + i * 0.4} />
-        ))}
+      {terrain === 'grass' && (
+        <g>
+          {/* Fine speckle: tiny light and dark flecks read as blades of grass. */}
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <circle key={`s${i}`} cx={px + at(i, 90 + i)} cy={py + at(i, 100 + i)} r={1.6} fill={i % 2 ? c.light : c.dark} opacity={0.8} />
+          ))}
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Tuft key={i} x={px + at(i, 10 + i)} y={py + at(i, 20 + i)} color={i % 2 ? c.light : c.detail} sway={(h >>> i) % 3 === 0} delay={delay + i * 0.4} />
+          ))}
+          {h % 7 === 0 && <circle cx={px + at(0, 110)} cy={py + at(0, 111)} r={2.4} fill="#fff4b0" />}
+        </g>
+      )}
       {terrain === 'meadow' && (
         <g>
           <Tuft x={px + at(0, 30)} y={py + at(0, 31)} color={c.light} sway delay={delay} />

@@ -30,6 +30,7 @@ function Cow() {
         <rect key={x} x={x - 1.5} y={4} width={3} height={9} rx={1} fill="#3a3a3a" />
       ))}
       <ellipse cx={0} cy={0} rx={15} ry={9} fill="#f4f4f0" />
+      <ellipse cx={0} cy={0} rx={15} ry={9} fill="url(#hf-body)" />
       <ellipse cx={-5} cy={-3} rx={5} ry={4} fill="#2a2a2a" />
       <ellipse cx={6} cy={3} rx={4} ry={3} fill="#2a2a2a" />
       <path d="M-15 -2 q-5 2 -4 9" stroke="#f4f4f0" strokeWidth={2} fill="none" strokeLinecap="round" />
@@ -58,6 +59,7 @@ function Sheep() {
       ].map(([x, y]) => (
         <circle key={`${x}${y}`} cx={x} cy={y} r={6} fill="#f7f2e6" />
       ))}
+      <ellipse cx={0} cy={0} rx={13} ry={9} fill="url(#hf-body)" />
       <ellipse cx={13} cy={-4} rx={5} ry={6} fill="#2a2a2a" />
       <circle cx={14} cy={-6} r={1.1} fill="#ffffff" />
     </g>
@@ -67,14 +69,30 @@ function Sheep() {
 function Chicken() {
   return (
     <g>
-      <ellipse cx={0} cy={9} rx={8} ry={2.5} fill="#000" opacity={0.25} />
-      <path d="M-2 5 v4 M2 5 v4" stroke="#f2a541" strokeWidth={1.6} strokeLinecap="round" />
-      <ellipse cx={0} cy={0} rx={7} ry={6} fill="#ffffff" />
-      <path d="M-7 -1 q-4 -3 -2 -7 q2 3 4 3 Z" fill="#ffffff" />
-      <circle cx={5} cy={-5} r={3.6} fill="#ffffff" />
-      <path d="M4 -9 q1 -2 2 0 q1 -2 2 0" fill="#e5484d" />
-      <polygon points="8.5,-5 11.5,-4 8.5,-3" fill="#f2a541" />
-      <circle cx={6} cy={-6} r={0.9} fill="#1a1a1a" />
+      <ellipse cx={0} cy={9.5} rx={9} ry={2.6} fill="#000" opacity={0.28} />
+      {/* Legs and little feet */}
+      <g stroke="#e8902a" strokeWidth={1.5} strokeLinecap="round" fill="none">
+        <path d="M-2 4.5 v4.2 M-2 8.7 l-1.8 0.6 M-2 8.7 l1.6 0.6" />
+        <path d="M2.5 4.5 v4.2 M2.5 8.7 l-1.6 0.6 M2.5 8.7 l1.8 0.6" />
+      </g>
+      {/* Tail feathers */}
+      <path d="M-6.5 -1 q-5 -5 -3 -9 q1.5 3 3.5 3.2 q-1 -3.5 1 -5.5 q0.8 3.6 2.6 5.2 Z" fill="#f2f0ea" />
+      <path d="M-6.5 -1 q-4 -4 -2.6 -7.4 q1.4 2.6 3 3 Z" fill="#d9d4c8" />
+      {/* Body */}
+      <ellipse cx={0} cy={0} rx={7.5} ry={6.2} fill="#fbfaf6" />
+      <ellipse cx={0} cy={0} rx={7.5} ry={6.2} fill="url(#hf-body)" />
+      {/* Wing */}
+      <path d="M-4 -1.5 q4 -2.5 7.5 0.5 q-1.2 4.2 -5.2 4 q-2.6 -0.6 -2.3 -4.5 Z" fill="#e6e2d8" />
+      <path d="M-2.5 0.8 q2.4 0.9 4.6 0 M-2 2.4 q2 0.7 3.8 0" stroke="#c9c3b5" strokeWidth={0.7} fill="none" />
+      {/* Head */}
+      <circle cx={5.4} cy={-5.2} r={3.7} fill="#fbfaf6" />
+      <circle cx={5.4} cy={-5.2} r={3.7} fill="url(#hf-body)" />
+      <path d="M3.6 -8.4 q0.8 -2.4 1.8 -0.5 q0.9 -2.4 1.9 -0.4 q1.2 -1.6 1.4 0.4 Z" fill="#e5484d" />
+      <path d="M8.6 -4.2 q1.1 1.8 -0.4 2.8 q-0.9 -1 0.4 -2.8 Z" fill="#e5484d" />
+      <polygon points="8.7,-5.8 11.8,-4.9 8.7,-3.9" fill="#f2a541" />
+      <polygon points="8.7,-4.9 11.8,-4.9 8.7,-3.9" fill="#c97a1e" />
+      <circle cx={6.4} cy={-6} r={0.95} fill="#1a1a1a" />
+      <circle cx={6.7} cy={-6.3} r={0.3} fill="#fff" />
     </g>
   );
 }
@@ -84,6 +102,7 @@ function Bunny() {
     <g>
       <ellipse cx={0} cy={9} rx={9} ry={2.5} fill="#000" opacity={0.25} />
       <ellipse cx={-1} cy={2} rx={8} ry={6} fill="#c9b8a6" />
+      <ellipse cx={-1} cy={2} rx={8} ry={6} fill="url(#hf-body)" />
       <circle cx={-8} cy={1} r={2.5} fill="#ffffff" />
       <circle cx={6} cy={-2} r={4.5} fill="#c9b8a6" />
       <ellipse cx={5} cy={-10} rx={1.6} ry={5} fill="#c9b8a6" />
@@ -99,6 +118,7 @@ function Duck() {
     <g>
       <ellipse cx={0} cy={6} rx={12} ry={3} fill="#7fd3f5" opacity={0.5} />
       <ellipse cx={0} cy={2} rx={9} ry={5} fill="#f6df8a" />
+      <ellipse cx={0} cy={2} rx={9} ry={5} fill="url(#hf-body)" />
       <path d="M-9 1 q-3 -4 0 -5" fill="#f6df8a" />
       <circle cx={6} cy={-3} r={4} fill="#f6df8a" />
       <polygon points="9.5,-3 13,-2 9.5,-1" fill="#f2a541" />
@@ -116,6 +136,7 @@ function Pig() {
         <rect key={x} x={x - 1.6} y={3} width={3.2} height={8} rx={1.2} fill="#e88fa6" />
       ))}
       <ellipse cx={0} cy={0} rx={14} ry={9} fill="#f6aec0" />
+      <ellipse cx={0} cy={0} rx={14} ry={9} fill="url(#hf-body)" />
       <ellipse cx={-4} cy={-3} rx={6} ry={3} fill="#fbc8d5" opacity={0.8} />
       <path d="M-14 -2 q-4 -2 -3 3 q1 3 3 0" stroke="#e88fa6" strokeWidth={1.6} fill="none" />
       <circle cx={13} cy={-3} r={6} fill="#f6aec0" />
@@ -136,6 +157,7 @@ function Dog() {
         <rect key={x} x={x - 1.4} y={2} width={2.8} height={8} rx={1} fill="#9a6a3a" />
       ))}
       <ellipse cx={0} cy={0} rx={11} ry={6.5} fill="#c48a52" />
+      <ellipse cx={0} cy={0} rx={11} ry={6.5} fill="url(#hf-body)" />
       <path d="M-11 -2 q-6 -6 -4 -10" stroke="#c48a52" strokeWidth={3} fill="none" strokeLinecap="round" />
       <circle cx={11} cy={-5} r={5.5} fill="#c48a52" />
       <ellipse cx={16} cy={-4} rx={3.2} ry={2.4} fill="#e8c49a" />
@@ -154,6 +176,7 @@ function Cat() {
         <rect key={x} x={x - 1.1} y={2} width={2.2} height={7} rx={1} fill="#7d7f8c" />
       ))}
       <ellipse cx={0} cy={0} rx={9} ry={5.5} fill="#9a9caa" />
+      <ellipse cx={0} cy={0} rx={9} ry={5.5} fill="url(#hf-body)" />
       <path d="M-9 -1 q-6 -2 -5 -10" stroke="#9a9caa" strokeWidth={2.6} fill="none" strokeLinecap="round" />
       <circle cx={9} cy={-5} r={4.8} fill="#9a9caa" />
       <polygon points="6,-8.5 6.5,-13 9,-9.5" fill="#9a9caa" />
@@ -173,6 +196,7 @@ function Fox() {
         <rect key={x} x={x - 1.2} y={2} width={2.4} height={7} rx={1} fill="#3a2a22" />
       ))}
       <ellipse cx={0} cy={0} rx={10} ry={5.5} fill="#e5793a" />
+      <ellipse cx={0} cy={0} rx={10} ry={5.5} fill="url(#hf-body)" />
       <path d="M-9 0 q-10 -2 -12 -9 q6 2 12 5 Z" fill="#e5793a" />
       <path d="M-19 -7 q-2 -2 -2 -2 q2 1 4 3 Z" fill="#ffffff" />
       <path d="M6 -2 l12 -1 l-5 6 Z" fill="#ffffff" />
