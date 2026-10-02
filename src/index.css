@@ -4889,4 +4889,16 @@
     outline: 2px solid #00b2ff;
     outline-offset: 2px;
   }
+
+  /* ---------- Only the land is interactive ---------- */
+  /* The SVG lets touches and the wheel pass through; the land, its sides and
+     everything standing on it opt back in. So swiping beside the plot scrolls
+     the page, and the hit area grows with the land. */
+  .base-board.is-iso {
+    pointer-events: none;
+    touch-action: none;
+  }
+  .base-board.is-iso.is-zoomed {
+    touch-action: none;
+  }
 }

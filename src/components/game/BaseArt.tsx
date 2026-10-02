@@ -41,15 +41,15 @@ export function themeFor(itemId: string, color?: string): Shades {
 export type Decoration = 'plain' | 'banners' | 'plated' | 'glow';
 
 // Shared materials
-const STONE: Shades = { light: '#e3e8ee', base: '#b3bdca', dark: '#7d8899' };
-const WOOD: Shades = { light: '#e8b47a', base: '#bf8148', dark: '#87552a' };
-const METAL: Shades = { light: '#cfd8e3', base: '#8e9bad', dark: '#5b6678' };
-const GLASS: Shades = { light: '#c9f1ff', base: '#6cc7ee', dark: '#2f7fa8' };
-const GRASS: Shades = { light: '#6fd38a', base: '#3fa862', dark: '#277244' };
-const LEAF: Shades = { light: '#7ee2a0', base: '#3bb36a', dark: '#22784a' };
-const WINDOW_LIT = '#ffd76a';
-const WINDOW_DARK = '#2b3346';
-const FIRE = '#ff8a3d';
+export const STONE: Shades = { light: '#e3e8ee', base: '#b3bdca', dark: '#7d8899' };
+export const WOOD: Shades = { light: '#e8b47a', base: '#bf8148', dark: '#87552a' };
+export const METAL: Shades = { light: '#cfd8e3', base: '#8e9bad', dark: '#5b6678' };
+export const GLASS: Shades = { light: '#c9f1ff', base: '#6cc7ee', dark: '#2f7fa8' };
+export const GRASS: Shades = { light: '#6fd38a', base: '#3fa862', dark: '#277244' };
+export const LEAF: Shades = { light: '#7ee2a0', base: '#3bb36a', dark: '#22784a' };
+export const WINDOW_LIT = '#ffd76a';
+export const WINDOW_DARK = '#2b3346';
+export const FIRE = '#ff8a3d';
 
 /** Wall materials a building is made of. */
 export type Materials = { stone: Shades; wood: Shades; metal: Shades };

@@ -9,6 +9,7 @@ import { itemSize, type GameState, type PlacedItem, type TodayPlan } from '../..
 import { ArtDefs, ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseBirds, BaseCritters } from './Critters';
+import { ISO_ITEMS, IsoItemArt, IsoScaffold, P as isoP } from './IsoArt';
 
 export { ItemArt, TrophyArt } from './BaseArt';
 
@@ -40,6 +41,15 @@ export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, 
 }) {
   const id = trophyId ? `${TROPHY_ITEM_PREFIX}${trophyId}` : itemId ?? '';
   const box = itemSize(id) * T;
+  if (ISO_ITEMS.has(id)) {
+    const s2 = itemSize(id) === 2;
+    return (
+      <svg viewBox={s2 ? '-112 -84 224 190' : '-56 -84 112 140'} width={size} height={size} aria-hidden="true" className="base-preview">
+        <ArtDefs />
+        <IsoItemArt item={{ uid: 'preview', itemId: id, x: 0, y: 0, level, style, color }} ox={0} oy={0} lit />
+      </svg>
+    );
+  }
   return (
     <svg viewBox={`0 0 ${box} ${box}`} width={size} height={size} aria-hidden="true" className="base-preview">
       <ArtDefs />
@@ -177,8 +187,68 @@ export function BaseBoard({
   // Everything upright, sorted back to front so nearer things overlap.
   type Sprite = { key: string; depth: number; node: ReactNode };
   const sprites: Sprite[] = [];
+  const groundItems: ReactNode[] = [];
   for (const item of state.placed) {
     const size = itemSize(item.itemId);
+    // Paths are paving: laid flat into the ground layer.
+    if (item.itemId === 'path') {
+      groundItems.push(
+        <g
+          key={item.uid}
+          transform={`translate(${item.x * T} ${item.y * T})`}
+          className="base-item"
+          role={inert ? undefined : 'button'}
+          tabIndex={inert ? -1 : 0}
+          aria-label={labelForItem(item)}
+          pointerEvents={inert ? 'none' : undefined}
+          onClick={inert ? undefined : () => onItem(item.uid)}
+          onKeyDown={inert ? undefined : (e) => onKeyActivate(e, () => onItem(item.uid))}>
+          <ItemArt item={item} lit={lit} />
+        </g>
+      );
+      continue;
+    }
+    if (ISO_ITEMS.has(item.itemId)) {
+      const construction = jobs.get(item.uid);
+      const def = getItemDef(item.itemId);
+      const ox = item.x * T;
+      const oy = item.y * T;
+      const [px, py] = isoP(ox + size * T, oy + size * T);
+      const foot = [isoP(ox, oy), isoP(ox + size * T, oy), isoP(ox + size * T, oy + size * T), isoP(ox, oy + size * T)]
+        .map(([x, y]) => `${x},${y}`)
+        .join(' ');
+      sprites.push({
+        key: item.uid,
+        depth: item.x + item.y + size,
+        node: (
+          <g
+            key={item.uid}
+            className={`base-item group ${selectedUid === item.uid ? 'is-selected' : ''} ${inert ? 'is-inert' : ''}`}
+            role={inert ? undefined : 'button'}
+            tabIndex={inert ? -1 : 0}
+            aria-label={labelForItem(item)}
+            pointerEvents={inert ? 'none' : undefined}
+            onClick={inert ? undefined : () => onItem(item.uid)}
+            onKeyDown={inert ? undefined : (e) => onKeyActivate(e, () => onItem(item.uid))}>
+            <polygon points={foot} fill="transparent" />
+            <g className="base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1">
+              {construction && item.level === 0 ? null : (
+                <g className="base-pop">
+                  <IsoItemArt item={item} ox={ox} oy={oy} lit={lit} plan={plan} />
+                </g>
+              )}
+            </g>
+            {construction && <IsoScaffold ox={ox} oy={oy} size={size} setsRemaining={construction.setsRemaining} />}
+            {def?.kind === 'structure' && !construction && (
+              <g transform={`translate(${px - (size * T) / 2} ${py - size * T + 10})`}>
+                <LevelPips level={item.level} color={accentFor(item.itemId, item.color)} cx={(size * T) / 2} y={size * T - 4} />
+              </g>
+            )}
+          </g>
+        )
+      });
+      continue;
+    }
     const construction = jobs.get(item.uid);
     const building = !!construction;
     const selected = selectedUid === item.uid;
@@ -430,8 +500,8 @@ export function BaseBoard({
         const [rx, ry] = project([b, a]);
         const strata = [0.35, 0.65];
         return (
-          <g pointerEvents="none">
-            <ellipse cx={bx} cy={by + SLAB + 6} rx={span * 0.55} ry={span * 0.09} fill="url(#base-slab-shadow)" />
+          <g pointerEvents="visiblePainted">
+            <ellipse pointerEvents="none" cx={bx} cy={by + SLAB + 6} rx={span * 0.55} ry={span * 0.09} fill="url(#base-slab-shadow)" />
             <polygon points={`${lx},${ly} ${bx},${by} ${bx},${by + SLAB} ${lx},${ly + SLAB}`} fill="url(#base-slab-left)" />
             <polygon points={`${bx},${by} ${rx},${ry} ${rx},${ry + SLAB} ${bx},${by + SLAB}`} fill="url(#base-slab-right)" />
             {strata.map((t) => (
@@ -448,9 +518,10 @@ export function BaseBoard({
       })()}
 
       {/* The ground, in world units, tilted into diamonds. */}
-      <g ref={groundRef} transform={ISO}>
+      <g ref={groundRef} transform={ISO} pointerEvents="visiblePainted">
         {ground}
         <rect x={a} y={a} width={span} height={span} fill="url(#base-land-light)" pointerEvents="none" />
+        {groundItems}
         {selected && (
           <rect
             x={selected.x * T + 4}
@@ -499,7 +570,7 @@ export function BaseBoard({
 
       <BaseCritters state={state} animate={animate} project={project} />
 
-      {sprites.map((sprite) => sprite.node)}
+      <g pointerEvents="visiblePainted">{sprites.map((sprite) => sprite.node)}</g>
 
       <BaseBirds state={state} animate={animate} project={project} />
 
