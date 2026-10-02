@@ -147,7 +147,7 @@ export function BaseBoard({
     return () => observer.disconnect();
   }, []);
   // The land is a floating block: diamond top, dirt sides, a shadow below.
-  const SLAB = 62;
+  const SLAB = 92;
   const topY = a * 0.5 - 95; // room for tall buildings at the back
   const bottomY = b * 0.5 + SLAB + 28;
   const viewW = Math.max(span * 1.1, (bottomY - topY) / aspect);
@@ -531,8 +531,6 @@ export function BaseBoard({
             <polygon points={`${lx},${ly} ${bx},${by} ${bx},${by + SLAB} ${lx},${ly + SLAB}`} fill="url(#base-slab-left)" />
             <polygon points={`${bx},${by} ${rx},${ry} ${rx},${ry + SLAB} ${bx},${by + SLAB}`} fill="url(#base-slab-right)" />
             <SlabSides L={[lx, ly]} B={[bx, by]} R={[rx, ry]} depth={SLAB} span={span} />
-            {/* A grassy lip where the turf hangs over the dirt. */}
-            <polygon points={`${lx},${ly} ${bx},${by} ${rx},${ry} ${rx},${ry + 7} ${bx},${by + 7} ${lx},${ly + 7}`} fill="#2f6a39" />
             <line x1={bx} y1={by} x2={bx} y2={by + SLAB} stroke="#000" strokeOpacity={0.25} strokeWidth={1.5} />
           </g>
         );
