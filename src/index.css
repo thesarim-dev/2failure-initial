@@ -2739,7 +2739,13 @@
     stroke-dasharray: 8 6;
   }
   .base-scaffold-line {
-    stroke: rgba(242, 165, 65, 0.55);
+    stroke: rgba(242, 165, 65, 0.75);
+  }
+  .base-scaffold-ground {
+    fill: rgba(242, 165, 65, 0.12);
+    stroke: #f2a541;
+    stroke-width: 2;
+    stroke-dasharray: 7 5;
   }
   .base-scaffold-frame {
     fill: none;

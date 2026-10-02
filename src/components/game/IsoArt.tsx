@@ -611,9 +611,22 @@ export function IsoItemArt({
 }
 
 /** Scaffolding over a footprint while something is being built. */
-export function IsoScaffold({ ox, oy, size, setsRemaining }: { ox: number; oy: number; size: number; setsRemaining: number }) {
+export function IsoScaffold({
+  ox,
+  oy,
+  size,
+  setsRemaining,
+  height
+}: {
+  ox: number;
+  oy: number;
+  size: number;
+  setsRemaining: number;
+  /** Scaffold height; smaller things get a lower one. */
+  height?: number;
+}) {
   const w = size * 100;
-  const h = size === 2 ? 90 : 60;
+  const h = height ?? (size === 2 ? 90 : 60);
   const b: Box = { x0: ox + 14, y0: oy + 14, x1: ox + w - 14, y1: oy + w - 14, z0: 0, z1: h };
   const corners: Array<[number, number]> = [
     [b.x0, b.y1],
@@ -623,6 +636,13 @@ export function IsoScaffold({ ox, oy, size, setsRemaining }: { ox: number; oy: n
   const [bx, by] = P(b.x1, b.y0, h);
   return (
     <g className="base-scaffold">
+      {/* The tile being built on, outlined on the ground. */}
+      <polygon
+        points={pts([P(ox + 6, oy + 6), P(ox + w - 6, oy + 6), P(ox + w - 6, oy + w - 6), P(ox + 6, oy + w - 6)])}
+        className="base-scaffold-ground"
+      />
+      <polygon points={leftQuad(b, 0, 1, 0, 1)} fill="rgba(242,165,65,0.14)" />
+      <polygon points={rightQuad(b, 0, 1, 0, 1)} fill="rgba(242,165,65,0.08)" />
       <polygon points={leftQuad(b, 0, 1, 0, 1)} fill="url(#base-scaffold-hatch)" className="base-scaffold-fill" />
       <polygon points={rightQuad(b, 0, 1, 0, 1)} fill="url(#base-scaffold-hatch)" className="base-scaffold-fill" />
       {corners.map(([x, y]) => (

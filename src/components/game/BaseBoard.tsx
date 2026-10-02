@@ -192,6 +192,18 @@ export function BaseBoard({
     const size = itemSize(item.itemId);
     // Paths are paving: laid flat into the ground layer.
     if (item.itemId === 'path') {
+      const pathJob = jobs.get(item.uid);
+      if (pathJob) {
+        sprites.push({
+          key: `${item.uid}-scaffold`,
+          depth: item.x + item.y + 1,
+          node: (
+            <g key={`${item.uid}-scaffold`} pointerEvents="none">
+              <IsoScaffold ox={item.x * T} oy={item.y * T} size={1} setsRemaining={pathJob.setsRemaining} height={18} />
+            </g>
+          )
+        });
+      }
       groundItems.push(
         <g
           key={item.uid}
@@ -203,7 +215,9 @@ export function BaseBoard({
           pointerEvents={inert ? 'none' : undefined}
           onClick={inert ? undefined : () => onItem(item.uid)}
           onKeyDown={inert ? undefined : (e) => onKeyActivate(e, () => onItem(item.uid))}>
-          <ItemArt item={item} lit={lit} />
+          <g opacity={pathJob ? 0.4 : 1}>
+            <ItemArt item={item} lit={lit} />
+          </g>
         </g>
       );
       continue;
@@ -238,7 +252,9 @@ export function BaseBoard({
                 </g>
               )}
             </g>
-            {construction && <IsoScaffold ox={ox} oy={oy} size={size} setsRemaining={construction.setsRemaining} />}
+            {construction && (
+              <IsoScaffold ox={ox} oy={oy} size={size} setsRemaining={construction.setsRemaining} height={item.itemId === 'wall' ? 34 : undefined} />
+            )}
             {def?.kind === 'structure' && !construction && (
               <g transform={`translate(${px - (size * T) / 2} ${py - size * T + 10})`}>
                 <LevelPips level={item.level} color={accentFor(item.itemId, item.color)} cx={(size * T) / 2} y={size * T - 4} />
@@ -263,7 +279,6 @@ export function BaseBoard({
       node: (
         <g
           key={item.uid}
-          transform={`translate(${cx - box / 2} ${cy - box * 0.9})`}
           className={`base-item group ${selected ? 'is-selected' : ''} ${inert ? 'is-inert' : ''}`}
           role={inert ? undefined : 'button'}
           tabIndex={inert ? -1 : 0}
@@ -271,30 +286,32 @@ export function BaseBoard({
           pointerEvents={inert ? 'none' : undefined}
           onClick={inert ? undefined : () => onItem(item.uid)}
           onKeyDown={inert ? undefined : (e) => onKeyActivate(e, () => onItem(item.uid))}>
-          <rect x={box * 0.12} y={box * 0.1} width={box * 0.76} height={box * 0.82} fill="transparent" />
-          <g className="base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1">
-            {building && item.level === 0 ? (
-              <rect x={14} y={30} width={box - 28} height={box - 40} rx={4} className="base-foundation" />
-            ) : (
-              <g className="base-pop">
-                <g transform={item.flip ? `translate(${box} 0) scale(-1 1)` : undefined}>
-                  <ItemArt item={item} lit={lit} verified={verified} plan={plan} />
+          {/* Tap target: the tile itself. */}
+          <polygon
+            points={[project([item.x * T, item.y * T]), project([(item.x + size) * T, item.y * T]), project([(item.x + size) * T, (item.y + size) * T]), project([item.x * T, (item.y + size) * T])]
+              .map(([x, y]) => `${x},${y}`)
+              .join(' ')}
+            fill="transparent"
+          />
+          {/* The figure stands on the centre of its tile. */}
+          <g transform={`translate(${cx - box / 2} ${cy - box * 0.9})`}>
+            <rect x={box * 0.12} y={box * 0.1} width={box * 0.76} height={box * 0.82} fill="transparent" />
+            {!(building && item.level === 0) && (
+              <g className="base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1">
+                <g className="base-pop">
+                  <g transform={item.flip ? `translate(${box} 0) scale(-1 1)` : undefined}>
+                    <ItemArt item={item} lit={lit} verified={verified} plan={plan} />
+                  </g>
                 </g>
               </g>
             )}
+            {def?.kind === 'structure' && !building && (
+              <LevelPips level={item.level} color={accentFor(item.itemId, item.color)} cx={box / 2} y={box - 4} />
+            )}
           </g>
-          {def?.kind === 'structure' && !building && (
-            <LevelPips level={item.level} color={accentFor(item.itemId, item.color)} cx={box / 2} y={box - 4} />
-          )}
+          {/* While it's being built: scaffolding on the exact footprint. */}
           {building && construction && (
-            <g className="base-scaffold">
-              <rect x={10} y={16} width={box - 20} height={box - 24} rx={4} fill="url(#base-scaffold-hatch)" className="base-scaffold-fill" />
-              <rect x={10} y={16} width={box - 20} height={box - 24} rx={4} className="base-scaffold-frame" />
-              <circle cx={box - 18} cy={20} r={15} className="base-scaffold-badge" />
-              <text x={box - 18} y={26} textAnchor="middle" className="base-scaffold-count">
-                {construction.setsRemaining}
-              </text>
-            </g>
+            <IsoScaffold ox={item.x * T} oy={item.y * T} size={size} setsRemaining={construction.setsRemaining} height={44} />
           )}
         </g>
       )
