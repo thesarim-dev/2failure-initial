@@ -9,6 +9,7 @@ import { itemSize, type GameState, type PlacedItem, type TodayPlan } from '../..
 import { ArtDefs, ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseBirds, BaseCritters } from './Critters';
+import { GroundDetail, GroundEdges } from './GroundDetail';
 import { ISO_ITEMS, IsoItemArt, IsoScaffold, P as isoP } from './IsoArt';
 
 export { ItemArt, TrophyArt } from './BaseArt';
@@ -545,6 +546,7 @@ export function BaseBoard({
       {/* The ground, in world units, tilted into diamonds. */}
       <g ref={groundRef} transform={ISO} pointerEvents="visiblePainted">
         {ground}
+        <GroundEdges state={state} />
         <rect x={a} y={a} width={span} height={span} fill="url(#base-land-light)" pointerEvents="none" />
         {groundItems}
         {selected && (
@@ -592,6 +594,9 @@ export function BaseBoard({
             );
           })}
       </g>
+
+      {/* Upright grass, flowers, pebbles and reeds give the ground dimension. */}
+      <GroundDetail state={state} project={project} />
 
       <BaseCritters state={state} animate={animate} project={project} />
 
