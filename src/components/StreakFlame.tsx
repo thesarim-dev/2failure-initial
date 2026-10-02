@@ -5,6 +5,7 @@
 export function StreakFlame({ count, lit, label }: { count: number; lit: boolean; label: string }) {
   return (
     <div className={`streak-flame ${lit ? 'is-lit' : 'is-unlit'}`}>
+      <div className="streak-flame-fire">
       <svg viewBox="0 0 80 96" className="streak-flame-svg" aria-hidden="true">
         <defs>
           <linearGradient id="sf-outer" x1="0" y1="0" x2="0" y2="1">
@@ -57,7 +58,9 @@ export function StreakFlame({ count, lit, label }: { count: number; lit: boolean
         </g>
       </svg>
       <span className="streak-flame-count tabular-nums">{count}</span>
-      <span className="streak-flame-label">{label}</span>
+      </div>
+      {/* A little neon sign that switches on with the flame. */}
+      <span className="streak-neon">{label}</span>
     </div>
   );
 }

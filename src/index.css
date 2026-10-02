@@ -5019,16 +5019,20 @@
 
   /* ---------- Streak flame ---------- */
   .streak-flame-wrap {
-    width: 82px;
-    min-height: 92px;
+    width: 86px;
   }
   .streak-flame {
-    position: relative;
-    width: 78px;
-    height: 92px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 2px;
+  }
+  .streak-flame-fire {
+    position: relative;
+    width: 66px;
+    height: 78px;
+    display: flex;
+    justify-content: center;
   }
   .streak-flame-svg {
     position: absolute;
@@ -5039,22 +5043,54 @@
   }
   .streak-flame-count {
     position: relative;
-    margin-top: 42px;
+    margin-top: 38px;
     font-family: 'Space Grotesk', system-ui, sans-serif;
     font-weight: 900;
-    font-size: 1.55rem;
+    font-size: 1.6rem;
     line-height: 1;
     color: #5a2200;
     text-shadow: 0 1px 0 rgba(255, 240, 200, 0.6);
   }
-  .streak-flame-label {
-    position: relative;
-    margin-top: 2px;
-    font-size: 0.62rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
+  /* Neon shop-sign label */
+  .streak-neon {
+    font-family: 'Archivo Black', 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #6b2a00;
+    line-height: 1;
+    padding: 3px 6px 2px;
+    border-radius: 6px;
+  }
+  .streak-flame.is-lit .streak-neon {
+    color: #fff1d6;
+    text-shadow:
+      0 0 2px #fff1d6,
+      0 0 5px #ffb347,
+      0 0 10px #ff7a1a,
+      0 0 18px #ff5a1a,
+      0 0 28px #ff3d6e;
+    box-shadow: inset 0 0 0 1px rgba(255, 140, 60, 0.35), 0 0 12px rgba(255, 90, 30, 0.25);
+    animation: neon-on 1.2s steps(1, end) 1, neon-buzz 7s linear 1.2s infinite;
+  }
+  .streak-flame.is-unlit .streak-neon {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 170, 110, 0.38);
+    text-shadow: none;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+  /* Switching on: a couple of stutters, like a real neon tube warming up. */
+  @keyframes neon-on {
+    0% { opacity: 0.15; }
+    12% { opacity: 1; }
+    20% { opacity: 0.2; }
+    32% { opacity: 1; }
+    40% { opacity: 0.45; }
+    55%, 100% { opacity: 1; }
+  }
+  /* Then the odd faint buzz. */
+  @keyframes neon-buzz {
+    0%, 91%, 93%, 96%, 100% { opacity: 1; }
+    92%, 95% { opacity: 0.55; }
   }
   .streak-flame-outer,
   .streak-flame-inner,
@@ -5103,15 +5139,15 @@
     transform-origin: 50% 100%;
     animation: flame-outer 3.6s ease-in-out infinite;
   }
-  .streak-flame.is-unlit .streak-flame-count,
-  .streak-flame.is-unlit .streak-flame-label {
+  .streak-flame.is-unlit .streak-flame-count {
     color: #e8e8e8;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   }
   @media (prefers-reduced-motion: reduce) {
     .streak-flame .streak-flame-outer,
     .streak-flame .streak-flame-inner,
-    .streak-flame .streak-flame-glow {
+    .streak-flame .streak-flame-glow,
+    .streak-flame .streak-neon {
       animation: none;
     }
   }
