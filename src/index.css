@@ -5151,4 +5151,20 @@
       animation: none;
     }
   }
+
+  /* Water dripping from the bottom of the plot */
+  .slab-drip {
+    animation: slab-drip 3.2s ease-in infinite;
+  }
+  @keyframes slab-drip {
+    0%, 55% { transform: translateY(0); opacity: 0; }
+    60% { opacity: 1; }
+    100% { transform: translateY(26px); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .slab-drip {
+      animation: none;
+      opacity: 0.8;
+    }
+  }
 }

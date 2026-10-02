@@ -10,6 +10,7 @@ import { ArtDefs, ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseCritters } from './Critters';
 import { GroundDetail, GroundEdges } from './GroundDetail';
+import { SlabSides } from './SlabSides';
 import { ISO_ITEMS, IsoItemArt, IsoScaffold, P as isoP } from './IsoArt';
 
 export { ItemArt, TrophyArt } from './BaseArt';
@@ -146,7 +147,7 @@ export function BaseBoard({
     return () => observer.disconnect();
   }, []);
   // The land is a floating block: diamond top, dirt sides, a shadow below.
-  const SLAB = 46;
+  const SLAB = 62;
   const topY = a * 0.5 - 95; // room for tall buildings at the back
   const bottomY = b * 0.5 + SLAB + 28;
   const viewW = Math.max(span * 1.1, (bottomY - topY) / aspect);
@@ -524,18 +525,12 @@ export function BaseBoard({
         const [lx, ly] = project([a, b]);
         const [bx, by] = project([b, b]);
         const [rx, ry] = project([b, a]);
-        const strata = [0.35, 0.65];
         return (
           <g pointerEvents="visiblePainted">
             <ellipse pointerEvents="none" cx={bx} cy={by + SLAB + 6} rx={span * 0.55} ry={span * 0.09} fill="url(#base-slab-shadow)" />
             <polygon points={`${lx},${ly} ${bx},${by} ${bx},${by + SLAB} ${lx},${ly + SLAB}`} fill="url(#base-slab-left)" />
             <polygon points={`${bx},${by} ${rx},${ry} ${rx},${ry + SLAB} ${bx},${by + SLAB}`} fill="url(#base-slab-right)" />
-            {strata.map((t) => (
-              <g key={t} stroke="#2a1a0e" strokeOpacity={0.35} strokeWidth={1.2} fill="none">
-                <line x1={lx} y1={ly + SLAB * t} x2={bx} y2={by + SLAB * t} />
-                <line x1={bx} y1={by + SLAB * t} x2={rx} y2={ry + SLAB * t} />
-              </g>
-            ))}
+            <SlabSides L={[lx, ly]} B={[bx, by]} R={[rx, ry]} depth={SLAB} span={span} />
             {/* A grassy lip where the turf hangs over the dirt. */}
             <polygon points={`${lx},${ly} ${bx},${by} ${rx},${ry} ${rx},${ry + 7} ${bx},${by + 7} ${lx},${ly + 7}`} fill="#2f6a39" />
             <line x1={bx} y1={by} x2={bx} y2={by + SLAB} stroke="#000" strokeOpacity={0.25} strokeWidth={1.5} />
