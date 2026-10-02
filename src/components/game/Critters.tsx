@@ -270,7 +270,9 @@ function buildRoute(kind: Kind, points: Point[], rnd: () => number): Route {
   };
 }
 
-function planRoutes(state: GameState, seed: number): Route[] {
+type Project = (p: [number, number]) => [number, number];
+
+function planRoutes(state: GameState, seed: number, project: Project): Route[] {
   const rnd = mulberry32(seed);
   const { min, max } = buildableBounds(state.landLevel);
   const occupied = occupancy(state);
@@ -308,33 +310,38 @@ function planRoutes(state: GameState, seed: number): Route[] {
         const near = land.filter((p) => Math.abs(p[0] - prev[0]) < 360 && Math.abs(p[1] - prev[1]) < 300);
         points.push(pick(near.length > 1 ? near : land));
       }
-      routes.push(buildRoute(kind, points, rnd));
+      routes.push(buildRoute(kind, points.map(project), rnd));
     }
   }
   const ducks = Math.min(4, Math.ceil(water.length / 4));
   for (let i = 0; i < ducks && water.length; i++) {
     const points: Point[] = [pick(water), pick(water), pick(water)];
-    routes.push(buildRoute('duck', points, rnd));
+    routes.push(buildRoute('duck', points.map(project), rnd));
   }
   return routes;
 }
 
 /** Butterflies flutter over flower patches, gardens and meadows. */
-function planButterflies(state: GameState): Array<{ x: number; y: number; color: string; delay: number }> {
+function planButterflies(state: GameState, project: Project): Array<{ x: number; y: number; color: string; delay: number }> {
   const spots: Array<[number, number]> = [];
   for (const p of state.placed) if (p.level > 0 && (p.itemId === 'flowers' || p.itemId === 'garden')) spots.push([p.x, p.y]);
   for (const [key, t] of Object.entries(state.terrain ?? {})) {
     if (t === 'meadow') spots.push(key.split(',').map(Number) as [number, number]);
   }
   const colors = ['#ffd1ea', '#fff4b0', '#c9b8ff', '#8eeaff'];
-  return spots.slice(0, 6).map(([x, y], i) => ({ x: x * 100 + 50, y: y * 100 + 30, color: colors[i % colors.length], delay: i * 1.3 }));
+  return spots.slice(0, 6).map(([x, y], i) => {
+    const [px, py] = project([x * 100 + 50, y * 100 + 50]);
+    return { x: px, y: py - 28, color: colors[i % colors.length], delay: i * 1.3 };
+  });
 }
 
-export function BaseCritters({ state, animate }: { state: GameState; animate: boolean }) {
+const identity: Project = (p) => p;
+
+export function BaseCritters({ state, animate, project = identity }: { state: GameState; animate: boolean; project?: Project }) {
   // New spots and routes each time the base opens; steady while you're on it.
   const seed = useMemo(() => Math.floor(Math.random() * 1e9), []);
-  const routes = useMemo(() => planRoutes(state, seed), [state, seed]);
-  const butterflies = planButterflies(state);
+  const routes = useMemo(() => planRoutes(state, seed, project), [state, seed, project]);
+  const butterflies = planButterflies(state, project);
   return (
     <g className="base-critters" pointerEvents="none">
       {routes.map((r, i) => {
@@ -395,7 +402,7 @@ export function BaseCritters({ state, animate }: { state: GameState; animate: bo
 }
 
 /** Birds that fly across now and then, above everything. */
-export function BaseBirds({ state, animate }: { state: GameState; animate: boolean }) {
+export function BaseBirds({ state, animate, project = identity }: { state: GameState; animate: boolean; project?: Project }) {
   const seed = useMemo(() => Math.floor(Math.random() * 1e9), []);
   const flights = useMemo(() => {
     const rnd = mulberry32(seed + 7);
@@ -404,10 +411,14 @@ export function BaseBirds({ state, animate }: { state: GameState; animate: boole
     const right = (max + 1) * 100 + 120;
     return [0, 1, 2].map((i) => {
       const y = min * 100 + 60 + rnd() * (max - min) * 100;
-      const rtl = rnd() < 0.5;
       const dur = 9 + rnd() * 6;
+      // Fly across the map in screen space, from one edge to the other.
+      const [sx, sy] = project([left, y]);
+      const [ex, ey] = project([right, y]);
+      const rtl = ex < sx;
+      const lift = 140;
       return {
-        path: rtl ? `M${right},${y} Q${(left + right) / 2},${y - 120} ${left},${y + 40}` : `M${left},${y} Q${(left + right) / 2},${y - 120} ${right},${y + 40}`,
+        path: `M${sx.toFixed(0)},${(sy - lift).toFixed(0)} Q${((sx + ex) / 2).toFixed(0)},${(Math.min(sy, ey) - lift - 120).toFixed(0)} ${ex.toFixed(0)},${(ey - lift).toFixed(0)}`,
         // Long gaps between flights: each bird crosses, then waits off-screen.
         dur: dur * 3,
         delay: i * 7 + rnd() * 10,

@@ -1563,7 +1563,9 @@ export function ItemArt({
 // ---------------------------------------------------------------------------
 
 const TERRAIN_COLORS: Record<string, { base: string; light: string; dark: string; detail: string }> = {
-  grass: { base: '#2c5e3c', light: '#357049', dark: '#24502f', detail: '#4a8f5d' },
+  grass: { base: '#3d7a45', light: '#468750', dark: '#356b3c', detail: '#5e9f5f' },
+  // Land you don't own yet: the same grass, a shade darker and calmer.
+  wild: { base: '#2c5534', light: '#33603b', dark: '#264b2e', detail: '#3f7346' },
   meadow: { base: '#33683f', light: '#3d7a4b', dark: '#2a5a35', detail: '#ffd1ea' },
   dirt: { base: '#6b4a2e', light: '#7a5636', dark: '#5a3d25', detail: '#8f6a45' },
   sand: { base: '#c9a86a', light: '#d6b87c', dark: '#b8975a', detail: '#e8d29d' },
