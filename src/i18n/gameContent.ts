@@ -114,6 +114,7 @@ export type GameCopy = {
   colorNames: Record<string, string>;
   builders: {
     status: (busy: number, total: number) => string;
+    chip: (free: number, total: number) => string;
     needs: (builders: number) => string;
     jobs: string;
   };
@@ -363,6 +364,7 @@ const en: GameCopy = {
   },
   builders: {
     status: (busy, total) => `Builders: ${busy} of ${total} busy`,
+    chip: (free, total) => `Builders: ${free} of ${total} free`,
     needs: (builders) => (builders === 1 ? 'needs 1 builder' : `needs ${builders} builders`),
     jobs: 'In progress'
   },
@@ -630,6 +632,7 @@ const he: GameCopy = {
   },
   builders: {
     status: (busy, total) => `בנאים: ${busy} מתוך ${total} עסוקים`,
+    chip: (free, total) => `בנאים: ${free} מתוך ${total} פנויים`,
     needs: (builders) => (builders === 1 ? 'דורש בנאי אחד' : `דורש ${builders} בנאים`),
     jobs: 'בתהליך'
   },
@@ -897,6 +900,7 @@ const ar: GameCopy = {
   },
   builders: {
     status: (busy, total) => `البنّاؤون: ${busy} من ${total} مشغولون`,
+    chip: (free, total) => `البنّاؤون: ${free} من ${total} متاحون`,
     needs: (builders) => (builders === 1 ? 'يحتاج بنّاءً واحداً' : `يحتاج ${builders} بنّائين`),
     jobs: 'قيد التنفيذ'
   },

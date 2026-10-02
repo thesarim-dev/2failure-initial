@@ -2,7 +2,7 @@ import stoneIcon from '../../assets/resources/stone.png';
 import timberIcon from '../../assets/resources/timber.png';
 import crystalIcon from '../../assets/resources/crystal.png';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, Lock, Move as MoveIcon, Palette, ShieldCheck, X } from 'lucide-react';
+import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, HardHat, Lock, Move as MoveIcon, Palette, ShieldCheck, X } from 'lucide-react';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
 import { useLanguage } from '../../context/LanguageContext';
@@ -510,6 +510,13 @@ export function BaseScreen({
   const draft = sheet && typeof sheet === 'object' && 'draft' in sheet ? sheet.draft : null;
   const busy = busyBuilders(state);
   const total = totalBuilders(state);
+  const jobsText = state.constructions
+    .map((job) => {
+      const item = state.placed.find((p) => p.uid === job.uid);
+      return item ? `${nameOf(item.itemId)}: ${g.setsLeft(job.setsRemaining)}` : null;
+    })
+    .filter(Boolean)
+    .join(' · ');
   const landSide = LAND_SIDES[state.landLevel];
   const landCost = nextLandCost(state);
 
@@ -556,29 +563,7 @@ export function BaseScreen({
         </section>
       )}
 
-      {!lit && <p className="base-status">{g.status.quiet}</p>}
 
-      {state.constructions.length > 0 && (
-        <section className="base-status base-status--building" aria-label={g.builders.jobs}>
-          <Hammer size={16} strokeWidth={2.5} aria-hidden="true" />
-          <div className="base-jobs">
-            <span className="base-jobs-head">{g.builders.status(busy, total)}</span>
-            {state.constructions.map((job) => {
-              const item = state.placed.find((p) => p.uid === job.uid);
-              if (!item) return null;
-              const isStructure = getItemDef(item.itemId)?.kind === 'structure';
-              return (
-                <span key={job.uid} className="base-job">
-                  {nameOf(item.itemId)}
-                  {isStructure && ` · ${g.level(job.targetLevel)}`}
-                  {': '}
-                  {g.setsLeft(job.setsRemaining)}
-                </span>
-              );
-            })}
-          </div>
-        </section>
-      )}
 
       {mode.kind !== 'idle' && modeItemId && (
         <div className="base-mode-bar" role="status">
@@ -655,10 +640,26 @@ export function BaseScreen({
 
       {mode.kind === 'idle' && !paintWith && (
         <div className="base-actions base-actions--grid">
-          <button type="button" className="base-primary-btn base-actions-wide" onClick={() => setSheet('build')}>
-            <Hammer size={18} strokeWidth={2.5} aria-hidden="true" />
-            {g.build}
-          </button>
+          <div className="base-build-row">
+            <button type="button" className="base-primary-btn base-build-btn" onClick={() => setSheet('build')}>
+              <Hammer size={18} strokeWidth={2.5} aria-hidden="true" />
+              {g.build}
+            </button>
+            {/* Free builders out of total; counts down while things are being built. */}
+            <button
+              type="button"
+              className={`base-builders-chip ${busy > 0 ? 'is-busy' : ''}`}
+              aria-label={`${g.builders.chip(total - busy, total)}${jobsText ? ` · ${jobsText}` : ''}`}
+              title={jobsText || undefined}
+              onClick={() => {
+                if (jobsText) setNotice(jobsText);
+              }}>
+              <HardHat size={17} strokeWidth={2.5} aria-hidden="true" />
+              <span className="tabular-nums">
+                {total - busy}/{total}
+              </span>
+            </button>
+          </div>
           <button type="button" className="base-secondary-btn" onClick={() => setSheet('land')}>
             <Expand size={18} strokeWidth={2.5} aria-hidden="true" />
             {g.land.button}

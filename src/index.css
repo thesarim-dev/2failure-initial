@@ -4846,4 +4846,47 @@
   .base-board-wrap::after {
     content: none;
   }
+
+  /* ---------- Build row: Build button + builders chip ---------- */
+  .base-build-row {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.55rem;
+  }
+  .base-build-btn {
+    flex: 1;
+  }
+  .base-builders-chip {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 3rem;
+    padding: 0 0.95rem;
+    border-radius: 0.85rem;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #4f7a00;
+    background: rgba(200, 240, 50, 0.14);
+    border: 1px solid rgba(106, 158, 0, 0.5);
+  }
+  .dark .base-builders-chip {
+    color: #c8f032;
+    background: rgba(200, 240, 50, 0.08);
+    border-color: rgba(200, 240, 50, 0.4);
+  }
+  /* Builders out working: amber, so it's clear at a glance. */
+  .base-builders-chip.is-busy {
+    color: #8a4f00;
+    background: rgba(242, 165, 65, 0.16);
+    border-color: rgba(242, 165, 65, 0.6);
+  }
+  .dark .base-builders-chip.is-busy {
+    color: #ffc784;
+    background: rgba(242, 165, 65, 0.12);
+  }
+  .base-builders-chip:focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
 }
