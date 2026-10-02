@@ -18,7 +18,8 @@ export function WeekStrip({
   recentRestDays,
   isRestDayToday,
   totalSetsToday,
-  weeklyTarget
+  weeklyTarget,
+  compact = false
 }: {
   /** App days (YYYY-MM-DD) trained this week. */
   weekTrainingDays: string[];
@@ -26,6 +27,8 @@ export function WeekStrip({
   isRestDayToday: boolean;
   totalSetsToday: number;
   weeklyTarget: number;
+  /** Tighter layout for sitting beside the streak flame. */
+  compact?: boolean;
 }) {
   const { t } = useLanguage();
   const w = t.hub.week;
@@ -39,7 +42,7 @@ export function WeekStrip({
   const count = week.filter((day) => trained.has(day) || (day === today && trainedToday)).length;
 
   return (
-    <section className="home-week normal-case" aria-labelledby="week-strip-title">
+    <section className={`home-week normal-case ${compact ? 'is-compact' : ''}`} aria-labelledby="week-strip-title">
       <div className="home-section-head">
         <h2 id="week-strip-title" className="home-section-title">
           {w.title}

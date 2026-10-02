@@ -210,27 +210,18 @@ export function Dashboard({
         </p>
       )}
 
-      <section
-        className="mb-6 flex items-center gap-4 normal-case"
-        aria-label={t.dashboard.aria.funFactAndStreak}>
-        <button
-          type="button"
-          className="plan-card cyber-panel flex-1 min-w-0 normal-case text-start"
-          data-tour="store"
-          onClick={onOpenPlan}>
-          <img src={planIcon} alt="" aria-hidden="true" className="plan-card-icon" width={52} height={52} />
-          <span className="plan-card-text">
-            <span className="plan-card-title">{t.hub.dashCard.title}</span>
-            <span className="plan-card-meta">
-              <span className={`plan-card-badge ${rotatingProgramEnabled ? 'is-program' : 'is-own'}`}>
-                {rotatingProgramEnabled ? t.hub.dashCard.programBadge : t.hub.dashCard.ownBadge}
-              </span>
-              <span className="plan-card-line">{planLine}</span>
-            </span>
-          </span>
-          <ChevronRight size={20} strokeWidth={2.5} className="plan-card-chevron tour-icon-flip" aria-hidden="true" />
-        </button>
-
+      {/* Row 1: this week, with the streak beside it. */}
+      <section className="mb-4 flex items-center gap-3 normal-case" aria-label={t.dashboard.aria.funFactAndStreak}>
+        <div className="flex-1 min-w-0">
+          <WeekStrip
+            compact
+            weekTrainingDays={weekTrainingDays}
+            recentRestDays={recentRestDays}
+            isRestDayToday={isRestDayToday}
+            totalSetsToday={totalSetsToday}
+            weeklyTarget={weeklyTarget}
+          />
+        </div>
         <div className="flex flex-col items-end gap-2">
           <div
             data-tour="streak"
@@ -265,68 +256,48 @@ export function Dashboard({
         </div>
       </section>
 
-      <div className="mb-6">
-        <WeekStrip
-          weekTrainingDays={weekTrainingDays}
-          recentRestDays={recentRestDays}
-          isRestDayToday={isRestDayToday}
-          totalSetsToday={totalSetsToday}
-          weeklyTarget={weeklyTarget}
-        />
+      {/* Row 2: rest day and the plan, side by side, centred. */}
+      <div className="dashboard-actions-row mb-5 normal-case">
+        {!isRestDayToday && canTakeRestDay && (
+          <button type="button" onClick={onTakeRestDay} className="rest-day-tile normal-case">
+            <BedDouble size={20} strokeWidth={2.5} aria-hidden="true" />
+            <span className="rest-day-tile-label">{t.dashboard.restDay.button}</span>
+            <span className="rest-day-tile-left">{t.dashboard.restDay.remaining(restDaysRemainingThisWeek)}</span>
+          </button>
+        )}
+        <button
+          type="button"
+          className="plan-card plan-card--compact cyber-panel normal-case text-start"
+          data-tour="store"
+          onClick={onOpenPlan}>
+          <img src={planIcon} alt="" aria-hidden="true" className="plan-card-icon" width={40} height={40} />
+          <span className="plan-card-text">
+            <span className="plan-card-title">{t.hub.dashCard.title}</span>
+            <span className="plan-card-meta">
+              <span className={`plan-card-badge ${rotatingProgramEnabled ? 'is-program' : 'is-own'}`}>
+                {rotatingProgramEnabled ? t.hub.dashCard.programBadge : t.hub.dashCard.ownBadge}
+              </span>
+              <span className="plan-card-line">{planLine}</span>
+            </span>
+          </span>
+          <ChevronRight size={18} strokeWidth={2.5} className="plan-card-chevron tour-icon-flip" aria-hidden="true" />
+        </button>
       </div>
+
       <div>
-        {rotatingProgramEnabled &&
-          rotatingProgramPhase !== null &&
-          rotatingProgramCycleDay !== null && (
-            <div
-              data-tour="program"
-              className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-xl">
-              <p className="text-sm font-semibold text-[#00A8D8] dark:text-[#00B2FF] normal-case text-start">
-                {isRestDayToday
-                  ? t.dashboard.restDay.active
-                  : t.dashboard.rotatingProgramFocus(
-                      rotatingProgramCycleDay,
-                      rotationCycleLength,
-                      t.settings.rotatingProgram.phases[rotatingProgramPhase]
-                    )}
-              </p>
-              {!isRestDayToday && canTakeRestDay && (
-                <button
-                  type="button"
-                  onClick={onTakeRestDay}
-                  className="rest-day-btn rounded-full border border-[#00A8D8] dark:border-[#00B2FF] bg-white/80 dark:bg-[#2a2a2a]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#007A9E] dark:text-[#7ADCFF] normal-case">
-                  <span className="flex items-center gap-1.5">
-                    <BedDouble size={13} strokeWidth={2.5} aria-hidden="true" />
-                    {t.dashboard.restDay.button}
-                    <span className="opacity-70">
-                      {t.dashboard.restDay.remaining(restDaysRemainingThisWeek)}
-                    </span>
-                  </span>
-                </button>
-              )}
-            </div>
-          )}
-        {!rotatingProgramEnabled && (isRestDayToday || canTakeRestDay) && (
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-xl">
-            {isRestDayToday ? (
-              <p className="text-sm font-semibold text-[#00A8D8] dark:text-[#00B2FF] normal-case text-start">
-                {t.dashboard.restDay.activeFree}
-              </p>
-            ) : (
-              <button
-                type="button"
-                onClick={onTakeRestDay}
-                className="rest-day-btn rounded-full border border-[#00A8D8] dark:border-[#00B2FF] bg-white/80 dark:bg-[#2a2a2a]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#007A9E] dark:text-[#7ADCFF] normal-case">
-                <span className="flex items-center gap-1.5">
-                  <BedDouble size={13} strokeWidth={2.5} aria-hidden="true" />
-                  {t.dashboard.restDay.button}
-                  <span className="opacity-70">
-                    {t.dashboard.restDay.remaining(restDaysRemainingThisWeek)}
-                  </span>
-                </span>
-              </button>
+        {isRestDayToday && (
+          <p className="mb-2 text-sm font-semibold text-[#00A8D8] dark:text-[#00B2FF] normal-case text-center">
+            {rotatingProgramEnabled ? t.dashboard.restDay.active : t.dashboard.restDay.activeFree}
+          </p>
+        )}
+        {rotatingProgramEnabled && !isRestDayToday && rotatingProgramPhase !== null && rotatingProgramCycleDay !== null && (
+          <p data-tour="program" className="mb-2 text-sm font-semibold text-[#00A8D8] dark:text-[#00B2FF] normal-case text-start">
+            {t.dashboard.rotatingProgramFocus(
+              rotatingProgramCycleDay,
+              rotationCycleLength,
+              t.settings.rotatingProgram.phases[rotatingProgramPhase]
             )}
-          </div>
+          </p>
         )}
         <h2 className="text-2xl mb-2 normal-case text-start">
           {t.dashboard.pickYourPoison}

@@ -5242,4 +5242,90 @@
     opacity: 1;
     color: #00a8d8;
   }
+
+  /* ---------- Home layout: week + streak, then rest day + plan ---------- */
+  .home-week.is-compact {
+    padding: 0.7rem 0.75rem;
+  }
+  .home-week.is-compact .home-section-head {
+    flex-wrap: wrap;
+    row-gap: 0.1rem;
+    margin-bottom: 0.5rem;
+  }
+  .home-week.is-compact .home-section-title {
+    font-size: 0.95rem;
+  }
+  .home-week.is-compact .home-section-meta {
+    font-size: 0.72rem;
+  }
+  .home-week.is-compact .home-week-days {
+    gap: 0.2rem;
+  }
+  .home-week.is-compact .home-day-mark {
+    width: min(1.85rem, 100%);
+    height: auto;
+    aspect-ratio: 1;
+  }
+  /* Side by side and centred; both tiles share the same height. */
+  .dashboard-actions-row {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+  .rest-day-tile {
+    flex-shrink: 0;
+    width: 6.4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.5rem 0.4rem;
+    border-radius: 1rem;
+    text-align: center;
+    color: #007a9e;
+    background: rgba(0, 168, 216, 0.08);
+    border: 1.5px solid rgba(0, 168, 216, 0.55);
+  }
+  .dark .rest-day-tile {
+    color: #7adcff;
+    background: rgba(0, 178, 255, 0.07);
+    border-color: rgba(0, 178, 255, 0.45);
+  }
+  .rest-day-tile-label {
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+  .rest-day-tile-left {
+    font-size: 0.64rem;
+    font-weight: 700;
+    opacity: 0.75;
+    line-height: 1.2;
+  }
+  .rest-day-tile:focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
+  .plan-card.plan-card--compact {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    gap: 0.55rem;
+    padding: 0.55rem 0.75rem;
+  }
+  .plan-card--compact .plan-card-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .plan-card--compact .plan-card-title {
+    font-size: 0.85rem;
+  }
+  .plan-card--compact .plan-card-meta {
+    font-size: 0.7rem;
+    margin-top: 0.15rem;
+  }
 }
