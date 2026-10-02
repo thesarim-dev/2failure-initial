@@ -8,7 +8,7 @@ import {
 } from '../../game/catalog';
 import { itemSize, type GameState, type PlacedItem, type TodayPlan } from '../../game/engine';
 import { ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
-import { useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseBirds, BaseCritters } from './Critters';
 
 export { ItemArt, TrophyArt } from './BaseArt';
@@ -125,12 +125,47 @@ export function BaseBoard({
   const a = min * T;
   const b = (max + 1) * T;
 
-  // Frame the owned diamond with plenty of countryside around it.
+  // Fit your land to the map's actual shape: nearly full width on phones,
+  // full height on wide screens. The countryside fills the rest.
   const span = b - a;
-  const viewW = span * 1.18;
-  const viewH = viewW * 0.8;
-  const centerY = (a + b) * 0.25 - span * 0.05;
-  const viewBox = `${-viewW / 2} ${centerY - viewH / 2} ${viewW} ${viewH}`;
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [aspect, setAspect] = useState(0.8);
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) setAspect(height / width);
+    });
+    observer.observe(svg);
+    return () => observer.disconnect();
+  }, []);
+  const viewW = Math.max(span * 1.06, (span * 0.66) / aspect);
+  const viewH = viewW * aspect;
+  const centerY = (a + b) * 0.25 - span * 0.06;
+
+  // --- Camera: pinch / wheel to zoom, drag to pan ---------------------------
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 4;
+  const [cam, setCam] = useState({ zoom: 1, cx: 0, cy: centerY });
+  const camRef = useRef(cam);
+  camRef.current = cam;
+  useEffect(() => setCam({ zoom: 1, cx: 0, cy: centerY }), [land, centerY]);
+
+  const clampCam = useCallback(
+    (next: { zoom: number; cx: number; cy: number }) => {
+      const zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, next.zoom));
+      const w = viewW / zoom;
+      const h = viewH / zoom;
+      const clampAxis = (c: number, centre: number, full: number, part: number) =>
+        part >= full ? centre : Math.min(centre + (full - part) / 2, Math.max(centre - (full - part) / 2, c));
+      return { zoom, cx: clampAxis(next.cx, 0, viewW, w), cy: clampAxis(next.cy, centerY, viewH, h) };
+    },
+    [viewW, viewH, centerY]
+  );
+  const w = viewW / cam.zoom;
+  const h = viewH / cam.zoom;
+  const viewBox = `${cam.cx - w / 2} ${cam.cy - h / 2} ${w} ${h}`;
 
   const animate = useMemo(
     () => typeof window === 'undefined' || !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
@@ -157,13 +192,14 @@ export function BaseBoard({
   // Trees and rocks scattered over land you don't own yet, like a forest edge.
   const wildProps = useMemo(() => {
     const props: Array<{ x: number; y: number; itemId: string; style?: string }> = [];
-    for (let y = 0; y < GRID_SIZE; y++) {
-      for (let x = 0; x < GRID_SIZE; x++) {
+    // Reach well past the plot so the map never shows bare edges.
+    for (let y = -10; y < GRID_SIZE + 10; y++) {
+      for (let x = -10; x < GRID_SIZE + 10; x++) {
         if (isTileBuildable(x, y, land)) continue;
         const gap = Math.max(min - x, x - max, min - y, y - max);
         const h = hash2(x, y);
         // Sparse right next to your land, a little denser further out.
-        if (gap < 1 || h % (gap > 2 ? 4 : 6) !== 0) continue;
+        if (gap < 1 || h % (gap > 2 ? 5 : 6) !== 0) continue;
         props.push({ x, y, ...WILD_PROPS[(h >>> 4) % WILD_PROPS.length] });
       }
     }
@@ -242,24 +278,151 @@ export function BaseBoard({
 
   const selected = state.placed.find((p) => p.uid === selectedUid);
 
-  // Drag to paint: read the pointer in ground (world) coordinates.
   const groundRef = useRef<SVGGElement>(null);
   const lastPainted = useRef<string | null>(null);
-  const tileFromEvent = (event: React.PointerEvent): [number, number] | null => {
+
+  /** Screen point → SVG units (the current, zoomed view). */
+  const toSvg = (clientX: number, clientY: number): [number, number] | null => {
+    const ctm = svgRef.current?.getScreenCTM();
+    if (!ctm) return null;
+    const p = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
+    return [p.x, p.y];
+  };
+  /** Screen point → ground tile, or null outside your land. */
+  const tileAt = (clientX: number, clientY: number): [number, number] | null => {
     const ctm = groundRef.current?.getScreenCTM();
     if (!ctm) return null;
-    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm.inverse());
+    const point = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
     const x = Math.floor(point.x / T);
     const y = Math.floor(point.y / T);
     return isTileBuildable(x, y, land) ? [x, y] : null;
   };
-  const paintAt = (event: React.PointerEvent) => {
-    const tile = tileFromEvent(event);
+  const paintAt = (clientX: number, clientY: number) => {
+    const tile = tileAt(clientX, clientY);
     if (!tile || !onPaint) return;
     const key = `${tile[0]},${tile[1]}`;
     if (lastPainted.current === key) return;
     lastPainted.current = key;
     onPaint(tile);
+  };
+  /** Zoom by `factor`, keeping the SVG point under (clientX, clientY) still. */
+  const zoomAt = (factor: number, clientX: number, clientY: number, from = camRef.current) => {
+    const anchor = toSvg(clientX, clientY);
+    const zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, from.zoom * factor));
+    if (!anchor) return clampCam({ ...from, zoom });
+    const k = from.zoom / zoom;
+    return clampCam({ zoom, cx: anchor[0] + (from.cx - anchor[0]) * k, cy: anchor[1] + (from.cy - anchor[1]) * k });
+  };
+
+  // Mouse wheel / trackpad zoom (needs a non-passive listener to stop page scroll).
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const factor = Math.exp(-event.deltaY * (event.ctrlKey ? 0.01 : 0.0018));
+      setCam(zoomAt(factor, event.clientX, event.clientY));
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  });
+
+  // Touch and mouse: one pointer pans (or paints), two pointers pinch.
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const gesture = useRef<{
+    startX: number;
+    startY: number;
+    cam: { zoom: number; cx: number; cy: number };
+    dist?: number;
+    midX?: number;
+    midY?: number;
+  } | null>(null);
+  const moved = useRef(false);
+
+  const beginGesture = () => {
+    const pts = [...pointers.current.values()];
+    if (pts.length >= 2) {
+      const [p, q] = pts;
+      gesture.current = {
+        startX: (p.x + q.x) / 2,
+        startY: (p.y + q.y) / 2,
+        cam: camRef.current,
+        dist: Math.hypot(p.x - q.x, p.y - q.y) || 1,
+        midX: (p.x + q.x) / 2,
+        midY: (p.y + q.y) / 2
+      };
+    } else if (pts.length === 1) {
+      gesture.current = { startX: pts[0].x, startY: pts[0].y, cam: camRef.current };
+    } else {
+      gesture.current = null;
+    }
+  };
+
+  const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.current.size === 1) moved.current = false;
+    beginGesture();
+    if (pointers.current.size === 1 && painting) {
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      lastPainted.current = null;
+      paintAt(event.clientX, event.clientY);
+    }
+  };
+
+  const onPointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (!pointers.current.has(event.pointerId)) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const g = gesture.current;
+    if (!g) return;
+    const pts = [...pointers.current.values()];
+    if (pts.length >= 2 && g.dist) {
+      // Pinch: zoom around the fingers' midpoint and follow it as it moves.
+      const [p, q] = pts;
+      const dist = Math.hypot(p.x - q.x, p.y - q.y) || 1;
+      const midX = (p.x + q.x) / 2;
+      const midY = (p.y + q.y) / 2;
+      moved.current = true;
+      const zoomed = zoomAt(dist / g.dist, g.midX!, g.midY!, g.cam);
+      const ctm = svgRef.current?.getScreenCTM();
+      const unitsPerPx = ctm ? 1 / ctm.a : 1;
+      const scale = g.cam.zoom / zoomed.zoom;
+      setCam(
+        clampCam({
+          ...zoomed,
+          cx: zoomed.cx - (midX - g.midX!) * unitsPerPx * scale,
+          cy: zoomed.cy - (midY - g.midY!) * unitsPerPx * scale
+        })
+      );
+      return;
+    }
+    if (painting) {
+      if (event.buttons) paintAt(event.clientX, event.clientY);
+      return;
+    }
+    if (!event.buttons && event.pointerType === 'mouse') return;
+    const dx = event.clientX - g.startX;
+    const dy = event.clientY - g.startY;
+    if (!moved.current && Math.hypot(dx, dy) < 6) return;
+    if (!moved.current) event.currentTarget.setPointerCapture?.(event.pointerId);
+    moved.current = true;
+    const ctm = svgRef.current?.getScreenCTM();
+    const unitsPerPx = ctm ? (1 / ctm.a) * (g.cam.zoom / camRef.current.zoom) : 1;
+    setCam(clampCam({ ...g.cam, cx: g.cam.cx - dx * unitsPerPx, cy: g.cam.cy - dy * unitsPerPx }));
+  };
+
+  const onPointerEnd = (event: React.PointerEvent<SVGSVGElement>) => {
+    pointers.current.delete(event.pointerId);
+    lastPainted.current = null;
+    beginGesture();
+  };
+
+  // A drag or pinch shouldn't also count as a tap on whatever is underneath.
+  const onClickCapture = (event: React.MouseEvent) => {
+    if (moved.current) {
+      event.stopPropagation();
+      event.preventDefault();
+      moved.current = false;
+    }
   };
 
   const fireflies = [0, 1, 2, 3, 4, 5].map((i) => {
@@ -269,29 +432,21 @@ export function BaseBoard({
 
   return (
     <svg
+      ref={svgRef}
       id={svgId}
       viewBox={viewBox}
-      onPointerDown={
-        painting
-          ? (event) => {
-              (event.target as Element).setPointerCapture?.(event.pointerId);
-              lastPainted.current = null;
-              paintAt(event);
-            }
-          : undefined
-      }
-      onPointerMove={painting ? (event) => event.buttons && paintAt(event) : undefined}
-      onPointerUp={painting ? () => (lastPainted.current = null) : undefined}
-      className={`base-board is-iso ${lit ? 'is-lit' : 'is-quiet'} ${placing ? 'is-placing' : ''} ${painting ? 'is-painting' : ''}`}
+      preserveAspectRatio="xMidYMid meet"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerEnd}
+      onPointerCancel={onPointerEnd}
+      onClickCapture={onClickCapture}
+      className={`base-board is-iso ${lit ? 'is-lit' : 'is-quiet'} ${placing ? 'is-placing' : ''} ${painting ? 'is-painting' : ''} ${cam.zoom > 1.02 ? 'is-zoomed' : ''}`}
       role="group">
       <defs>
         <pattern id="base-scaffold-hatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
           <line x1="0" y1="0" x2="0" y2="16" className="base-scaffold-line" strokeWidth="3" />
         </pattern>
-        <radialGradient id="base-vignette" cx="50%" cy="48%" r="62%">
-          <stop offset="55%" stopColor="#0b120d" stopOpacity="0" />
-          <stop offset="100%" stopColor="#0b120d" stopOpacity="0.7" />
-        </radialGradient>
       </defs>
 
       {/* The ground, in world units, tilted into diamonds. */}
@@ -352,8 +507,6 @@ export function BaseBoard({
 
       <g className="base-fireflies" pointerEvents="none">{fireflies}</g>
 
-      {/* Soft darkening toward the edges keeps the eye on your base. */}
-      <rect x={-viewW / 2} y={centerY - viewH / 2} width={viewW} height={viewH} fill="url(#base-vignette)" pointerEvents="none" />
     </svg>
   );
 }

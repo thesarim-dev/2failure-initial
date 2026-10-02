@@ -2,7 +2,7 @@ import stoneIcon from '../../assets/resources/stone.png';
 import timberIcon from '../../assets/resources/timber.png';
 import crystalIcon from '../../assets/resources/crystal.png';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, Lock, Move as MoveIcon, Palette, ShieldCheck, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, Lock, Move as MoveIcon, Palette, ShieldCheck, X } from 'lucide-react';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
 import { useLanguage } from '../../context/LanguageContext';
@@ -402,7 +402,6 @@ export function BaseScreen({
   const [draftCustom, setDraftCustom] = useState<Customization>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [paintWith, setPaintWith] = useState<TerrainId | null>(null);
-  const [zoomed, setZoomed] = useState(false);
   const lastPaintSound = useRef(0);
   const [decorGroup, setDecorGroup] = useState<DecorGroup | 'all'>('all');
   const level = hqLevel(state);
@@ -624,15 +623,6 @@ export function BaseScreen({
       )}
 
       <div className="base-board-wrap" dir="ltr">
-        <button
-          type="button"
-          className="base-zoom-btn"
-          onClick={() => setZoomed((z) => !z)}
-          aria-label={zoomed ? g.zoomOut : g.zoomIn}
-          aria-pressed={zoomed}>
-          {zoomed ? <ZoomOut size={18} strokeWidth={2.5} /> : <ZoomIn size={18} strokeWidth={2.5} />}
-        </button>
-        <div className={zoomed ? 'base-board-scroll is-zoomed' : 'base-board-scroll'}>
         <BaseBoard
           state={state}
           plan={game.plan}
@@ -656,7 +646,6 @@ export function BaseScreen({
           }}
           svgId="base-map-svg"
         />
-        </div>
         {notice && (
           <p className="base-notice" role="status">
             {notice}

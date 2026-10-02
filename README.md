@@ -531,9 +531,9 @@ Buildings go up to level 3, and each level looks different: rustic, then reinfor
 
 **Paint the ground.** Tap **Paint**, pick a ground (grass, dirt, meadow, sand, plaza, water, snow) and drag across tiles. Painting is free; more grounds unlock with base level. Water holds lily pads and bridges; everything else needs land.
 
-**The map** is drawn in an isometric view: your land is a clearing of lighter grass in a wider countryside of trees and rocks, with no borders. A light grid appears only while you build, move or paint.
+**The map** is drawn in an isometric view: your land is a clearing of lighter grass in a wider countryside of trees and rocks, with no borders. A light grid appears only while you build, move or paint. **Pinch** to zoom on a phone (or scroll the mouse wheel), and drag to look around.
 
-**Land.** Your plot starts at 10×10. Tap **Expand land** to grow it with coins: 12×12 for 500, 14×14 for 1,200, 16×16 for 2,500, 18×18 for 4,000 and 20×20 for 6,000. Use the magnifier on the map to zoom in on big bases.
+**Land.** Your plot starts at 10×10. Tap **Expand land** to grow it with coins: 12×12 for 500, 14×14 for 1,200, 16×16 for 2,500, 18×18 for 4,000 and 20×20 for 6,000.
 
 Decorations are refunded in full if removed. **Trophies** can only be earned, never bought; tap one to see its proof. Rep trophies counted by the AI camera are marked as verified.
 
