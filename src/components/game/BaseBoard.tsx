@@ -8,7 +8,7 @@ import {
 import { itemSize, type GameState, type PlacedItem, type TodayPlan } from '../../game/engine';
 import { ArtDefs, ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BaseBirds, BaseCritters } from './Critters';
+import { BaseCritters } from './Critters';
 import { GroundDetail, GroundEdges } from './GroundDetail';
 import { ISO_ITEMS, IsoItemArt, IsoScaffold, P as isoP } from './IsoArt';
 
@@ -602,7 +602,6 @@ export function BaseBoard({
 
       <g pointerEvents="visiblePainted">{sprites.map((sprite) => sprite.node)}</g>
 
-      <BaseBirds state={state} animate={animate} project={project} />
 
       <g className="base-fireflies" pointerEvents="none">{fireflies}</g>
 

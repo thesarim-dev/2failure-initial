@@ -262,48 +262,6 @@ function Fox() {
   );
 }
 
-/**
- * A crow in side view, flying right: glossy black body with a shaded belly,
- * curved beak, ringed eye, fanned tail and tucked feet. The near wing beats
- * up and down; the far wing peeks out behind.
- */
-function Crow() {
-  return (
-    <g>
-      {/* Far wing, behind the body */}
-      <g className="crow-wing-far">
-        <path d="M-2 -4 C -6 -16, -2 -24, 6 -26 C 4 -18, 6 -10, 4 -4 Z" fill="#1b1d24" />
-      </g>
-      {/* Tail fan */}
-      <path d="M-14 0 L-30 -4 L-29 1 L-31 4 L-28 6 L-14 4 Z" fill="#20232b" />
-      <path d="M-28 -2 L-15 0 M-29 2.5 L-15 2.5" stroke="#3a3f4c" strokeWidth={0.8} />
-      {/* Body */}
-      <ellipse cx={-2} cy={0} rx={14} ry={7} fill="#262a33" />
-      <ellipse cx={-2} cy={2.5} rx={11} ry={4} fill="#3a3f4c" opacity={0.7} />
-      <ellipse cx={-4} cy={-3} rx={8} ry={2.4} fill="#4a5060" opacity={0.55} />
-      {/* Feet tucked under */}
-      <path d="M-3 6 l-2 3 M0 6 l-1 3.4" stroke="#c9b48a" strokeWidth={1.2} strokeLinecap="round" />
-      {/* Head and beak */}
-      <circle cx={12} cy={-4} r={6} fill="#262a33" />
-      <ellipse cx={11} cy={-6.5} rx={3.6} ry={1.6} fill="#4a5060" opacity={0.6} />
-      <path d="M16.5 -5.5 Q 25 -4.5 26 -2 Q 22 -1.2 16.5 -1.5 Z" fill="#7d8494" />
-      <path d="M16.5 -3.3 Q 22 -2.6 26 -2" stroke="#4a5060" strokeWidth={0.7} fill="none" />
-      <circle cx={13.5} cy={-5} r={1.9} fill="#ffffff" />
-      <circle cx={14} cy={-5} r={1} fill="#111" />
-      {/* Near wing, beating */}
-      <g className="crow-wing">
-        {/* Separated "finger" primaries at the tip, like a real crow. */}
-        <path
-          d="M-6 -2 C -11 -10, -10 -20, -4 -28 L -6 -34 L -1 -29 L 0 -37 L 3 -30 L 6 -37 L 7 -29 L 11 -33 L 9 -24 C 11 -18, 10 -10, 6 -6 C 3 -3, -2 -2, -6 -2 Z"
-          fill="#2c303a"
-        />
-        <path d="M-1 -6 C 0 -14, 1 -22, 2 -29 M3 -6 C 5 -13, 6 -20, 6 -28 M-4 -5 C -5 -12, -4 -19, -2 -26" stroke="#454b59" strokeWidth={0.8} fill="none" />
-        <path d="M-6 -2 C -2 -5, 3 -6, 7 -7" stroke="#1b1d24" strokeWidth={1.2} fill="none" />
-      </g>
-    </g>
-  );
-}
-
 const ART: Record<Kind, () => JSX.Element> = {
   cow: Cow,
   sheep: Sheep,
@@ -519,56 +477,6 @@ export function BaseCritters({ state, animate, project = identity }: { state: Ga
             <ellipse cx={-3} cy={0} rx={3.5} ry={2.5} fill={b.color} />
             <ellipse cx={3} cy={0} rx={3.5} ry={2.5} fill={b.color} />
             <rect x={-0.6} y={-2} width={1.2} height={4} fill="#2a2a2a" />
-          </g>
-        </g>
-      ))}
-    </g>
-  );
-}
-
-/** Birds that fly across now and then, above everything. */
-export function BaseBirds({ state, animate, project = identity }: { state: GameState; animate: boolean; project?: Project }) {
-  const seed = useMemo(() => Math.floor(Math.random() * 1e9), []);
-  const flights = useMemo(() => {
-    const rnd = mulberry32(seed + 7);
-    const { min, max } = buildableBounds(state.landLevel);
-    const left = min * 100 - 120;
-    const right = (max + 1) * 100 + 120;
-    return [0, 1, 2].map((i) => {
-      const y = min * 100 + 60 + rnd() * (max - min) * 100;
-      const dur = 9 + rnd() * 6;
-      // Fly across the map in screen space, from one edge to the other.
-      const [sx, sy] = project([left, y]);
-      const [ex, ey] = project([right, y]);
-      const rtl = ex < sx;
-      const lift = 140;
-      return {
-        path: `M${sx.toFixed(0)},${(sy - lift).toFixed(0)} Q${((sx + ex) / 2).toFixed(0)},${(Math.min(sy, ey) - lift - 120).toFixed(0)} ${ex.toFixed(0)},${(ey - lift).toFixed(0)}`,
-        // Long gaps between flights: each bird crosses, then waits off-screen.
-        dur: dur * 3,
-        delay: i * 7 + rnd() * 10,
-        flip: rtl
-      };
-    });
-    // Birds only depend on the land size.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seed, state.landLevel]);
-  if (!animate) return null;
-  return (
-    <g className="base-birds" pointerEvents="none">
-      {flights.map((f, i) => (
-        <g key={i}>
-          <animateMotion
-            dur={`${f.dur}s`}
-            begin={`-${f.delay.toFixed(2)}s`}
-            repeatCount="indefinite"
-            path={f.path}
-            keyPoints="0;1;1"
-            keyTimes="0;0.33;1"
-            calcMode="linear"
-          />
-          <g transform={`scale(${f.flip ? -0.9 : 0.9} 0.9)`}>
-            <Crow />
           </g>
         </g>
       ))}

@@ -5016,4 +5016,103 @@
       animation: none !important;
     }
   }
+
+  /* ---------- Streak flame ---------- */
+  .streak-flame-wrap {
+    width: 82px;
+    min-height: 92px;
+  }
+  .streak-flame {
+    position: relative;
+    width: 78px;
+    height: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .streak-flame-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .streak-flame-count {
+    position: relative;
+    margin-top: 42px;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 1.55rem;
+    line-height: 1;
+    color: #5a2200;
+    text-shadow: 0 1px 0 rgba(255, 240, 200, 0.6);
+  }
+  .streak-flame-label {
+    position: relative;
+    margin-top: 2px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6b2a00;
+  }
+  .streak-flame-outer,
+  .streak-flame-inner,
+  .streak-flame-glow {
+    transform-box: fill-box;
+  }
+  /* Lit: the flame flickers, the core dances, the glow breathes. */
+  .streak-flame.is-lit .streak-flame-outer {
+    transform-origin: 50% 100%;
+    animation: flame-outer 1.6s ease-in-out infinite;
+  }
+  .streak-flame.is-lit .streak-flame-inner {
+    transform-origin: 50% 100%;
+    animation: flame-inner 0.9s ease-in-out infinite;
+  }
+  .streak-flame.is-lit .streak-flame-glow {
+    transform-origin: 50% 50%;
+    animation: flame-glow 1.8s ease-in-out infinite;
+  }
+  .streak-flame.is-lit .streak-flame-svg {
+    filter: drop-shadow(0 0 6px rgba(255, 140, 30, 0.45));
+  }
+  @keyframes flame-outer {
+    0%, 100% { transform: scale(1, 1) skewX(0deg); }
+    25% { transform: scale(1.02, 1.05) skewX(-2.5deg); }
+    50% { transform: scale(0.99, 0.97) skewX(1.5deg); }
+    75% { transform: scale(1.01, 1.04) skewX(2.5deg); }
+  }
+  @keyframes flame-inner {
+    0%, 100% { transform: scale(1, 1) skewX(0deg) translateY(0); }
+    30% { transform: scale(0.94, 1.1) skewX(4deg) translateY(-1px); }
+    60% { transform: scale(1.05, 0.94) skewX(-3deg) translateY(1px); }
+  }
+  @keyframes flame-glow {
+    0%, 100% { opacity: 0.75; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  /* Not yet protected today: a dim ember with a slow, gentle flicker. */
+  .streak-flame.is-unlit .streak-flame-svg {
+    filter: grayscale(0.85) brightness(0.72);
+  }
+  .streak-flame.is-unlit .streak-flame-glow {
+    display: none;
+  }
+  .streak-flame.is-unlit .streak-flame-outer {
+    transform-origin: 50% 100%;
+    animation: flame-outer 3.6s ease-in-out infinite;
+  }
+  .streak-flame.is-unlit .streak-flame-count,
+  .streak-flame.is-unlit .streak-flame-label {
+    color: #e8e8e8;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .streak-flame .streak-flame-outer,
+    .streak-flame .streak-flame-inner,
+    .streak-flame .streak-flame-glow {
+      animation: none;
+    }
+  }
 }

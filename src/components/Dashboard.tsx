@@ -1,9 +1,10 @@
+import { StreakFlame } from './StreakFlame';
 import { ResourceIcon } from './game/BaseScreen';
 import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog';
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BedDouble, ChevronRight, Flame, Loader2 } from 'lucide-react';
+import { BedDouble, ChevronRight, Loader2 } from 'lucide-react';
 import planIcon from '../assets/plan-icon.png';
 import { FailureLogo } from './FailureLogo';
 import { CoinsBadge } from './CoinsBadge';
@@ -12,7 +13,7 @@ import { localizeMove } from '../i18n/localize';
 import type { DailySetGoal } from '../hooks/useDailySetGoal';
 import type { RotatingProgramPhase } from '../lib/rotatingProgram';
 import { PUSHUP_DAILY_GOAL } from '../lib/pushupDailyProgress';
-import { canOfferStreakRestore } from '../lib/userStats';
+import { canOfferStreakRestore, toLocalDateString } from '../lib/userStats';
 import { sumDailySets } from '../lib/workoutProgress';
 import { Move, getVariantById, resolveLineupMove } from './moves';
 
@@ -110,6 +111,9 @@ export function Dashboard({
   };
   const rewardLabel = (move: Move) => rewardFor(move).map((id) => t.game.resources[id]).join(' · ');
   // The current plan, in one line: own plan (sets a day) or program (which day).
+  // Lit once today's streak is safe: trained today, or a planned rest day.
+  const streakProtectedToday = lastWorkoutDate === toLocalDateString() || isRestDayToday;
+
   const planLine = rotatingProgramEnabled
     ? isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
       ? t.hub.dashCard.programRest(rotationCycleLength)
@@ -224,20 +228,12 @@ export function Dashboard({
         <div className="flex flex-col items-end gap-2">
           <div
             data-tour="streak"
-            className="streak-badge shrink-0 w-[78px] h-[78px] rounded-full bg-[#E85520] dark:bg-[#FF6633] flex flex-col items-center justify-center text-black"
+            className="streak-flame-wrap shrink-0 flex items-center justify-center"
             aria-label={t.dashboard.aria.streakDays(currentStreak)}>
             {statsLoading || statsCompleting ? (
               <Loader2 size={18} className="animate-spin" aria-busy="true" />
             ) : (
-              <>
-                <div className="flex items-center gap-0.5 leading-none">
-                  <Flame size={15} strokeWidth={2.5} fill="currentColor" aria-hidden="true" />
-                  <span className="text-2xl font-bold tabular-nums">{currentStreak}</span>
-                </div>
-                <span className="text-[11px] font-semibold mt-0.5 leading-none">
-                  {t.dashboard.streak}
-                </span>
-              </>
+              <StreakFlame count={currentStreak} lit={streakProtectedToday} label={t.dashboard.streak} />
             )}
           </div>
 
