@@ -4907,4 +4907,113 @@
   .base-board.is-iso.is-zoomed {
     touch-action: none;
   }
+
+  /* ---------- Animal walking and idle animations ---------- */
+  .critter-leg,
+  .critter-head,
+  .critter-body,
+  .critter-tail,
+  .critter-hop,
+  .critter-paddle,
+  .crow-wing,
+  .crow-wing-far {
+    transform-box: fill-box;
+  }
+  /* Walking: alternating leg pairs swing from the hip, body bobs in step. */
+  .critter.walk .critter-leg {
+    transform-origin: 50% 0;
+    animation: critter-leg 0.34s ease-in-out infinite alternate;
+  }
+  .critter.walk .leg-b {
+    animation-delay: -0.34s;
+  }
+  @keyframes critter-leg {
+    from { transform: rotate(-26deg); }
+    to { transform: rotate(26deg); }
+  }
+  .critter.walk .critter-body {
+    animation: critter-step 0.17s ease-in-out infinite alternate;
+  }
+  @keyframes critter-step {
+    from { transform: translateY(0); }
+    to { transform: translateY(-1.3px); }
+  }
+  .critter.walk .critter-tail {
+    transform-origin: 100% 100%;
+    animation: critter-wag 0.3s ease-in-out infinite alternate;
+  }
+  @keyframes critter-wag {
+    from { transform: rotate(-10deg); }
+    to { transform: rotate(10deg); }
+  }
+  /* Idle: chickens peck, grazers lower their heads, others look around. */
+  .critter.idle .critter-head--peck {
+    transform-origin: 20% 90%;
+    animation: critter-peck 1.7s ease-in-out infinite;
+  }
+  @keyframes critter-peck {
+    0%, 55%, 100% { transform: rotate(0) translateY(0); }
+    65% { transform: rotate(38deg) translateY(4px); }
+    74% { transform: rotate(0) translateY(0); }
+    84% { transform: rotate(38deg) translateY(4px); }
+    92% { transform: rotate(0) translateY(0); }
+  }
+  .critter.idle .critter-head--graze {
+    transform-origin: 10% 80%;
+    animation: critter-graze 4.2s ease-in-out infinite;
+  }
+  @keyframes critter-graze {
+    0%, 25%, 100% { transform: rotate(0) translateY(0); }
+    38%, 80% { transform: rotate(26deg) translateY(5px); }
+    60% { transform: rotate(30deg) translateY(6px); }
+  }
+  .critter.idle .critter-head--look {
+    transform-origin: 20% 90%;
+    animation: critter-look 3.4s ease-in-out infinite;
+  }
+  @keyframes critter-look {
+    0%, 30%, 100% { transform: rotate(0); }
+    40%, 55% { transform: rotate(-12deg); }
+    70%, 85% { transform: rotate(9deg); }
+  }
+  /* Bunnies hop instead of walking. */
+  .critter--bunny.walk .critter-hop {
+    animation: critter-hop 0.36s ease-out infinite;
+  }
+  @keyframes critter-hop {
+    0%, 100% { transform: translateY(0); }
+    45% { transform: translateY(-6px); }
+  }
+  .critter--duck .critter-paddle {
+    animation: base-critter-float 2.4s ease-in-out infinite alternate;
+  }
+  /* Crows: the near wing beats down past the body and back up. */
+  .crow-wing {
+    transform-origin: 15% 100%;
+    animation: crow-flap 0.42s ease-in-out infinite alternate;
+  }
+  .crow-wing-far {
+    transform-origin: 30% 100%;
+    animation: crow-flap-far 0.42s ease-in-out infinite alternate;
+  }
+  @keyframes crow-flap {
+    from { transform: scaleY(1) rotate(0); }
+    to { transform: scaleY(-0.55) rotate(6deg); }
+  }
+  @keyframes crow-flap-far {
+    from { transform: scaleY(0.9); }
+    to { transform: scaleY(-0.3); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .critter .critter-leg,
+    .critter .critter-body,
+    .critter .critter-tail,
+    .critter .critter-head,
+    .critter .critter-hop,
+    .critter-paddle,
+    .crow-wing,
+    .crow-wing-far {
+      animation: none !important;
+    }
+  }
 }
