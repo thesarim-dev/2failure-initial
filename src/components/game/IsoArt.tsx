@@ -558,8 +558,102 @@ function IsoWall({ ox, oy, style }: { ox: number; oy: number; style?: string }) 
   );
 }
 
+const BED_METAL: Shades = { light: '#6b717c', base: '#454a53', dark: '#2c3037' };
+
+/**
+ * A raised garden bed: corrugated metal walls standing on the tile, soil set
+ * just below the rim, and flowers planted in rows (drawn back to front).
+ */
+function IsoGarden({ ox, oy, style, color }: { ox: number; oy: number; style?: string; color?: string }) {
+  const b: Box = { x0: ox + 8, y0: oy + 20, x1: ox + 92, y1: oy + 80, z0: 0, z1: 24 };
+  const ribs = Array.from({ length: 9 }, (_, i) => (i + 0.5) / 9);
+  const sideRibs = Array.from({ length: 6 }, (_, i) => (i + 0.5) / 6);
+  const soilZ = b.z1 - 4;
+  const soil = pts([P(b.x0 + 4, b.y0 + 4, soilZ), P(b.x1 - 4, b.y0 + 4, soilZ), P(b.x1 - 4, b.y1 - 4, soilZ), P(b.x0 + 4, b.y1 - 4, soilZ)]);
+  const accent = color ? themeFor('garden', color) : null;
+  const palettes: Record<string, string[]> = {
+    roses: ['#e5484d', '#ff7a7a', '#c22f3a'],
+    lavender: ['#8f6ff0', '#b9a3ff', '#6c4fd6'],
+    tulips: accent ? [accent.base, accent.light, accent.dark] : ['#f7c948', '#ffdf70', '#f2a541'],
+    wildflowers: ['#ff5fd2', '#f7c948', '#37d8ff', '#ffffff', '#ff8a3d']
+  };
+  const petals = palettes[style ?? 'wildflowers'] ?? palettes.wildflowers;
+  // Planting grid inside the bed, back row first so nearer flowers overlap.
+  const plants: Array<[number, number, number]> = [];
+  let k = 0;
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 5; col++) {
+      const x = b.x0 + 14 + col * 15 + (row % 2) * 6;
+      const y = b.y0 + 12 + row * 17;
+      plants.push([x, y, k++]);
+    }
+  }
+  plants.sort((p, q) => p[0] + p[1] - (q[0] + q[1]));
+  return (
+    <g>
+      <IsoShadow x0={b.x0} y0={b.y0} x1={b.x1} y1={b.y1} />
+      {/* Metal walls with vertical ribs */}
+      <IsoBox b={b} s={BED_METAL} courses={false} />
+      <g stroke="#1c1f24" strokeOpacity={0.55} strokeWidth={1.1}>
+        {ribs.map((u) => {
+          const x = b.x0 + (b.x1 - b.x0) * u;
+          return <line key={`l${u}`} x1={P(x, b.y1, 1)[0]} y1={P(x, b.y1, 1)[1]} x2={P(x, b.y1, b.z1 - 1)[0]} y2={P(x, b.y1, b.z1 - 1)[1]} />;
+        })}
+        {sideRibs.map((u) => {
+          const y = b.y0 + (b.y1 - b.y0) * u;
+          return <line key={`r${u}`} x1={P(b.x1, y, 1)[0]} y1={P(b.x1, y, 1)[1]} x2={P(b.x1, y, b.z1 - 1)[0]} y2={P(b.x1, y, b.z1 - 1)[1]} />;
+        })}
+      </g>
+      <g stroke="#8a919c" strokeOpacity={0.35} strokeWidth={0.8}>
+        {ribs.map((u) => {
+          const x = b.x0 + (b.x1 - b.x0) * u + 3;
+          return <line key={`h${u}`} x1={P(x, b.y1, 2)[0]} y1={P(x, b.y1, 2)[1]} x2={P(x, b.y1, b.z1 - 2)[0]} y2={P(x, b.y1, b.z1 - 2)[1]} />;
+        })}
+      </g>
+      {/* Soil, just below the rim */}
+      <polygon points={soil} fill="#3d2a1c" />
+      <polygon points={soil} fill="url(#hf-side)" opacity={0.6} />
+      {/* Flowers */}
+      {plants.map(([x, y, i]) => {
+        const [px, py] = P(x, y, soilZ);
+        const tall = style === 'tulips' ? 16 : style === 'lavender' ? 18 : 12;
+        const c = petals[i % petals.length];
+        return (
+          <g key={i}>
+            <ellipse cx={px} cy={py - 2} rx={6.5} ry={3.4} fill="#2f7a3a" />
+            <ellipse cx={px - 2} cy={py - 3.5} rx={3.5} ry={2} fill="#4fae5a" />
+            <line x1={px} y1={py - 2} x2={px} y2={py - tall} stroke="#2f7a3a" strokeWidth={1.4} />
+            {style === 'lavender' ? (
+              <g>
+                {[0, 1, 2, 3].map((j) => (
+                  <circle key={j} cx={px} cy={py - tall + j * 3} r={1.9 - j * 0.2} fill={petals[(i + j) % petals.length]} />
+                ))}
+              </g>
+            ) : style === 'tulips' ? (
+              <g>
+                <path d={`M${px - 3.4} ${py - tall + 1} Q${px - 3.6} ${py - tall - 7} ${px} ${py - tall - 4.5} Q${px + 3.6} ${py - tall - 7} ${px + 3.4} ${py - tall + 1} Z`} fill={c} />
+                <path d={`M${px} ${py - tall - 4.5} Q${px + 3.6} ${py - tall - 7} ${px + 3.4} ${py - tall + 1} L${px} ${py - tall + 1} Z`} fill="#000" opacity={0.15} />
+              </g>
+            ) : (
+              <g>
+                {[0, 72, 144, 216, 288].map((deg) => {
+                  const r = (deg * Math.PI) / 180;
+                  return <ellipse key={deg} cx={px + Math.cos(r) * 2.6} cy={py - tall + Math.sin(r) * 1.6} rx={2.3} ry={1.7} fill={c} />;
+                })}
+                <circle cx={px} cy={py - tall} r={1.4} fill={style === 'roses' ? '#8a1f28' : '#fff4b0'} />
+              </g>
+            )}
+          </g>
+        );
+      })}
+      {/* Rim catches the light */}
+      <polyline points={pts([P(b.x0, b.y1, b.z1), P(b.x1, b.y1, b.z1), P(b.x1, b.y0, b.z1)])} fill="none" stroke="#9aa1ab" strokeWidth={1.6} />
+    </g>
+  );
+}
+
 /** Which items are drawn as true isometric models. */
-export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall']);
+export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden']);
 
 /**
  * Draw an isometric model for a placed item at (ox, oy) = its footprint's
@@ -605,6 +699,8 @@ export function IsoItemArt({
       return <TrainingYard {...props} />;
     case 'wall':
       return <IsoWall ox={ox} oy={oy} style={item.style} />;
+    case 'garden':
+      return <IsoGarden ox={ox} oy={oy} style={item.style} color={item.color} />;
     default:
       return null;
   }

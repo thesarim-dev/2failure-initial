@@ -29,6 +29,9 @@ function LevelPips({ level, color, cx = 50, y = 97 }: { level: number; color: st
   );
 }
 
+/** Low models get a tighter preview frame so they don't look tiny. */
+const LOW_ITEMS = new Set(['garden', 'wall']);
+
 /** Standalone preview used in the build menu and info sheet. */
 export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, style, color }: {
   itemId?: string;
@@ -44,7 +47,12 @@ export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, 
   if (ISO_ITEMS.has(id)) {
     const s2 = itemSize(id) === 2;
     return (
-      <svg viewBox={s2 ? '-112 -84 224 190' : '-56 -84 112 140'} width={size} height={size} aria-hidden="true" className="base-preview">
+      <svg
+        viewBox={s2 ? '-112 -84 224 190' : LOW_ITEMS.has(id) ? '-54 -24 108 84' : '-56 -84 112 140'}
+        width={size}
+        height={size}
+        aria-hidden="true"
+        className="base-preview">
         <ArtDefs />
         <IsoItemArt item={{ uid: 'preview', itemId: id, x: 0, y: 0, level, style, color }} ox={0} oy={0} lit />
       </svg>
@@ -253,7 +261,7 @@ export function BaseBoard({
               )}
             </g>
             {construction && (
-              <IsoScaffold ox={ox} oy={oy} size={size} setsRemaining={construction.setsRemaining} height={item.itemId === 'wall' ? 34 : undefined} />
+              <IsoScaffold ox={ox} oy={oy} size={size} setsRemaining={construction.setsRemaining} height={item.itemId === 'wall' || item.itemId === 'garden' ? 34 : undefined} />
             )}
             {def?.kind === 'structure' && !construction && (
               <g transform={`translate(${px - (size * T) / 2} ${py - size * T + 10})`}>
