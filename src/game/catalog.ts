@@ -30,7 +30,7 @@ export const PATTERN_RESOURCE: Record<Exclude<TrainingPattern, 'recovery'>, Reso
 export const EMPTY_RESOURCES: Resources = { stone: 0, timber: 0, crystal: 0 };
 
 /** Enough to place a first building and a few decorations right away. */
-export const STARTING_RESOURCES: Resources = { stone: 30, timber: 25, crystal: 20 };
+export const STARTING_RESOURCES: Resources = { stone: 40, timber: 40, crystal: 25 };
 
 // ---------------------------------------------------------------------------
 // Plot and headquarters
@@ -63,8 +63,8 @@ export function isTileBuildable(x: number, y: number, landLevel: number): boolea
 export const HQ_POSITION = { x: 9, y: 9 };
 
 /** Coins for upgrading a building to each level (index = target level). */
-export const UPGRADE_COIN_COST: Record<number, number> = { 2: 150, 3: 400 };
-export const HQ_UPGRADE_COIN_COST: Record<number, number> = { 2: 250, 3: 600 };
+export const UPGRADE_COIN_COST: Record<number, number> = { 2: 250, 3: 700 };
+export const HQ_UPGRADE_COIN_COST: Record<number, number> = { 2: 300, 3: 1200 };
 
 /** Builders needed at once for a job: level N needs N; decor and trophies need 1. */
 export function buildersForLevel(targetLevel: number): number {
@@ -153,7 +153,9 @@ export function customizeKey(itemId: string): string {
  * On-target weeks needed before each HQ level (index = level). Base level
  * reflects a habit, not one heavy weekend.
  */
-export const HQ_WEEKS_REQUIRED: Record<number, number> = { 1: 0, 2: 2, 3: 6 };
+// HQ 2 is open from the start (after a Lodge adds the second builder);
+// HQ 3 asks for two weeks on target, so it rewards a real habit.
+export const HQ_WEEKS_REQUIRED: Record<number, number> = { 1: 0, 2: 0, 3: 2 };
 
 // ---------------------------------------------------------------------------
 // Items
@@ -205,8 +207,8 @@ export const STRUCTURES: StructureDef[] = [
     maxCount: () => 1,
     levels: [
       { cost: {}, sets: 0 },
-      { cost: { stone: 60, timber: 50, crystal: 30 }, sets: 3 },
-      { cost: { stone: 130, timber: 110, crystal: 70 }, sets: 5 }
+      { cost: { stone: 30, timber: 22, crystal: 12 }, sets: 3 },
+      { cost: { stone: 80, timber: 65, crystal: 40 }, sets: 5 }
     ]
   },
   {
@@ -217,8 +219,8 @@ export const STRUCTURES: StructureDef[] = [
     maxCount: (hq) => hq,
     levels: [
       { cost: { stone: 20, timber: 5 }, sets: 1 },
-      { cost: { stone: 45, timber: 10, crystal: 10 }, sets: 2 },
-      { cost: { stone: 80, timber: 20, crystal: 20 }, sets: 3 }
+      { cost: { stone: 28, timber: 6, crystal: 6 }, sets: 2 },
+      { cost: { stone: 50, timber: 12, crystal: 12 }, sets: 3 }
     ]
   },
   {
@@ -230,8 +232,8 @@ export const STRUCTURES: StructureDef[] = [
     maxCount: () => 1,
     levels: [
       { cost: { timber: 20, stone: 5 }, sets: 1 },
-      { cost: { timber: 45, stone: 10, crystal: 10 }, sets: 2 },
-      { cost: { timber: 80, stone: 20, crystal: 20 }, sets: 3 }
+      { cost: { timber: 28, stone: 6, crystal: 6 }, sets: 2 },
+      { cost: { timber: 50, stone: 12, crystal: 12 }, sets: 3 }
     ]
   },
   {
@@ -242,8 +244,8 @@ export const STRUCTURES: StructureDef[] = [
     maxCount: () => 1,
     levels: [
       { cost: { stone: 15, timber: 10 }, sets: 1 },
-      { cost: { stone: 35, timber: 20, crystal: 10 }, sets: 2 },
-      { cost: { stone: 60, timber: 40, crystal: 20 }, sets: 3 }
+      { cost: { stone: 22, timber: 12, crystal: 6 }, sets: 2 },
+      { cost: { stone: 36, timber: 24, crystal: 12 }, sets: 3 }
     ]
   },
   {
@@ -255,8 +257,8 @@ export const STRUCTURES: StructureDef[] = [
     maxCount: () => 1,
     levels: [
       { cost: { stone: 13, timber: 13, crystal: 9 }, sets: 2 },
-      { cost: { stone: 40, timber: 40, crystal: 25 }, sets: 3 },
-      { cost: { stone: 80, timber: 80, crystal: 50 }, sets: 4 }
+      { cost: { stone: 24, timber: 24, crystal: 15 }, sets: 3 },
+      { cost: { stone: 48, timber: 48, crystal: 30 }, sets: 4 }
     ]
   },
   {
@@ -267,8 +269,8 @@ export const STRUCTURES: StructureDef[] = [
     maxCount: () => 1,
     levels: [
       { cost: { crystal: 25, stone: 15 }, sets: 2 },
-      { cost: { crystal: 45, stone: 30, timber: 15 }, sets: 3 },
-      { cost: { crystal: 70, stone: 50, timber: 30 }, sets: 4 }
+      { cost: { crystal: 28, stone: 18, timber: 9 }, sets: 3 },
+      { cost: { crystal: 42, stone: 30, timber: 18 }, sets: 4 }
     ]
   }
 ];

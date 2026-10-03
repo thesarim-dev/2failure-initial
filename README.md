@@ -141,7 +141,7 @@ The home screen is your command center. Everything you need for today's session 
 
 The orange flame badge shows your **current streak**: the number of consecutive days you have completed at least two sets (any exercises). The count updates after your second set of the day.
 
-If you miss a day (a full day with fewer than two sets), a **Restore streak** action appears on the dashboard. It does not appear just because you have not trained yet today, or because your current streak is below your longest. Restore is unlimited. The first restore each month costs **50 coins**, then the price doubles with each use (**100**, **200**, **400**) and caps at **800**. The price resets to 50 at the start of each month.
+If you miss a day (a full day with fewer than two sets), a **Restore streak** action appears on the dashboard. It does not appear just because you have not trained yet today, or because your current streak is below your longest. Restore is unlimited. The first restore each month costs **100 coins**, then the price doubles with each use (**200**, **400**, **800**) and caps at **1,600**. The price resets to 100 at the start of each month.
 
 ### Fun fact panel
 
@@ -439,7 +439,7 @@ If a set goes over 2 minutes, the receipt recommends switching to a harder exerc
 
 Complete at least two sets on a given day — they can be any exercises — to keep your streak alive. The flame badge on the home screen shows your current count. Missing a day resets the streak to zero.
 
-If you miss a day, a **Restore streak** button appears on the home screen until you log two sets that day. You can restore as many times as you want. Cost starts at **50 coins** each month and doubles after every restore until it reaches **800**, then stays there until the next month.
+If you miss a day, a **Restore streak** button appears on the home screen until you log two sets that day. You can restore as many times as you want. Cost starts at **100 coins** each month and doubles after every restore until it reaches **1,600**, then stays there until the next month.
 
 ### Pushup daily goal
 
@@ -500,6 +500,8 @@ If the home screen shows a red error banner:
 
 Every set you finish earns materials for your own base. Tap **Base** in the bottom bar to see it.
 
+**Coins:** every finished set (10 seconds or more) earns 20 coins, plus up to 10 for a longer set and 5 or 10 more for pro or elite moves, so a typical set earns about 25–30.
+
 **Materials** come from the kind of set you do: upper-body sets (push and pull) earn stone, lower-body sets earn timber, core sets earn crystal, and stretches earn 1 of each. A typical set earns about 3; bigger sets earn more, scaled to how hard the exercise is (10 pushups ≈ 3, 30 ≈ 9; 12 pull-ups ≈ 6), and longer holds or a heavier backpack earn more too, up to 12 per set. Coins are separate and still pay for land, upgrades and the store.
 
 **Today's plan** is exactly what the Train tab shows: your rotating-program day, or your equipped lineup when the program is off. Sets in today's plan earn full materials. A few sets beyond the plan earn half, then nothing, because rest is part of training. Finishing the whole plan earns a session bonus. Sets under 10 seconds don't earn anything.
@@ -510,7 +512,7 @@ Every set you finish earns materials for your own base. Tap **Base** in the bott
 
 | Building | What it does |
 |---|---|
-| **Headquarters** | The heart of the base. Other buildings can't be a higher level than HQ. Each HQ level also needs weeks on target (2 for level 2, 6 for level 3). |
+| **Headquarters** | The heart of the base. Other buildings can't be a higher level than HQ. Level 2 is open from the start (build a Lodge first for the second builder); level 3 also needs 2 weeks on target. |
 | **Watchtower** | Daily quests from today's plan. Each level adds a quest slot. |
 | **Training Yard** | Shows today's workout as stations; raises the session bonus. |
 | **Lodge** | +1 builder per level (one Lodge per base), and stores streak shields for unplanned misses. |

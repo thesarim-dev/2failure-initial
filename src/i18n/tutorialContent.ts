@@ -25,7 +25,7 @@ const en: TutorialContent = {
     },
     coins: {
       title: 'Coins',
-      body: 'Every finished set earns coins. Longer sets earn more, up to 2 minutes.'
+      body: 'Every finished set earns about 25–30 coins. Spend them on new exercises and base upgrades.'
     },
     store: {
       title: 'Training',
@@ -86,7 +86,7 @@ const he: TutorialContent = {
     },
     coins: {
       title: 'מטבעות',
-      body: 'כל סט שמסתיים מזכה במטבעות. סט ארוך יותר מזכה ביותר, עד 2 דקות.'
+      body: 'כל סט שמסתיים מזכה בכ־25–30 מטבעות. השתמשו בהם לתרגילים חדשים ולשדרוגי הבסיס.'
     },
     store: {
       title: 'אימון',
@@ -147,7 +147,7 @@ const ar: TutorialContent = {
     },
     coins: {
       title: 'العملات',
-      body: 'كل مجموعة تكملها تمنحك عملات. المجموعة الأطول تمنح أكثر، حتى دقيقتين.'
+      body: 'كل مجموعة تكملها تمنحك نحو 25–30 عملة. أنفقها على تمارين جديدة وتطوير قاعدتك.'
     },
     store: {
       title: 'التدريب',

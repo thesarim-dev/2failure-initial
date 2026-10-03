@@ -4,8 +4,8 @@ import { USER_STATS_COLUMNS } from '../types/userStats';
 
 const DAY_RESET_HOUR = 3;
 export const STREAK_MIN_SETS_PER_DAY = 2;
-export const STREAK_RESTORE_BASE_COST = 50;
-export const STREAK_RESTORE_MAX_COST = 800;
+export const STREAK_RESTORE_BASE_COST = 100;
+export const STREAK_RESTORE_MAX_COST = 1600;
 
 export function shouldCountStreakForDay(
   totalSetsCompletedToday: number,
