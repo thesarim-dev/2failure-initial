@@ -1,3 +1,4 @@
+import { CoinsBadge } from '../CoinsBadge';
 import stoneIcon from '../../assets/resources/stone.png';
 import timberIcon from '../../assets/resources/timber.png';
 import crystalIcon from '../../assets/resources/crystal.png';
@@ -47,7 +48,6 @@ import {
   upgradeCoinCost,
   currentWeeklyStreak,
   forgeRate,
-  hqLevel,
   isQuietToday,
   placeBlocker,
   questSlots,
@@ -404,7 +404,6 @@ export function BaseScreen({
   const [paintWith, setPaintWith] = useState<TerrainId | null>(null);
   const lastPaintSound = useRef(0);
   const [decorGroup, setDecorGroup] = useState<DecorGroup | 'all'>('all');
-  const level = hqLevel(state);
   const levelInfo = baseLevel(state);
   const lastLevel = useRef(levelInfo.level);
 
@@ -531,12 +530,8 @@ export function BaseScreen({
       <header className="base-header">
         <h1 className="base-title">{state.baseName ?? g.title}</h1>
         <div className="base-header-chips">
-          <span className="base-coin-chip" title={g.coins(coins)}>
-            <Coins size={15} strokeWidth={2.5} aria-hidden="true" />
-            <span className="tabular-nums">{coins}</span>
-            <span className="sr-only">{g.coins(coins)}</span>
-          </span>
-          <span className="base-hq-chip">{g.hqLevel(level)}</span>
+          {/* Same coins badge as the Train tab. */}
+          <CoinsBadge coins={coins} />
         </div>
       </header>
 
