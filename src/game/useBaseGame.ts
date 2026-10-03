@@ -337,6 +337,8 @@ export function useBaseGame(
     paint: (tiles: Array<[number, number]>, terrain: TerrainId) => run(paintTerrain(stateRef.current, tiles, terrain)),
     flip: (uid: string) => run(flipItem(stateRef.current, uid)),
     rename: (name: string) => commit(setBaseName(stateRef.current, name)),
+    /** Demo build only: change the save directly (cheats for testing). */
+    devPatch: (fn: (state: GameState) => GameState) => commit(fn(stateRef.current)),
     move: (uid: string, x: number, y: number) => run(moveItem(stateRef.current, uid, x, y)),
     remove: (uid: string) => run(removeItem(stateRef.current, uid)),
     trade: (from: ResourceId, to: ResourceId) => run(tradeMaterials(stateRef.current, from, to)),

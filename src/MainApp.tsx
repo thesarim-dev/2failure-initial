@@ -48,6 +48,9 @@ import { isPoseAiTrackingEnabled } from './config/features';
 import { isPoseExerciseId } from './lib/pose/repCounterFactory';
 import { patternForMove, useBaseGame } from './game/useBaseGame';
 import { weekKeyForDay } from './game/engine';
+import { TROPHIES } from './game/catalog';
+
+const DEMO_TOOLS = import.meta.env.VITE_DEMO_TOOLS === 'true';
 import { fx, useSoundSetting } from './lib/feedback';
 import { BaseScreen } from './components/game/BaseScreen';
 import { AppTabBar } from './components/AppTabBar';
@@ -463,6 +466,33 @@ export function MainApp() {
   };
 
   const [hubTab, setHubTab] = useState<HubTab>('plan');
+  // Demo build only: one-tap cheats for testing the base and the shop.
+  const demoTools = {
+    addCoins: () => void setCoins((c) => c + 10000),
+    addMaterials: () =>
+      baseGame.devPatch((st) => ({
+        ...st,
+        resources: { stone: st.resources.stone + 5000, timber: st.resources.timber + 5000, crystal: st.resources.crystal + 5000 }
+      })),
+    finishBuilds: () =>
+      baseGame.devPatch((st) => ({
+        ...st,
+        placed: st.placed.map((p) => {
+          const job = st.constructions.find((j) => j.uid === p.uid);
+          return job ? { ...p, level: job.targetLevel } : p;
+        }),
+        constructions: []
+      })),
+    unlockAll: () =>
+      baseGame.devPatch((st) => ({
+        ...st,
+        trophies: Object.fromEntries(
+          TROPHIES.map((tr) => [tr.id, st.trophies[tr.id] ?? { earnedAt: new Date().toISOString(), value: 100 }])
+        ),
+        stats: { ...st.stats, weeksOnTarget: Math.max(st.stats.weeksOnTarget, 20), weeklyStreak: Math.max(st.stats.weeklyStreak, 12) }
+      }))
+  };
+
   const handleOpenPlan = () => {
     fx.tick();
     setHubTab('plan');
@@ -652,7 +682,8 @@ export function MainApp() {
         onReplayTour={handleReplayTour}
         soundOn={soundOn}
         onToggleSound={toggleSound}
-        onOpenPlan={handleOpenPlan} />
+        onOpenPlan={handleOpenPlan}
+        demoTools={DEMO_TOOLS ? demoTools : undefined} />
 
       }
 

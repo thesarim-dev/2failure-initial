@@ -17,6 +17,8 @@ interface SettingsProps {
   onToggleSound: () => void;
   /** Opens the Training screen on its Plan tab. */
   onOpenPlan: () => void;
+  /** Demo build only: testing cheats. Undefined in the real app. */
+  demoTools?: { addCoins: () => void; addMaterials: () => void; finishBuilds: () => void; unlockAll: () => void };
 }
 
 export function Settings({
@@ -28,7 +30,8 @@ export function Settings({
   onReplayTour,
   soundOn,
   onToggleSound,
-  onOpenPlan
+  onOpenPlan,
+  demoTools
 }: SettingsProps) {
   const { signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -56,6 +59,27 @@ export function Settings({
             </button>
           </div>
         </section>
+
+        {demoTools && (
+          <section className="cyber-panel p-5 normal-case demo-tools">
+            <h2 className="settings-section-title">Demo tools</h2>
+            <p className="text-sm font-medium opacity-70 mb-3">Only in the demo. Top up and unlock things to test the base.</p>
+            <div className="demo-tools-grid">
+              <button type="button" className="demo-tools-btn" onClick={demoTools.addCoins}>
+                +10,000 coins
+              </button>
+              <button type="button" className="demo-tools-btn" onClick={demoTools.addMaterials}>
+                +5,000 materials
+              </button>
+              <button type="button" className="demo-tools-btn" onClick={demoTools.finishBuilds}>
+                Finish all builds
+              </button>
+              <button type="button" className="demo-tools-btn" onClick={demoTools.unlockAll}>
+                Unlock trophies + weeks
+              </button>
+            </div>
+          </section>
+        )}
 
         <section className="cyber-panel p-5 normal-case">
           <div className="settings-appearance-row">
