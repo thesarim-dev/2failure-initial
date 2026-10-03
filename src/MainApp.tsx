@@ -47,7 +47,6 @@ import { FirstSetCoach, type FirstSetStage } from './components/FirstSetCoach';
 import { isPoseAiTrackingEnabled } from './config/features';
 import { isPoseExerciseId } from './lib/pose/repCounterFactory';
 import { patternForMove, useBaseGame } from './game/useBaseGame';
-import { weekKeyForDay } from './game/engine';
 import { TROPHIES } from './game/catalog';
 
 const DEMO_TOOLS = import.meta.env.VITE_DEMO_TOOLS === 'true';
@@ -637,8 +636,7 @@ export function MainApp() {
         onSelectMove={handleSelectMove}
         onOpenPlan={handleOpenPlan}
         trainingDaysPerWeek={trainingDaysPerWeek}
-        weekTrainingDays={baseGame.state.stats.week === weekKeyForDay(toLocalDateString()) ? baseGame.state.stats.weekTrainingDays : []}
-        weeklyTarget={weeklyTarget} />
+ />
 
       }
 

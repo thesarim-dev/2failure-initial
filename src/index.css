@@ -5520,4 +5520,69 @@
       animation: none;
     }
   }
+
+  /* ---------- Trio v2: two matching buttons flanking a big flame ---------- */
+  .home-trio {
+    grid-template-columns: auto auto auto;
+    justify-content: center;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  /* Same look for both: a raised button that presses down. */
+  .trio-tile,
+  .trio-tile.trio-rest,
+  .trio-tile.trio-plan {
+    width: 6.6rem;
+    min-height: 0;
+    height: 6.6rem;
+    gap: 0.25rem;
+    padding: 0.55rem 0.4rem;
+    border-radius: 1.1rem;
+    color: #0a5a78;
+    background: linear-gradient(180deg, #ffffff 0%, #eaf7fc 100%);
+    border: 2px solid #00a8d8;
+    box-shadow: 0 5px 0 #0a7a9e, 0 8px 14px rgba(0, 0, 0, 0.18);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  }
+  .dark .trio-tile,
+  .dark .trio-tile.trio-rest,
+  .dark .trio-tile.trio-plan {
+    color: #9fe6ff;
+    background: linear-gradient(180deg, #1d2a33 0%, #141b22 100%);
+    border-color: #00b2ff;
+    box-shadow: 0 5px 0 #075a7a, 0 8px 16px rgba(0, 0, 0, 0.45);
+  }
+  .trio-tile:not(:disabled):not(.is-resting):hover {
+    filter: brightness(1.08);
+  }
+  .trio-tile:not(:disabled):not(.is-resting):active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #0a7a9e, 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+  .dark .trio-tile:not(:disabled):not(.is-resting):active {
+    box-shadow: 0 1px 0 #075a7a, 0 3px 6px rgba(0, 0, 0, 0.4);
+  }
+  .trio-tile .trio-tile-title {
+    font-size: 0.74rem;
+    font-weight: 900;
+  }
+  .trio-tile .trio-tile-sub {
+    font-size: 0.62rem;
+  }
+  .trio-plan-icon {
+    width: 30px;
+    height: 30px;
+  }
+  .trio-tile.trio-rest.is-resting {
+    border-style: dashed;
+    box-shadow: none;
+    opacity: 0.9;
+  }
+  .trio-tile.trio-rest:disabled {
+    opacity: 0.45;
+    box-shadow: none;
+  }
+  .trio-streak {
+    width: auto;
+  }
 }

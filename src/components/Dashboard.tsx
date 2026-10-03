@@ -1,4 +1,3 @@
-import { WeekStrip } from './WeekStrip';
 import { StreakFlame } from './StreakFlame';
 import { ResourceIcon } from './game/BaseScreen';
 import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog';
@@ -62,9 +61,6 @@ interface DashboardProps {
   /** Training screen, Plan tab. */
   onOpenPlan: () => void;
   trainingDaysPerWeek: number;
-  /** App days trained this week, and the weekly target, for "This week". */
-  weekTrainingDays: string[];
-  weeklyTarget: number;
 }
 
 export function Dashboard({
@@ -106,9 +102,7 @@ export function Dashboard({
   pushupRepsLoading,
   onSelectMove,
   onOpenPlan,
-  trainingDaysPerWeek,
-  weekTrainingDays,
-  weeklyTarget
+  trainingDaysPerWeek
 }: DashboardProps) {
   const { t, language, isRtl } = useLanguage();
   const rewardFor = (move: Move) => {
@@ -210,7 +204,7 @@ export function Dashboard({
       <section className="home-trio mb-4 normal-case" aria-label={t.dashboard.aria.funFactAndStreak}>
         {isRestDayToday ? (
           <div className="trio-tile trio-rest is-resting" role="status">
-            <BedDouble size={24} strokeWidth={2.5} aria-hidden="true" />
+            <BedDouble size={26} strokeWidth={2.5} aria-hidden="true" />
             <span className="trio-tile-title">{t.hub.trio.resting}</span>
             <span className="trio-tile-sub">{t.hub.trio.safe}</span>
           </div>
@@ -220,7 +214,7 @@ export function Dashboard({
             onClick={onTakeRestDay}
             disabled={!canTakeRestDay}
             className="trio-tile trio-rest">
-            <BedDouble size={24} strokeWidth={2.5} aria-hidden="true" />
+            <BedDouble size={26} strokeWidth={2.5} aria-hidden="true" />
             <span className="trio-tile-title">{t.dashboard.restDay.button}</span>
             <span className="trio-tile-sub">
               {canTakeRestDay ? t.hub.trio.left(restDaysRemainingThisWeek) : t.hub.trio.none}
@@ -241,11 +235,8 @@ export function Dashboard({
         </div>
 
         <button type="button" className="trio-tile trio-plan" data-tour="store" onClick={onOpenPlan}>
-          <img src={planIcon} alt="" aria-hidden="true" className="trio-plan-icon" width={38} height={38} />
+          <img src={planIcon} alt="" aria-hidden="true" className="trio-plan-icon" width={30} height={30} />
           <span className="trio-tile-title">{t.hub.trio.edit}</span>
-          <span className={`plan-card-badge ${rotatingProgramEnabled ? 'is-program' : 'is-own'}`}>
-            {rotatingProgramEnabled ? t.hub.dashCard.programBadge : t.hub.dashCard.ownBadge}
-          </span>
           <span className="trio-tile-sub">{planShort}</span>
         </button>
       </section>
@@ -277,16 +268,6 @@ export function Dashboard({
           </div>
         </section>
       )}
-
-      <div className="mb-5">
-        <WeekStrip
-          weekTrainingDays={weekTrainingDays}
-          recentRestDays={recentRestDays}
-          isRestDayToday={isRestDayToday}
-          totalSetsToday={totalSetsToday}
-          weeklyTarget={weeklyTarget}
-        />
-      </div>
 
       <div>
         {rotatingProgramEnabled && !isRestDayToday && rotatingProgramPhase !== null && rotatingProgramCycleDay !== null && (
