@@ -5585,4 +5585,60 @@
   .trio-streak {
     width: auto;
   }
+
+  /* ---------- Trio v3: everything a size smaller, still clear ---------- */
+  .home-trio {
+    gap: 0.75rem;
+  }
+  .trio-tile,
+  .trio-tile.trio-rest,
+  .trio-tile.trio-plan {
+    width: 5.4rem;
+    height: 5.4rem;
+    gap: 0.18rem;
+    padding: 0.4rem 0.3rem;
+    border-radius: 0.95rem;
+    box-shadow: 0 4px 0 #0a7a9e, 0 6px 10px rgba(0, 0, 0, 0.16);
+  }
+  .dark .trio-tile,
+  .dark .trio-tile.trio-rest,
+  .dark .trio-tile.trio-plan {
+    box-shadow: 0 4px 0 #075a7a, 0 6px 12px rgba(0, 0, 0, 0.4);
+  }
+  .trio-tile:not(:disabled):not(.is-resting):active {
+    transform: translateY(3px);
+  }
+  .trio-tile svg {
+    width: 21px;
+    height: 21px;
+  }
+  .trio-plan-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .trio-tile .trio-tile-title {
+    font-size: 0.66rem;
+    letter-spacing: 0.01em;
+  }
+  .trio-tile .trio-tile-sub {
+    font-size: 0.56rem;
+    font-weight: 800;
+  }
+  .streak-flame.is-lg .streak-flame-fire {
+    width: 80px;
+    height: 94px;
+  }
+  .streak-flame.is-lg .streak-flame-count {
+    margin-top: 45px;
+    font-size: 1.9rem;
+  }
+  .streak-flame.is-lg .streak-neon {
+    font-size: 0.78rem;
+    padding: 3px 7px 2px;
+  }
+  .trio-pedestal {
+    width: 5.2rem;
+    height: 1.3rem;
+    bottom: 1.6rem;
+  }
 }
