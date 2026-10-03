@@ -234,27 +234,36 @@ export function Dashboard({
             )}
           </div>
 
-          {canRestoreStreak && shields > 0 && (
-            <button
-              type="button"
-              onClick={onUseShield}
-              disabled={restoringStreak}
-              className="rounded-full border border-[#F2A541] bg-white/80 dark:bg-[#2a2a2a]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#8A4F00] dark:text-[#FFC784] disabled:cursor-not-allowed disabled:opacity-60">
-              {t.game.lodge.useShield(shields)}
-            </button>
-          )}
-          {canRestoreStreak && (
+        </div>
+      </section>
+
+      {/* Streak broke: a clear banner to bring it back (before the 2nd set today). */}
+      {canRestoreStreak && (
+        <section className="streak-restore-banner mb-4 normal-case" role="status">
+          <p className="streak-restore-title">
+            <span aria-hidden="true">🔥</span> {t.hub.restoreBanner.title(Math.max(currentStreak, longestStreak))}
+          </p>
+          <p className="streak-restore-sub">{t.hub.restoreBanner.sub}</p>
+          <div className="streak-restore-actions">
+            {shields > 0 && (
+              <button type="button" onClick={onUseShield} disabled={restoringStreak} className="streak-restore-btn is-shield">
+                {t.game.lodge.useShield(shields)}
+              </button>
+            )}
             <button
               type="button"
               onClick={onRestoreStreak}
               disabled={restoringStreak || coins < restoreStreakCost}
-              className="rounded-full border border-[#E85520] dark:border-[#FF6633] bg-white/80 dark:bg-[#2a2a2a]/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#B83810] dark:text-[#FFB38A] disabled:cursor-not-allowed disabled:opacity-60">
-              {restoringStreak ? t.dashboard.streakRestore.loading : t.dashboard.streakRestore.label}
-              <span className="ml-1">{t.dashboard.streakRestore.cost(restoreStreakCost)}</span>
+              className="streak-restore-btn is-coins">
+              {restoringStreak
+                ? t.dashboard.streakRestore.loading
+                : coins < restoreStreakCost
+                  ? t.hub.restoreBanner.notEnough(restoreStreakCost)
+                  : t.dashboard.streakRestore.cost(restoreStreakCost)}
             </button>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {/* Row 2: rest day and the plan, side by side, centred. */}
       <div className="dashboard-actions-row mb-5 normal-case">

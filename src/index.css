@@ -5328,4 +5328,59 @@
     font-size: 0.7rem;
     margin-top: 0.15rem;
   }
+
+  /* ---------- Streak restore banner ---------- */
+  .streak-restore-banner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 1rem;
+    background: rgba(255, 102, 51, 0.1);
+    border: 1px solid rgba(255, 102, 51, 0.45);
+  }
+  .streak-restore-title {
+    font-weight: 900;
+    font-size: 0.98rem;
+  }
+  .streak-restore-sub {
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0.75;
+    line-height: 1.35;
+  }
+  .streak-restore-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+  .streak-restore-btn {
+    min-height: 2.5rem;
+    padding: 0 1rem;
+    border-radius: 0.8rem;
+    font-weight: 900;
+    font-size: 0.85rem;
+  }
+  .streak-restore-btn.is-coins {
+    color: #ffffff;
+    background: linear-gradient(180deg, #ff8a4c 0%, #e85520 100%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
+  }
+  .streak-restore-btn.is-shield {
+    color: #8a4f00;
+    background: rgba(242, 165, 65, 0.2);
+    border: 1px solid rgba(242, 165, 65, 0.6);
+  }
+  .dark .streak-restore-btn.is-shield {
+    color: #ffc784;
+  }
+  .streak-restore-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .streak-restore-btn:focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
 }

@@ -41,6 +41,7 @@ export type HubCopy = {
     programRest: (days: number) => string;
   };
   settingsTab: string;
+  restoreBanner: { title: (streak: number) => string; sub: string; notEnough: (cost: number) => string };
   week: {
     title: string;
     line: (done: number, target: number) => string;
@@ -106,6 +107,11 @@ const en: HubCopy = {
     programRest: (days) => `Rest day · ${days}-day split`
   },
   settingsTab: 'Settings',
+  restoreBanner: {
+    title: (streak) => `Your ${streak}-day streak broke.`,
+    sub: 'Bring it back before your 2nd set today, or it starts over.',
+    notEnough: (cost) => `Need ${cost} coins to restore`
+  },
   week: {
     title: 'This week',
     line: (done, target) => `${done} of ${target} training days`,
@@ -171,6 +177,11 @@ const he: HubCopy = {
     programRest: (days) => `יום מנוחה · חלוקת ${days} ימים`
   },
   settingsTab: 'הגדרות',
+  restoreBanner: {
+    title: (streak) => `הרצף שלך של ${streak} ימים נשבר.`,
+    sub: 'אפשר להחזיר אותו לפני הסט השני היום, אחרת הוא מתחיל מחדש.',
+    notEnough: (cost) => `צריך ${cost} מטבעות לשחזור`
+  },
   week: {
     title: 'השבוע',
     line: (done, target) => `${done} מתוך ${target} ימי אימון`,
@@ -236,6 +247,11 @@ const ar: HubCopy = {
     programRest: (days) => `يوم راحة · تقسيم ${days} أيام`
   },
   settingsTab: 'الإعدادات',
+  restoreBanner: {
+    title: (streak) => `انقطعت سلسلتك المكوّنة من ${streak} أيام.`,
+    sub: 'استعدها قبل مجموعتك الثانية اليوم، وإلا ستبدأ من جديد.',
+    notEnough: (cost) => `تحتاج ${cost} عملة للاستعادة`
+  },
   week: {
     title: 'هذا الأسبوع',
     line: (done, target) => `${done} من ${target} أيام تدريب`,
