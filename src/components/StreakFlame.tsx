@@ -2,9 +2,9 @@
  * The streak as a glossy, living flame. Lit (warm, flickering, glowing) once
  * today's streak is protected; a dim ember with a slow flicker until then.
  */
-export function StreakFlame({ count, lit, label }: { count: number; lit: boolean; label: string }) {
+export function StreakFlame({ count, lit, label, size = 'md' }: { count: number; lit: boolean; label: string; size?: 'md' | 'lg' }) {
   return (
-    <div className={`streak-flame ${lit ? 'is-lit' : 'is-unlit'}`}>
+    <div className={`streak-flame ${lit ? 'is-lit' : 'is-unlit'} ${size === 'lg' ? 'is-lg' : ''}`}>
       <div className="streak-flame-fire">
       <svg viewBox="0 0 80 96" className="streak-flame-svg" aria-hidden="true">
         <defs>

@@ -5,7 +5,7 @@ import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog'
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BedDouble, ChevronRight, Loader2 } from 'lucide-react';
+import { BedDouble, Loader2 } from 'lucide-react';
 import planIcon from '../assets/plan-icon.png';
 import { FailureLogo } from './FailureLogo';
 import { CoinsBadge } from './CoinsBadge';
@@ -117,19 +117,15 @@ export function Dashboard({
   };
   const rewardLabel = (move: Move) => rewardFor(move).map((id) => t.game.resources[id]).join(' · ');
   // The current plan, in one line: own plan (sets a day) or program (which day).
+  const planShort = rotatingProgramEnabled
+    ? isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
+      ? t.hub.trio.programRest
+      : t.hub.trio.programShort(rotatingProgramCycleDay ?? 1, rotationCycleLength, t.settings.rotatingProgram.phases[rotatingProgramPhase])
+    : t.hub.trio.ownShort(dailySetGoal, trainingDaysPerWeek);
+
   // Lit once today's streak is safe: trained today, or a planned rest day.
   const streakProtectedToday = lastWorkoutDate === toLocalDateString() || isRestDayToday;
 
-  const planLine = rotatingProgramEnabled
-    ? isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
-      ? t.hub.dashCard.programRest(rotationCycleLength)
-      : t.hub.dashCard.program(
-          rotationCycleLength,
-          // Already 1-based, matching the program banner ("Program day 1/5").
-          rotatingProgramCycleDay ?? 1,
-          t.settings.rotatingProgram.phases[rotatingProgramPhase]
-        )
-    : t.hub.dashCard.own(dailySetGoal, trainingDaysPerWeek);
 
   const totalSetsToday = useMemo(
     () => sumDailySets(setsCompleted),
@@ -210,31 +206,48 @@ export function Dashboard({
         </p>
       )}
 
-      {/* Row 1: this week, with the streak beside it. */}
-      <section className="mb-4 flex items-center gap-3 normal-case" aria-label={t.dashboard.aria.funFactAndStreak}>
-        <div className="flex-1 min-w-0">
-          <WeekStrip
-            compact
-            weekTrainingDays={weekTrainingDays}
-            recentRestDays={recentRestDays}
-            isRestDayToday={isRestDayToday}
-            totalSetsToday={totalSetsToday}
-            weeklyTarget={weeklyTarget}
-          />
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <div
-            data-tour="streak"
-            className="streak-flame-wrap shrink-0 flex items-center justify-center"
-            aria-label={t.dashboard.aria.streakDays(currentStreak)}>
-            {statsLoading || statsCompleting ? (
-              <Loader2 size={18} className="animate-spin" aria-busy="true" />
-            ) : (
-              <StreakFlame count={currentStreak} lit={streakProtectedToday} label={t.dashboard.streak} />
-            )}
+      {/* One row: rest day · the streak (centrepiece) · edit your workout. */}
+      <section className="home-trio mb-4 normal-case" aria-label={t.dashboard.aria.funFactAndStreak}>
+        {isRestDayToday ? (
+          <div className="trio-tile trio-rest is-resting" role="status">
+            <BedDouble size={24} strokeWidth={2.5} aria-hidden="true" />
+            <span className="trio-tile-title">{t.hub.trio.resting}</span>
+            <span className="trio-tile-sub">{t.hub.trio.safe}</span>
           </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onTakeRestDay}
+            disabled={!canTakeRestDay}
+            className="trio-tile trio-rest">
+            <BedDouble size={24} strokeWidth={2.5} aria-hidden="true" />
+            <span className="trio-tile-title">{t.dashboard.restDay.button}</span>
+            <span className="trio-tile-sub">
+              {canTakeRestDay ? t.hub.trio.left(restDaysRemainingThisWeek) : t.hub.trio.none}
+            </span>
+          </button>
+        )}
 
+        <div
+          data-tour="streak"
+          className="trio-streak"
+          aria-label={t.dashboard.aria.streakDays(currentStreak)}>
+          <span className={`trio-pedestal ${streakProtectedToday ? 'is-lit' : ''}`} aria-hidden="true" />
+          {statsLoading || statsCompleting ? (
+            <Loader2 size={22} className="animate-spin" aria-busy="true" />
+          ) : (
+            <StreakFlame count={currentStreak} lit={streakProtectedToday} label={t.dashboard.streak} size="lg" />
+          )}
         </div>
+
+        <button type="button" className="trio-tile trio-plan" data-tour="store" onClick={onOpenPlan}>
+          <img src={planIcon} alt="" aria-hidden="true" className="trio-plan-icon" width={38} height={38} />
+          <span className="trio-tile-title">{t.hub.trio.edit}</span>
+          <span className={`plan-card-badge ${rotatingProgramEnabled ? 'is-program' : 'is-own'}`}>
+            {rotatingProgramEnabled ? t.hub.dashCard.programBadge : t.hub.dashCard.ownBadge}
+          </span>
+          <span className="trio-tile-sub">{planShort}</span>
+        </button>
       </section>
 
       {/* Streak broke: a clear banner to bring it back (before the 2nd set today). */}
@@ -265,40 +278,17 @@ export function Dashboard({
         </section>
       )}
 
-      {/* Row 2: rest day and the plan, side by side, centred. */}
-      <div className="dashboard-actions-row mb-5 normal-case">
-        {!isRestDayToday && canTakeRestDay && (
-          <button type="button" onClick={onTakeRestDay} className="rest-day-tile normal-case">
-            <BedDouble size={20} strokeWidth={2.5} aria-hidden="true" />
-            <span className="rest-day-tile-label">{t.dashboard.restDay.button}</span>
-            <span className="rest-day-tile-left">{t.dashboard.restDay.remaining(restDaysRemainingThisWeek)}</span>
-          </button>
-        )}
-        <button
-          type="button"
-          className="plan-card plan-card--compact cyber-panel normal-case text-start"
-          data-tour="store"
-          onClick={onOpenPlan}>
-          <img src={planIcon} alt="" aria-hidden="true" className="plan-card-icon" width={40} height={40} />
-          <span className="plan-card-text">
-            <span className="plan-card-title">{t.hub.dashCard.title}</span>
-            <span className="plan-card-meta">
-              <span className={`plan-card-badge ${rotatingProgramEnabled ? 'is-program' : 'is-own'}`}>
-                {rotatingProgramEnabled ? t.hub.dashCard.programBadge : t.hub.dashCard.ownBadge}
-              </span>
-              <span className="plan-card-line">{planLine}</span>
-            </span>
-          </span>
-          <ChevronRight size={18} strokeWidth={2.5} className="plan-card-chevron tour-icon-flip" aria-hidden="true" />
-        </button>
+      <div className="mb-5">
+        <WeekStrip
+          weekTrainingDays={weekTrainingDays}
+          recentRestDays={recentRestDays}
+          isRestDayToday={isRestDayToday}
+          totalSetsToday={totalSetsToday}
+          weeklyTarget={weeklyTarget}
+        />
       </div>
 
       <div>
-        {isRestDayToday && (
-          <p className="mb-2 text-sm font-semibold text-[#00A8D8] dark:text-[#00B2FF] normal-case text-center">
-            {rotatingProgramEnabled ? t.dashboard.restDay.active : t.dashboard.restDay.activeFree}
-          </p>
-        )}
         {rotatingProgramEnabled && !isRestDayToday && rotatingProgramPhase !== null && rotatingProgramCycleDay !== null && (
           <p data-tour="program" className="mb-2 text-sm font-semibold text-[#00A8D8] dark:text-[#00B2FF] normal-case text-start">
             {t.dashboard.rotatingProgramFocus(

@@ -5406,4 +5406,118 @@
   .dark .demo-tools-btn {
     color: #f7c948;
   }
+
+  /* ---------- Home trio: rest day · streak · edit workout ---------- */
+  .home-trio {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+  .trio-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.8rem 0.5rem;
+    border-radius: 1.2rem;
+    text-align: center;
+    min-height: 9.5rem;
+  }
+  .trio-tile-title {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+  .trio-tile-sub {
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.25;
+    opacity: 0.75;
+  }
+  .trio-rest {
+    color: #007a9e;
+    background: linear-gradient(180deg, rgba(0, 168, 216, 0.12) 0%, rgba(0, 168, 216, 0.04) 100%);
+    border: 1.5px solid rgba(0, 168, 216, 0.5);
+  }
+  .dark .trio-rest {
+    color: #7adcff;
+    border-color: rgba(0, 178, 255, 0.42);
+  }
+  .trio-rest:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .trio-rest.is-resting {
+    border-style: dashed;
+  }
+  .trio-plan {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .dark .trio-plan {
+    background: #15151d;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .trio-plan:hover,
+  .trio-rest:not(:disabled):hover {
+    filter: brightness(1.08);
+  }
+  .trio-plan-icon {
+    width: 38px;
+    height: 38px;
+  }
+  .trio-plan .plan-card-badge {
+    font-size: 0.55rem;
+  }
+  :is(.trio-rest, .trio-plan):focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
+  /* The centrepiece: a bigger flame on a glowing pedestal. */
+  .trio-streak {
+    position: relative;
+    width: 7.6rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 0.2rem;
+  }
+  .trio-pedestal {
+    position: absolute;
+    left: 50%;
+    bottom: 1.9rem;
+    width: 6.4rem;
+    height: 1.6rem;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+  }
+  .trio-pedestal.is-lit {
+    background: radial-gradient(ellipse at center, rgba(255, 150, 40, 0.45) 0%, rgba(255, 90, 30, 0) 70%);
+    animation: pedestal-glow 2s ease-in-out infinite;
+  }
+  @keyframes pedestal-glow {
+    0%, 100% { opacity: 0.75; }
+    50% { opacity: 1; }
+  }
+  .streak-flame.is-lg .streak-flame-fire {
+    width: 100px;
+    height: 118px;
+  }
+  .streak-flame.is-lg .streak-flame-count {
+    margin-top: 56px;
+    font-size: 2.4rem;
+  }
+  .streak-flame.is-lg .streak-neon {
+    font-size: 0.95rem;
+    padding: 4px 9px 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .trio-pedestal.is-lit {
+      animation: none;
+    }
+  }
 }

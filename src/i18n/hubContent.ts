@@ -42,6 +42,16 @@ export type HubCopy = {
   };
   settingsTab: string;
   restoreBanner: { title: (streak: number) => string; sub: string; notEnough: (cost: number) => string };
+  trio: {
+    edit: string;
+    ownShort: (sets: number, days: number) => string;
+    programShort: (day: number, days: number, phase: string) => string;
+    programRest: string;
+    left: (n: number) => string;
+    none: string;
+    resting: string;
+    safe: string;
+  };
   week: {
     title: string;
     line: (done: number, target: number) => string;
@@ -107,6 +117,16 @@ const en: HubCopy = {
     programRest: (days) => `Rest day · ${days}-day split`
   },
   settingsTab: 'Settings',
+  trio: {
+    edit: 'Edit workout',
+    ownShort: (sets, days) => `${sets} sets · ${days} days`,
+    programShort: (day, days, phase) => `Day ${day}/${days} · ${phase}`,
+    programRest: 'Rest day',
+    left: (n) => `${n} left this week`,
+    none: 'None left this week',
+    resting: 'Resting',
+    safe: 'Streak safe today'
+  },
   restoreBanner: {
     title: (streak) => `Your ${streak}-day streak broke.`,
     sub: 'Bring it back before your 2nd set today, or it starts over.',
@@ -177,6 +197,16 @@ const he: HubCopy = {
     programRest: (days) => `יום מנוחה · חלוקת ${days} ימים`
   },
   settingsTab: 'הגדרות',
+  trio: {
+    edit: 'עריכת אימון',
+    ownShort: (sets, days) => `${sets} סטים · ${days} ימים`,
+    programShort: (day, days, phase) => `יום ${day}/${days} · ${phase}`,
+    programRest: 'יום מנוחה',
+    left: (n) => `נשארו ${n} השבוע`,
+    none: 'לא נשארו השבוע',
+    resting: 'במנוחה',
+    safe: 'הרצף מוגן היום'
+  },
   restoreBanner: {
     title: (streak) => `הרצף שלך של ${streak} ימים נשבר.`,
     sub: 'אפשר להחזיר אותו לפני הסט השני היום, אחרת הוא מתחיל מחדש.',
@@ -247,6 +277,16 @@ const ar: HubCopy = {
     programRest: (days) => `يوم راحة · تقسيم ${days} أيام`
   },
   settingsTab: 'الإعدادات',
+  trio: {
+    edit: 'تعديل التمرين',
+    ownShort: (sets, days) => `${sets} مجموعات · ${days} أيام`,
+    programShort: (day, days, phase) => `اليوم ${day}/${days} · ${phase}`,
+    programRest: 'يوم راحة',
+    left: (n) => `متبقٍ ${n} هذا الأسبوع`,
+    none: 'لا شيء متبقٍ هذا الأسبوع',
+    resting: 'في راحة',
+    safe: 'سلسلتك آمنة اليوم'
+  },
   restoreBanner: {
     title: (streak) => `انقطعت سلسلتك المكوّنة من ${streak} أيام.`,
     sub: 'استعدها قبل مجموعتك الثانية اليوم، وإلا ستبدأ من جديد.',
