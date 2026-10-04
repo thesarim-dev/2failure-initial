@@ -21,7 +21,7 @@
 6. [Complete a workout](#6-complete-a-workout)
 7. [Log reps and weight](#7-log-reps-and-weight)
 8. [Review your set summary](#8-review-your-set-summary)
-9. [Use the store and build your lineup](#9-use-the-store-and-build-your-lineup)
+9. [Plan your training and shop for exercises](#9-plan-your-training-and-shop-for-exercises)
 10. [Follow the rotating program](#10-follow-the-rotating-program)
 11. [Adjust settings](#11-adjust-settings)
 12. [Track progress over time](#12-track-progress-over-time)
@@ -425,19 +425,19 @@ Tap **sign out** to end your session. Your progress remains saved and restores o
 
 ### Coins
 
-You earn coins after every completed set. Rewards are based on the exercise tier and the set duration, with a hard cap at 2 minutes:
+You earn coins after every finished set of **10 seconds or more**:
 
-> **Coins earned = min(max points for tier, ceil(min(duration in seconds, 120) / 120 × max points for tier))**
+> **Coins = 20 + effort bonus (up to 10, full at 60 seconds) + tier bonus (Pro +5, Elite +10)**
 
-| Exercise tier | Max coins at 2 minutes |
+| Set | Coins |
 |---|---:|
-| Base | 10 |
-| Pro | 20 |
-| Elite | 30 |
+| Under 10 seconds | 0 |
+| 30-second Base set | 25 |
+| 35-second Base set | 26 |
+| 45-second Pro set | 33 |
+| 60+ second Elite set | 40 (the maximum) |
 
-Examples:
-
-- A 1-minute Base exercise earns 5 coins.
+A typical set earns about **25–30 coins**. Spend them on new exercises, base upgrades, land and streak restores.
 - A 1-minute Pro exercise earns 10 coins.
 - A 2-minute Elite exercise earns 30 coins.
 - Any set longer than 2 minutes still earns the same maximum coins for that tier.
@@ -491,9 +491,7 @@ Rep and weight personal bests are recorded automatically when you log sets. The 
 | Issue | Resolution |
 |---|---|
 | Cannot afford an exercise | Complete more sets to earn coins. |
-| Cannot equip upper exercise | You need 1 push + 1 pull equipped. Unequip one first if slots are full. |
-| Equip buttons disabled | Turn off the rotating program in Settings to edit your lineup. |
-| An exercise I had equipped is gone | Barbell and dumbbell moves were removed. They are replaced in your lineup by the closest free move. |
+| Can't change an exercise in my lineup | You're following the program, which picks each day's exercises. Switch to **Build my own** in **Training → Plan** to choose them yourself. |
 
 ### Data loading errors
 
