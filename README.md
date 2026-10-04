@@ -139,13 +139,11 @@ The home screen is your command center. Everything you need for today's session 
 
 ### Streak badge
 
-The orange flame badge shows your **current streak**: the number of consecutive days you have completed at least two sets (any exercises). The count updates after your second set of the day.
+The flame shows your **current streak**. It lights up once today is protected (your second set, or a rest day). Your streak counts **days on plan**: days you train (at least two sets, any exercises) plus rest days. You can rest up to a set number of days in any rolling 7-day window: **7 minus your weekly training target** (building your own plan: 3 rest days at 4 days a week, 2 at 5 or 6; on the program: 4 on the 3-day split, 3 on the 4-day, 2 on the 5-day). Missed days count as rest automatically, so you don't have to tap **Rest day** (that button just swaps today to stretches). The streak only breaks when you take more rest days in a 7-day window than your allowance, or after about two weeks off. When you train again after resting, the rest days are added to your streak count.
 
-If you miss a day (a full day with fewer than two sets), a **Restore streak** action appears on the dashboard. It does not appear just because you have not trained yet today, or because your current streak is below your longest. Restore is unlimited. The first restore each month costs **100 coins**, then the price doubles with each use (**200**, **400**, **800**) and caps at **1,600**. The price resets to 100 at the start of each month.
+If your streak breaks (more rest than your allowance), a **Restore streak** banner appears on the home screen. It does not appear just because you have not trained yet today, or because your current streak is below your longest. Restore is unlimited. The first restore each month costs **100 coins**, then the price doubles with each use (**200**, **400**, **800**) and caps at **1,600**. The price resets to 100 at the start of each month.
 
 ### Fun fact panel
-
-A rotating panel of random general-information fun facts appears beside your streak badge. Facts refresh when you reload the app or change language.
 
 ### Exercise cards
 
@@ -448,9 +446,9 @@ If a set goes over 2 minutes, the receipt recommends switching to a harder exerc
 
 ### Streaks
 
-Complete at least two sets on a given day — they can be any exercises — to keep your streak alive. The flame badge on the home screen shows your current count. Missing a day resets the streak to zero.
+Your streak counts **days on plan**: days you train (at least two sets, any exercises) plus rest days. You can rest up to a set number of days in any rolling 7-day window: **7 minus your weekly training target** (building your own plan: 3 rest days at 4 days a week, 2 at 5 or 6; on the program: 4 on the 3-day split, 3 on the 4-day, 2 on the 5-day). Missed days count as rest automatically, so you don't have to tap **Rest day** (that button just swaps today to stretches). The streak only breaks when you take more rest days in a 7-day window than your allowance, or after about two weeks off. When you train again after resting, the rest days are added to your streak count. A broken streak restarts at 1 on your next training day unless you restore it.
 
-If you miss a day, a **Restore streak** button appears on the home screen until you log two sets that day. You can restore as many times as you want. Cost starts at **100 coins** each month and doubles after every restore until it reaches **1,600**, then stays there until the next month.
+If your streak breaks, a **Restore streak** banner appears on the home screen until you log two sets that day (a Lodge shield restores it for free). You can restore as many times as you want. Cost starts at **100 coins** each month and doubles after every restore until it reaches **1,600**, then stays there until the next month.
 
 ### Pushup daily goal
 
