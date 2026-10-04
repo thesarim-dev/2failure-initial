@@ -586,3 +586,49 @@ The base is saved to your account in Supabase (table `base_games`), so it follow
 │  Icons:  👜 Store   ⚙ Settings   🔥 Streak   🪙 Coins     │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+## Launch setup: guest mode, analytics, reminders, error tracking
+
+Everything below is **optional and off by default**. The app works without any of it.
+
+### Guest mode ("Try it first")
+New players can start without an account. Behind the scenes this is a real Supabase **anonymous** account, so every feature works. After their first set (and in Settings), guests see **Save your progress**: linking Google or an email turns the same account into a permanent one, so nothing is lost.
+
+In Supabase:
+1. **Authentication → Sign In / Providers → Anonymous sign-ins:** turn **on**.
+2. **Authentication → Sign In / Providers → Allow manual linking:** turn **on** (needed for "Continue with Google").
+3. Recommended: turn on **CAPTCHA** (Attack protection) so bots can't create endless guest accounts.
+
+### Analytics (PostHog)
+Add `VITE_POSTHOG_KEY` (and `VITE_POSTHOG_HOST` if you use the US region) in Vercel and `.env`. Events sent (no emails, workout details or camera data):
+
+| Funnel | Events |
+|---|---|
+| Sign-in | `signin_view`, `signin_attempt` (method), `signin_error`, `signed_in` (guest yes/no), `guest_start` |
+| Guests | `guest_upgrade_start` (method, where), `guest_upgraded` |
+| Tour | `tour_start`, `tour_step` (step, index), `tour_complete`, `tour_skip` (step, index) |
+| Reminders | `reminders_prompt_shown`, `reminders_prompt_answer`, `reminders_permission`, `reminders_off` |
+| Program | `program_tip_shown`, `program_tip_accepted`, `program_tip_dismissed` |
+
+Useful PostHog funnels: **signin_view → signed_in**, **tour_start → tour_complete**, **guest_start → guest_upgraded**.
+
+### Flame reminders (web push)
+1. Generate keys: `npx web-push generate-vapid-keys`.
+2. Add `VITE_VAPID_PUBLIC_KEY` (the public key) in Vercel and `.env`.
+3. Run the migration `supabase/migrations/20261004120000_add_push_subscriptions.sql`.
+4. Deploy the function: `supabase functions deploy flame-reminders --no-verify-jwt`, then set its secrets: `supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=mailto:you@yourdomain CRON_SECRET=some-long-random-string`.
+5. Schedule it hourly (SQL editor; enable the `pg_cron` and `pg_net` extensions first):
+   ```sql
+   select cron.schedule('flame-reminders', '0 * * * *', $$
+     select net.http_post(
+       url := 'https://YOUR-PROJECT.supabase.co/functions/v1/flame-reminders',
+       headers := jsonb_build_object('Content-Type', 'application/json', 'x-cron-secret', 'SAME-CRON-SECRET'),
+       body := '{}'::jsonb
+     );
+   $$);
+   ```
+The function sends one reminder around **7 pm local time**, only to people who haven't trained that day. iPhone users must add the app to their home screen first (the app explains this).
+
+### Error tracking (Sentry)
+Add `VITE_SENTRY_DSN` in Vercel and `.env`.
+

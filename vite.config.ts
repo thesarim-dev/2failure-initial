@@ -46,6 +46,8 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Push notification handlers (flame reminders) live in public/push-handler.js.
+        importScripts: ['push-handler.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         navigateFallback: 'index.html',
         runtimeCaching: [

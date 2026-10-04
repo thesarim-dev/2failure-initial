@@ -1,3 +1,4 @@
+import { track } from '../lib/analytics';
 import {
   useCallback,
   useEffect,
@@ -144,13 +145,22 @@ export function GuidedTour({ onClose }: GuidedTourProps) {
   const isLast = index === total - 1;
   const isStart = step === 'start';
 
+  // Funnel: which step people reach, and whether they finish or skip.
+  useEffect(() => {
+    track('tour_start');
+  }, []);
+  useEffect(() => {
+    if (steps) track('tour_step', { step, index, total });
+  }, [steps, step, index, total]);
+
   const close = useCallback(
     (started: boolean) => {
       if (closedRef.current) return;
       closedRef.current = true;
+      track(started ? 'tour_complete' : 'tour_skip', { step, index, total });
       onClose(started);
     },
-    [onClose]
+    [onClose, step, index, total]
   );
 
   // Scroll so the target and the card both fit on screen. Runs once the

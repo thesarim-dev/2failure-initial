@@ -5755,4 +5755,279 @@
     color: #0c0f02;
     background: #f2a541;
   }
+
+  /* ---------- Onboarding: guest, save progress, first base, reminders, program tip ---------- */
+  .login-guest {
+    margin-top: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .login-guest-or {
+    width: 60%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.12);
+    margin-bottom: 0.5rem;
+  }
+  .login-screen--light .login-guest-or {
+    background: rgba(0, 0, 0, 0.12);
+  }
+  .login-btn--guest {
+    width: 100%;
+    border: 2px dashed rgba(200, 240, 50, 0.7);
+    background: rgba(200, 240, 50, 0.08);
+    color: #c8f032;
+    font-weight: 900;
+  }
+  .login-screen--light .login-btn--guest {
+    color: #4f7a00;
+    border-color: rgba(106, 158, 0, 0.6);
+  }
+  .login-guest-sub {
+    font-size: 0.78rem;
+    font-weight: 600;
+    opacity: 0.7;
+    text-align: center;
+  }
+  .save-progress {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 1.1rem;
+    background: rgba(0, 168, 216, 0.08);
+    border: 1.5px solid rgba(0, 168, 216, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .save-progress-head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #007a9e;
+  }
+  .dark .save-progress-head {
+    color: #7adcff;
+  }
+  .save-progress-title {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    text-transform: none;
+  }
+  .save-progress-sub {
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0.8;
+    line-height: 1.4;
+  }
+  .save-progress-actions,
+  .save-progress-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .save-progress-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+  .save-progress-label input {
+    min-height: 2.6rem;
+    padding: 0 0.75rem;
+    border-radius: 0.7rem;
+    font-size: 0.95rem;
+    color: inherit;
+    background: rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+  }
+  .dark .save-progress-label input {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  .save-progress-btn {
+    min-height: 2.8rem;
+    border-radius: 0.8rem;
+    font-weight: 900;
+    font-size: 0.92rem;
+    background: rgba(0, 0, 0, 0.06);
+  }
+  .dark .save-progress-btn {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .save-progress-btn.is-primary {
+    color: #ffffff;
+    background: #00a8d8;
+  }
+  .save-progress-error {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #e5484d;
+  }
+  .first-base {
+    margin-top: 0.9rem;
+    padding: 0.9rem;
+    border-radius: 1.1rem;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(200, 240, 50, 0.12) 0%, rgba(200, 240, 50, 0.03) 100%);
+    border: 1.5px solid rgba(140, 194, 26, 0.55);
+  }
+  .first-base-board {
+    position: relative;
+    height: 150px;
+    margin: -0.3rem -0.3rem 0.4rem;
+    pointer-events: none;
+  }
+  .first-base-board .base-board {
+    width: 100%;
+    height: 100%;
+  }
+  .first-base-fly {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: -18px;
+    font-weight: 900;
+    font-size: 0.9rem;
+    color: #c8f032;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  }
+  .first-base-title {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    text-transform: none;
+  }
+  .first-base-sub {
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0.8;
+  }
+  .first-base-cta {
+    margin-top: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.8rem;
+    padding: 0 1.2rem;
+    border-radius: 0.85rem;
+    font-weight: 900;
+    color: #0c0f02;
+    background: linear-gradient(180deg, #dcf75f 0%, #b9e02a 100%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), 0 4px 0 #6a9e00;
+  }
+  .reminder-root {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+  .reminder-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .reminder-card {
+    position: relative;
+    width: min(100%, 26rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1.4rem 1.2rem 1.1rem;
+    border-radius: 1.4rem;
+    text-align: center;
+    background: #ffffff;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  }
+  .dark .reminder-card {
+    background: #1b1b24;
+    border: 1px solid rgba(255, 140, 50, 0.35);
+  }
+  .reminder-icon {
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background: linear-gradient(180deg, #ffb347 0%, #ff6a1a 100%);
+    box-shadow: 0 0 18px rgba(255, 120, 40, 0.45);
+  }
+  .reminder-title {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.25rem;
+    text-transform: none;
+  }
+  .reminder-sub {
+    font-size: 0.88rem;
+    font-weight: 600;
+    opacity: 0.8;
+    line-height: 1.45;
+  }
+  .reminder-btn {
+    width: 100%;
+    min-height: 3rem;
+    border-radius: 0.9rem;
+    font-weight: 900;
+    font-size: 0.95rem;
+    opacity: 0.75;
+  }
+  .reminder-btn.is-primary {
+    opacity: 1;
+    color: #ffffff;
+    background: linear-gradient(180deg, #ff8a4c 0%, #e85520 100%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
+  }
+  .program-tip {
+    padding: 0.9rem 1rem;
+    border-radius: 1.1rem;
+    background: rgba(0, 168, 216, 0.08);
+    border: 1.5px dashed rgba(0, 168, 216, 0.55);
+  }
+  .program-tip-title {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    text-transform: none;
+  }
+  .program-tip-sub {
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0.8;
+    line-height: 1.4;
+  }
+  .program-tip-actions {
+    margin-top: 0.65rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .program-tip-btn {
+    min-height: 2.5rem;
+    padding: 0 1rem;
+    border-radius: 0.8rem;
+    font-weight: 800;
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.06);
+  }
+  .dark .program-tip-btn {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .program-tip-btn.is-primary {
+    color: #ffffff;
+    background: #00a8d8;
+  }
+  :is(.login-btn--guest, .save-progress-btn, .first-base-cta, .reminder-btn, .program-tip-btn):focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
 }

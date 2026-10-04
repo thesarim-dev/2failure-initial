@@ -1,3 +1,5 @@
+import { ReminderSettings } from './ReminderSettings';
+import { SaveProgress } from './SaveProgress';
 import { CalendarDays, Compass, LogOut, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { SettingsFaq } from './SettingsFaq';
@@ -33,7 +35,7 @@ export function Settings({
   onOpenPlan,
   demoTools
 }: SettingsProps) {
-  const { signOut } = useAuth();
+  const { signOut, isGuest } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const s = t.settings;
 
@@ -47,6 +49,8 @@ export function Settings({
       </header>
 
       <div className="space-y-6">
+        {isGuest && <SaveProgress where="settings" />}
+
         <section className="cyber-panel p-5 normal-case">
           <div className="settings-appearance-row">
             <div className="settings-appearance-copy">
@@ -135,6 +139,8 @@ export function Settings({
           </div>
         </section>
 
+        <ReminderSettings />
+
         <section className="cyber-panel p-5 normal-case">
           <h2 className="settings-section-title">{s.weightUnit.title}</h2>
           <p className="text-sm font-medium opacity-70 mb-4">
@@ -205,7 +211,11 @@ export function Settings({
           </p>
           <button
             type="button"
-            onClick={() => signOut()}
+            onClick={() => {
+              // Guests lose everything on sign-out; give them a chance to save first.
+              if (isGuest && !window.confirm(t.hub.guest.signOutWarn)) return;
+              void signOut();
+            }}
             className="settings-action-btn settings-action-btn--signout">
             <LogOut size={18} strokeWidth={2.5} />
             {s.account.signOut}

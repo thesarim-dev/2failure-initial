@@ -11,6 +11,7 @@ import { formatOAuthError } from '../lib/authErrors';
 import { readStoredLanguage } from '../lib/persistedSettings';
 import { translations } from '../i18n/translations';
 import { supabase } from '../lib/supabase';
+import { identify, resetAnalytics, track } from '../lib/analytics';
 
 type AuthContextValue = {
   user: User | null;
@@ -19,6 +20,8 @@ type AuthContextValue = {
   authError: string | null;
   refreshSession: () => Promise<void>;
   signOut: () => Promise<void>;
+  /** Signed in anonymously ("Try it first"); progress can be saved to an account later. */
+  isGuest: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -33,9 +36,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!mounted) return;
-      setSession(nextSession);
+      setSession((prev) => {
+        const wasGuest = !!prev?.user?.is_anonymous;
+        const user = nextSession?.user;
+        if (user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+          identify(user.id, { guest: !!user.is_anonymous });
+          if (event === 'SIGNED_IN') track('signed_in', { guest: !!user.is_anonymous });
+        }
+        if (event === 'USER_UPDATED' && wasGuest && user && !user.is_anonymous) {
+          identify(user.id, { guest: false });
+          track('guest_upgraded');
+        }
+        if (event === 'SIGNED_OUT') resetAnalytics();
+        return nextSession;
+      });
       setLoading(false);
     });
 
@@ -115,7 +131,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       authError,
       refreshSession,
-      signOut
+      signOut,
+      isGuest: !!session?.user?.is_anonymous
     }),
     [session, loading, authError, refreshSession, signOut]
   );
