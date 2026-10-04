@@ -306,7 +306,16 @@ When you follow a program, the program chooses your exercises, so the lineup is 
 
 ## 10. Follow the rotating program
 
-Each program day has **one equipment lift** as its main, 3-set exercise: **bench press** (barbell and bench) on push days, **goblet squats** (one dumbbell) on leg days, **pull-ups** (bar) on pull days and **dips** (dip bars) on mixed days. Every other exercise that day needs no equipment. The bench press and goblet squats ask for the weight you lifted after each set.
+Each program day is balanced by muscle group, with **one equipment lift** as its main, 3-set exercise and no-equipment accessories:
+
+| Day | Muscles | Exercises (sets) |
+|---|---|---|
+| Push | Chest, shoulders, triceps, abs | Bench press 3, pike pushups 2, diamond pushups 2, leg raises 2, planks 2 |
+| Pull | Lats, mid/upper back, biceps, rear shoulders, abs | Pull-ups 3, doorway rows 2, superman pulls 2, crunches 2, hollow body 2 |
+| Legs | Quads, glutes, hamstrings, calves, obliques | Goblet squats 3, lunges 2, single-leg bridges 2, calf raises 2, side planks 2 |
+| Mixed (full body) | One push, pull, squat, hinge and core move | Dips 3, doorway rows 2, jump squats 2, glute bridges 2, planks 2 |
+
+Across the 5-day split, pushing and pulling sets stay roughly equal (about 10 vs 9 a week), and chest, triceps and back get a second weekly hit on the mixed day. The bench press and goblet squats ask for the weight you lifted after each set.
 
 The rotating program is an optional training plan built around **RIR** (reps in reserve), stopping just short of failure on early sets and going all-out on the final set. It needs only what a public park has: a pull-up bar, dip bars and a bench, plus a backpack for load. Pick the split that fits your week; rest (stretch) days are not fixed in the cycle — you choose them when you need them.
 

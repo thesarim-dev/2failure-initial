@@ -7,11 +7,18 @@ export type ProgramExercisePrescription = {
 };
 
 /**
- * RIR program: each training day has exactly ONE equipment lift as its 3-set
- * anchor (barbell bench press, pull-up bar, a dumbbell, dip bars), and every
- * other exercise needs no equipment at all, so a day works with one piece of
- * gear. Accessories and core use 2 sets each. Stretch (rest) days are not in
- * the cycle — the player creates them on demand.
+ * RIR program, balanced by muscle group (push / pull / legs, with a full-body
+ * mixed day for a second weekly hit):
+ * - Push: chest (bench press), shoulders (pike pushups), triceps (diamond pushups)
+ * - Pull: lats + biceps (pull-ups), mid back + biceps (doorway rows),
+ *   upper/lower back + rear shoulders (superman pulls)
+ * - Legs: quads + glutes (goblet squats, lunges), hamstrings + glutes
+ *   (single-leg bridges), calves (calf raises)
+ * - Mixed: one push, one pull, one squat, one hinge, one core
+ * Each day has exactly ONE equipment lift as its 3-set anchor; everything else
+ * needs no equipment. Core work rotates focus (lower abs, front plank, crunch,
+ * hollow body, side plank). Over the 5-day split pushing and pulling sets stay
+ * roughly equal (~10 vs ~9), which keeps shoulders healthy.
  */
 const PROGRAM_BY_PHASE: Record<
   RotatingProgramPhase,
@@ -28,21 +35,21 @@ const PROGRAM_BY_PHASE: Record<
     { id: 'goblet-squats', setsToFailure: 3 },
     { id: 'lunges', setsToFailure: 2 },
     { id: 'single-leg-bridges', setsToFailure: 2 },
-    { id: 'side-planks', setsToFailure: 2 },
-    { id: 'hollow-body', setsToFailure: 2 }
+    { id: 'calf-raises', setsToFailure: 2 },
+    { id: 'side-planks', setsToFailure: 2 }
   ],
   pull: [
     { id: 'pull-ups', setsToFailure: 3 },
-    { id: 'superman-pulls', setsToFailure: 2 },
     { id: 'doorway-rows', setsToFailure: 2 },
-    { id: 'hollow-body', setsToFailure: 2 },
-    { id: 'planks', setsToFailure: 2 }
+    { id: 'superman-pulls', setsToFailure: 2 },
+    { id: 'crunches', setsToFailure: 2 },
+    { id: 'hollow-body', setsToFailure: 2 }
   ],
   mixed: [
     { id: 'dips', setsToFailure: 3 },
-    { id: 'burpees', setsToFailure: 2 },
-    { id: 'pushups', setsToFailure: 2 },
-    { id: 'lunges', setsToFailure: 2 },
+    { id: 'doorway-rows', setsToFailure: 2 },
+    { id: 'jump-squats', setsToFailure: 2 },
+    { id: 'glute-bridges', setsToFailure: 2 },
     { id: 'planks', setsToFailure: 2 }
   ],
   recovery: [

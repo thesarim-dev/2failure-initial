@@ -116,6 +116,10 @@ const en: MovesTranslations = {
       name: 'Bulgarian Splits',
       description: 'Rear foot on a bench, squat as deep as you can with control.'
     },
+    'calf-raises': {
+      name: 'Calf Raises',
+      description: 'Rise onto the balls of your feet as high as you can, pause, and lower slowly. Use one leg when it gets easy.'
+    },
     'bench-press': {
       name: 'Bench Press',
       description: 'Lie on a bench and press a barbell from your chest to straight arms. Start light, add weight as you get stronger.'
@@ -320,6 +324,10 @@ const he: MovesTranslations = {
     'bulgarian-splits': {
       name: 'ספליט בולגרי',
       description: 'רגל אחורית על ספסל, רד עמוק ככל שאתה יכול בשליטה.'
+    },
+    'calf-raises': {
+      name: 'הרמות עקבים',
+      description: 'עלו על כריות כפות הרגליים גבוה ככל האפשר, עצרו רגע, ורדו לאט. כשזה קל, עברו לרגל אחת.'
     },
     'bench-press': {
       name: 'לחיצת חזה',
@@ -526,6 +534,10 @@ const ar: MovesTranslations = {
     'bulgarian-splits': {
       name: 'الانقسام البلغاري',
       description: 'القدم الخلفية على مقعد، انزل بعمق بقدر ما تستطيع بتحكم.'
+    },
+    'calf-raises': {
+      name: 'رفع السمانة',
+      description: 'ارتفع على مقدمة قدميك إلى أعلى ما يمكن، توقّف لحظة، ثم انزل ببطء. استخدم ساقاً واحدة عندما يصبح الأمر سهلاً.'
     },
     'bench-press': {
       name: 'ضغط البنش',

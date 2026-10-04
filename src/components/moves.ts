@@ -273,6 +273,14 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
       levelUp: ['single-leg-bridges']
     },
     {
+      id: 'calf-raises',
+      name: 'Calf Raises',
+      description: 'Rise onto the balls of your feet as high as you can, pause, and lower slowly. Use one leg when it gets easy.',
+      price: 0,
+      tier: 'BASE',
+      repCeiling: 30
+    },
+    {
       id: 'step-ups',
       name: 'Step-Ups',
       description: 'Step onto a park bench or stair and drive up through the front heel.',

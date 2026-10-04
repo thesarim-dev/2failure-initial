@@ -114,10 +114,10 @@ const en: SettingsContent = {
           intro:
             'Start with a Push-Pull-Legs (PPL) split, ideally 3-4 days a week. Focus on compound movements:',
           items: [
-            { label: 'Push:', text: 'Push-ups' },
-            { label: 'Pull:', text: 'Rows or pull-ups' },
-            { label: 'Legs:', text: 'Squats or lunges' },
-            { label: 'Core:', text: 'Planks or leg raises' }
+            { label: 'Push:', text: 'Chest, shoulders and triceps (bench press or pushups, pike pushups, dips)' },
+            { label: 'Pull:', text: 'Back and biceps (pull-ups, rows); keep pulling sets about equal to pushing' },
+            { label: 'Legs:', text: 'Quads, glutes, hamstrings and calves (squats, lunges, bridges, calf raises)' },
+            { label: 'Core:', text: 'Mix it up: planks, side planks, leg raises, hollow holds' }
           ]
         }
       },
@@ -282,10 +282,10 @@ const he: SettingsContent = {
           intro:
             'התחל עם חלוקת דחיפה-משיכה-רגליים (PPL), בדרך כלל 3-4 ימים בשבוע. התמקד בתנועות מורכבות:',
           items: [
-            { label: 'דחיפה:', text: 'שכיבות סמיכה' },
-            { label: 'משיכה:', text: 'חתירות או מתח' },
-            { label: 'רגליים:', text: 'סקוואט או לאנג׳ים' },
-            { label: 'ליבה:', text: 'פלאנק או הרמת רגליים' }
+            { label: 'דחיפה:', text: 'חזה, כתפיים ויד אחורית (לחיצת חזה או שכיבות סמיכה, פייק, מקבילים)' },
+            { label: 'משיכה:', text: 'גב ויד קדמית (מתח, חתירות); שמרו על מספר סטים דומה לדחיפה' },
+            { label: 'רגליים:', text: 'ארבע-ראשי, ישבן, ירך אחורית ותאומים (סקוואט, לאנג׳ים, גשר, הרמות עקבים)' },
+            { label: 'ליבה:', text: 'גוונו: פלאנק, פלאנק צידי, הרמות רגליים, הולו' }
           ]
         }
       },
@@ -449,10 +449,10 @@ const ar: SettingsContent = {
           intro:
             'ابدأ بتقسيم الدفع-السحب-الأرجل (PPL)، بمعدل 3-4 أيام في الأسبوع. ركّز على الحركات المركبة:',
           items: [
-            { label: 'الدفع:', text: 'تمارين الضغط' },
-            { label: 'السحب:', text: 'التجديف أو العقلة' },
-            { label: 'الأرجل:', text: 'القرفصاء أو الاندفاع' },
-            { label: 'الجذع:', text: 'البلانك أو رفع الساقين' }
+            { label: 'الدفع:', text: 'الصدر والكتفان والترايسبس (ضغط البنش أو الضغط، الضغط المرتفع، المتوازي)' },
+            { label: 'السحب:', text: 'الظهر والبايسبس (العقلة، التجديف)؛ اجعل مجموعات السحب قريبة من مجموعات الدفع' },
+            { label: 'الأرجل:', text: 'الفخذ الأمامي والأرداف والفخذ الخلفي والسمانة (القرفصاء، الاندفاع، الجسر، رفع السمانة)' },
+            { label: 'الجذع:', text: 'نوّع: بلانك، بلانك جانبي، رفع الساقين، هولو' }
           ]
         }
       },
