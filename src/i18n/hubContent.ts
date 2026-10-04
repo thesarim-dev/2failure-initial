@@ -43,40 +43,6 @@ export type HubCopy = {
   settingsTab: string;
   restoreBanner: { title: (streak: number) => string; sub: string; notEnough: (cost: number) => string };
   offline: { pending: (n: number) => string; retry: string };
-  guest: {
-    tryIt: string;
-    tryItSub: string;
-    starting: string;
-    saveTitle: string;
-    saveSub: string;
-    google: string;
-    email: string;
-    emailLabel: string;
-    passwordLabel: string;
-    saveEmail: string;
-    checkInbox: string;
-    saved: string;
-    error: string;
-    signOutWarn: string;
-    settingsTitle: string;
-    settingsSub: string;
-  };
-  firstBase: { title: string; sub: string; open: string };
-  reminders: {
-    title: string;
-    sub: string;
-    allow: string;
-    later: string;
-    iosTitle: string;
-    iosSub: string;
-    gotIt: string;
-    settingsTitle: string;
-    settingsSub: string;
-    on: string;
-    off: string;
-    blocked: string;
-  };
-  programTip: { title: string; sub: string; tryIt: string; dismiss: string };
   trio: {
     edit: string;
     ownShort: (sets: number, days: number) => string;
@@ -152,49 +118,6 @@ const en: HubCopy = {
     programRest: (days) => `Rest day · ${days}-day split`
   },
   settingsTab: 'Settings',
-  guest: {
-    tryIt: 'Try it first',
-    tryItSub: 'No account needed. Save your progress later.',
-    starting: 'Starting…',
-    saveTitle: 'Save your progress',
-    saveSub: "You're training as a guest. Create an account so your sets, streak and base are never lost.",
-    google: 'Continue with Google',
-    email: 'Use email instead',
-    emailLabel: 'Email',
-    passwordLabel: 'Password (6+ characters)',
-    saveEmail: 'Save my progress',
-    checkInbox: 'Almost done: check your inbox and tap the link to confirm.',
-    saved: 'Progress saved to your account.',
-    error: "Couldn't save right now. Try again in a moment.",
-    signOutWarn: "You're a guest. Signing out deletes your progress on this device. Save it to an account first?",
-    settingsTitle: 'Guest account',
-    settingsSub: 'Your progress lives only on this device until you save it.'
-  },
-  firstBase: {
-    title: 'Your first materials just landed!',
-    sub: 'Every set builds your base. Spend them on your first building.',
-    open: 'Open your base'
-  },
-  reminders: {
-    title: 'Protect your flame 🔥',
-    sub: "Get one gentle reminder in the evening if you haven't trained yet, so your streak never goes out by accident.",
-    allow: 'Turn on reminders',
-    later: 'Not now',
-    iosTitle: 'Get flame reminders on iPhone',
-    iosSub: 'Tap Share, then "Add to Home Screen". Open 2failure from there and turn reminders on in Settings.',
-    gotIt: 'Got it',
-    settingsTitle: 'Flame reminders',
-    settingsSub: "One evening nudge on days you haven't trained yet.",
-    on: 'on',
-    off: 'off',
-    blocked: 'Blocked in your browser settings'
-  },
-  programTip: {
-    title: 'Not sure what to train?',
-    sub: 'Follow a ready-made 3-day program. We pick balanced workouts for you each day.',
-    tryIt: 'Try the program',
-    dismiss: "I'll pick my own"
-  },
   offline: {
     pending: (n) => (n === 1 ? "1 set saved on this phone. It'll sync when you're back online." : `${n} sets saved on this phone. They'll sync when you're back online.`),
     retry: 'Sync now'
@@ -279,49 +202,6 @@ const he: HubCopy = {
     programRest: (days) => `יום מנוחה · חלוקת ${days} ימים`
   },
   settingsTab: 'הגדרות',
-  guest: {
-    tryIt: 'נסו קודם',
-    tryItSub: 'בלי חשבון. אפשר לשמור את ההתקדמות אחר כך.',
-    starting: 'מתחילים…',
-    saveTitle: 'שמרו את ההתקדמות',
-    saveSub: 'אתם מתאמנים כאורחים. צרו חשבון כדי שהסטים, הרצף והבסיס לא ילכו לאיבוד.',
-    google: 'המשך עם Google',
-    email: 'השתמשו באימייל',
-    emailLabel: 'אימייל',
-    passwordLabel: 'סיסמה (6 תווים לפחות)',
-    saveEmail: 'שמרו את ההתקדמות',
-    checkInbox: 'כמעט סיימנו: בדקו את תיבת הדואר ולחצו על הקישור לאישור.',
-    saved: 'ההתקדמות נשמרה בחשבון.',
-    error: 'לא הצלחנו לשמור כרגע. נסו שוב עוד רגע.',
-    signOutWarn: 'אתם אורחים. יציאה תמחק את ההתקדמות במכשיר הזה. לשמור קודם בחשבון?',
-    settingsTitle: 'חשבון אורח',
-    settingsSub: 'ההתקדמות שמורה רק במכשיר הזה עד שתשמרו אותה.'
-  },
-  firstBase: {
-    title: 'החומרים הראשונים שלכם נחתו!',
-    sub: 'כל סט בונה את הבסיס. השתמשו בהם לבניין הראשון.',
-    open: 'פתחו את הבסיס'
-  },
-  reminders: {
-    title: 'שמרו על הלהבה 🔥',
-    sub: 'קבלו תזכורת עדינה אחת בערב אם עוד לא התאמנתם, כדי שהרצף לא ייכבה בטעות.',
-    allow: 'הפעילו תזכורות',
-    later: 'לא עכשיו',
-    iosTitle: 'תזכורות להבה באייפון',
-    iosSub: 'הקישו שיתוף ואז "הוסף למסך הבית". פתחו את 2failure משם והפעילו תזכורות בהגדרות.',
-    gotIt: 'הבנתי',
-    settingsTitle: 'תזכורות להבה',
-    settingsSub: 'תזכורת ערב אחת בימים שעוד לא התאמנתם.',
-    on: 'פועל',
-    off: 'כבוי',
-    blocked: 'חסום בהגדרות הדפדפן'
-  },
-  programTip: {
-    title: 'לא בטוחים מה להתאמן?',
-    sub: 'עקבו אחרי תוכנית מוכנה של 3 ימים. אנחנו בוחרים בשבילכם אימונים מאוזנים בכל יום.',
-    tryIt: 'נסו את התוכנית',
-    dismiss: 'אבחר בעצמי'
-  },
   offline: {
     pending: (n) => (n === 1 ? 'סט אחד נשמר בטלפון. הוא יסונכרן כשתחזור לקליטה.' : `${n} סטים נשמרו בטלפון. הם יסונכרנו כשתחזור לקליטה.`),
     retry: 'סנכרן עכשיו'
@@ -406,49 +286,6 @@ const ar: HubCopy = {
     programRest: (days) => `يوم راحة · تقسيم ${days} أيام`
   },
   settingsTab: 'الإعدادات',
-  guest: {
-    tryIt: 'جرّبه أولاً',
-    tryItSub: 'بدون حساب. احفظ تقدّمك لاحقاً.',
-    starting: 'جارٍ البدء…',
-    saveTitle: 'احفظ تقدّمك',
-    saveSub: 'أنت تتدرّب كضيف. أنشئ حساباً حتى لا تضيع مجموعاتك وسلسلتك وقاعدتك.',
-    google: 'المتابعة باستخدام Google',
-    email: 'استخدم البريد الإلكتروني',
-    emailLabel: 'البريد الإلكتروني',
-    passwordLabel: 'كلمة المرور (6 أحرف على الأقل)',
-    saveEmail: 'احفظ تقدّمي',
-    checkInbox: 'اقتربنا: افتح بريدك واضغط على الرابط للتأكيد.',
-    saved: 'تم حفظ تقدّمك في حسابك.',
-    error: 'تعذّر الحفظ الآن. حاول مرة أخرى بعد قليل.',
-    signOutWarn: 'أنت ضيف. تسجيل الخروج يحذف تقدّمك على هذا الجهاز. هل تريد حفظه في حساب أولاً؟',
-    settingsTitle: 'حساب ضيف',
-    settingsSub: 'تقدّمك محفوظ على هذا الجهاز فقط حتى تحفظه.'
-  },
-  firstBase: {
-    title: 'وصلت أولى موادك!',
-    sub: 'كل مجموعة تبني قاعدتك. استخدمها في أول مبنى لك.',
-    open: 'افتح قاعدتك'
-  },
-  reminders: {
-    title: 'احمِ شعلتك 🔥',
-    sub: 'احصل على تذكير لطيف واحد مساءً إن لم تتدرّب بعد، حتى لا تنطفئ سلسلتك عن طريق الخطأ.',
-    allow: 'فعّل التذكيرات',
-    later: 'ليس الآن',
-    iosTitle: 'تذكيرات الشعلة على الآيفون',
-    iosSub: 'اضغط مشاركة ثم "إضافة إلى الشاشة الرئيسية". افتح 2failure من هناك وفعّل التذكيرات في الإعدادات.',
-    gotIt: 'فهمت',
-    settingsTitle: 'تذكيرات الشعلة',
-    settingsSub: 'تذكير مسائي واحد في الأيام التي لم تتدرّب فيها بعد.',
-    on: 'مفعّل',
-    off: 'متوقف',
-    blocked: 'محظور في إعدادات المتصفح'
-  },
-  programTip: {
-    title: 'لست متأكداً مما تتدرّب عليه؟',
-    sub: 'اتبع برنامجاً جاهزاً من 3 أيام. نختار لك تمارين متوازنة كل يوم.',
-    tryIt: 'جرّب البرنامج',
-    dismiss: 'سأختار بنفسي'
-  },
   offline: {
     pending: (n) => (n === 1 ? 'حُفظت مجموعة واحدة على هاتفك. ستتم مزامنتها عند عودة الاتصال.' : `حُفظت ${n} مجموعات على هاتفك. ستتم مزامنتها عند عودة الاتصال.`),
     retry: 'زامن الآن'

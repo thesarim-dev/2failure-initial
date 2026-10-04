@@ -1,6 +1,3 @@
-import { FirstBaseMoment } from './game/FirstBaseMoment';
-import { SaveProgress } from './SaveProgress';
-import type { GameState, TodayPlan } from '../game/engine';
 import { useEffect, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { fx } from '../lib/feedback';
@@ -66,10 +63,6 @@ interface SummaryProps {
   baseReward?: SetReward | null;
   onSeeBase?: () => void;
   onHome: () => void;
-  /** For the first-receipt moment: the player's base, shown with materials landing in it. */
-  baseState?: GameState;
-  basePlan?: TodayPlan | null;
-  firstBase?: boolean;
 }
 
 export function Summary({
@@ -82,10 +75,7 @@ export function Summary({
   setsRemaining = 0,
   baseReward,
   onSeeBase,
-  onHome,
-  baseState,
-  basePlan = null,
-  firstBase = false
+  onHome
 }: SummaryProps) {
   const { t, language } = useLanguage();
   const questText = useQuestText();
@@ -339,10 +329,6 @@ export function Summary({
           </ul>
         )}
 
-        {firstBase && baseReward && baseState && onSeeBase && resourcesOf(baseReward).length > 0 && (
-          <FirstBaseMoment state={baseState} plan={basePlan} earned={resourcesOf(baseReward)} onOpenBase={onSeeBase} />
-        )}
-
         {baseReward && (
           <div className="summary-base-row" aria-label={t.game.reward.title}>
             <div className="summary-base-head">
@@ -350,7 +336,7 @@ export function Summary({
                 <Castle size={15} strokeWidth={2.5} aria-hidden="true" />
                 {t.game.reward.title}
               </span>
-              {onSeeBase && !firstBase && (
+              {onSeeBase && (
                 <button type="button" className="summary-base-link" onClick={onSeeBase}>
                   {t.game.reward.seeBase}
                   <ArrowRight size={14} strokeWidth={2.5} className="tour-icon-flip" aria-hidden="true" />
@@ -387,9 +373,6 @@ export function Summary({
           </div>
         )}
       </motion.section>
-
-      {/* Guests: save the progress they just made. */}
-      <SaveProgress where="receipt" />
 
       <motion.button
         type="button"

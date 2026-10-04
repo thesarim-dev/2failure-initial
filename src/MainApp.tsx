@@ -29,17 +29,6 @@ import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { calculateCoinsEarned } from './lib/coinRewards';
 import { enqueue, flushOutbox, pendingSetCount, readOutbox, subscribeOutbox } from './lib/outbox';
 import { setErrorUser } from './lib/errorTracking';
-import { track } from './lib/analytics';
-import { storageKeyFor } from './lib/persistedSettings';
-import { ReminderPrompt } from './components/ReminderPrompt';
-import {
-  enableReminders,
-  hasAskedForReminders,
-  markAskedForReminders,
-  reminderPermission,
-  reminderSupport,
-  type ReminderSupport
-} from './lib/notifications';
 import { shouldCountStreakForDay, toLocalDateString } from './lib/userStats';
 import { useTrainingDaysPerWeek } from './hooks/useTrainingDaysPerWeek';
 import { FREE_REST_DAYS_PER_WEEK, useFreeRestDays } from './hooks/useFreeRestDays';
@@ -79,7 +68,7 @@ type AppState =
 
 export function MainApp() {
   const { user } = useAuth();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { isDark, toggle: toggleDark } = useDarkMode();
   const { dailySetGoal, setDailySetGoal } = useDailySetGoal();
   const {
@@ -115,8 +104,7 @@ export function MainApp() {
     restoreStreakCost,
     recordWorkoutComplete,
     restoreStreak: restoreUserStreak,
-    refetch: refetchStats,
-    totalWorkouts
+    refetch: refetchStats
   } = useUserStats();
   const {
     setsCompleted,
@@ -168,59 +156,8 @@ export function MainApp() {
     lastDuration?: number;
   };
   const [appState, setAppState] = useState<AppState>(
-
     screenInit.appState ?? 'HOME'
   );
-
-  // --- Onboarding: "protect your flame" soft ask after the 2nd set on day one ---
-  const [reminderAsk, setReminderAsk] = useState<ReminderSupport | null>(null);
-  useEffect(() => {
-    if (appState !== 'HOME' || !user || reminderAsk) return;
-    const today = toLocalDateString();
-    const firstDayDone = totalWorkouts === 1 && lastWorkoutDate === today;
-    if (!firstDayDone || hasAskedForReminders(user.id)) return;
-    const support = reminderSupport();
-    if (support === 'unsupported' || (support === 'ok' && reminderPermission() !== 'default')) return;
-    setReminderAsk(support);
-  }, [appState, user, totalWorkouts, lastWorkoutDate, reminderAsk]);
-  const answerReminderAsk = async (allow: boolean) => {
-    if (!user) return;
-    const support = reminderAsk;
-    setReminderAsk(null);
-    markAskedForReminders(user.id, support === 'ios-needs-install' ? 'ios' : allow ? 'yes' : 'later');
-    track('reminders_prompt_answer', { allow, ios: support === 'ios-needs-install' });
-    if (allow && support === 'ok') await enableReminders(user.id, language);
-  };
-
-  // --- Onboarding: suggest the program to newcomers who haven't chosen one ---
-  const [programTipDismissed, setProgramTipDismissed] = useState(false);
-  useEffect(() => {
-    try {
-      setProgramTipDismissed(!!(user && window.localStorage.getItem(storageKeyFor(user.id, 'program-tip'))));
-    } catch {
-      setProgramTipDismissed(true);
-    }
-  }, [user]);
-  const showProgramTip = !!user && !programTipDismissed && !rotatingProgramEnabled && totalWorkouts < 3 && !statsLoading;
-  useEffect(() => {
-    if (showProgramTip && appState === 'HOME') track('program_tip_shown');
-  }, [showProgramTip, appState]);
-  const closeProgramTip = (accepted: boolean) => {
-    if (!user) return;
-    setProgramTipDismissed(true);
-    try {
-      window.localStorage.setItem(storageKeyFor(user.id, 'program-tip'), accepted ? 'accepted' : 'dismissed');
-    } catch {
-      // Ignore storage failures.
-    }
-    track(accepted ? 'program_tip_accepted' : 'program_tip_dismissed');
-    if (accepted) {
-      setRotatingProgramTemplate('ppl3');
-      setRotatingProgramEnabled(true);
-      fx.confirm();
-    }
-  };
-
   const [owned, setOwned] = useState<string[]>(() => readStoredOwned(user?.id));
   const {
     equippedUpper,
@@ -706,10 +643,6 @@ export function MainApp() {
       className={`min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#BEF028] selection:text-black ${
         showTabBar ? 'has-tab-bar' : ''
       }`}>
-      {reminderAsk && appState === 'HOME' && (
-        <ReminderPrompt support={reminderAsk} onAllow={() => void answerReminderAsk(true)} onLater={() => void answerReminderAsk(false)} />
-      )}
-
       {pendingSets > 0 && (appState === 'HOME' || appState === 'BASE' || appState === 'SUMMARY') && (
         <div className="offline-notice" role="status">
           <span aria-hidden="true">📶</span>
@@ -770,24 +703,6 @@ export function MainApp() {
         onSelectMove={handleSelectMove}
         onOpenPlan={handleOpenPlan}
         trainingDaysPerWeek={trainingDaysPerWeek}
-        tip={
-          showProgramTip ? (
-            <section className="program-tip mb-4 normal-case" aria-labelledby="program-tip-title">
-              <h2 id="program-tip-title" className="program-tip-title">
-                {t.hub.programTip.title}
-              </h2>
-              <p className="program-tip-sub">{t.hub.programTip.sub}</p>
-              <div className="program-tip-actions">
-                <button type="button" className="program-tip-btn is-primary" onClick={() => closeProgramTip(true)}>
-                  {t.hub.programTip.tryIt}
-                </button>
-                <button type="button" className="program-tip-btn" onClick={() => closeProgramTip(false)}>
-                  {t.hub.programTip.dismiss}
-                </button>
-              </div>
-            </section>
-          ) : undefined
-        }
  />
 
       }
@@ -881,10 +796,7 @@ export function MainApp() {
         setsRemaining={summarySetContext?.setsRemaining ?? 0}
         baseReward={baseGame.lastReward}
         onSeeBase={handleSeeBase}
-        onHome={handleGoHome}
-        baseState={baseGame.state}
-        basePlan={baseGame.plan}
-        firstBase={!baseGame.state.introSeen} />
+        onHome={handleGoHome} />
 
       }
 

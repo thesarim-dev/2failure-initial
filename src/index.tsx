@@ -6,12 +6,10 @@ import { App } from './App';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { initErrorTracking } from './lib/errorTracking';
-import { initAnalytics } from './lib/analytics';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 registerSW({ immediate: true });
 void initErrorTracking();
-initAnalytics();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

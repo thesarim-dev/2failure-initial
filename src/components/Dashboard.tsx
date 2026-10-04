@@ -2,7 +2,7 @@ import { StreakFlame } from './StreakFlame';
 import { ResourceIcon } from './game/BaseScreen';
 import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog';
 import { patternForMove } from '../game/useBaseGame';
-import { useMemo, type ReactNode } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { BedDouble, Loader2 } from 'lucide-react';
 import planIcon from '../assets/plan-icon.png';
@@ -61,8 +61,6 @@ interface DashboardProps {
   /** Training screen, Plan tab. */
   onOpenPlan: () => void;
   trainingDaysPerWeek: number;
-  /** Optional onboarding card shown under the top row (e.g. the program suggestion). */
-  tip?: ReactNode;
 }
 
 export function Dashboard({
@@ -104,8 +102,7 @@ export function Dashboard({
   pushupRepsLoading,
   onSelectMove,
   onOpenPlan,
-  trainingDaysPerWeek,
-  tip
+  trainingDaysPerWeek
 }: DashboardProps) {
   const { t, language, isRtl } = useLanguage();
   const rewardFor = (move: Move) => {
@@ -243,8 +240,6 @@ export function Dashboard({
           <span className="trio-tile-sub">{planShort}</span>
         </button>
       </section>
-
-      {tip}
 
       {/* Streak broke: a clear banner to bring it back (before the 2nd set today). */}
       {canRestoreStreak && (

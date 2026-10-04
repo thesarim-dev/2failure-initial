@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
 import { useAuth } from '../context/AuthContext';
@@ -7,7 +7,6 @@ import { formatOAuthError } from '../lib/authErrors';
 import { getAuthRedirectUrl } from '../lib/authRedirect';
 import { supabase } from '../lib/supabase';
 import { ensureUserProfileAndWorkouts } from '../lib/userOnboarding';
-import { track } from '../lib/analytics';
 
 function GoogleGIcon({ className }: { className?: string }) {
   return (
@@ -44,37 +43,13 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<
-    'signIn' | 'signUp' | 'google' | 'guest' | null
+    'signIn' | 'signUp' | 'google' | null
   >(null);
-
-  useEffect(() => {
-    track('signin_view');
-  }, []);
-
-  /** "Try it first": a real anonymous account, so every feature works and can be saved later. */
-  const handleGuest = async () => {
-    setError(null);
-    setSubmitting('guest');
-    track('signin_attempt', { method: 'guest' });
-    try {
-      const { data, error: guestError } = await supabase.auth.signInAnonymously();
-      if (guestError) throw guestError;
-      if (data.user) await ensureUserProfileAndWorkouts(data.user.id, null);
-      track('guest_start');
-      await refreshSession();
-    } catch (err) {
-      track('signin_error', { method: 'guest' });
-      setError(err instanceof Error ? err.message : t.login.errors.signIn);
-    } finally {
-      setSubmitting(null);
-    }
-  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting('signIn');
-    track('signin_attempt', { method: 'email' });
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -92,7 +67,6 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
   const handleGoogleSignIn = async () => {
     setError(null);
     setSubmitting('google');
-    track('signin_attempt', { method: 'google' });
     try {
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -112,7 +86,6 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
   const handleSignUp = async () => {
     setError(null);
     setSubmitting('signUp');
-    track('signin_attempt', { method: 'signup' });
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -235,14 +208,6 @@ export function Login({ isDark, onToggleDark }: LoginProps) {
               </button>
             </div>
           </form>
-
-          <div className="login-guest">
-            <span className="login-guest-or" aria-hidden="true" />
-            <button type="button" onClick={handleGuest} disabled={busy} className="login-btn login-btn--guest normal-case">
-              {submitting === 'guest' ? t.hub.guest.starting : t.hub.guest.tryIt}
-            </button>
-            <p className="login-guest-sub normal-case">{t.hub.guest.tryItSub}</p>
-          </div>
 
           {(error || authError) && (
             <p className="login-error mt-4 normal-case" role="alert">
