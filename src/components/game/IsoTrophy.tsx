@@ -331,181 +331,6 @@ function Obelisk({ m }: { m: M }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Classical marble athletes: sculpted bodies, curls and beard, draped cloth.
-// ---------------------------------------------------------------------------
-
-const MARBLE: Shades = { light: '#fbfaf7', base: '#e6e1d9', dark: '#a9a296' };
-
-/** A sculpted limb: soft marble with a darker outline for form. */
-function MLimb({ d, w, far = false }: { d: string; w: number; far?: boolean }) {
-  return (
-    <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-      <path d={d} stroke={MARBLE.dark} strokeWidth={w + 1.4} />
-      <path d={d} stroke={far ? '#d4cec4' : MARBLE.base} strokeWidth={w} />
-    </g>
-  );
-}
-
-/** A classical head: curls on top and at the back, a curly beard, a strong profile. */
-function ClassicalHead({ x, y, r = 4.4, facing = 1 }: { x: number; y: number; r?: number; facing?: 1 | -1 | 0 }) {
-  const curls: Array<[number, number]> = [];
-  for (let k = 0; k < 9; k++) {
-    const a = Math.PI * (0.95 + k * 0.13) + (facing === 1 ? 0.15 : facing === -1 ? -0.15 : 0);
-    curls.push([x + Math.cos(a) * r * 0.92, y + Math.sin(a) * r * 0.92]);
-  }
-  const beardX = facing === 0 ? 0 : facing * r * 0.35;
-  const beard: Array<[number, number]> = [
-    [x + beardX - r * 0.45, y + r * 0.7],
-    [x + beardX, y + r * 0.95],
-    [x + beardX + r * 0.45, y + r * 0.7],
-    [x + beardX - r * 0.15, y + r * 1.25],
-    [x + beardX + r * 0.25, y + r * 1.2]
-  ];
-  return (
-    <g>
-      <circle cx={x} cy={y} r={r + 0.7} fill={MARBLE.dark} />
-      <circle cx={x} cy={y} r={r} fill={MARBLE.base} />
-      {beard.map(([bx, by], k) => (
-        <circle key={`b${k}`} cx={bx} cy={by} r={r * 0.36} fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.5} />
-      ))}
-      {curls.map(([cx, cy], k) => (
-        <circle key={`c${k}`} cx={cx} cy={cy} r={r * 0.38} fill={MARBLE.light} stroke={MARBLE.dark} strokeWidth={0.5} />
-      ))}
-      {facing !== 0 ? (
-        <g stroke={MARBLE.dark} strokeWidth={0.7} fill="none" strokeLinecap="round">
-          <path d={`M${x + facing * r * 0.25} ${y - r * 0.15} h${facing * r * 0.55}`} />
-          <path d={`M${x + facing * r * 0.85} ${y - r * 0.1} l${facing * r * 0.3} ${r * 0.4} l${-facing * r * 0.25} ${r * 0.1}`} />
-        </g>
-      ) : (
-        <g stroke={MARBLE.dark} strokeWidth={0.7} fill="none" strokeLinecap="round">
-          <path d={`M${x - r * 0.5} ${y - r * 0.1} h${r * 0.35} M${x + r * 0.15} ${y - r * 0.1} h${r * 0.35}`} />
-          <path d={`M${x} ${y} v${r * 0.35}`} />
-        </g>
-      )}
-      <circle cx={x - r * 0.3} cy={y - r * 0.35} r={r * 0.3} fill="#ffffff" opacity={0.55} />
-    </g>
-  );
-}
-
-/** Marble veins: a few faint grey threads across a shape. */
-function Veins({ d }: { d: string }) {
-  return <path d={d} stroke="#b9b2a6" strokeWidth={0.45} fill="none" opacity={0.7} />;
-}
-
-function ClassicalAthlete({ pose, tier }: { pose: 'plank' | 'hang' | 'pistol' | 'lift' | 'flex'; tier: Shades }) {
-  const sash = (d: string, folds: string) => (
-    <g>
-      <path d={d} fill={MARBLE.light} stroke={MARBLE.dark} strokeWidth={0.7} />
-      <path d={folds} stroke={MARBLE.dark} strokeWidth={0.55} fill="none" opacity={0.75} />
-      <path d={d} fill="none" stroke={tier.base} strokeWidth={0.9} opacity={0.85} />
-    </g>
-  );
-  switch (pose) {
-    case 'plank':
-      // Mid-pushup, like the reference: weight on the hands, sash hanging under the chest.
-      return (
-        <g>
-          <MLimb d="M-12 -10 L-19 -5 L-26 -1" w={4.2} far />
-          <MLimb d="M7 -18 L6 -9 L5 -1" w={3.6} far />
-          <path
-            d="M-15 -13 C -9 -22, 3 -26, 11 -23 C 15 -21, 15 -15, 12 -12 C 4 -9, -6 -8, -14 -9 Z"
-            fill={MARBLE.base}
-            stroke={MARBLE.dark}
-            strokeWidth={0.8}
-          />
-          <path d="M-15 -13 C -9 -22, 3 -26, 11 -23 C 15 -21, 15 -15, 12 -12 C 4 -9, -6 -8, -14 -9 Z" fill="url(#hf-body)" />
-          <g stroke={MARBLE.dark} strokeWidth={0.6} fill="none" strokeLinecap="round" opacity={0.85}>
-            <path d="M-9 -17 C -3 -21, 4 -22, 9 -20" />
-            <path d="M-4 -14 C 0 -16, 4 -16, 7 -15" />
-            <path d="M0 -21 C 2 -18, 2 -15, 0 -12" />
-          </g>
-          <Veins d="M-11 -12 C -6 -15, -1 -13, 3 -17" />
-          <MLimb d="M-13 -11 L-19 -6 L-27 -1" w={4.8} />
-          <ellipse cx={-27.5} cy={-0.6} rx={2.2} ry={1} fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.5} />
-          <circle cx={10} cy={-19} r={4.3} fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.7} />
-          <MLimb d="M11 -17 L13 -9 L13.5 -1" w={4} />
-          <path d="M11 -15 C 12.5 -13, 13 -11, 12.5 -9" stroke={MARBLE.dark} strokeWidth={0.5} fill="none" />
-          <ellipse cx={15} cy={-0.4} rx={3.2} ry={1.2} fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.5} />
-          {sash('M9 -16 C 10 -7, -3 -3, -11 -9 L -9 -11 C -3 -7, 5 -9, 7 -16 Z', 'M6 -12 C 3 -8, -2 -7, -6 -9 M8 -10 C 5 -6, 0 -5, -4 -6')}
-          <ClassicalHead x={17} y={-22} r={4.6} facing={1} />
-        </g>
-      );
-    case 'hang':
-      return (
-        <g>
-          <MLimb d="M-14 0 V-56 M14 0 V-56" w={3} />
-          <MLimb d="M-17 -56 H17" w={2.6} />
-          <MLimb d="M-6 -55 L-9 -47 L-7 -40" w={3} />
-          <MLimb d="M6 -55 L9 -47 L7 -40" w={3} />
-          <path d="M-8 -41 C -9 -34, -6 -27, -4 -24 H4 C 6 -27, 9 -34, 8 -41 C 4 -39, -4 -39, -8 -41 Z" fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.7} />
-          <path d="M-8 -41 C -9 -34, -6 -27, -4 -24 H4 C 6 -27, 9 -34, 8 -41 C 4 -39, -4 -39, -8 -41 Z" fill="url(#hf-body)" />
-          <g stroke={MARBLE.dark} strokeWidth={0.55} fill="none" opacity={0.85}>
-            <path d="M-6 -37 C -3 -35, 3 -35, 6 -37" />
-            <path d="M0 -36 V-26 M-2.5 -32 H2.5 M-2.5 -29 H2.5" />
-          </g>
-          {sash('M-5 -25 H5 L6 -19 C 2 -17, -2 -17, -6 -19 Z', 'M-3 -24 L-4 -19 M1 -24 L1 -18 M4 -24 L4 -19')}
-          <MLimb d="M-2 -19 L-3 -8 M2 -19 L3 -8" w={3.4} />
-          <ClassicalHead x={0} y={-45} r={3.9} facing={0} />
-        </g>
-      );
-    case 'pistol':
-      // Deep on one bent leg, the other straight out in front, arms reaching for balance.
-      return (
-        <g>
-          <MLimb d="M-1 -9 L15 -11" w={3.6} far />
-          <ellipse cx={16.5} cy={-11.5} rx={1.6} ry={2.2} fill="#d4cec4" stroke={MARBLE.dark} strokeWidth={0.5} />
-          <MLimb d="M-2 -8 L6 -7 L1 -1" w={4.2} />
-          <ellipse cx={2} cy={-0.5} rx={3} ry={1.1} fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.5} />
-          <path d="M-5 -9 C -6 -16, -2 -24, 4 -26 C 8 -24, 7 -17, 3 -10 Z" fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.7} />
-          <path d="M-5 -9 C -6 -16, -2 -24, 4 -26 C 8 -24, 7 -17, 3 -10 Z" fill="url(#hf-body)" />
-          <g stroke={MARBLE.dark} strokeWidth={0.5} fill="none" opacity={0.85}>
-            <path d="M1 -22 C 3 -19, 3 -16, 2 -13" />
-          </g>
-          {sash('M-5 -11 C -1 -9, 3 -9, 4 -11 L 4 -7 C 1 -6, -3 -6, -6 -7 Z', 'M-3 -10 L-3 -7 M1 -10 L1 -6')}
-          <MLimb d="M4 -23 L16 -20" w={3} far />
-          <MLimb d="M4 -21 L17 -18" w={3} />
-          <ClassicalHead x={7} y={-29} r={4.2} facing={1} />
-        </g>
-      );
-    case 'lift':
-      return (
-        <g>
-          <MLimb d="M-3 0 L-2 -14" w={3.6} />
-          <MLimb d="M3 0 L2 -14" w={3.6} far />
-          <path d="M-6 -30 C -7 -24, -4 -17, -3 -14 H3 C 4 -17, 7 -24, 6 -30 C 3 -28, -3 -28, -6 -30 Z" fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.7} />
-          <path d="M-6 -30 C -7 -24, -4 -17, -3 -14 H3 C 4 -17, 7 -24, 6 -30 C 3 -28, -3 -28, -6 -30 Z" fill="url(#hf-body)" />
-          {sash('M-6 -29 C -2 -24, 2 -19, 4 -14 L 1 -14 C -1 -19, -4 -24, -7 -27 Z', 'M-4 -26 C -2 -22, 0 -19, 2 -15')}
-          <MLimb d="M5 -28 L8 -37 L8 -45" w={3} />
-          <MLimb d="M-5 -28 L-9 -21" w={3} />
-          <rect x={2} y={-48} width={12} height={1.8} fill={tier.dark} />
-          <rect x={0} y={-51} width={3.4} height={8} rx={1} fill={tier.base} stroke={tier.dark} strokeWidth={0.5} />
-          <rect x={13} y={-51} width={3.4} height={8} rx={1} fill={tier.base} stroke={tier.dark} strokeWidth={0.5} />
-          <ClassicalHead x={0} y={-34} r={4.1} facing={1} />
-        </g>
-      );
-    default:
-      // flex: front double biceps, cloth at the waist
-      return (
-        <g>
-          <MLimb d="M-4 0 L-3 -15 M4 0 L3 -15" w={4} />
-          <path d="M-8 -34 C -9 -27, -6 -19, -4 -16 H4 C 6 -19, 9 -27, 8 -34 C 4 -32, -4 -32, -8 -34 Z" fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.7} />
-          <path d="M-8 -34 C -9 -27, -6 -19, -4 -16 H4 C 6 -19, 9 -27, 8 -34 C 4 -32, -4 -32, -8 -34 Z" fill="url(#hf-body)" />
-          <g stroke={MARBLE.dark} strokeWidth={0.55} fill="none" opacity={0.85}>
-            <path d="M-6 -30 C -3 -28, 3 -28, 6 -30" />
-            <path d="M0 -29 V-18 M-2.5 -25 H2.5 M-2.5 -22 H2.5" />
-          </g>
-          {sash('M-5 -17 H5 L6 -11 C 2 -9, -2 -9, -6 -11 Z', 'M-3 -16 L-4 -11 M1 -16 L1 -10 M4 -16 L4 -11')}
-          <MLimb d="M-7 -32 L-15 -30 L-15 -41" w={3.6} />
-          <MLimb d="M7 -32 L15 -30 L15 -41" w={3.6} />
-          <circle cx={-12.5} cy={-33} r={2.8} fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.6} />
-          <circle cx={12.5} cy={-33} r={2.8} fill={MARBLE.base} stroke={MARBLE.dark} strokeWidth={0.6} />
-          <ClassicalHead x={0} y={-39} r={4.6} facing={0} />
-        </g>
-      );
-  }
-}
-
 function Statue({ id, m, accent, lit }: { id: string; m: M; accent: M; lit: boolean }) {
   switch (id) {
     case 'first-set':
@@ -528,24 +353,18 @@ function Statue({ id, m, accent, lit }: { id: string; m: M; accent: M; lit: bool
     case 'streak-100':
       return <Flame m={m} size={1.1} crown laurel lit={lit} />;
     case 'pushups-30':
-      return (
-        <g transform="translate(5 0) scale(0.82)">
-          <ClassicalAthlete pose="plank" tier={m} />
-        </g>
-      );
+      return <Athlete pose="plank" m={m} />;
     case 'pushups-50':
       return (
         <g>
-          <Laurel m={m} y={-16} r={20} />
-          <g transform="translate(5 0) scale(0.82)">
-            <ClassicalAthlete pose="plank" tier={m} />
-          </g>
+          <Laurel m={m} y={-16} r={18} />
+          <Athlete pose="plank" m={m} />
         </g>
       );
     case 'first-pull-up':
-      return <ClassicalAthlete pose="hang" tier={m} />;
+      return <Athlete pose="hang" m={m} />;
     case 'first-pistol':
-      return <ClassicalAthlete pose="pistol" tier={m} />;
+      return <Athlete pose="pistol" m={m} />;
     case 'first-loaded':
       return <Kettlebell m={m} />;
     case 'first-elite':
@@ -553,7 +372,7 @@ function Statue({ id, m, accent, lit }: { id: string; m: M; accent: M; lit: bool
     case 'balanced-week':
       return <Scales m={m} />;
     case 'first-session':
-      return <ClassicalAthlete pose="lift" tier={m} />;
+      return <Athlete pose="lift" m={m} />;
     case 'first-week':
       return <Obelisk m={m} />;
     case 'weeks-4':
@@ -566,7 +385,7 @@ function Statue({ id, m, accent, lit }: { id: string; m: M; accent: M; lit: bool
     case 'weeks-12':
       return (
         <g transform="scale(1.15)">
-          <ClassicalAthlete pose="flex" tier={m} />
+          <Athlete pose="flex" m={m} />
         </g>
       );
     default:
