@@ -5,8 +5,11 @@ import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { initErrorTracking } from './lib/errorTracking';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 registerSW({ immediate: true });
+void initErrorTracking();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -14,9 +17,11 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(
-  <AuthProvider>
-    <LanguageProvider>
-      <App />
-    </LanguageProvider>
-  </AuthProvider>
+  <ErrorBoundary>
+    <AuthProvider>
+      <LanguageProvider>
+        <App />
+      </LanguageProvider>
+    </AuthProvider>
+  </ErrorBoundary>
 );

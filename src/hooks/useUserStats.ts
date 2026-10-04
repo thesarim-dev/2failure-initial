@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
   completeWorkout,
+  computeStreakAfterWorkout,
   fetchUserStats,
   getStreakRestoreCost,
   restoreStreak,
@@ -11,6 +12,36 @@ import {
 } from '../lib/userStats';
 import { appendRestLog, readRestLog } from '../lib/restLog';
 import type { UserStats } from '../types/userStats';
+import { enqueue, readOutbox } from '../lib/outbox';
+import { storageKeyFor } from '../lib/persistedSettings';
+
+function readStatsCache(userId: string): UserStats | null {
+  try {
+    const raw = window.localStorage.getItem(storageKeyFor(userId, 'stats-cache'));
+    return raw ? (JSON.parse(raw) as UserStats) : null;
+  } catch {
+    return null;
+  }
+}
+function writeStatsCache(userId: string, stats: UserStats) {
+  try {
+    window.localStorage.setItem(storageKeyFor(userId, 'stats-cache'), JSON.stringify(stats));
+  } catch {
+    // Ignore storage failures.
+  }
+}
+/** Apply streak days still waiting to sync, so the flame is right offline. */
+function withQueuedStreak(userId: string, stats: UserStats): UserStats {
+  let next = stats;
+  for (const item of readOutbox(userId)) {
+    if (item.kind !== 'streak') continue;
+    if (next.last_workout_date && next.last_workout_date >= item.day) continue;
+    const { restDaysAdded: _r, ...updated } = computeStreakAfterWorkout(next, item.day, item.options);
+    void _r;
+    next = { ...next, ...updated };
+  }
+  return next;
+}
 
 export function useUserStats() {
   const { user } = useAuth();
@@ -37,13 +68,16 @@ export function useUserStats() {
     setError(null);
 
     try {
-      const row = await fetchUserStats(user.id);
+      const row = withQueuedStreak(user.id, await fetchUserStats(user.id));
       setStats(row);
+      writeStatsCache(user.id, row);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Could not load workout stats.'
       );
-      setStats(null);
+      // Offline: keep showing the last known streak, never a false zero.
+      const cached = readStatsCache(user.id);
+      setStats(cached ? withQueuedStreak(user.id, cached) : null);
     } finally {
       setLoading(false);
     }
@@ -76,13 +110,28 @@ export function useUserStats() {
     try {
       const today = toLocalDateString();
       const options: StreakRestOptions = { restAllowance, recentRestDays: readRestLog(user.id) };
-      const { stats: updated, restDaysAdded } = await completeWorkout(user.id, options);
-      if (restDaysAdded.length) setRecentRestDays(appendRestLog(user.id, restDaysAdded, today));
-      setStats(updated);
-      setTodayFailures((n) =>
-        stats?.last_workout_date === today ? n + 1 : 1
-      );
-      return updated;
+      try {
+        if (readOutbox(user.id).some((item) => item.kind === 'streak')) throw new Error('queued');
+        const { stats: updated, restDaysAdded } = await completeWorkout(user.id, options);
+        if (restDaysAdded.length) setRecentRestDays(appendRestLog(user.id, restDaysAdded, today));
+        setStats(updated);
+        writeStatsCache(user.id, updated);
+        setTodayFailures((n) =>
+          stats?.last_workout_date === today ? n + 1 : 1
+        );
+        return updated;
+      } catch {
+        // No signal: count today now (same rest-aware rule) and sync later.
+        enqueue(user.id, { kind: 'streak', day: today, options });
+        const base = stats ?? readStatsCache(user.id);
+        if (!base || base.last_workout_date === today) return base;
+        const { restDaysAdded, ...next } = computeStreakAfterWorkout(base, today, options);
+        if (restDaysAdded.length) setRecentRestDays(appendRestLog(user.id, restDaysAdded, today));
+        const updated = { ...base, ...next };
+        setStats(updated);
+        writeStatsCache(user.id, updated);
+        return updated;
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Could not save workout stats.'
