@@ -70,7 +70,9 @@ const en: UiContent = {
       bar: 'pull-up bar',
       dipBars: 'dip bars',
       bench: 'bench or step',
-      backpack: 'backpack'
+      backpack: 'backpack',
+      barbell: 'barbell',
+      dumbbell: 'dumbbell'
     },
     streak: 'streak',
     streakRestore: {
@@ -342,7 +344,9 @@ const he: UiContent = {
       bar: 'מוט מתח',
       dipBars: 'מקבילים',
       bench: 'ספסל או מדרגה',
-      backpack: 'תיק גב'
+      backpack: 'תיק גב',
+      barbell: 'מוט משקולות',
+      dumbbell: 'משקולת יד'
     },
     streak: 'רצף',
     streakRestore: {
@@ -614,7 +618,9 @@ const ar: UiContent = {
       bar: 'عقلة',
       dipBars: 'متوازي',
       bench: 'مقعد أو درجة',
-      backpack: 'حقيبة ظهر'
+      backpack: 'حقيبة ظهر',
+      barbell: 'بار حديد',
+      dumbbell: 'دمبل'
     },
     streak: 'سلسلة',
     streakRestore: {

@@ -5,7 +5,7 @@ export type MovementPattern = 'push' | 'pull';
  * sturdy chairs), a bench/step/stair, and a backpack you can load with books
  * or water bottles. No gym equipment.
  */
-export type AnywhereEquipment = 'bar' | 'dipBars' | 'bench' | 'backpack';
+export type AnywhereEquipment = 'bar' | 'dipBars' | 'bench' | 'backpack' | 'barbell' | 'dumbbell';
 /** @deprecated Use AnywhereEquipment */
 export type HomeGymEquipment = AnywhereEquipment;
 
@@ -117,7 +117,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       pattern: 'push',
       equipment: ['dipBars'],
       repCeiling: 15,
-      levelUp: ['backpack-pushups']
+      levelUp: ['backpack-pushups', 'bench-press']
     },
     {
       id: 'backpack-pushups',
@@ -126,7 +126,18 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       price: 300,
       tier: 'PRO',
       pattern: 'push',
-      equipment: ['backpack']
+      equipment: ['backpack'],
+      levelUp: ['bench-press']
+    },
+    {
+      id: 'bench-press',
+      name: 'Bench Press',
+      description: 'Lie on a bench and press a barbell from your chest to straight arms. Start light, add weight as you get stronger.',
+      price: 350,
+      tier: 'PRO',
+      pattern: 'push',
+      equipment: ['barbell', 'bench'],
+      repCeiling: 12
     },
     {
       id: 'archer-pushups',
@@ -241,7 +252,7 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
       price: 0,
       tier: 'BASE',
       repCeiling: 25,
-      levelUp: ['bulgarian-splits', 'backpack-squats']
+      levelUp: ['bulgarian-splits', 'backpack-squats', 'goblet-squats']
     },
     {
       id: 'lunges',
@@ -313,6 +324,15 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
       price: 250,
       tier: 'PRO',
       equipment: ['backpack']
+    },
+    {
+      id: 'goblet-squats',
+      name: 'Goblet Squats',
+      description: 'Hold one dumbbell at your chest and squat deep with your chest up. Go heavier as you get stronger.',
+      price: 250,
+      tier: 'PRO',
+      equipment: ['dumbbell'],
+      repCeiling: 15
     },
     {
       id: 'pistol-squats',
@@ -582,9 +602,11 @@ export function isRepLoggedCategory(categoryId: string): boolean {
   return REP_LOGGED_CATEGORY_IDS.has(categoryId);
 }
 
-/** Loaded (backpack) exercises that log weight × reps after each set. */
+/** Loaded exercises (backpack, barbell, dumbbell) that log weight × reps after each set. */
+const LOADED_EQUIPMENT: readonly AnywhereEquipment[] = ['backpack', 'barbell', 'dumbbell'];
 export function isWeightedEquipmentCategory(categoryId: string): boolean {
-  return getVariantById(categoryId)?.equipment?.includes('backpack') ?? false;
+  const gear = getVariantById(categoryId)?.equipment ?? [];
+  return gear.some((item) => LOADED_EQUIPMENT.includes(item));
 }
 
 export type LevelUpAdvice = {

@@ -306,6 +306,8 @@ When you follow a program, the program chooses your exercises, so the lineup is 
 
 ## 10. Follow the rotating program
 
+Each program day has **one equipment lift** as its main, 3-set exercise: **bench press** (barbell and bench) on push days, **goblet squats** (one dumbbell) on leg days, **pull-ups** (bar) on pull days and **dips** (dip bars) on mixed days. Every other exercise that day needs no equipment. The bench press and goblet squats ask for the weight you lifted after each set.
+
 The rotating program is an optional training plan built around **RIR** (reps in reserve), stopping just short of failure on early sets and going all-out on the final set. It needs only what a public park has: a pull-up bar, dip bars and a bench, plus a backpack for load. Pick the split that fits your week; rest (stretch) days are not fixed in the cycle — you choose them when you need them.
 
 ### Enable the program

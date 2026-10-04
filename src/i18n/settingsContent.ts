@@ -105,7 +105,7 @@ const en: SettingsContent = {
       {
         question: 'Do I need fancy gym equipment to start?',
         paragraphs: [
-          'No. You need the floor, a bench or sturdy chair, and a pull-up bar (most public parks have one). When bodyweight gets easy, a backpack filled with books or water bottles adds weight.'
+          'No. Building your own plan, you can train with just the floor, a sturdy chair and a pull-up bar (most public parks have one), and a backpack with books adds weight later. The program uses one piece of gear per day for its main lift (a barbell and bench, a pull-up bar, a dumbbell or dip bars); everything else that day needs no equipment.'
         ]
       },
       {
@@ -273,7 +273,7 @@ const he: SettingsContent = {
       {
         question: 'האם אני צריך ציוד כושר יקר כדי להתחיל?',
         paragraphs: [
-          'לא. אתה צריך רצפה, ספסל או כיסא יציב, ומוט מתח (ברוב הפארקים הציבוריים יש). כשמשקל הגוף נהיה קל, תיק גב עם ספרים או בקבוקי מים מוסיף משקל.'
+          'לא. בתוכנית משלך אפשר להתאמן רק עם רצפה, כיסא יציב ומוט מתח (ברוב הפארקים יש), ותיק גב עם ספרים מוסיף משקל בהמשך. התוכנית המוכנה משתמשת בציוד אחד ביום לתרגיל המרכזי (מוט וספסל, מוט מתח, משקולת יד או מקבילים); כל השאר באותו יום לא דורש ציוד.'
         ]
       },
       {
@@ -440,7 +440,7 @@ const ar: SettingsContent = {
       {
         question: 'هل أحتاج إلى معدات رياضية باهظة للبدء؟',
         paragraphs: [
-          'لا. تحتاج إلى الأرض، ومقعد أو كرسي متين، وعقلة (معظم الحدائق العامة فيها واحدة). عندما يصبح وزن الجسم سهلاً، تضيف حقيبة ظهر مليئة بالكتب أو زجاجات الماء وزناً إضافياً.'
+          'لا. في خطتك الخاصة يمكنك التدرب بالأرض وكرسي متين وعقلة فقط (معظم الحدائق فيها واحدة)، وحقيبة ظهر بالكتب تضيف وزناً لاحقاً. البرنامج الجاهز يستخدم أداة واحدة يومياً للتمرين الرئيسي (بار ومقعد، أو عقلة، أو دمبل، أو متوازي)؛ وكل ما عداه في ذلك اليوم لا يحتاج معدات.'
         ]
       },
       {

@@ -7,43 +7,42 @@ export type ProgramExercisePrescription = {
 };
 
 /**
- * RIR program built for training anywhere: a park with a pull-up bar and dip
- * bars, a bench or stairs, and a backpack for load. No gym equipment.
- * Stretch (rest) days are not in the cycle — the player creates them on demand.
- * The 3-set anchor of each day is the hardest, loadable move; accessories and
- * core use 2 sets each.
+ * RIR program: each training day has exactly ONE equipment lift as its 3-set
+ * anchor (barbell bench press, pull-up bar, a dumbbell, dip bars), and every
+ * other exercise needs no equipment at all, so a day works with one piece of
+ * gear. Accessories and core use 2 sets each. Stretch (rest) days are not in
+ * the cycle — the player creates them on demand.
  */
 const PROGRAM_BY_PHASE: Record<
   RotatingProgramPhase,
   ProgramExercisePrescription[]
 > = {
   push: [
-    { id: 'backpack-pushups', setsToFailure: 3 },
-    { id: 'dips', setsToFailure: 2 },
+    { id: 'bench-press', setsToFailure: 3 },
     { id: 'pike-pushups', setsToFailure: 2 },
-    { id: 'l-sit', setsToFailure: 2 },
+    { id: 'diamond-pushups', setsToFailure: 2 },
+    { id: 'leg-raises', setsToFailure: 2 },
     { id: 'planks', setsToFailure: 2 }
   ],
   legs: [
-    { id: 'backpack-squats', setsToFailure: 3 },
-    { id: 'bulgarian-splits', setsToFailure: 2 },
+    { id: 'goblet-squats', setsToFailure: 3 },
+    { id: 'lunges', setsToFailure: 2 },
     { id: 'single-leg-bridges', setsToFailure: 2 },
-    { id: 'hollow-body', setsToFailure: 2 },
-    { id: 'planks', setsToFailure: 2 }
+    { id: 'side-planks', setsToFailure: 2 },
+    { id: 'hollow-body', setsToFailure: 2 }
   ],
   pull: [
     { id: 'pull-ups', setsToFailure: 3 },
-    { id: 'inverted-rows', setsToFailure: 2 },
-    { id: 'chin-ups', setsToFailure: 2 },
-    { id: 'hanging-knee-raises', setsToFailure: 2 },
+    { id: 'superman-pulls', setsToFailure: 2 },
+    { id: 'doorway-rows', setsToFailure: 2 },
+    { id: 'hollow-body', setsToFailure: 2 },
     { id: 'planks', setsToFailure: 2 }
   ],
   mixed: [
-    { id: 'backpack-pull-ups', setsToFailure: 3 },
+    { id: 'dips', setsToFailure: 3 },
     { id: 'burpees', setsToFailure: 2 },
     { id: 'pushups', setsToFailure: 2 },
     { id: 'lunges', setsToFailure: 2 },
-    { id: 'l-sit', setsToFailure: 2 },
     { id: 'planks', setsToFailure: 2 }
   ],
   recovery: [

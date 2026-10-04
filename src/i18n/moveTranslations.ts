@@ -116,6 +116,14 @@ const en: MovesTranslations = {
       name: 'Bulgarian Splits',
       description: 'Rear foot on a bench, squat as deep as you can with control.'
     },
+    'bench-press': {
+      name: 'Bench Press',
+      description: 'Lie on a bench and press a barbell from your chest to straight arms. Start light, add weight as you get stronger.'
+    },
+    'goblet-squats': {
+      name: 'Goblet Squats',
+      description: 'Hold one dumbbell at your chest and squat deep with your chest up. Go heavier as you get stronger.'
+    },
     'backpack-squats': {
       name: 'Backpack Squats',
       description: 'Squats wearing a loaded backpack (or hugging it to your chest).'
@@ -312,6 +320,14 @@ const he: MovesTranslations = {
     'bulgarian-splits': {
       name: 'ספליט בולגרי',
       description: 'רגל אחורית על ספסל, רד עמוק ככל שאתה יכול בשליטה.'
+    },
+    'bench-press': {
+      name: 'לחיצת חזה',
+      description: 'שכבו על ספסל ודחפו מוט משקולות מהחזה עד ליישור הידיים. התחילו קל והוסיפו משקל כשתתחזקו.'
+    },
+    'goblet-squats': {
+      name: 'סקוואט גביע',
+      description: 'החזיקו משקולת יד אחת מול החזה ורדו לסקוואט עמוק עם חזה זקוף. הוסיפו משקל כשתתחזקו.'
     },
     'backpack-squats': {
       name: 'סקוואט עם תיק',
@@ -510,6 +526,14 @@ const ar: MovesTranslations = {
     'bulgarian-splits': {
       name: 'الانقسام البلغاري',
       description: 'القدم الخلفية على مقعد، انزل بعمق بقدر ما تستطيع بتحكم.'
+    },
+    'bench-press': {
+      name: 'ضغط البنش',
+      description: 'استلقِ على مقعد وادفع البار من صدرك حتى تستقيم ذراعاك. ابدأ بوزن خفيف وزِده مع تقدّمك.'
+    },
+    'goblet-squats': {
+      name: 'قرفصاء الكأس',
+      description: 'أمسك دمبل واحداً أمام صدرك وانزل في قرفصاء عميقة مع صدر مرفوع. زِد الوزن مع تقدّمك.'
     },
     'backpack-squats': {
       name: 'قرفصاء بحقيبة الظهر',
