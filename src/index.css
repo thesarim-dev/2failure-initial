@@ -5679,4 +5679,47 @@
       font-size: 0.74rem;
     }
   }
+
+  /* ---------- Trio v5: buttons fill the row beside the flame ---------- */
+  .home-trio {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    justify-content: stretch;
+    justify-items: center;
+    gap: 0.6rem;
+  }
+  .trio-tile,
+  .trio-tile.trio-rest,
+  .trio-tile.trio-plan {
+    width: 100%;
+    max-width: 9.5rem;
+    height: 6.4rem;
+    padding: 0.5rem 0.35rem;
+  }
+  .trio-tile .trio-tile-title {
+    /* Scales with the screen so the longest label always fits. */
+    font-size: clamp(0.68rem, 2.95vw, 0.9rem);
+    letter-spacing: 0;
+    /* If a font renders wider than expected, wrap neatly instead of spilling out. */
+    white-space: normal;
+    text-wrap: balance;
+    max-width: 100%;
+  }
+  .trio-tile .trio-tile-sub {
+    font-size: clamp(0.62rem, 2.7vw, 0.76rem);
+  }
+  .trio-tile svg {
+    width: 25px;
+    height: 25px;
+  }
+  .trio-plan-icon {
+    width: 28px;
+    height: 28px;
+  }
+  @media (max-width: 370px) {
+    .trio-tile,
+    .trio-tile.trio-rest,
+    .trio-tile.trio-plan {
+      width: 100%;
+    }
+  }
 }
