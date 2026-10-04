@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseCritters } from './Critters';
 import { GroundDetail, GroundEdges } from './GroundDetail';
 import { SlabSides } from './SlabSides';
-import { ISO_ITEMS, IsoItemArt, IsoScaffold, P as isoP } from './IsoArt';
+import { IsoItemArt, IsoScaffold, P as isoP, isIsoItem } from './IsoArt';
 
 export { ItemArt, TrophyArt } from './BaseArt';
 
@@ -46,11 +46,11 @@ export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, 
 }) {
   const id = trophyId ? `${TROPHY_ITEM_PREFIX}${trophyId}` : itemId ?? '';
   const box = itemSize(id) * T;
-  if (ISO_ITEMS.has(id)) {
+  if (isIsoItem(id)) {
     const s2 = itemSize(id) === 2;
     return (
       <svg
-        viewBox={s2 ? '-112 -84 224 190' : LOW_ITEMS.has(id) ? '-54 -24 108 84' : '-56 -84 112 140'}
+        viewBox={s2 ? '-112 -84 224 190' : LOW_ITEMS.has(id) ? '-54 -24 108 84' : id.startsWith(TROPHY_ITEM_PREFIX) ? '-54 -80 108 124' : '-56 -84 112 140'}
         width={size}
         height={size}
         aria-hidden="true"
@@ -232,7 +232,7 @@ export function BaseBoard({
       );
       continue;
     }
-    if (ISO_ITEMS.has(item.itemId)) {
+    if (isIsoItem(item.itemId)) {
       const construction = jobs.get(item.uid);
       const def = getItemDef(item.itemId);
       const ox = item.x * T;
@@ -258,12 +258,19 @@ export function BaseBoard({
             <g className="base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1">
               {construction && item.level === 0 ? null : (
                 <g className="base-pop">
-                  <IsoItemArt item={item} ox={ox} oy={oy} lit={lit} plan={plan} />
+                  <IsoItemArt
+                    item={item}
+                    ox={ox}
+                    oy={oy}
+                    lit={lit}
+                    plan={plan}
+                    verified={item.itemId.startsWith(TROPHY_ITEM_PREFIX) ? state.trophies[item.itemId.slice(TROPHY_ITEM_PREFIX.length)]?.verified : undefined}
+                  />
                 </g>
               )}
             </g>
             {construction && (
-              <IsoScaffold ox={ox} oy={oy} size={size} setsRemaining={construction.setsRemaining} height={item.itemId === 'wall' || item.itemId === 'garden' ? 34 : undefined} />
+              <IsoScaffold ox={ox} oy={oy} size={size} setsRemaining={construction.setsRemaining} height={item.itemId === 'wall' || item.itemId === 'garden' ? 34 : item.itemId.startsWith(TROPHY_ITEM_PREFIX) ? 48 : undefined} />
             )}
             {def?.kind === 'structure' && !construction && (
               <g transform={`translate(${px - (size * T) / 2} ${py - size * T + 10})`}>

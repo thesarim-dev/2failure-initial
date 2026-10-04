@@ -1,3 +1,4 @@
+import { IsoTrophy } from './IsoTrophy';
 import type { ReactNode } from 'react';
 import type { PlacedItem, TodayPlan } from '../../game/engine';
 import {
@@ -1043,6 +1044,10 @@ function IsoGarden({ ox, oy, style, color }: { ox: number; oy: number; style?: s
 
 /** Which items are drawn as true isometric models. */
 export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden']);
+/** True for anything drawn as an isometric model (buildings, walls, gardens, trophies). */
+export function isIsoItem(itemId: string): boolean {
+  return ISO_ITEMS.has(itemId) || itemId.startsWith('trophy:');
+}
 
 /**
  * Draw an isometric model for a placed item at (ox, oy) = its footprint's
@@ -1053,14 +1058,19 @@ export function IsoItemArt({
   ox,
   oy,
   lit,
-  plan
+  plan,
+  verified
 }: {
   item: PlacedItem;
   ox: number;
   oy: number;
   lit: boolean;
   plan?: TodayPlan | null;
+  verified?: boolean;
 }): ReactNode {
+  if (item.itemId.startsWith('trophy:')) {
+    return <IsoTrophy trophyId={item.itemId.slice('trophy:'.length)} ox={ox} oy={oy} lit={lit} verified={verified} color={item.color} />;
+  }
   const s = themeFor(item.itemId, item.color);
   const props: IsoProps = {
     ox,
