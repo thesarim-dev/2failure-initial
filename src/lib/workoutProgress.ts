@@ -4,7 +4,12 @@ import {
   getVariantById
 } from '../components/moves';
 import { supabase } from './supabase';
-import { fetchUserStats, toLocalDateString } from './userStats';
+import {
+  completeWorkout,
+  fetchUserStats,
+  STREAK_MIN_SETS_PER_DAY,
+  toLocalDateString
+} from './userStats';
 
 function isDefaultEquipped(categoryId: string): boolean {
   return (
@@ -153,9 +158,16 @@ export async function incrementSetProgress(
 
   await markSetsProgressDate(userId, today);
 
-  // The streak is updated by the caller with the player's rest allowance;
-  // updating it here too (without rest days) used to reset rest-aware streaks.
-  return { ...current, [categoryId]: next };
+  const updated = { ...current, [categoryId]: next };
+  if (sumDailySets(updated) >= STREAK_MIN_SETS_PER_DAY) {
+    try {
+      await completeWorkout(userId);
+    } catch {
+      // Set is saved; streak is reconciled when stats/sets reload.
+    }
+  }
+
+  return updated;
 }
 
 /** @deprecated Use ABSOLUTE_MAX_DAILY_SETS or dailySetGoal from settings */

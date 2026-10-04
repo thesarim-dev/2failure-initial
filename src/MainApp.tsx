@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useMemo, useRef, useEffect, useCallback, useSyncExternalStore } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useScreenInit } from './useScreenInit';
 import { useLanguage } from './context/LanguageContext';
@@ -27,8 +27,6 @@ import { usePushupDailyReps } from './hooks/usePushupDailyReps';
 import { useRotatingProgram } from './hooks/useRotatingProgram';
 import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { calculateCoinsEarned } from './lib/coinRewards';
-import { enqueue, flushOutbox, pendingSetCount, readOutbox, subscribeOutbox } from './lib/outbox';
-import { setErrorUser } from './lib/errorTracking';
 import { shouldCountStreakForDay, toLocalDateString } from './lib/userStats';
 import { useTrainingDaysPerWeek } from './hooks/useTrainingDaysPerWeek';
 import { FREE_REST_DAYS_PER_WEEK, useFreeRestDays } from './hooks/useFreeRestDays';
@@ -89,8 +87,7 @@ export function MainApp() {
     coins,
     loading: profileLoading,
     error: profileError,
-    setCoins,
-    refetch: refetchProfile
+    setCoins
   } = useProfile();
   const {
     currentStreak,
@@ -103,47 +100,14 @@ export function MainApp() {
     recentRestDays,
     restoreStreakCost,
     recordWorkoutComplete,
-    restoreStreak: restoreUserStreak,
-    refetch: refetchStats
+    restoreStreak: restoreUserStreak
   } = useUserStats();
   const {
     setsCompleted,
     loading: setsLoading,
     error: setsError,
-    incrementSet,
-    refetch: refetchProgress
+    incrementSet
   } = useWorkoutProgress(dailySetGoal);
-
-  useEffect(() => {
-    setErrorUser(user?.id ?? null);
-  }, [user?.id]);
-
-  // --- Offline outbox: sets saved on this phone sync when signal returns ---
-  const pendingSets = useSyncExternalStore(subscribeOutbox, () => pendingSetCount(user?.id), () => 0);
-  const syncOutbox = useCallback(async () => {
-    if (!user || readOutbox(user.id).length === 0) return;
-    const done = await flushOutbox(user.id);
-    if (done) {
-      void refetchProfile();
-      void refetchStats();
-      void refetchProgress();
-    }
-  }, [user, refetchProfile, refetchStats, refetchProgress]);
-  useEffect(() => {
-    void syncOutbox();
-    const onOnline = () => void syncOutbox();
-    const onVisible = () => document.visibilityState === 'visible' && void syncOutbox();
-    window.addEventListener('online', onOnline);
-    document.addEventListener('visibilitychange', onVisible);
-    const timer = window.setInterval(() => {
-      if (user && readOutbox(user.id).length > 0) void syncOutbox();
-    }, 20000);
-    return () => {
-      window.removeEventListener('online', onOnline);
-      document.removeEventListener('visibilitychange', onVisible);
-      window.clearInterval(timer);
-    };
-  }, [syncOutbox, user]);
   const {
     pushupRepsToday,
     loading: pushupRepsLoading,
@@ -397,11 +361,7 @@ export function MainApp() {
           finishWorkoutSession(duration, trackedReps, { verified: true });
           return;
         } catch {
-          // No signal: keep the camera-counted set and sync it later.
-          enqueue(user.id, { kind: 'reps', categoryId: currentMove.categoryId, reps: trackedReps });
-          setLastSetResult(null);
-          finishWorkoutSession(duration, trackedReps, { verified: true });
-          return;
+          // Fall back to manual rep entry if auto-save fails.
         }
       }
 
@@ -420,15 +380,12 @@ export function MainApp() {
     setIsFinishing(true);
 
     try {
-      if (readOutbox(user.id).some((item) => item.kind === 'reps' || item.kind === 'weighted')) throw new Error('queued');
       const result = await recordSetReps(user.id, currentMove.categoryId, reps);
       setLastSetResult(result);
       finishWorkoutSession(lastDuration, reps);
     } catch {
-      // No signal: never lose the set. Save it on this phone and sync later.
-      enqueue(user.id, { kind: 'reps', categoryId: currentMove.categoryId, reps });
-      setLastSetResult(null);
-      finishWorkoutSession(lastDuration, reps);
+      finishingRef.current = false;
+      setIsFinishing(false);
     }
   };
   const handleWeightRepSubmit = async (weightKg: number, reps: number) => {
@@ -459,26 +416,12 @@ export function MainApp() {
           setsRemaining: isLastSet ? 0 : setContext.setsRemaining
         }
       });
-    } catch {
-      // No signal: keep the set (weight and reps) and sync it later.
-      enqueue(user.id, {
-        kind: 'weighted',
-        categoryId: currentMove.categoryId,
-        weightKg,
-        reps,
-        setNumber: setContext.setNumber,
-        totalSets: setContext.totalSets,
-        unit: weightUnit
-      });
-      setLastSetResult(null);
-      finishWorkoutSession(lastDuration, reps, {
-        weightKg,
-        setContext: {
-          setNumber: setContext.setNumber,
-          totalSets: setContext.totalSets,
-          setsRemaining: isLastSet ? 0 : setContext.setsRemaining
-        }
-      });
+    } catch (err) {
+      finishingRef.current = false;
+      setIsFinishing(false);
+      setWeightSaveError(
+        err instanceof Error ? err.message : t.workout.weightPrompt.saveError
+      );
     }
   };
   const handleCancelWorkout = () => {
@@ -643,16 +586,6 @@ export function MainApp() {
       className={`min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#BEF028] selection:text-black ${
         showTabBar ? 'has-tab-bar' : ''
       }`}>
-      {pendingSets > 0 && (appState === 'HOME' || appState === 'BASE' || appState === 'SUMMARY') && (
-        <div className="offline-notice" role="status">
-          <span aria-hidden="true">📶</span>
-          <span className="offline-notice-text">{t.hub.offline.pending(pendingSets)}</span>
-          <button type="button" className="offline-notice-btn" onClick={() => void syncOutbox()}>
-            {t.hub.offline.retry}
-          </button>
-        </div>
-      )}
-
       {/* Screens fade in. Opacity only: a transform would break fixed-position screens. */}
       <motion.div
         key={appState}

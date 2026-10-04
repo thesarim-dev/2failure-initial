@@ -42,7 +42,6 @@ export type HubCopy = {
   };
   settingsTab: string;
   restoreBanner: { title: (streak: number) => string; sub: string; notEnough: (cost: number) => string };
-  offline: { pending: (n: number) => string; retry: string };
   trio: {
     edit: string;
     ownShort: (sets: number, days: number) => string;
@@ -118,10 +117,6 @@ const en: HubCopy = {
     programRest: (days) => `Rest day · ${days}-day split`
   },
   settingsTab: 'Settings',
-  offline: {
-    pending: (n) => (n === 1 ? "1 set saved on this phone. It'll sync when you're back online." : `${n} sets saved on this phone. They'll sync when you're back online.`),
-    retry: 'Sync now'
-  },
   trio: {
     edit: 'Edit workout',
     ownShort: (sets, days) => `${sets} sets · ${days} days`,
@@ -202,10 +197,6 @@ const he: HubCopy = {
     programRest: (days) => `יום מנוחה · חלוקת ${days} ימים`
   },
   settingsTab: 'הגדרות',
-  offline: {
-    pending: (n) => (n === 1 ? 'סט אחד נשמר בטלפון. הוא יסונכרן כשתחזור לקליטה.' : `${n} סטים נשמרו בטלפון. הם יסונכרנו כשתחזור לקליטה.`),
-    retry: 'סנכרן עכשיו'
-  },
   trio: {
     edit: 'עריכת אימון',
     ownShort: (sets, days) => `${sets} סטים · ${days} ימים`,
@@ -286,10 +277,6 @@ const ar: HubCopy = {
     programRest: (days) => `يوم راحة · تقسيم ${days} أيام`
   },
   settingsTab: 'الإعدادات',
-  offline: {
-    pending: (n) => (n === 1 ? 'حُفظت مجموعة واحدة على هاتفك. ستتم مزامنتها عند عودة الاتصال.' : `حُفظت ${n} مجموعات على هاتفك. ستتم مزامنتها عند عودة الاتصال.`),
-    retry: 'زامن الآن'
-  },
   trio: {
     edit: 'تعديل التمرين',
     ownShort: (sets, days) => `${sets} مجموعات · ${days} أيام`,

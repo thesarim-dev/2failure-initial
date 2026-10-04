@@ -272,23 +272,6 @@ export async function completeWorkout(
   return { stats: normalizeStats(data as UserStats), restDaysAdded };
 }
 
-/**
- * Count a specific day (queued while offline) toward the streak. Skips it if
- * the account has already recorded that day or a later one.
- */
-export async function completeWorkoutOnDay(
-  userId: string,
-  day: string,
-  options?: StreakRestOptions
-): Promise<void> {
-  const stats = await fetchUserStats(userId);
-  if (stats.last_workout_date && stats.last_workout_date >= day) return;
-  const { restDaysAdded: _added, ...next } = computeStreakAfterWorkout(stats, day, options);
-  void _added;
-  const { error } = await supabase.from('user_stats').update(next).eq('user_id', userId);
-  if (error) throw error;
-}
-
 export async function restoreStreak(
   userId: string,
   options: { free?: boolean } = {}

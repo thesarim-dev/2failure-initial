@@ -7,40 +7,6 @@ import {
   incrementSetProgress,
   sumDailySets
 } from '../lib/workoutProgress';
-import { enqueue, readOutbox } from '../lib/outbox';
-import { storageKeyFor } from '../lib/persistedSettings';
-import { toLocalDateString } from '../lib/userStats';
-
-type ProgressCache = { day: string; sets: Record<string, number> };
-function readCache(userId: string): ProgressCache | null {
-  try {
-    const raw = window.localStorage.getItem(storageKeyFor(userId, 'sets-cache'));
-    return raw ? (JSON.parse(raw) as ProgressCache) : null;
-  } catch {
-    return null;
-  }
-}
-function writeCache(userId: string, sets: Record<string, number>) {
-  try {
-    window.localStorage.setItem(storageKeyFor(userId, 'sets-cache'), JSON.stringify({ day: toLocalDateString(), sets }));
-  } catch {
-    // Ignore storage failures.
-  }
-}
-/** Today's sets that are still waiting to sync, by exercise. */
-function queuedToday(userId: string): Record<string, number> {
-  const today = toLocalDateString();
-  const out: Record<string, number> = {};
-  for (const item of readOutbox(userId)) {
-    if (item.kind === 'progress' && item.day === today) out[item.categoryId] = (out[item.categoryId] ?? 0) + 1;
-  }
-  return out;
-}
-function withQueued(sets: Record<string, number>, queued: Record<string, number>): Record<string, number> {
-  const next = { ...sets };
-  for (const [id, n] of Object.entries(queued)) next[id] = (next[id] ?? 0) + n;
-  return next;
-}
 
 export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
   const { user } = useAuth();
@@ -60,16 +26,13 @@ export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
     setError(null);
 
     try {
-      const progress = withQueued(await fetchSetsProgress(user.id), queuedToday(user.id));
+      const progress = await fetchSetsProgress(user.id);
       setSetsCompleted(progress);
-      writeCache(user.id, progress);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Could not load set progress.'
       );
-      // Offline: show today's last known progress rather than zeros.
-      const cached = readCache(user.id);
-      setSetsCompleted(cached && cached.day === toLocalDateString() ? cached.sets : withQueued(emptySetsMap(), queuedToday(user.id)));
+      setSetsCompleted(emptySetsMap());
     } finally {
       setLoading(false);
     }
@@ -86,24 +49,14 @@ export function useWorkoutProgress(dailySetGoal: DailySetGoal) {
       setError(null);
 
       try {
-        if (readOutbox(user.id).some((item) => item.kind === 'progress')) {
-          throw new Error('queued behind earlier offline sets');
-        }
         const updated = await incrementSetProgress(user.id, categoryId);
         setSetsCompleted(updated);
-        writeCache(user.id, updated);
         return sumDailySets(updated);
-      } catch {
-        // No signal: count the set now and sync it later. Never lose it.
-        enqueue(user.id, { kind: 'progress', categoryId, day: toLocalDateString() });
-        let total = 0;
-        setSetsCompleted((prev) => {
-          const next = { ...prev, [categoryId]: (prev[categoryId] ?? 0) + 1 };
-          total = sumDailySets(next);
-          writeCache(user.id, next);
-          return next;
-        });
-        return total;
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Could not save set progress.'
+        );
+        return null;
       }
     },
     [user, dailySetGoal]
