@@ -35,8 +35,7 @@ import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { sumDailySets } from './lib/workoutProgress';
 import { RepPrompt } from './components/RepPrompt';
 import { WeightRepPrompt } from './components/WeightRepPrompt';
-import { recordSetReps } from './lib/repProgress';
-import { recordWeightedSetReps } from './lib/weightProgress';
+import { provisionalResult, saveSetInBackground, savePendingSets, type SetSaveJob } from './lib/backgroundSetSave';
 import { resolveSetTargets } from './lib/setPrescription';
 import { useWeightUnit } from './hooks/useWeightUnit';
 import { useAuth } from './context/AuthContext';
@@ -326,6 +325,21 @@ export function MainApp() {
     setAppState('SUMMARY');
   };
 
+  // Show the receipt right away; save the set in the background and swap in
+  // the confirmed result (personal bests, weight suggestion) when it arrives.
+  const saveTokenRef = useRef(0);
+  const showAndSave = (job: SetSaveJob) => {
+    if (!user) return;
+    const token = ++saveTokenRef.current;
+    setLastSetResult(provisionalResult(user.id, job));
+    void saveSetInBackground(user.id, job).then((result) => {
+      if (result && saveTokenRef.current === token) setLastSetResult(result);
+    });
+  };
+  useEffect(() => {
+    if (user) void savePendingSets(user.id);
+  }, [user]);
+
   const handleFinishWorkout = async (
     duration: number,
     trackedReps?: number
@@ -350,19 +364,10 @@ export function MainApp() {
 
     if (currentMove && isRepLoggedCategory(currentMove.categoryId)) {
       if (trackedReps && trackedReps > 0 && user) {
-        try {
-          const result = await recordSetReps(
-            user.id,
-            currentMove.categoryId,
-            trackedReps
-          );
-          setLastSetResult(result);
-          // Counted by the camera, so trophies from this set are verified.
-          finishWorkoutSession(duration, trackedReps, { verified: true });
-          return;
-        } catch {
-          // Fall back to manual rep entry if auto-save fails.
-        }
+        showAndSave({ kind: 'reps', categoryId: currentMove.categoryId, reps: trackedReps });
+        // Counted by the camera, so trophies from this set are verified.
+        finishWorkoutSession(duration, trackedReps, { verified: true });
+        return;
       }
 
       finishingRef.current = false;
@@ -379,14 +384,8 @@ export function MainApp() {
     finishingRef.current = true;
     setIsFinishing(true);
 
-    try {
-      const result = await recordSetReps(user.id, currentMove.categoryId, reps);
-      setLastSetResult(result);
-      finishWorkoutSession(lastDuration, reps);
-    } catch {
-      finishingRef.current = false;
-      setIsFinishing(false);
-    }
+    showAndSave({ kind: 'reps', categoryId: currentMove.categoryId, reps });
+    finishWorkoutSession(lastDuration, reps);
   };
   const handleWeightRepSubmit = async (weightKg: number, reps: number) => {
     if (finishingRef.current || !currentMove || !user) return;
@@ -397,32 +396,23 @@ export function MainApp() {
     const setContext = getWeightedSetContext(currentMove.categoryId);
     const isLastSet = setContext.setNumber >= setContext.totalSets;
 
-    try {
-      const result = await recordWeightedSetReps(
-        user.id,
-        currentMove.categoryId,
-        weightKg,
-        reps,
-        setContext.setNumber,
-        setContext.totalSets,
-        weightUnit
-      );
-      setLastSetResult(result);
-      finishWorkoutSession(lastDuration, reps, {
-        weightKg,
-        setContext: {
-          setNumber: setContext.setNumber,
-          totalSets: setContext.totalSets,
-          setsRemaining: isLastSet ? 0 : setContext.setsRemaining
-        }
-      });
-    } catch (err) {
-      finishingRef.current = false;
-      setIsFinishing(false);
-      setWeightSaveError(
-        err instanceof Error ? err.message : t.workout.weightPrompt.saveError
-      );
-    }
+    showAndSave({
+      kind: 'weighted',
+      categoryId: currentMove.categoryId,
+      weightKg,
+      reps,
+      setNumber: setContext.setNumber,
+      totalSets: setContext.totalSets,
+      unit: weightUnit
+    });
+    finishWorkoutSession(lastDuration, reps, {
+      weightKg,
+      setContext: {
+        setNumber: setContext.setNumber,
+        totalSets: setContext.totalSets,
+        setsRemaining: isLastSet ? 0 : setContext.setsRemaining
+      }
+    });
   };
   const handleCancelWorkout = () => {
     setGuidingFirstSet(false);

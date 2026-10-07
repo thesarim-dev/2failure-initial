@@ -154,8 +154,11 @@ export async function recordWeightedSetReps(
   totalSets: number,
   unit: WeightUnit
 ): Promise<SetRepResult> {
-  const todaysBefore = await fetchTodaysWeightedSets(userId, categoryId);
-  const lastSession = await fetchLastWeightedSetBeforeToday(userId, categoryId);
+  // Both reads are independent: one round trip instead of two.
+  const [todaysBefore, lastSession] = await Promise.all([
+    fetchTodaysWeightedSets(userId, categoryId),
+    fetchLastWeightedSetBeforeToday(userId, categoryId)
+  ]);
   const todaysIncludingCurrent = [...todaysBefore, { weightKg, reps }];
 
   const progression = buildProgressionHint(

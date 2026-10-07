@@ -90,12 +90,24 @@ export async function recordSetReps(
   weightKg?: number,
   setNumber?: number
 ): Promise<SetRepResult> {
-  await ensureUserWorkoutRow(userId, categoryId);
-
   const completedAt = new Date().toISOString();
-  const currentBest = await fetchPersonalBest(userId, categoryId);
-  const isNewPersonalBest =
-    currentBest.reps === null || reps > currentBest.reps;
+  const weighted = weightKg !== undefined && weightKg > 0;
+
+  // Round trip 1 (in parallel): make sure the exercise row exists, and read
+  // the current bests. None of these depend on each other.
+  const [, currentBest, currentWeightBest] = await Promise.all([
+    ensureUserWorkoutRow(userId, categoryId),
+    fetchPersonalBest(userId, categoryId),
+    weighted
+      ? fetchWeightPersonalBest(userId, categoryId).catch((err: unknown) => {
+          if (isSchemaColumnError(err)) return null; // Weight PB columns not migrated yet.
+          throw err;
+        })
+      : Promise.resolve(null)
+  ]);
+
+  const isNewPersonalBest = currentBest.reps === null || reps > currentBest.reps;
+  const isNewWeightPersonalBest = weighted && currentWeightBest !== null ? isBetterWeightSet(weightKg, reps, currentWeightBest) : false;
 
   const logRow: {
     user_id: string;
@@ -110,81 +122,50 @@ export async function recordSetReps(
     reps,
     completed_at: completedAt
   };
+  if (weighted) logRow.weight_kg = weightKg;
+  if (setNumber !== undefined && setNumber > 0) logRow.set_number = setNumber;
 
-  if (weightKg !== undefined && weightKg > 0) {
-    logRow.weight_kg = weightKg;
-  }
-  if (setNumber !== undefined && setNumber > 0) {
-    logRow.set_number = setNumber;
-  }
-
-  await insertWorkoutSetLog(logRow);
-
-  let personalBest = currentBest;
-
-  if (isNewPersonalBest) {
-    const { data: updated, error: updateError } = await supabase
-      .from('user_workouts')
-      .update({
-        best_reps: reps,
-        best_reps_at: completedAt
-      })
-      .eq('user_id', userId)
-      .eq('category_id', categoryId)
-      .select('best_reps, best_reps_at')
-      .single();
-
-    if (updateError) throw updateError;
-    if (!updated) {
-      throw new Error('Personal best update affected no rows.');
-    }
-
-    personalBest = {
-      reps: updated.best_reps,
-      achievedAt: updated.best_reps_at
-    };
-  }
-
-  let weightPersonalBest: WeightPersonalBest | null = null;
-  let isNewWeightPersonalBest = false;
-
-  if (weightKg !== undefined && weightKg > 0) {
-    try {
-      const currentWeightBest = await fetchWeightPersonalBest(userId, categoryId);
-      isNewWeightPersonalBest = isBetterWeightSet(weightKg, reps, currentWeightBest);
-      weightPersonalBest = currentWeightBest;
-
-      if (isNewWeightPersonalBest) {
-        const { data: updated, error: updateError } = await supabase
-          .from('user_workouts')
-          .update({
-            best_weight_kg: weightKg,
-            best_weight_reps: reps,
-            best_weight_at: completedAt
-          })
-          .eq('user_id', userId)
-          .eq('category_id', categoryId)
-          .select('best_weight_kg, best_weight_reps, best_weight_at')
-          .single();
-
-        if (updateError) throw updateError;
-        if (!updated) {
-          throw new Error('Weight personal best update affected no rows.');
-        }
-
-        weightPersonalBest = {
-          weightKg: Number(updated.best_weight_kg),
-          reps: updated.best_weight_reps,
-          achievedAt: updated.best_weight_at
-        };
-      }
-    } catch (weightBestError) {
-      if (!isSchemaColumnError(weightBestError)) {
-        throw weightBestError;
-      }
-      // Weight PB columns not migrated yet — set log still saved.
-    }
-  }
+  // Round trip 2 (in parallel): save the set and any new personal bests.
+  const [, personalBest, weightPersonalBest] = await Promise.all([
+    insertWorkoutSetLog(logRow),
+    isNewPersonalBest
+      ? (async (): Promise<PersonalBest> => {
+          const { data: updated, error: updateError } = await supabase
+            .from('user_workouts')
+            .update({ best_reps: reps, best_reps_at: completedAt })
+            .eq('user_id', userId)
+            .eq('category_id', categoryId)
+            .select('best_reps, best_reps_at')
+            .single();
+          if (updateError) throw updateError;
+          if (!updated) throw new Error('Personal best update affected no rows.');
+          return { reps: updated.best_reps, achievedAt: updated.best_reps_at };
+        })()
+      : Promise.resolve(currentBest),
+    isNewWeightPersonalBest
+      ? (async (): Promise<WeightPersonalBest | null> => {
+          try {
+            const { data: updated, error: updateError } = await supabase
+              .from('user_workouts')
+              .update({ best_weight_kg: weightKg, best_weight_reps: reps, best_weight_at: completedAt })
+              .eq('user_id', userId)
+              .eq('category_id', categoryId)
+              .select('best_weight_kg, best_weight_reps, best_weight_at')
+              .single();
+            if (updateError) throw updateError;
+            if (!updated) throw new Error('Weight personal best update affected no rows.');
+            return {
+              weightKg: Number(updated.best_weight_kg),
+              reps: updated.best_weight_reps,
+              achievedAt: updated.best_weight_at
+            };
+          } catch (weightBestError) {
+            if (!isSchemaColumnError(weightBestError)) throw weightBestError;
+            return currentWeightBest; // Columns not migrated yet; the set log is still saved.
+          }
+        })()
+      : Promise.resolve(currentWeightBest)
+  ]);
 
   return {
     reps,
