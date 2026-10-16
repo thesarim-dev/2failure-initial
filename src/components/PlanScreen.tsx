@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { ArrowLeft, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { getVariantById } from './moves';
@@ -58,7 +57,8 @@ export function PlanScreen({
   gear,
   onToggleGear,
   levels,
-  onSetLevel
+  onSetLevel,
+  onSelectDay
 }: {
   onBack: () => void;
   days: 3 | 4 | 5;
@@ -70,16 +70,15 @@ export function PlanScreen({
   onToggleGear: (item: Gear) => void;
   levels: Record<string, string>;
   onSetLevel: (slotKey: string, exerciseId: string) => void;
+  /** Make a day of the week (1-based) today's workout. */
+  onSelectDay: (cycleDay: number) => void;
 }) {
   const { t } = useLanguage();
   const p = t.hub.plan;
-  const todayPhase = cycleDay ? rotation[(cycleDay - 1) % rotation.length] : rotation[0];
-  const phases = Array.from(new Set(rotation.filter((ph): ph is TrainingPhase => ph !== 'recovery')));
-  const [tab, setTab] = useState<TrainingPhase>(
-    todayPhase && todayPhase !== 'recovery' ? (todayPhase as TrainingPhase) : phases[0] ?? 'push'
-  );
-  const activeTab = phases.includes(tab) ? tab : phases[0] ?? 'push';
-  const planned = planForPhase(activeTab, gear, levels);
+  const todayIndex = cycleDay !== null && rotation.length ? (cycleDay - 1) % rotation.length : 0;
+  const todayPhase = rotation[todayIndex];
+  const trainingToday = !isRestDayToday && !!todayPhase && todayPhase !== 'recovery';
+  const planned = trainingToday ? planForPhase(todayPhase as TrainingPhase, gear, levels) : [];
   const name = (id: string) => {
     const variant = getVariantById(id);
     return variant ? localizeVariant(variant, t.moves).name : id;
@@ -148,14 +147,30 @@ export function PlanScreen({
 
       <section className="plan-card-block">
         <h2 className="plan-block-title">{p.week}</h2>
+        <p className="plan-block-sub">{p.weekSub}</p>
         <ol className="plan-week">
           {rotation.map((phase, i) => {
-            const isToday = cycleDay !== null && (cycleDay - 1) % rotation.length === i;
+            const isToday = i === todayIndex;
             return (
-              <li key={`${phase}-${i}`} className={`plan-week-day ${isToday ? 'is-today' : ''}`}>
-                <span className="plan-week-num">{p.dayLabel(i + 1)}</span>
-                <span className="plan-week-name">{phase === 'recovery' ? p.rest : p.dayNames[phase as TrainingPhase]}</span>
-                {isToday && <span className="plan-week-today">{isRestDayToday ? p.rest : p.today}</span>}
+              <li key={`${phase}-${i}`}>
+                <button
+                  type="button"
+                  className={`plan-week-day ${isToday ? 'is-today' : ''}`}
+                  aria-current={isToday ? 'true' : undefined}
+                  disabled={isRestDayToday && !isToday}
+                  onClick={() => {
+                    if (isToday) return;
+                    fx.tap();
+                    onSelectDay(i + 1);
+                  }}>
+                  <span className="plan-week-num">{p.dayLabel(i + 1)}</span>
+                  <span className="plan-week-name">{phase === 'recovery' ? p.rest : p.dayNames[phase as TrainingPhase]}</span>
+                  {isToday ? (
+                    <span className="plan-week-today">{isRestDayToday ? p.rest : p.today}</span>
+                  ) : (
+                    <ChevronRight size={16} strokeWidth={2.75} className="plan-week-go tour-icon-flip" aria-hidden="true" />
+                  )}
+                </button>
               </li>
             );
           })}
@@ -163,20 +178,10 @@ export function PlanScreen({
       </section>
 
       <section className="plan-card-block">
-        <div className="plan-tabs" role="tablist">
-          {phases.map((ph) => (
-            <button
-              key={ph}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === ph}
-              className={`plan-tab ${activeTab === ph ? 'is-on' : ''}`}
-              onClick={() => setTab(ph)}>
-              {p.dayNames[ph]}
-            </button>
-          ))}
-        </div>
-        <p className="plan-block-sub">{p.focus[activeTab]}</p>
+        <h2 className="plan-block-title">
+          {trainingToday ? p.todayTitle(p.dayNames[todayPhase as TrainingPhase]) : p.rest}
+        </h2>
+        {trainingToday && <p className="plan-block-sub">{p.focus[todayPhase as TrainingPhase]}</p>}
         <ul className="plan-exercises">
           {planned.map(({ slot, exerciseId, easier, harder }) => (
             <li key={slot.key} className="plan-exercise">

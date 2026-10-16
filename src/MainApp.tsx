@@ -76,6 +76,7 @@ export function MainApp() {
     rotatingProgramTemplate,
     setRotatingProgramTemplate,
     rotationCycle,
+    selectProgramCycleDay,
     isRestDayToday: programRestDayToday,
     canTakeRestDay: programCanTakeRestDay,
     restDaysRemainingThisWeek: programRestDaysRemaining,
@@ -620,6 +621,7 @@ export function MainApp() {
           onToggleGear={plan.toggleGear}
           levels={plan.levels}
           onSetLevel={plan.setLevel}
+          onSelectDay={selectProgramCycleDay}
         />
       )}
 

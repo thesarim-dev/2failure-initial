@@ -287,6 +287,8 @@ Open it from **Edit workout** on the home screen (or **Settings → Your plan**)
 | 4 | Push · Legs · Pull · Full body |
 | 5 | Push · Legs · Pull · Legs · Full body |
 
+**Pick today's day:** in **Your week**, tap any day to train it today (for example, do Pull day instead of Legs day). The rotation carries on from there. Today's exercises are listed right below.
+
 **Your equipment:** tap the gym equipment at your disposal: **pull-up bar**, **dip bars**, **dumbbells** or **barbell**. Each card shows what it unlocks (for example, a pull-up bar unlocks pull-ups and chin-ups). Exercises that only need a chair, step or backpack are always included. With nothing selected, every day still works.
 
 ## 10. Today's exercises
@@ -302,7 +304,7 @@ Each day has five exercises, one per muscle job, balanced so push and pull get e
 
 The first exercise of each day is the main one (3 sets); the rest are 2 sets.
 
-**Easier / Harder.** In **Your plan**, every exercise has **Easier** and **Harder** buttons that move along its ladder (for example: pushups → archer pushups → backpack pushups → dips → bench press). Only exercises your equipment allows are offered.
+**Easier / Harder.** In **Your plan**, each of today's exercises has **Easier** and **Harder** buttons that move along its ladder (for example: pushups → archer pushups → backpack pushups → dips → bench press). Only exercises your equipment allows are offered.
 
 **Leveling up.** When a set shows you've outgrown an exercise, the receipt offers **Switch to …** the next harder one. One tap, and it's in your plan from next time.
 

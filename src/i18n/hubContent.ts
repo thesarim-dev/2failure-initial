@@ -42,6 +42,8 @@ export type HubCopy = {
     gearNames: Record<'bar' | 'dipBars' | 'dumbbell' | 'barbell', string>;
     unlocks: (names: string, more: number) => string;
     week: string;
+    weekSub: string;
+    todayTitle: (day: string) => string;
     dayLabel: (n: number) => string;
     today: string;
     rest: string;
@@ -141,6 +143,8 @@ const en: HubCopy = {
     gearNames: { bar: 'Pull-up bar', dipBars: 'Dip bars', dumbbell: 'Dumbbells', barbell: 'Barbell' },
     unlocks: (names, more) => `Unlocks ${names}${more > 0 ? ` +${more}` : ''}`,
     week: 'Your week',
+    weekSub: 'Tap a day to train it today.',
+    todayTitle: (day) => `Today: ${day}`,
     dayLabel: (n) => `Day ${n}`,
     today: 'Today',
     rest: 'Rest day: stretches today.',
@@ -253,6 +257,8 @@ const he: HubCopy = {
     gearNames: { bar: 'מוט מתח', dipBars: 'מקבילים', dumbbell: 'משקולות יד', barbell: 'מוט משקולות' },
     unlocks: (names, more) => `פותח ${names}${more > 0 ? ` +${more}` : ''}`,
     week: 'השבוע שלך',
+    weekSub: 'הקישו על יום כדי להתאמן בו היום.',
+    todayTitle: (day) => `היום: ${day}`,
     dayLabel: (n) => `יום ${n}`,
     today: 'היום',
     rest: 'יום מנוחה: מתיחות היום.',
@@ -365,6 +371,8 @@ const ar: HubCopy = {
     gearNames: { bar: 'عقلة', dipBars: 'متوازي', dumbbell: 'دمبلز', barbell: 'بار حديد' },
     unlocks: (names, more) => `يفتح ${names}${more > 0 ? ` +${more}` : ''}`,
     week: 'أسبوعك',
+    weekSub: 'اضغط على يوم لتتدرّب عليه اليوم.',
+    todayTitle: (day) => `اليوم: ${day}`,
     dayLabel: (n) => `اليوم ${n}`,
     today: 'اليوم',
     rest: 'يوم راحة: تمارين إطالة اليوم.',

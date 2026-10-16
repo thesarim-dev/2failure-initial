@@ -6046,4 +6046,29 @@
     outline: 2px solid #00b2ff;
     outline-offset: 2px;
   }
+
+  /* Your week: tappable days */
+  button.plan-week-day {
+    width: 100%;
+    text-align: start;
+    color: inherit;
+    min-height: 2.9rem;
+    transition: background 0.15s ease, transform 0.12s ease;
+  }
+  button.plan-week-day:not(.is-today):not(:disabled):hover {
+    background: rgba(0, 178, 255, 0.1);
+  }
+  button.plan-week-day:not(.is-today):active {
+    transform: scale(0.98);
+  }
+  button.plan-week-day:disabled {
+    opacity: 0.45;
+  }
+  button.plan-week-day:focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
+  .plan-week-go {
+    opacity: 0.4;
+  }
 }
