@@ -38,6 +38,9 @@ export type HubCopy = {
     daysSub: string;
     gear: string;
     gearSub: string;
+    gearNote: string;
+    gearNames: Record<'bar' | 'dipBars' | 'dumbbell' | 'barbell', string>;
+    unlocks: (names: string, more: number) => string;
     week: string;
     dayLabel: (n: number) => string;
     today: string;
@@ -133,7 +136,10 @@ const en: HubCopy = {
     days: 'Days per week',
     daysSub: 'We rotate push, pull, legs and full-body days for you.',
     gear: 'Your equipment',
-    gearSub: 'Nothing selected? Every day still works with no equipment.',
+    gearSub: 'Tap the equipment at your disposal.',
+    gearNote: "Chair and backpack exercises are always included. No equipment? That's fine, every day still works.",
+    gearNames: { bar: 'Pull-up bar', dipBars: 'Dip bars', dumbbell: 'Dumbbells', barbell: 'Barbell' },
+    unlocks: (names, more) => `Unlocks ${names}${more > 0 ? ` +${more}` : ''}`,
     week: 'Your week',
     dayLabel: (n) => `Day ${n}`,
     today: 'Today',
@@ -242,7 +248,10 @@ const he: HubCopy = {
     days: 'ימים בשבוע',
     daysSub: 'אנחנו מחליפים בשבילכם ימי דחיפה, משיכה, רגליים וגוף מלא.',
     gear: 'הציוד שלך',
-    gearSub: 'לא בחרתם כלום? כל יום עובד גם בלי ציוד.',
+    gearSub: 'הקישו על הציוד שעומד לרשותכם.',
+    gearNote: 'תרגילים עם כיסא ותיק גב תמיד כלולים. אין ציוד? זה בסדר, כל יום עובד גם ככה.',
+    gearNames: { bar: 'מוט מתח', dipBars: 'מקבילים', dumbbell: 'משקולות יד', barbell: 'מוט משקולות' },
+    unlocks: (names, more) => `פותח ${names}${more > 0 ? ` +${more}` : ''}`,
     week: 'השבוע שלך',
     dayLabel: (n) => `יום ${n}`,
     today: 'היום',
@@ -351,7 +360,10 @@ const ar: HubCopy = {
     days: 'أيام في الأسبوع',
     daysSub: 'ننوّع لك بين أيام الدفع والسحب والأرجل والجسم الكامل.',
     gear: 'معداتك',
-    gearSub: 'لم تختر شيئاً؟ كل يوم يعمل بدون معدات.',
+    gearSub: 'اضغط على المعدات المتوفرة لديك.',
+    gearNote: 'تمارين الكرسي وحقيبة الظهر مشمولة دائماً. لا معدات؟ لا بأس، كل يوم يعمل كذلك.',
+    gearNames: { bar: 'عقلة', dipBars: 'متوازي', dumbbell: 'دمبلز', barbell: 'بار حديد' },
+    unlocks: (names, more) => `يفتح ${names}${more > 0 ? ` +${more}` : ''}`,
     week: 'أسبوعك',
     dayLabel: (n) => `اليوم ${n}`,
     today: 'اليوم',

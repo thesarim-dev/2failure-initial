@@ -10,7 +10,10 @@ import type { RotatingProgramPhase } from './rotatingProgram';
  */
 
 export type Gear = AnywhereEquipment;
-export const ALL_GEAR: Gear[] = ['bar', 'dipBars', 'bench', 'dumbbell', 'barbell', 'backpack'];
+/** Real gym equipment the player can tick. */
+export const ALL_GEAR: Gear[] = ['bar', 'dipBars', 'dumbbell', 'barbell'];
+/** Everyone has a chair or step and a backpack, so those exercises are always available. */
+export const ALWAYS_AVAILABLE: Gear[] = ['bench', 'backpack'];
 
 export type SlotDef = {
   key: string;
@@ -70,7 +73,7 @@ export const SLOTS: Record<TrainingPhase, SlotDef[]> = {
       muscle: 'quads',
       sets: 3,
       ladder: ['squats', 'jump-squats', 'backpack-squats', 'goblet-squats', 'pistol-squats'],
-      start: ['goblet-squats', 'backpack-squats', 'squats']
+      start: ['goblet-squats', 'squats']
     },
     { key: 'legs-single', muscle: 'singleLeg', sets: 2, ladder: ['lunges', 'step-ups', 'bulgarian-splits', 'pistol-squats'], start: ['lunges'] },
     { key: 'legs-hams', muscle: 'hamstrings', sets: 2, ladder: ['glute-bridges', 'single-leg-bridges'], start: ['single-leg-bridges'] },
@@ -90,7 +93,28 @@ export const SLOTS: Record<TrainingPhase, SlotDef[]> = {
 export function canDo(exerciseId: string, gear: readonly Gear[]): boolean {
   const variant = getVariantById(exerciseId);
   if (!variant) return false;
-  return (variant.equipment ?? []).every((item) => gear.includes(item));
+  return (variant.equipment ?? []).every((item) => gear.includes(item) || ALWAYS_AVAILABLE.includes(item));
+}
+
+/** Exercises in the plan that a piece of gear makes possible (for "unlocks …"). */
+export function unlocksFor(item: Gear): string[] {
+  const ids = new Set<string>();
+  for (const slots of Object.values(SLOTS)) {
+    for (const slot of slots) {
+      for (const id of slot.ladder) {
+        if ((getVariantById(id)?.equipment ?? []).includes(item)) ids.add(id);
+      }
+    }
+  }
+  // Lead with the exercise people buy the gear for.
+  const headline: Partial<Record<Gear, string[]>> = {
+    bar: ['pull-ups', 'chin-ups'],
+    dipBars: ['dips', 'l-sit'],
+    dumbbell: ['goblet-squats'],
+    barbell: ['bench-press']
+  };
+  const first = (headline[item] ?? []).filter((id) => ids.has(id));
+  return [...first, ...[...ids].filter((id) => !first.includes(id))];
 }
 
 /** The rungs of a slot's ladder the player can actually do. */

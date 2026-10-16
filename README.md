@@ -287,7 +287,7 @@ Open it from **Edit workout** on the home screen (or **Settings → Your plan**)
 | 4 | Push · Legs · Pull · Full body |
 | 5 | Push · Legs · Pull · Legs · Full body |
 
-**Your equipment:** tap what you have (pull-up bar, dip bars, bench or step, dumbbell, barbell, backpack). With nothing selected, every day still works with no equipment.
+**Your equipment:** tap the gym equipment at your disposal: **pull-up bar**, **dip bars**, **dumbbells** or **barbell**. Each card shows what it unlocks (for example, a pull-up bar unlocks pull-ups and chin-ups). Exercises that only need a chair, step or backpack are always included. With nothing selected, every day still works.
 
 ## 10. Today's exercises
 

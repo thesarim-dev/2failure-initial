@@ -5958,4 +5958,92 @@
     background: linear-gradient(180deg, #dcf75f 0%, #b9e02a 100%);
     box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), 0 4px 0 #6a9e00;
   }
+
+  /* Equipment cards: icon, name, what it unlocks */
+  .plan-card-block .plan-gear {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+  .plan-gear-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    min-height: 7.2rem;
+    padding: 0.8rem 0.8rem 0.75rem;
+    border-radius: 1rem;
+    text-align: start;
+    color: inherit;
+    background: rgba(0, 0, 0, 0.04);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .dark .plan-gear-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  .plan-gear-card:active {
+    transform: scale(0.97);
+  }
+  .plan-gear-card.is-on {
+    background: rgba(200, 240, 50, 0.14);
+    border-color: #8cc21a;
+  }
+  .dark .plan-gear-card.is-on {
+    background: rgba(200, 240, 50, 0.1);
+    border-color: #c8f032;
+  }
+  .plan-gear-icon {
+    opacity: 0.55;
+  }
+  .plan-gear-card.is-on .plan-gear-icon {
+    opacity: 1;
+    color: #4f7a00;
+  }
+  .dark .plan-gear-card.is-on .plan-gear-icon {
+    color: #c8f032;
+  }
+  .plan-gear-name {
+    font-weight: 900;
+    font-size: 0.98rem;
+  }
+  .plan-gear-unlocks {
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.3;
+    opacity: 0.65;
+  }
+  .plan-gear-check {
+    position: absolute;
+    top: 0.6rem;
+    inset-inline-end: 0.6rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+  }
+  .dark .plan-gear-check {
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+  .plan-gear-card.is-on .plan-gear-check {
+    color: #0c0f02;
+    background: #c8f032;
+    border-color: #8cc21a;
+  }
+  .plan-gear-note {
+    margin-top: 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    opacity: 0.65;
+    line-height: 1.4;
+  }
+  .plan-gear-card:focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
 }

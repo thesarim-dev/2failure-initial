@@ -3,9 +3,46 @@ import { ArrowLeft, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { getVariantById } from './moves';
 import { localizeVariant } from '../i18n/localize';
-import { ALL_GEAR, planForPhase, type Gear, type TrainingPhase } from '../lib/plan';
+import { ALL_GEAR, planForPhase, unlocksFor, type Gear, type TrainingPhase } from '../lib/plan';
 import type { RotatingProgramPhase } from '../lib/rotatingProgram';
 import { fx } from '../lib/feedback';
+
+/** Simple line drawings of each piece of gear. */
+function GearIcon({ item }: { item: Gear }) {
+  const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 2.4, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  return (
+    <svg viewBox="0 0 48 32" width={48} height={32} className="plan-gear-icon" aria-hidden="true">
+      {item === 'bar' && (
+        <g {...common}>
+          <path d="M8 30 V6 M40 30 V6" />
+          <path d="M4 6 H44" strokeWidth={3.2} />
+        </g>
+      )}
+      {item === 'dipBars' && (
+        <g {...common}>
+          <path d="M10 30 V12 M38 30 V12 M16 30 V18 M32 30 V18" />
+          <path d="M6 12 H20 M28 12 H42" strokeWidth={3.2} />
+        </g>
+      )}
+      {item === 'dumbbell' && (
+        <g {...common}>
+          <path d="M14 16 H34" strokeWidth={3.2} />
+          <rect x={6} y={8} width={8} height={16} rx={2} />
+          <rect x={34} y={8} width={8} height={16} rx={2} />
+        </g>
+      )}
+      {item === 'barbell' && (
+        <g {...common}>
+          <path d="M2 16 H46" strokeWidth={2.6} />
+          <rect x={8} y={5} width={5} height={22} rx={1.5} />
+          <rect x={14} y={8} width={4} height={16} rx={1.5} />
+          <rect x={35} y={5} width={5} height={22} rx={1.5} />
+          <rect x={30} y={8} width={4} height={16} rx={1.5} />
+        </g>
+      )}
+    </svg>
+  );
+}
 
 /**
  * "Your plan": the one place to set up training. Days per week, equipment,
@@ -84,22 +121,29 @@ export function PlanScreen({
         <div className="plan-gear">
           {ALL_GEAR.map((item) => {
             const on = gear.includes(item);
+            const unlocked = unlocksFor(item).map(name);
+            const shown = unlocked.slice(0, 2).join(', ');
             return (
               <button
                 key={item}
                 type="button"
                 aria-pressed={on}
-                className={`plan-gear-chip ${on ? 'is-on' : ''}`}
+                className={`plan-gear-card ${on ? 'is-on' : ''}`}
                 onClick={() => {
                   fx.tap();
                   onToggleGear(item);
                 }}>
-                {on && <Check size={14} strokeWidth={3} aria-hidden="true" />}
-                {t.dashboard.equipment[item]}
+                <span className="plan-gear-check" aria-hidden="true">
+                  {on && <Check size={14} strokeWidth={3.5} />}
+                </span>
+                <GearIcon item={item} />
+                <span className="plan-gear-name">{p.gearNames[item as keyof typeof p.gearNames]}</span>
+                <span className="plan-gear-unlocks">{p.unlocks(shown, unlocked.length - 2)}</span>
               </button>
             );
           })}
         </div>
+        <p className="plan-gear-note">{p.gearNote}</p>
       </section>
 
       <section className="plan-card-block">
