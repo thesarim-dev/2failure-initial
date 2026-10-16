@@ -5722,4 +5722,240 @@
       width: 100%;
     }
   }
+
+  /* ---------- Your plan ---------- */
+  .day-heading {
+    margin-bottom: 0.9rem;
+  }
+  .day-heading-kicker {
+    display: inline-block;
+    margin-bottom: 0.15rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #00a8d8;
+  }
+  .dark .day-heading-kicker {
+    color: #00b2ff;
+  }
+  .day-heading-sub {
+    margin-top: 0.15rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    opacity: 0.7;
+    text-transform: none;
+  }
+  .plan-card-block {
+    padding: 1rem;
+    border-radius: 1.2rem;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .dark .plan-card-block {
+    background: #15151d;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .plan-block-title {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    text-transform: none;
+  }
+  .plan-block-sub {
+    margin-top: 0.2rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0.7;
+  }
+  .plan-days {
+    margin-top: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+  .plan-day-btn {
+    min-height: 3.4rem;
+    border-radius: 1rem;
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    background: rgba(0, 0, 0, 0.05);
+    border: 2px solid transparent;
+  }
+  .dark .plan-day-btn {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .plan-day-btn.is-on {
+    color: #0c0f02;
+    background: #c8f032;
+    border-color: #8cc21a;
+    box-shadow: 0 4px 0 #6a9e00;
+  }
+  .plan-gear {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .plan-gear-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 2.6rem;
+    padding: 0 0.9rem;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.88rem;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
+  }
+  .dark .plan-gear-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .plan-gear-chip.is-on {
+    color: #0a5a78;
+    background: rgba(0, 178, 255, 0.14);
+    border-color: #00b2ff;
+  }
+  .dark .plan-gear-chip.is-on {
+    color: #9fe6ff;
+  }
+  .plan-week {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .plan-week-day {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.8rem;
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .dark .plan-week-day {
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .plan-week-day.is-today {
+    background: rgba(200, 240, 50, 0.16);
+    box-shadow: inset 0 0 0 1.5px rgba(140, 194, 26, 0.7);
+  }
+  .plan-week-num {
+    width: 3.6rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    opacity: 0.6;
+  }
+  .plan-week-name {
+    flex: 1;
+    font-weight: 800;
+  }
+  .plan-week-today {
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    color: #0c0f02;
+    background: #c8f032;
+  }
+  .plan-tabs {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+  }
+  .plan-tab {
+    flex-shrink: 0;
+    min-height: 2.4rem;
+    padding: 0 0.9rem;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.05);
+  }
+  .dark .plan-tab {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .plan-tab.is-on {
+    color: #ffffff;
+    background: #00a8d8;
+  }
+  .plan-exercises {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .plan-exercise {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.7rem 0.75rem;
+    border-radius: 0.9rem;
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .dark .plan-exercise {
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .plan-exercise-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .plan-exercise-muscle {
+    font-size: 0.7rem;
+    font-weight: 800;
+    opacity: 0.6;
+  }
+  .plan-exercise-name {
+    font-weight: 900;
+    font-size: 0.98rem;
+  }
+  .plan-exercise-actions {
+    flex-shrink: 0;
+    display: flex;
+    gap: 0.35rem;
+  }
+  .plan-step-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    min-height: 2.3rem;
+    padding: 0 0.55rem;
+    border-radius: 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.07);
+  }
+  .dark .plan-step-btn {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .plan-step-btn.is-harder:not(:disabled) {
+    color: #0c0f02;
+    background: #c8f032;
+  }
+  .plan-step-btn:disabled {
+    opacity: 0.3;
+  }
+  :is(.plan-day-btn, .plan-gear-chip, .plan-tab, .plan-step-btn):focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
+
+  .summary-harder-btn {
+    margin-top: 0.7rem;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.9rem;
+    border-radius: 0.9rem;
+    font-weight: 900;
+    color: #0c0f02;
+    background: linear-gradient(180deg, #dcf75f 0%, #b9e02a 100%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), 0 4px 0 #6a9e00;
+  }
 }

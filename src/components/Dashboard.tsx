@@ -101,8 +101,7 @@ export function Dashboard({
   pushupRepsToday,
   pushupRepsLoading,
   onSelectMove,
-  onOpenPlan,
-  trainingDaysPerWeek
+  onOpenPlan
 }: DashboardProps) {
   const { t, language, isRtl } = useLanguage();
   const rewardFor = (move: Move) => {
@@ -111,11 +110,7 @@ export function Dashboard({
   };
   const rewardLabel = (move: Move) => rewardFor(move).map((id) => t.game.resources[id]).join(' · ');
   // The current plan, in one line: own plan (sets a day) or program (which day).
-  const planShort = rotatingProgramEnabled
-    ? isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
-      ? t.hub.trio.programRest
-      : t.hub.trio.programShort(rotatingProgramCycleDay ?? 1, rotationCycleLength, t.settings.rotatingProgram.phases[rotatingProgramPhase])
-    : t.hub.trio.ownShort(dailySetGoal, trainingDaysPerWeek);
+  const planShort = t.hub.plan.tileSub(rotationCycleLength);
 
   // Lit once today's streak is safe: trained today, or a planned rest day.
   const streakProtectedToday = lastWorkoutDate === toLocalDateString() || isRestDayToday;
@@ -270,18 +265,24 @@ export function Dashboard({
       )}
 
       <div>
-        {rotatingProgramEnabled && !isRestDayToday && rotatingProgramPhase !== null && rotatingProgramCycleDay !== null && (
-          <p data-tour="program" className="mb-2 text-sm font-semibold text-[#00A8D8] dark:text-[#00B2FF] normal-case text-start">
-            {t.dashboard.rotatingProgramFocus(
-              rotatingProgramCycleDay,
-              rotationCycleLength,
-              t.settings.rotatingProgram.phases[rotatingProgramPhase]
-            )}
+        {/* Today's day from Your plan: e.g. PUSH DAY · Chest, shoulders, triceps */}
+        <div className="day-heading" data-tour="program">
+          {rotatingProgramCycleDay !== null && !isRestDayToday && (
+            <span className="day-heading-kicker">
+              {t.hub.plan.dayLabel(((rotatingProgramCycleDay - 1) % Math.max(1, rotationCycleLength)) + 1)} / {rotationCycleLength}
+            </span>
+          )}
+          <h2 className="text-2xl normal-case text-start">
+            {isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
+              ? t.dashboard.restDay.button
+              : t.hub.plan.dayNames[rotatingProgramPhase]}
+          </h2>
+          <p className="day-heading-sub">
+            {isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
+              ? t.hub.plan.rest
+              : t.hub.plan.focus[rotatingProgramPhase]}
           </p>
-        )}
-        <h2 className="text-2xl mb-2 normal-case text-start">
-          {t.dashboard.pickYourPoison}
-        </h2>
+        </div>
 
         <div className="flex flex-col gap-4">
           {activeMoves.map((move, i) => {

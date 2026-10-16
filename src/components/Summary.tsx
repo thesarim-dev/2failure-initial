@@ -52,6 +52,8 @@ import {
 } from './workoutUi';
 
 interface SummaryProps {
+  /** Your plan: the next harder exercise for this slot, offered when the player has outgrown this one. */
+  harder?: { name: string; onApply: () => void } | null;
   move: Move;
   duration: number;
   setResult: SetRepResult | null;
@@ -75,8 +77,10 @@ export function Summary({
   setsRemaining = 0,
   baseReward,
   onSeeBase,
-  onHome
+  onHome,
+  harder = null
 }: SummaryProps) {
+  const [switchedTo, setSwitchedTo] = useState<string | null>(null);
   const { t, language } = useLanguage();
   const questText = useQuestText();
   const slot = move.lineupSlot;
@@ -200,8 +204,10 @@ export function Summary({
   })();
 
   // One-line notes, only when they apply.
+  const offerHarder = !!levelUp && !!harder;
   const notes = [
-    levelUp && (levelUp.names ? `${t.summary.compact.levelUp}: ${levelUp.names}` : levelUp.next),
+    levelUp && !offerHarder && !switchedTo && (levelUp.names ? `${t.summary.compact.levelUp}: ${levelUp.names}` : levelUp.next),
+    switchedTo && t.hub.plan.switched(switchedTo),
     progressionMessage,
     showCoinsCapRecommendation && t.summary.coinsCapRecommendation
   ].filter((note): note is string => Boolean(note));
@@ -318,6 +324,19 @@ export function Summary({
           </motion.div>
         </div>
 
+        {offerHarder && harder && !switchedTo && (
+          <button
+            type="button"
+            className="summary-harder-btn"
+            onClick={() => {
+              fx.levelUp();
+              harder.onApply();
+              setSwitchedTo(harder.name);
+            }}>
+            <TrendingUp size={16} strokeWidth={2.75} aria-hidden="true" />
+            {t.hub.plan.harderCta(harder.name)}
+          </button>
+        )}
         {notes.length > 0 && (
           <ul className="summary-notes">
             {notes.map((note) => (

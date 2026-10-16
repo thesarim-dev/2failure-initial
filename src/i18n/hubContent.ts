@@ -32,6 +32,26 @@ export type HubCopy = {
     ladder: string;
   };
   settingsLink: { title: string; description: string; open: string };
+  plan: {
+    title: string;
+    days: string;
+    daysSub: string;
+    gear: string;
+    gearSub: string;
+    week: string;
+    dayLabel: (n: number) => string;
+    today: string;
+    rest: string;
+    dayNames: Record<'push' | 'pull' | 'legs' | 'mixed', string>;
+    focus: Record<'push' | 'pull' | 'legs' | 'mixed', string>;
+    muscles: Record<string, string>;
+    easier: string;
+    harder: string;
+    sets: (n: number) => string;
+    tileSub: (days: number) => string;
+    harderCta: (name: string) => string;
+    switched: (name: string) => string;
+  };
   dashCard: {
     title: string;
     ownBadge: string;
@@ -107,7 +127,36 @@ const en: HubCopy = {
     empty: 'Nothing matches these filters.',
     ladder: 'Progression'
   },
-  settingsLink: { title: 'Training plan', description: 'Program, training days, sets and your lineup.', open: 'Open' },
+  settingsLink: { title: 'Your plan', description: 'Days per week, your equipment and exercise levels.', open: 'Open' },
+  plan: {
+    title: 'Your plan',
+    days: 'Days per week',
+    daysSub: 'We rotate push, pull, legs and full-body days for you.',
+    gear: 'Your equipment',
+    gearSub: 'Nothing selected? Every day still works with no equipment.',
+    week: 'Your week',
+    dayLabel: (n) => `Day ${n}`,
+    today: 'Today',
+    rest: 'Rest day: stretches today.',
+    dayNames: { push: 'Push day', pull: 'Pull day', legs: 'Legs day', mixed: 'Full body' },
+    focus: {
+      push: 'Chest, shoulders, triceps',
+      pull: 'Back, biceps, rear shoulders',
+      legs: 'Quads, hamstrings, glutes, calves',
+      mixed: 'A bit of everything'
+    },
+    muscles: {
+      chest: 'Chest', shoulders: 'Shoulders', triceps: 'Triceps', abs: 'Abs', core: 'Core', back: 'Back',
+      midBack: 'Mid back', upperBack: 'Upper back', quads: 'Quads', singleLeg: 'Single leg', hamstrings: 'Hamstrings',
+      calves: 'Calves', obliques: 'Obliques', push: 'Push', pull: 'Pull', legs: 'Legs', glutes: 'Glutes'
+    },
+    easier: 'Easier',
+    harder: 'Harder',
+    sets: (n) => `${n} sets`,
+    tileSub: (days) => `${days} days a week`,
+    harderCta: (name) => `Switch to ${name}`,
+    switched: (name) => `Next time: ${name}`
+  },
   dashCard: {
     title: 'Edit your workout',
     ownBadge: 'Own plan',
@@ -187,7 +236,36 @@ const he: HubCopy = {
     empty: 'אין תוצאות למסננים האלה.',
     ladder: 'התקדמות'
   },
-  settingsLink: { title: 'תוכנית אימון', description: 'תוכנית, ימי אימון, סטים וההרכב שלך.', open: 'פתח' },
+  settingsLink: { title: 'התוכנית שלך', description: 'ימים בשבוע, הציוד שלך ורמות התרגילים.', open: 'פתח' },
+  plan: {
+    title: 'התוכנית שלך',
+    days: 'ימים בשבוע',
+    daysSub: 'אנחנו מחליפים בשבילכם ימי דחיפה, משיכה, רגליים וגוף מלא.',
+    gear: 'הציוד שלך',
+    gearSub: 'לא בחרתם כלום? כל יום עובד גם בלי ציוד.',
+    week: 'השבוע שלך',
+    dayLabel: (n) => `יום ${n}`,
+    today: 'היום',
+    rest: 'יום מנוחה: מתיחות היום.',
+    dayNames: { push: 'יום דחיפה', pull: 'יום משיכה', legs: 'יום רגליים', mixed: 'גוף מלא' },
+    focus: {
+      push: 'חזה, כתפיים, יד אחורית',
+      pull: 'גב, יד קדמית, כתף אחורית',
+      legs: 'ארבע-ראשי, ירך אחורית, ישבן, תאומים',
+      mixed: 'קצת מהכל'
+    },
+    muscles: {
+      chest: 'חזה', shoulders: 'כתפיים', triceps: 'יד אחורית', abs: 'בטן', core: 'ליבה', back: 'גב',
+      midBack: 'גב אמצעי', upperBack: 'גב עליון', quads: 'ארבע-ראשי', singleLeg: 'רגל אחת', hamstrings: 'ירך אחורית',
+      calves: 'תאומים', obliques: 'אלכסונים', push: 'דחיפה', pull: 'משיכה', legs: 'רגליים', glutes: 'ישבן'
+    },
+    easier: 'קל יותר',
+    harder: 'קשה יותר',
+    sets: (n) => `${n} סטים`,
+    tileSub: (days) => `${days} ימים בשבוע`,
+    harderCta: (name) => `עברו ל${name}`,
+    switched: (name) => `בפעם הבאה: ${name}`
+  },
   dashCard: {
     title: 'ערוך את האימון',
     ownBadge: 'תוכנית אישית',
@@ -267,7 +345,36 @@ const ar: HubCopy = {
     empty: 'لا شيء يطابق هذه المرشحات.',
     ladder: 'التقدّم'
   },
-  settingsLink: { title: 'خطة التدريب', description: 'البرنامج وأيام التدريب والمجموعات وتشكيلتك.', open: 'فتح' },
+  settingsLink: { title: 'خطتك', description: 'أيام الأسبوع ومعداتك ومستوى التمارين.', open: 'فتح' },
+  plan: {
+    title: 'خطتك',
+    days: 'أيام في الأسبوع',
+    daysSub: 'ننوّع لك بين أيام الدفع والسحب والأرجل والجسم الكامل.',
+    gear: 'معداتك',
+    gearSub: 'لم تختر شيئاً؟ كل يوم يعمل بدون معدات.',
+    week: 'أسبوعك',
+    dayLabel: (n) => `اليوم ${n}`,
+    today: 'اليوم',
+    rest: 'يوم راحة: تمارين إطالة اليوم.',
+    dayNames: { push: 'يوم الدفع', pull: 'يوم السحب', legs: 'يوم الأرجل', mixed: 'الجسم كاملاً' },
+    focus: {
+      push: 'الصدر والكتفان والترايسبس',
+      pull: 'الظهر والبايسبس والكتف الخلفي',
+      legs: 'الفخذ الأمامي والخلفي والأرداف والسمانة',
+      mixed: 'قليل من كل شيء'
+    },
+    muscles: {
+      chest: 'الصدر', shoulders: 'الكتفان', triceps: 'الترايسبس', abs: 'البطن', core: 'الجذع', back: 'الظهر',
+      midBack: 'منتصف الظهر', upperBack: 'أعلى الظهر', quads: 'الفخذ الأمامي', singleLeg: 'ساق واحدة', hamstrings: 'الفخذ الخلفي',
+      calves: 'السمانة', obliques: 'الخواصر', push: 'دفع', pull: 'سحب', legs: 'أرجل', glutes: 'الأرداف'
+    },
+    easier: 'أسهل',
+    harder: 'أصعب',
+    sets: (n) => `${n} مجموعات`,
+    tileSub: (days) => `${days} أيام في الأسبوع`,
+    harderCta: (name) => `انتقل إلى ${name}`,
+    switched: (name) => `المرة القادمة: ${name}`
+  },
   dashCard: {
     title: 'عدّل تمرينك',
     ownBadge: 'خطة خاصة',

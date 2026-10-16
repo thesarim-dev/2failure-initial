@@ -10,12 +10,9 @@ import { useUserStats } from './hooks/useUserStats';
 import { useWorkoutProgress } from './hooks/useWorkoutProgress';
 import { Workout } from './components/Workout';
 import { Summary } from './components/Summary';
-import { TrainingHub, type HubTab } from './components/TrainingHub';
 import { Settings } from './components/Settings';
 import {
-  LINEUP_EQUIP_COUNT,
   Move,
-  Variant,
   getVariantById,
   isRepLoggedCategory,
   isWeightedEquipmentCategory,
@@ -26,12 +23,15 @@ import { useDailySetGoal } from './hooks/useDailySetGoal';
 import { usePushupDailyReps } from './hooks/usePushupDailyReps';
 import { useRotatingProgram } from './hooks/useRotatingProgram';
 import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
+import { localizeVariant } from './i18n/localize';
+import { DAYS_FOR_TEMPLATE, TEMPLATE_FOR_DAYS, lineupFromPlan, planForPhase } from './lib/plan';
+import { usePlan } from './hooks/usePlan';
+import { PlanScreen } from './components/PlanScreen';
 import { calculateCoinsEarned } from './lib/coinRewards';
 import { shouldCountStreakForDay, toLocalDateString } from './lib/userStats';
 import { useTrainingDaysPerWeek } from './hooks/useTrainingDaysPerWeek';
 import { FREE_REST_DAYS_PER_WEEK, useFreeRestDays } from './hooks/useFreeRestDays';
 import type { TodayPlan } from './game/engine';
-import { persistOwned, readStoredOwned } from './lib/ownedVariants';
 import { sumDailySets } from './lib/workoutProgress';
 import { RepPrompt } from './components/RepPrompt';
 import { WeightRepPrompt } from './components/WeightRepPrompt';
@@ -67,7 +67,7 @@ export function MainApp() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { isDark, toggle: toggleDark } = useDarkMode();
-  const { dailySetGoal, setDailySetGoal } = useDailySetGoal();
+  const { dailySetGoal } = useDailySetGoal();
   const {
     rotatingProgramEnabled,
     setRotatingProgramEnabled,
@@ -76,7 +76,6 @@ export function MainApp() {
     rotatingProgramTemplate,
     setRotatingProgramTemplate,
     rotationCycle,
-    selectProgramCycleDay,
     isRestDayToday: programRestDayToday,
     canTakeRestDay: programCanTakeRestDay,
     restDaysRemainingThisWeek: programRestDaysRemaining,
@@ -121,20 +120,16 @@ export function MainApp() {
   const [appState, setAppState] = useState<AppState>(
     screenInit.appState ?? 'HOME'
   );
-  const [owned, setOwned] = useState<string[]>(() => readStoredOwned(user?.id));
   const {
     equippedUpper,
     equippedLower,
-    equippedCore,
-    setEquippedUpper,
-    setEquippedLower,
-    setEquippedCore
+    equippedCore
   } = useEquippedLineup(user?.id);
   const { showTutorial, dismissTutorial, replayTutorial } = useOnboarding(user?.id);
   // True from the moment the tour starts the first workout until the user is back home.
   const [guidingFirstSet, setGuidingFirstSet] = useState(false);
   const { weightUnit, setWeightUnit } = useWeightUnit();
-  const { trainingDaysPerWeek, setTrainingDaysPerWeek } = useTrainingDaysPerWeek();
+  const { trainingDaysPerWeek } = useTrainingDaysPerWeek();
   const { soundOn, toggleSound } = useSoundSetting();
   // Training days per week: the program's split, or the player's own setting.
   // The rest of the week is planned rest, which keeps the streak alive.
@@ -167,9 +162,18 @@ export function MainApp() {
     : freeRest.restDaysRemainingThisWeek;
   const markTodayAsRestDay = rotatingProgramEnabled ? programMarkRestDay : freeRest.markTodayAsRestDay;
 
+  const plan = usePlan();
+  // One way to train: everyone follows Your plan (the rotating day types).
+  useEffect(() => {
+    if (!rotatingProgramEnabled) setRotatingProgramEnabled(true);
+  }, [rotatingProgramEnabled, setRotatingProgramEnabled]);
+
   const lineupForToday = useMemo(() => {
     if (rotatingProgramEnabled && rotatingProgramPhase) {
-      return resolveRotatingProgramLineup(rotatingProgramPhase);
+      // Your plan: today's day type, filled from the player's equipment and levels.
+      return rotatingProgramPhase === 'recovery'
+        ? resolveRotatingProgramLineup('recovery')
+        : lineupFromPlan(planForPhase(rotatingProgramPhase, plan.gear, plan.levels));
     }
     // A rest day without the program: today becomes stretches.
     if (!rotatingProgramEnabled && freeRest.isRestDayToday) {
@@ -187,6 +191,8 @@ export function MainApp() {
     rotatingProgramEnabled,
     rotatingProgramPhase,
     freeRest.isRestDayToday,
+    plan.gear,
+    plan.levels,
     equippedUpper,
     equippedLower,
     equippedCore
@@ -454,7 +460,6 @@ export function MainApp() {
     }
   };
 
-  const [hubTab, setHubTab] = useState<HubTab>('plan');
   // Demo build only: one-tap cheats for testing the base and the shop.
   const demoTools = {
     addCoins: () => void setCoins((c) => c + 10000),
@@ -484,7 +489,6 @@ export function MainApp() {
 
   const handleOpenPlan = () => {
     fx.tick();
-    setHubTab('plan');
     setAppState('STORE');
   };
   const handleCloseStore = () => setAppState('HOME');
@@ -509,46 +513,20 @@ export function MainApp() {
     dismissTutorial();
     if (started) setGuidingFirstSet(true);
   };
-  const handleBuy = (_categoryId: string, variant: Variant) => {
-    if (coins < variant.price || owned.includes(variant.id)) {
-      fx.error();
-      return;
-    }
-    fx.coin();
-    void setCoins((c) => c - variant.price);
-    setOwned((o) => {
-      const next = [...o, variant.id];
-      persistOwned(next, user?.id);
-      return next;
-    });
-  };
-
-  /**
-   * Put `toId` in the lineup in place of `fromId` (same category). If `toId`
-   * is already in the lineup, the two swap places instead.
-   */
-  const handleSwapLineup = (category: 'upper' | 'lower' | 'core', fromId: string | null, toId: string) => {
-    if (rotatingProgramEnabled || !owned.includes(toId)) return;
-    const [list, setList] =
-      category === 'upper'
-        ? [equippedUpper, setEquippedUpper]
-        : category === 'lower'
-          ? [equippedLower, setEquippedLower]
-          : [equippedCore, setEquippedCore];
-    if (fromId === toId) return;
-    let next: string[];
-    if (list.includes(toId)) {
-      if (!fromId || !list.includes(fromId)) return;
-      next = list.map((id) => (id === fromId ? toId : id === toId ? fromId : id));
-    } else if (fromId && list.includes(fromId)) {
-      next = list.map((id) => (id === fromId ? toId : id));
-    } else if (list.length < LINEUP_EQUIP_COUNT) {
-      next = [...list, toId];
-    } else {
-      return;
-    }
-    setList(next);
-  };
+  // Your plan: once a set shows the player has outgrown this exercise, the
+  // receipt offers the next harder one for the same slot.
+  const harderForCurrentMove = (() => {
+    if (!currentMove || !rotatingProgramPhase || rotatingProgramPhase === 'recovery') return null;
+    const slot = planForPhase(rotatingProgramPhase, plan.gear, plan.levels).find((p) => p.exerciseId === currentMove.id);
+    if (!slot?.harder) return null;
+    const next = getVariantById(slot.harder);
+    if (!next) return null;
+    const harderId = slot.harder;
+    return {
+      name: localizeVariant(next, t.moves).name,
+      onApply: () => plan.setLevel(slot.slot.key, harderId)
+    };
+  })();
 
   const firstSetStage: FirstSetStage | null = (() => {
     if (!guidingFirstSet || !currentMove) return null;
@@ -630,35 +608,20 @@ export function MainApp() {
 
       }
 
-      {appState === 'STORE' &&
-      <TrainingHub
-        tab={hubTab}
-        onTabChange={setHubTab}
-        onBack={handleCloseStore}
-        coins={coins}
-        owned={owned}
-        equippedUpper={equippedUpper}
-        equippedLower={equippedLower}
-        equippedCore={equippedCore}
-        programLineup={{ upper: lineupForToday.upper, lower: lineupForToday.lower, core: lineupForToday.core }}
-        onBuy={(variant) => handleBuy(variant.id, variant)}
-        onSwap={handleSwapLineup}
-        rotatingProgramEnabled={rotatingProgramEnabled}
-        onRotatingProgramEnabledChange={setRotatingProgramEnabled}
-        rotatingProgramTemplate={rotatingProgramTemplate}
-        onSelectProgramTemplate={setRotatingProgramTemplate}
-        rotationCycle={rotationCycle}
-        rotatingProgramCycleDay={rotatingProgramCycleDay}
-        rotatingProgramPhase={rotatingProgramPhase}
-        onSelectProgramCycleDay={selectProgramCycleDay}
-        isRestDayToday={isRestDayToday}
-        isDark={isDark}
-        dailySetGoal={dailySetGoal}
-        onDailySetGoalChange={setDailySetGoal}
-        trainingDaysPerWeek={trainingDaysPerWeek}
-        onTrainingDaysChange={setTrainingDaysPerWeek} />
-
-      }
+      {appState === 'STORE' && (
+        <PlanScreen
+          onBack={handleCloseStore}
+          days={DAYS_FOR_TEMPLATE[rotatingProgramTemplate] ?? 5}
+          onDays={(n) => setRotatingProgramTemplate(TEMPLATE_FOR_DAYS[n])}
+          rotation={rotationCycle}
+          cycleDay={rotatingProgramCycleDay}
+          isRestDayToday={isRestDayToday}
+          gear={plan.gear}
+          onToggleGear={plan.toggleGear}
+          levels={plan.levels}
+          onSetLevel={plan.setLevel}
+        />
+      )}
 
       {appState === 'SETTINGS' &&
       <Settings
@@ -718,6 +681,7 @@ export function MainApp() {
         totalSets={summarySetContext?.totalSets}
         setsRemaining={summarySetContext?.setsRemaining ?? 0}
         baseReward={baseGame.lastReward}
+        harder={harderForCurrentMove}
         onSeeBase={handleSeeBase}
         onHome={handleGoHome} />
 

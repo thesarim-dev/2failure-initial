@@ -25,11 +25,11 @@ const en: TutorialContent = {
     },
     coins: {
       title: 'Coins',
-      body: 'Every finished set earns about 25–30 coins. Spend them on new exercises and base upgrades.'
+      body: 'Every finished set earns about 25–30 coins. Spend them on your base: buildings, land and decorations.'
     },
     store: {
-      title: 'Training',
-      body: 'Plan your week here (your own plan or a program), and unlock harder exercises with coins.'
+      title: 'Your plan',
+      body: 'Pick how many days a week you train and what equipment you have. We choose each day\'s exercises; tap Easier or Harder anytime.'
     },
     settings: {
       title: 'Settings',
@@ -40,8 +40,8 @@ const en: TutorialContent = {
       body: 'Every set earns materials for your own base. Build it up, and earn trophies you can show off.'
     },
     program: {
-      title: 'Your program',
-      body: "The rotating program picks today's exercises for you. Need a break? Take a rest day here."
+      title: "Today's day",
+      body: 'We rotate push, pull, legs and full-body days so every muscle gets its turn. Just do the cards below, top to bottom.'
     },
     start: {
       title: 'Your first set',
@@ -86,11 +86,11 @@ const he: TutorialContent = {
     },
     coins: {
       title: 'מטבעות',
-      body: 'כל סט שמסתיים מזכה בכ־25–30 מטבעות. השתמשו בהם לתרגילים חדשים ולשדרוגי הבסיס.'
+      body: 'כל סט שמסתיים מזכה בכ־25–30 מטבעות. השתמשו בהם לבסיס: בניינים, אדמה וקישוטים.'
     },
     store: {
-      title: 'אימון',
-      body: 'כאן מתכננים את השבוע (תוכנית משלכם או תוכנית מוכנה) ופותחים תרגילים קשים יותר עם מטבעות.'
+      title: 'התוכנית שלך',
+      body: 'בחרו כמה ימים בשבוע ואיזה ציוד יש לכם. אנחנו בוחרים את התרגילים לכל יום; אפשר ללחוץ קל יותר או קשה יותר בכל רגע.'
     },
     settings: {
       title: 'הגדרות',
@@ -101,8 +101,8 @@ const he: TutorialContent = {
       body: 'כל סט מזכה בחומרים לבסיס משלכם. בנו אותו, והשיגו גביעים שאפשר להשוויץ בהם.'
     },
     program: {
-      title: 'התוכנית שלכם',
-      body: 'התוכנית המתחלפת בוחרת בשבילכם את התרגילים של היום. צריכים הפסקה? קחו כאן יום מנוחה.'
+      title: 'היום שלכם',
+      body: 'אנחנו מחליפים ימי דחיפה, משיכה, רגליים וגוף מלא כדי שכל שריר יקבל את התור שלו. פשוט עשו את הכרטיסים למטה, מלמעלה למטה.'
     },
     start: {
       title: 'הסט הראשון שלכם',
@@ -147,11 +147,11 @@ const ar: TutorialContent = {
     },
     coins: {
       title: 'العملات',
-      body: 'كل مجموعة تكملها تمنحك نحو 25–30 عملة. أنفقها على تمارين جديدة وتطوير قاعدتك.'
+      body: 'كل مجموعة تكملها تمنحك نحو 25–30 عملة. أنفقها على قاعدتك: المباني والأرض والزينة.'
     },
     store: {
-      title: 'التدريب',
-      body: 'خطّط لأسبوعك هنا (خطتك الخاصة أو برنامج جاهز)، وافتح تمارين أصعب بالعملات.'
+      title: 'خطتك',
+      body: 'اختر عدد أيام التدريب في الأسبوع والمعدات المتوفرة لديك. نختار لك تمارين كل يوم؛ اضغط أسهل أو أصعب في أي وقت.'
     },
     settings: {
       title: 'الإعدادات',
@@ -162,8 +162,8 @@ const ar: TutorialContent = {
       body: 'كل مجموعة تمنحك مواد لقاعدتك الخاصة. ابنِها، واحصل على كؤوس تتباهى بها.'
     },
     program: {
-      title: 'برنامجك',
-      body: 'البرنامج المتناوب يختار لك تمارين اليوم. تحتاج استراحة؟ خذ يوم راحة من هنا.'
+      title: 'يومك',
+      body: 'ننوّع بين أيام الدفع والسحب والأرجل والجسم الكامل حتى تأخذ كل عضلة دورها. فقط أنجز البطاقات بالأسفل من الأعلى إلى الأسفل.'
     },
     start: {
       title: 'أول مجموعة لك',

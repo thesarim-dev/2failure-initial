@@ -21,8 +21,8 @@
 6. [Complete a workout](#6-complete-a-workout)
 7. [Log reps and weight](#7-log-reps-and-weight)
 8. [Review your set summary](#8-review-your-set-summary)
-9. [Plan your training and shop for exercises](#9-plan-your-training-and-shop-for-exercises)
-10. [Follow the rotating program](#10-follow-the-rotating-program)
+9. [Your plan](#9-your-plan)
+10. [Today's exercises](#10-todays-exercises)
 11. [Adjust settings](#11-adjust-settings)
 12. [Track progress over time](#12-track-progress-over-time)
 13. [Troubleshooting](#13-troubleshooting)
@@ -105,7 +105,7 @@ The first time you sign in, 2failure dims the home screen and walks you through 
 | 4 | Coins badge | Every finished set earns coins |
 | 5 | Edit your workout card | Plan your week and unlock exercises |
 | 6 | Settings tab | Language, units, sounds, night mode |
-| 7 | Program banner | Only shown when the rotating program is on; explains rest days |
+| 7 | Today's day | Which day of your week it is and what it trains |
 | 8 | First exercise card | Tap **Start** to begin your first set |
 
 **Navigation**
@@ -133,13 +133,12 @@ The home screen is your command center. Everything you need for today's session 
 | Element | Location | Action |
 |---|---|---|
 | **2failure logo** | Top left | Branding — not tappable |
-| **Store** (bag icon) | Top right | Opens the exercise store |
 | **Settings** (gear icon) | Top right | Opens preferences and FAQ |
 | **Coins badge** | Top right | Shows your current coin balance |
 
 ### Streak badge
 
-The flame shows your **current streak**. It lights up once today is protected (your second set, or a rest day). Your streak counts **days on plan**: days you train (at least two sets, any exercises) plus rest days. You can rest up to a set number of days in any rolling 7-day window: **7 minus your weekly training target** (building your own plan: 3 rest days at 4 days a week, 2 at 5 or 6; on the program: 4 on the 3-day split, 3 on the 4-day, 2 on the 5-day). Missed days count as rest automatically, so you don't have to tap **Rest day** (that button just swaps today to stretches). The streak only breaks when you take more rest days in a 7-day window than your allowance, or after about two weeks off. When you train again after resting, the rest days are added to your streak count.
+The flame shows your **current streak**. It lights up once today is protected (your second set, or a rest day). Your streak counts **days on plan**: days you train (at least two sets, any exercises) plus rest days. You can rest up to a set number of days in any rolling 7-day window: **7 minus your weekly training target** (4 rest days at 3 days a week, 3 at 4 days, 2 at 5 days). Missed days count as rest automatically, so you don't have to tap **Rest day** (that button just swaps today to stretches). The streak only breaks when you take more rest days in a 7-day window than your allowance, or after about two weeks off. When you train again after resting, the rest days are added to your streak count.
 
 If your streak breaks (more rest than your allowance), a **Restore streak** banner appears on the home screen. It does not appear just because you have not trained yet today, or because your current streak is below your longest. Restore is unlimited. The first restore each month costs **100 coins**, then the price doubles with each use (**200**, **400**, **800**) and caps at **1,600**. The price resets to 100 at the start of each month.
 
@@ -152,15 +151,13 @@ Below the header, **PICK YOUR WORKOUT** lists today's equipped exercises. Each c
 - **Exercise name** — e.g., Pushups, Squats, Planks
 - **Set progress** — `completed / goal` sets for the day (e.g., `1 / 3 sets`)
 - **Description** — a one-line cue for how to perform the move
-- **Equipment label** — shown in rotating-program mode when the exercise requires gear
+- **Equipment label** — shown when the exercise needs gear
 
-Tap a card to start that exercise. Cards marked **done** are dimmed and cannot be tapped again until tomorrow (when using the rotating program) or until you have hit your daily set goal.
+Tap a card to start that exercise. Cards marked **done** are dimmed once you've finished their sets for today.
 
-### Rotating program banner
+### Today's day
 
-When the rotating program is enabled, a line above the exercise list shows your current program day and focus, for example:
-
-> Program day 3/5 — pull
+Above the cards: which day of your week it is and what it trains, for example **Day 1 / 3 · Push day · Chest, shoulders, triceps**.
 
 ---
 
@@ -276,113 +273,50 @@ When you finish all sets for an exercise, confetti appears on the summary screen
 
 ---
 
-## 9. Plan your training and shop for exercises
+## 9. Your plan
 
-Tap the **Edit your workout** card at the top of the home screen to open **Training**. The card shows your current plan: your own plan (sets a day and days a week) or the program and which day you're on. Training has two tabs.
+There's one way to train: **your plan**. You answer two questions and the app tells you what to do each day.
 
-### Plan tab: how you train
+Open it from **Edit workout** on the home screen (or **Settings → Your plan**).
 
-1. **Choose how you want to train**:
-   - **Build my own**: you pick your exercises, training days and sets.
-   - **Follow a program**: a ready-made split rotates your workouts and builds in rest (see section 10).
-2. **Build my own** gives you:
-   - **Training days per week** (4, 5 or 6). The other days are rest days, and they keep your streak alive.
-   - **Sets per exercise** (2 or 3).
-   - **Your lineup**: six slots (Push, Pull, Legs, Legs, Core, Core). Tap a slot to pick a different exercise for it; you can buy one right there if you don't own it yet.
-3. A summary line always shows your week, for example "4 days a week · 6 exercises × 3 sets · about 30 min".
+**Days per week: 3, 4 or 5.** The app rotates day types for you:
 
-### Shop tab: unlock exercises
-
-- **Ready for the next step** suggests the next exercise up from one in your lineup, with its price.
-- Filter by **Push**, **Pull**, **Legs** or **Core**, and switch on **No gear only** for exercises you can do anywhere.
-- Each exercise shows its step in its progression ("Step 3 of 7"), the gear it needs and when to level up. Buy it with coins, or tap **Use** to put an owned exercise in your lineup.
-- Tap an exercise to see its full progression ladder.
-
-When you follow a program, the program chooses your exercises, so the lineup is shown but can't be edited.
-
----
-
-## 10. Follow the rotating program
-
-Each program day is balanced by muscle group, with **one equipment lift** as its main, 3-set exercise and no-equipment accessories:
-
-| Day | Muscles | Exercises (sets) |
-|---|---|---|
-| Push | Chest, shoulders, triceps, abs | Bench press 3, pike pushups 2, diamond pushups 2, leg raises 2, planks 2 |
-| Pull | Lats, mid/upper back, biceps, rear shoulders, abs | Pull-ups 3, doorway rows 2, superman pulls 2, crunches 2, hollow body 2 |
-| Legs | Quads, glutes, hamstrings, calves, obliques | Goblet squats 3, lunges 2, single-leg bridges 2, calf raises 2, side planks 2 |
-| Mixed (full body) | One push, pull, squat, hinge and core move | Dips 3, doorway rows 2, jump squats 2, glute bridges 2, planks 2 |
-
-Across the 5-day split, pushing and pulling sets stay roughly equal (about 10 vs 9 a week), and chest, triceps and back get a second weekly hit on the mixed day. The bench press and goblet squats ask for the weight you lifted after each set.
-
-The rotating program is an optional training plan built around **RIR** (reps in reserve), stopping just short of failure on early sets and going all-out on the final set. It needs only what a public park has: a pull-up bar, dip bars and a bench, plus a backpack for load. Pick the split that fits your week; rest (stretch) days are not fixed in the cycle — you choose them when you need them.
-
-### Enable the program
-
-1. Open **Settings** (gear icon).
-2. Find **rotating program**.
-3. Toggle it **On**.
-
-### Training splits
-
-Choose a split in Settings (under **training split**). Changing the split restarts the cycle from day 1.
-
-| Split | Cycle |
+| Days | Your week |
 |---|---|
-| **3-day** | Push → Legs → Pull (balanced, highest frequency) |
-| **4-day** | Push → Legs → Pull → Mixed (balanced, one combined day) |
-| **5-day** | Push → Legs → Pull → Legs → Mixed (extra leg volume, default) |
+| 3 | Push · Legs · Pull |
+| 4 | Push · Legs · Pull · Full body |
+| 5 | Push · Legs · Pull · Legs · Full body |
 
-The home screen banner shows **Program day X/N** and the current focus.
+**Your equipment:** tap what you have (pull-up bar, dip bars, bench or step, dumbbell, barbell, backpack). With nothing selected, every day still works with no equipment.
 
-### Set prescriptions
+## 10. Today's exercises
 
-| Exercise type | Sets per day | Intensity |
-|---|---|---|
-| **Main lift of the day** (backpack pushups, backpack squats, pull-ups, backpack pull-ups) | 3 | Sets 1–2: leave 1–2 reps in reserve. Set 3: go to failure. |
-| **Bodyweight** | 2 | Set 1: leave 1 rep in reserve. Set 2: go to failure. |
-| **Core** | 2 | Set 1: controlled pace. Set 2: max hold or failure. |
-| **Recovery / rest days** | Stretch only | No lifting or core work — only when you take a rest day |
+Each day has five exercises, one per muscle job, balanced so push and pull get equal work:
 
-Tap **How hard should each set feel?** in Settings for the full breakdown.
+| Day | Muscles | Example (no equipment) | Example (full gym) |
+|---|---|---|---|
+| Push | Chest, shoulders, triceps, abs, core | Pushups, pike pushups, diamond pushups, leg raises, planks | Bench press, pike pushups, diamond pushups, leg raises, planks |
+| Pull | Back, mid back, upper back, abs, core | Doorway rows, floor rows, superman pulls, crunches, hollow body | Pull-ups, inverted rows, superman pulls, crunches, hollow body |
+| Legs | Quads, single leg, hamstrings, calves, obliques | Squats, lunges, single-leg bridges, calf raises, side planks | Goblet squats, lunges, single-leg bridges, calf raises, side planks |
+| Full body | Push, pull, legs, glutes, core | Pushups, doorway rows, jump squats, glute bridges, planks | Dips, doorway rows, jump squats, glute bridges, planks |
 
-| Day | Main lift (3 sets) | Accessories (2 sets each) |
-|---|---|---|
-| **Push** | Backpack pushups | Dips, pike pushups, L-sit, planks |
-| **Legs** | Backpack squats | Bulgarian splits, single-leg bridges, hollow body, planks |
-| **Pull** | Pull-ups | Inverted rows, chin-ups, hanging knee raises, planks |
-| **Mixed** | Backpack pull-ups | Burpees, pushups, lunges, L-sit, planks |
+The first exercise of each day is the main one (3 sets); the rest are 2 sets.
 
-### Browse program days
+**Easier / Harder.** In **Your plan**, every exercise has **Easier** and **Harder** buttons that move along its ladder (for example: pushups → archer pushups → backpack pushups → dips → bench press). Only exercises your equipment allows are offered.
 
-In **Training → Plan**, use the program day carousel to preview upcoming days without changing today's workout.
+**Leveling up.** When a set shows you've outgrown an exercise, the receipt offers **Switch to …** the next harder one. One tap, and it's in your plan from next time.
 
-### Rest (stretch) days
+**All exercises are free.** There's no exercise shop: coins are for your base (buildings, land, decorations) and streak restores.
 
-Need a break? While the rotating program is on, a **Rest day** button appears next to the program banner on the home screen. Tapping it:
-
-- Creates a stretch day for today (the home screen shows the recovery stretches).
-- Pushes the whole program back by one day, so today's planned workouts move to tomorrow.
-
-Your weekly rest-day allowance depends on your training split, so training days plus rest days fill a real week (rolling 7-day window):
-
-| Split | Rest days per week |
-|---|---|
-| 3-day | up to 4 |
-| 4-day | up to 3 |
-| 5-day | up to 2 |
-
-When the limit is reached, the button disappears until a used rest day falls out of the window. Rest days are never auto-scheduled — only you decide when to take them.
-
----
+**Rest days:** tap **Rest day** on the home screen; today becomes stretches and your streak stays safe (see the streak rule in section 12).
 
 ## 11. Adjust settings
 
 Open **Settings** from the bottom bar (Train · Base · Settings).
 
-### Training plan
+### Your plan
 
-The program, training split, training days per week, sets per exercise and your lineup all live in **Training → Plan** (section 9). The **Training plan** card at the top of Settings opens it.
+Days per week, your equipment and exercise levels live in **Your plan** (section 9). The card at the top of Settings opens it.
 
 ### Appearance
 
@@ -446,7 +380,7 @@ If a set goes over 2 minutes, the receipt recommends switching to a harder exerc
 
 ### Streaks
 
-Your streak counts **days on plan**: days you train (at least two sets, any exercises) plus rest days. You can rest up to a set number of days in any rolling 7-day window: **7 minus your weekly training target** (building your own plan: 3 rest days at 4 days a week, 2 at 5 or 6; on the program: 4 on the 3-day split, 3 on the 4-day, 2 on the 5-day). Missed days count as rest automatically, so you don't have to tap **Rest day** (that button just swaps today to stretches). The streak only breaks when you take more rest days in a 7-day window than your allowance, or after about two weeks off. When you train again after resting, the rest days are added to your streak count. A broken streak restarts at 1 on your next training day unless you restore it.
+Your streak counts **days on plan**: days you train (at least two sets, any exercises) plus rest days. You can rest up to a set number of days in any rolling 7-day window: **7 minus your weekly training target** (4 rest days at 3 days a week, 3 at 4 days, 2 at 5 days). Missed days count as rest automatically, so you don't have to tap **Rest day** (that button just swaps today to stretches). The streak only breaks when you take more rest days in a 7-day window than your allowance, or after about two weeks off. When you train again after resting, the rest days are added to your streak count. A broken streak restarts at 1 on your next training day unless you restore it.
 
 If your streak breaks, a **Restore streak** banner appears on the home screen until you log two sets that day (a Lodge shield restores it for free). You can restore as many times as you want. Cost starts at **100 coins** each month and doubles after every restore until it reaches **1,600**, then stays there until the next month.
 
@@ -486,12 +420,12 @@ Rep and weight personal bests are recorded automatically when you log sets. The 
 | **get in position** | Not in starting pose | Follow on-screen guidance for lighting, framing, and pose. |
 | Tracking counts incorrectly | Pose not fully visible | Adjust angle, lighting, or distance. Use **timer only** as a fallback. |
 
-### Store and lineup
+### Your plan
 
 | Issue | Resolution |
 |---|---|
-| Cannot afford an exercise | Complete more sets to earn coins. |
-| Can't change an exercise in my lineup | You're following the program, which picks each day's exercises. Switch to **Build my own** in **Training → Plan** to choose them yourself. |
+| An exercise is too easy or too hard | Open **Your plan** and tap **Easier** or **Harder** next to it. |
+| An exercise needs equipment I don't have | Open **Your plan** and untick that equipment; the plan switches to something you can do. |
 
 ### Data loading errors
 
@@ -511,9 +445,9 @@ Every set you finish earns materials for your own base. Tap **Base** in the bott
 
 **Materials** come from the kind of set you do: upper-body sets (push and pull) earn stone, lower-body sets earn timber, core sets earn crystal, and stretches earn 1 of each. A typical set earns about 3; bigger sets earn more, scaled to how hard the exercise is (10 pushups ≈ 3, 30 ≈ 9; 12 pull-ups ≈ 6), and longer holds or a heavier backpack earn more too, up to 12 per set. Coins are separate and still pay for land, upgrades and the store.
 
-**Today's plan** is exactly what the Train tab shows: your rotating-program day, or your equipped lineup when the program is off. Sets in today's plan earn full materials. A few sets beyond the plan earn half, then nothing, because rest is part of training. Finishing the whole plan earns a session bonus. Sets under 10 seconds don't earn anything.
+**Today's plan** is exactly what the Train tab shows: today's day from your plan. Sets in today's plan earn full materials. A few sets beyond the plan earn half, then nothing, because rest is part of training. Finishing the whole plan earns a session bonus. Sets under 10 seconds don't earn anything.
 
-**Your week**: hitting your weekly training target (the program split, or **Training → Plan → Training days per week** when the program is off) earns the biggest reward of the week and builds a weekly streak.
+**Your week**: hitting your weekly training target (your days per week in **Your plan**) earns the biggest reward of the week and builds a weekly streak.
 
 **Streaks respect rest.** Days off within your weekly rest allowance (7 minus your training days) keep your streak alive and count as days on plan. Only going beyond the allowance breaks it.
 
@@ -556,9 +490,8 @@ The base is saved to your account in Supabase (table `base_games`), so it follow
 |---|---|
 | **RIR (Reps in Reserve)** | How many more reps you could have done before failure. "1–2 RIR" means you stopped with 1–2 reps left in the tank. |
 | **Set** | One continuous bout of an exercise, from start to finish. |
-| **Lineup** | The exercises you have equipped and see on the home screen each day. |
 | **Personal best (PR)** | Your highest recorded performance for an exercise — reps for bodyweight, load × reps for weighted moves. |
-| **Rotating program** | The built-in RIR training cycle (3, 4, or 5-day split) that auto-selects exercises and set targets. Rest days are player-chosen. |
+| **Your plan** | Days per week plus your equipment; the app rotates push, pull, legs and full-body days and picks each day's five exercises. |
 | **Progressive overload** | Gradually increasing training stress (more weight, reps, or difficulty) to keep getting stronger. |
 | **Tier** | Exercise difficulty rating in the store: base, pro, or elite. |
 | **Ladder** | A sequence of versions of one movement, from easiest to hardest. Move up a rung when you pass the rep ceiling. |
