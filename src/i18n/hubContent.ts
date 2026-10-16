@@ -69,6 +69,7 @@ export type HubCopy = {
   restoreBanner: { title: (streak: number) => string; sub: string; notEnough: (cost: number) => string };
   trio: {
     edit: string;
+    planTitle: string;
     ownShort: (sets: number, days: number) => string;
     programShort: (day: number, days: number, phase: string) => string;
     programRest: string;
@@ -178,6 +179,7 @@ const en: HubCopy = {
   settingsTab: 'Settings',
   trio: {
     edit: 'Edit workout',
+    planTitle: 'Edit plan',
     ownShort: (sets, days) => `${sets} sets · ${days} days`,
     programShort: (day, days, phase) => `Day ${day}/${days} · ${phase}`,
     programRest: 'Rest day',
@@ -292,6 +294,7 @@ const he: HubCopy = {
   settingsTab: 'הגדרות',
   trio: {
     edit: 'עריכת אימון',
+    planTitle: 'עריכת תוכנית',
     ownShort: (sets, days) => `${sets} סטים · ${days} ימים`,
     programShort: (day, days, phase) => `יום ${day}/${days} · ${phase}`,
     programRest: 'יום מנוחה',
@@ -406,6 +409,7 @@ const ar: HubCopy = {
   settingsTab: 'الإعدادات',
   trio: {
     edit: 'تعديل التمرين',
+    planTitle: 'تعديل الخطة',
     ownShort: (sets, days) => `${sets} مجموعات · ${days} أيام`,
     programShort: (day, days, phase) => `اليوم ${day}/${days} · ${phase}`,
     programRest: 'يوم راحة',

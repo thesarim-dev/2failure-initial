@@ -4,8 +4,7 @@ import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog'
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BedDouble, Loader2 } from 'lucide-react';
-import planIcon from '../assets/plan-icon.png';
+import { Loader2, Moon, Pencil, SlidersHorizontal } from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
 import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
@@ -110,7 +109,12 @@ export function Dashboard({
   };
   const rewardLabel = (move: Move) => rewardFor(move).map((id) => t.game.resources[id]).join(' · ');
   // The current plan, in one line: own plan (sets a day) or program (which day).
-  const planShort = t.hub.plan.tileSub(rotationCycleLength);
+  // Today's day for the Edit plan chip, and the rest-day dots (total for the week).
+  const todayChip =
+    isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
+      ? t.hub.plan.tileSub(rotationCycleLength)
+      : t.hub.plan.dayNames[rotatingProgramPhase];
+  const restDotsTotal = Math.min(5, Math.max(restDaysRemainingThisWeek, 7 - rotationCycleLength, 1));
 
   // Lit once today's streak is safe: trained today, or a planned rest day.
   const streakProtectedToday = lastWorkoutDate === toLocalDateString() || isRestDayToday;
@@ -197,23 +201,41 @@ export function Dashboard({
 
       {/* One row: rest day · the streak (centrepiece) · edit your workout. */}
       <section className="home-trio mb-4 normal-case" aria-label={t.dashboard.aria.funFactAndStreak}>
+        {/* Rest day: calm night theme; moon dots show the rest days left this week. */}
         {isRestDayToday ? (
-          <div className="trio-tile trio-rest is-resting" role="status">
-            <BedDouble size={26} strokeWidth={2.5} aria-hidden="true" />
-            <span className="trio-tile-title">{t.hub.trio.resting}</span>
-            <span className="trio-tile-sub">{t.hub.trio.safe}</span>
+          <div className="act-tile act-rest is-resting" role="status">
+            <span className="act-badge" aria-hidden="true">
+              <Moon size={22} strokeWidth={2.5} />
+            </span>
+            <span className="act-title">{t.hub.trio.resting}</span>
+            <span className="act-chip">{t.hub.trio.safe}</span>
           </div>
         ) : (
           <button
             type="button"
             onClick={onTakeRestDay}
             disabled={!canTakeRestDay}
-            className="trio-tile trio-rest">
-            <BedDouble size={26} strokeWidth={2.5} aria-hidden="true" />
-            <span className="trio-tile-title">{t.dashboard.restDay.button}</span>
-            <span className="trio-tile-sub">
-              {canTakeRestDay ? t.hub.trio.left(restDaysRemainingThisWeek) : t.hub.trio.none}
+            className="act-tile act-rest"
+            aria-label={`${t.dashboard.restDay.button}: ${canTakeRestDay ? t.hub.trio.left(restDaysRemainingThisWeek) : t.hub.trio.none}`}>
+            <span className="act-badge" aria-hidden="true">
+              <Moon size={22} strokeWidth={2.5} />
+              {canTakeRestDay && (
+                <span className="act-zzz">
+                  <i>z</i>
+                  <i>z</i>
+                </span>
+              )}
             </span>
+            <span className="act-title">{t.dashboard.restDay.button}</span>
+            {canTakeRestDay ? (
+              <span className="act-dots" aria-hidden="true">
+                {Array.from({ length: restDotsTotal }, (_, k) => (
+                  <span key={k} className={`act-dot ${k < restDaysRemainingThisWeek ? 'is-on' : ''}`} />
+                ))}
+              </span>
+            ) : (
+              <span className="act-chip">{t.hub.trio.none}</span>
+            )}
           </button>
         )}
 
@@ -229,10 +251,21 @@ export function Dashboard({
           )}
         </div>
 
-        <button type="button" className="trio-tile trio-plan" data-tour="store" onClick={onOpenPlan}>
-          <img src={planIcon} alt="" aria-hidden="true" className="trio-plan-icon" width={30} height={30} />
-          <span className="trio-tile-title">{t.hub.trio.edit}</span>
-          <span className="trio-tile-sub">{planShort}</span>
+        {/* Edit plan: lime theme; the chip shows today's day at a glance. */}
+        <button
+          type="button"
+          className="act-tile act-plan"
+          data-tour="store"
+          onClick={onOpenPlan}
+          aria-label={`${t.hub.trio.planTitle}: ${todayChip}`}>
+          <span className="act-badge" aria-hidden="true">
+            <SlidersHorizontal size={21} strokeWidth={2.6} />
+            <span className="act-pencil">
+              <Pencil size={10} strokeWidth={3} />
+            </span>
+          </span>
+          <span className="act-title">{t.hub.trio.planTitle}</span>
+          <span className="act-chip">{todayChip}</span>
         </button>
       </section>
 

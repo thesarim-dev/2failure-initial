@@ -6071,4 +6071,196 @@
   .plan-week-go {
     opacity: 0.4;
   }
+
+  /* ---------- Home: Rest day + Edit plan action tiles ---------- */
+  .act-tile {
+    position: relative;
+    width: 100%;
+    max-width: 9.5rem;
+    height: 7rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.6rem 0.4rem 0.55rem;
+    border-radius: 1.3rem;
+    text-align: center;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  }
+  .act-tile:not(:disabled):not(.is-resting):active {
+    transform: translateY(4px);
+  }
+  .act-tile:focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 3px;
+  }
+  .act-badge {
+    position: relative;
+    width: 2.6rem;
+    height: 2.6rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .act-title {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: clamp(0.72rem, 3vw, 0.88rem);
+    line-height: 1.05;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .act-chip {
+    max-width: 100%;
+    padding: 0.14rem 0.55rem;
+    border-radius: 999px;
+    font-size: clamp(0.6rem, 2.6vw, 0.72rem);
+    font-weight: 800;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Rest day: calm night blue */
+  .act-rest {
+    color: #3b3f8f;
+    background: linear-gradient(180deg, #f2f3ff 0%, #e2e5ff 100%);
+    border: 2px solid #8b95f0;
+    box-shadow: 0 5px 0 #6670cf, 0 8px 14px rgba(70, 80, 180, 0.18);
+  }
+  .dark .act-rest {
+    color: #cdd2ff;
+    background: linear-gradient(180deg, #262a52 0%, #191c38 100%);
+    border-color: #7c86f2;
+    box-shadow: 0 5px 0 #3e4596, 0 8px 16px rgba(0, 0, 0, 0.45);
+  }
+  .act-rest:not(:disabled):not(.is-resting):active {
+    box-shadow: 0 1px 0 #6670cf;
+  }
+  .act-rest .act-badge {
+    color: #ffffff;
+    background: radial-gradient(circle at 35% 30%, #a9b2ff 0%, #6f7be8 70%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  }
+  .act-rest .act-chip {
+    color: #3b3f8f;
+    background: rgba(124, 134, 242, 0.18);
+  }
+  .dark .act-rest .act-chip {
+    color: #dfe2ff;
+    background: rgba(124, 134, 242, 0.22);
+  }
+  .act-rest:disabled {
+    opacity: 0.5;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  .act-rest.is-resting {
+    border-style: dashed;
+    box-shadow: 0 0 0 4px rgba(124, 134, 242, 0.15);
+  }
+  .act-rest.is-resting .act-badge {
+    box-shadow: 0 0 16px rgba(150, 160, 255, 0.75), inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  }
+  .act-dots {
+    display: flex;
+    gap: 0.28rem;
+    padding: 0.12rem 0;
+  }
+  .act-dot {
+    width: 0.58rem;
+    height: 0.58rem;
+    border-radius: 999px;
+    border: 1.5px solid #8b95f0;
+  }
+  .act-dot.is-on {
+    background: #8b95f0;
+    box-shadow: 0 0 6px rgba(139, 149, 240, 0.6);
+  }
+  /* Floating z z next to the moon */
+  .act-zzz {
+    position: absolute;
+    top: -0.35rem;
+    inset-inline-end: -0.45rem;
+    display: flex;
+    gap: 1px;
+    pointer-events: none;
+  }
+  .act-zzz i {
+    font-style: normal;
+    font-weight: 900;
+    font-size: 0.62rem;
+    color: #8b95f0;
+    animation: act-z 2.8s ease-in-out infinite;
+  }
+  .act-zzz i:nth-child(2) {
+    font-size: 0.5rem;
+    animation-delay: 0.7s;
+  }
+  @keyframes act-z {
+    0%, 100% { transform: translateY(2px); opacity: 0.2; }
+    50% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* Edit plan: lime */
+  .act-plan {
+    color: #2f4a00;
+    background: linear-gradient(180deg, #f8ffe4 0%, #ecf9c4 100%);
+    border: 2px solid #9bd11f;
+    box-shadow: 0 5px 0 #6a9e00, 0 8px 14px rgba(106, 158, 0, 0.18);
+  }
+  .dark .act-plan {
+    color: #e6f7b8;
+    background: linear-gradient(180deg, #27321a 0%, #1a2111 100%);
+    border-color: #a9d92a;
+    box-shadow: 0 5px 0 #557f00, 0 8px 16px rgba(0, 0, 0, 0.45);
+  }
+  .act-plan:active {
+    box-shadow: 0 1px 0 #6a9e00;
+  }
+  .act-plan .act-badge {
+    color: #0c0f02;
+    background: radial-gradient(circle at 35% 30%, #e4fb7a 0%, #b9e02a 70%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  }
+  .act-pencil {
+    position: absolute;
+    bottom: -0.1rem;
+    inset-inline-end: -0.15rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    background: #2f4a00;
+    border: 2px solid #ecf9c4;
+  }
+  .dark .act-pencil {
+    background: #0c0f02;
+    color: #c8f032;
+    border-color: #1a2111;
+  }
+  .act-plan .act-chip {
+    color: #2f4a00;
+    background: rgba(140, 194, 26, 0.22);
+  }
+  .dark .act-plan .act-chip {
+    color: #e6f7b8;
+    background: rgba(200, 240, 50, 0.16);
+  }
+  .act-plan:hover,
+  .act-rest:not(:disabled):hover {
+    filter: brightness(1.05);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .act-zzz i {
+      animation: none;
+      opacity: 0.7;
+    }
+  }
 }
