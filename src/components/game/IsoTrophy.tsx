@@ -55,26 +55,6 @@ function Block({ b, s }: { b: Box; s: Shades }) {
   );
 }
 
-/** The dirt pad with a few paving stones, flush with the tile. */
-function Pad({ ox, oy }: { ox: number; oy: number }) {
-  const i = 6;
-  const corners = [P(ox + i, oy + i), P(ox + 100 - i, oy + i), P(ox + 100 - i, oy + 100 - i), P(ox + i, oy + 100 - i)];
-  const stones: Array<[number, number, number]> = [
-    [ox + 18, oy + 74, 8],
-    [ox + 74, oy + 20, 7],
-    [ox + 80, oy + 78, 9],
-    [ox + 22, oy + 22, 6]
-  ];
-  return (
-    <g>
-      <polygon points={pts(corners)} fill="#a8783e" />
-      <polygon points={pts(corners)} fill="none" stroke="#6e4a22" strokeWidth={1.4} strokeDasharray="3 2" opacity={0.7} />
-      {stones.map(([x, y, r], k) => (
-        <polygon key={k} points={pts([P(x - r, y - r), P(x + r, y - r), P(x + r, y + r), P(x - r, y + r)])} fill="#d8cfbf" opacity={0.85} />
-      ))}
-    </g>
-  );
-}
 
 /** The carved pedestal with a tier cap and the engraved number. */
 function Pedestal({ ox, oy, h, tier, number, accent }: { ox: number; oy: number; h: number; tier: Shades; number: string; accent: Shades }) {
@@ -416,7 +396,6 @@ export function IsoTrophy({
   const [vx, vy] = P(ox + 74, oy + 40, h * 0.55);
   return (
     <g>
-      <Pad ox={ox} oy={oy} />
       <ellipse cx={P(ox + 50, oy + 50)[0] + 4} cy={P(ox + 50, oy + 50)[1] + 3} rx={30} ry={11} fill="url(#hf-shadow)" />
       <Pedestal ox={ox} oy={oy} h={h} tier={tier} number={NUMBER[trophyId] ?? ''} accent={accent} />
       <g transform={`translate(${sx} ${sy}) scale(1.35)`}>
