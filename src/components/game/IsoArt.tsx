@@ -75,11 +75,101 @@ function rightQuad(b: Box, u0: number, u1: number, v0: number, v1: number) {
 }
 
 function IsoWindow({ points, lit }: { points: string; lit: boolean }) {
+  // Lived in: windows are always warm; brighter on training days. About a
+  // third flicker gently like candlelight (picked from the window's position).
+  const corners = points.split(' ').map((p) => p.split(',').map(Number) as [number, number]);
+  const mid = (i: number, j: number): [number, number] => [(corners[i][0] + corners[j][0]) / 2, (corners[i][1] + corners[j][1]) / 2];
+  const seed = Math.abs(Math.round((corners[0][0] * 7 + corners[0][1] * 13) % 3));
+  const [a1, a2] = [mid(0, 1), mid(3, 2)];
+  const [b1, b2] = [mid(0, 3), mid(1, 2)];
   return (
-    <g className={lit ? 'base-light is-lit' : 'base-light-off'}>
+    <g className={`base-light is-warm ${lit ? 'is-lit' : ''} ${seed === 0 ? 'is-candle' : ''}`}>
       <polygon points={points} fill="#3a2a1c" stroke="#3a2a1c" strokeWidth={2.2} strokeLinejoin="round" />
-      <polygon points={points} fill={lit ? WINDOW_LIT : WINDOW_DARK} />
-      {lit && <polygon points={points} fill="url(#hf-face)" />}
+      <polygon points={points} fill={WINDOW_LIT} />
+      <polygon points={points} fill="url(#hf-face)" />
+      <path d={`M${a1[0]} ${a1[1]} L${a2[0]} ${a2[1]} M${b1[0]} ${b1[1]} L${b2[0]} ${b2[1]}`} stroke="#3a2a1c" strokeWidth={1.1} opacity={0.75} />
+    </g>
+  );
+}
+
+/** Two puffs of smoke drifting up, offset in time so the chimney never stops. */
+function ChimneySmoke({ at, strong }: { at: [number, number]; strong: boolean }) {
+  const [x, y] = at;
+  return (
+    <g pointerEvents="none" opacity={strong ? 0.7 : 0.5}>
+      <circle cx={x} cy={y} r={4.2} fill="#d5d9e0" className="base-smoke" />
+      <circle cx={x + 3} cy={y - 5} r={3.2} fill="#d5d9e0" className="base-smoke" style={{ animationDelay: '1.6s' }} />
+    </g>
+  );
+}
+
+/** A few sparks rising from a furnace. */
+function Sparks({ at }: { at: [number, number] }) {
+  const [x, y] = at;
+  return (
+    <g pointerEvents="none">
+      {[0, 1, 2].map((i) => (
+        <circle key={i} cx={x - 4 + i * 4} cy={y} r={1.2} fill="#ffcf5a" className="base-spark" style={{ animationDelay: `${i * 0.45}s` }} />
+      ))}
+    </g>
+  );
+}
+
+/** Firewood stacked against a wall, with a chopping block and axe. */
+function Firewood({ at, wood }: { at: [number, number]; wood: Shades }) {
+  const [x, y] = at;
+  return (
+    <g pointerEvents="none">
+      {[[0, 0], [5.6, 0], [11.2, 0], [2.8, -5], [8.4, -5], [5.6, -10]].map(([dx, dy], i) => (
+        <g key={i}>
+          <circle cx={x + dx} cy={y + dy} r={3} fill={wood.base} stroke={wood.dark} strokeWidth={0.9} />
+          <circle cx={x + dx} cy={y + dy} r={1.2} fill={wood.light} />
+        </g>
+      ))}
+      <ellipse cx={x + 20} cy={y + 1} rx={4.6} ry={2.2} fill={wood.dark} />
+      <rect x={x + 15.4} y={y - 4} width={9.2} height={5} fill={wood.base} stroke={wood.dark} strokeWidth={0.8} />
+      <ellipse cx={x + 20} cy={y - 4} rx={4.6} ry={2.2} fill={wood.light} stroke={wood.dark} strokeWidth={0.8} />
+      <line x1={x + 19} y1={y - 5} x2={x + 25} y2={y - 13} stroke="#6b4a2a" strokeWidth={1.4} strokeLinecap="round" />
+      <path d={`M${x + 23.5} ${y - 14.5} l4 1 l-2.2 3.4 Z`} fill="#c9ced6" stroke="#6b7280" strokeWidth={0.6} />
+    </g>
+  );
+}
+
+/** A flower box under a window. */
+function FlowerBox({ a, b }: { a: [number, number]; b: [number, number] }) {
+  const dx = (b[0] - a[0]) / 4;
+  const dy = (b[1] - a[1]) / 4;
+  const colors = ['#ff6b8b', '#ffd23f', '#ff8fd1', '#ff6b8b'];
+  return (
+    <g pointerEvents="none">
+      <path d={`M${a[0] - 1} ${a[1]} L${b[0] + 1} ${b[1]} L${b[0] + 1} ${b[1] + 3.4} L${a[0] - 1} ${a[1] + 3.4} Z`} fill="#8a5a2b" stroke="#5a3a1c" strokeWidth={0.6} />
+      {colors.map((c, i) => (
+        <g key={i}>
+          <circle cx={a[0] + dx * (i + 0.5)} cy={a[1] + dy * (i + 0.5) - 1.6} r={1.9} fill="#3f8a3a" />
+          <circle cx={a[0] + dx * (i + 0.5)} cy={a[1] + dy * (i + 0.5) - 2.4} r={1.3} fill={c} />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** Barrels and a crate by the door. */
+function Stores({ at, wood }: { at: [number, number]; wood: Shades }) {
+  const [x, y] = at;
+  const barrel = (bx: number, by: number) => (
+    <g>
+      <rect x={bx - 4} y={by - 9} width={8} height={9} rx={2} fill={wood.base} stroke={wood.dark} strokeWidth={0.8} />
+      <ellipse cx={bx} cy={by - 9} rx={4} ry={1.7} fill={wood.light} stroke={wood.dark} strokeWidth={0.7} />
+      <path d={`M${bx - 4} ${by - 6.5} h8 M${bx - 4} ${by - 2.5} h8`} stroke="#4b5563" strokeWidth={0.9} />
+    </g>
+  );
+  return (
+    <g pointerEvents="none">
+      {barrel(x, y)}
+      {barrel(x + 9, y + 3)}
+      <polygon points={`${x - 13},${y - 1} ${x - 5},${y + 3} ${x - 5},${y - 5} ${x - 13},${y - 9}`} fill={wood.base} stroke={wood.dark} strokeWidth={0.8} />
+      <polygon points={`${x - 5},${y + 3} ${x + 1},${y} ${x + 1},${y - 8} ${x - 5},${y - 5}`} fill={wood.dark} stroke={wood.dark} strokeWidth={0.8} />
+      <polygon points={`${x - 13},${y - 9} ${x - 5},${y - 5} ${x + 1},${y - 8} ${x - 7},${y - 12}`} fill={wood.light} stroke={wood.dark} strokeWidth={0.8} />
     </g>
   );
 }
@@ -231,8 +321,10 @@ function Flag({ at, s, h = 26 }: { at: [number, number]; s: Shades; h?: number }
   return (
     <g>
       <rect x={x - 1} y={y - h} width={2.2} height={h} fill={METAL.dark} />
-      <polygon points={`${x + 1},${y - h} ${x + 17},${y - h + 4} ${x + 1},${y - h + 9}`} fill={s.base} />
-      <polygon points={`${x + 1},${y - h + 4.5} ${x + 17},${y - h + 4} ${x + 1},${y - h + 9}`} fill={s.dark} />
+      <g className="base-flag">
+        <polygon points={`${x + 1},${y - h} ${x + 17},${y - h + 4} ${x + 1},${y - h + 9}`} fill={s.base} />
+        <polygon points={`${x + 1},${y - h + 4.5} ${x + 17},${y - h + 4} ${x + 1},${y - h + 9}`} fill={s.dark} />
+      </g>
     </g>
   );
 }
@@ -470,6 +562,7 @@ function Headquarters({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
         <IsoBox b={hall} s={m.wood} />
         <TimberFrame b={hall} brace={false} />
         <IsoDoor points={leftQuad(hall, 0.42, 0.58, 0, 0.62)} />
+        <Lantern at={P(hall.x0 + (hall.x1 - hall.x0) * 0.62, hall.y1 + 1, 34)} lit />
         <IsoWindow points={leftQuad(hall, 0.12, 0.24, 0.35, 0.62)} lit={lit} />
         <IsoWindow points={leftQuad(hall, 0.76, 0.88, 0.35, 0.62)} lit={lit} />
         <IsoWindow points={rightQuad(hall, 0.4, 0.6, 0.35, 0.62)} lit={lit} />
@@ -479,6 +572,7 @@ function Headquarters({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
         <IsoDecorations kind={decoration} b={hall} s={s} lit={lit} />
         <ThatchRoof x0={hall.x0} y0={hall.y0} x1={hall.x1} y1={hall.y1} z={56} rise={56} o={10} ridge={s} wall={m.wood} />
         <Crest at={P(hall.x1, (hall.y0 + hall.y1) / 2, 84)} size={16} s={s} />
+        <Stores at={P(ox + 184, oy + 116, 0)} wood={m.wood} />
       </g>
     );
   }
@@ -550,6 +644,7 @@ function Headquarters({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
       ) : (
         <Flag at={P(ox + 100, oy + 100, body.z1 + 54)} s={s} h={30} />
       )}
+      <Stores at={P(ox + 186, oy + 120, 0)} wood={m.wood} />
     </g>
   );
 }
@@ -646,11 +741,7 @@ function Lodge({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
         <IsoWindow points={leftQuad(b, 0.12, 0.3, 0.38, 0.7)} lit={lit} />
         <IsoDecorations kind={decoration} b={b} s={s} lit={lit} />
         <ThatchRoof x0={b.x0} y0={b.y0} x1={b.x1} y1={b.y1} z={38} rise={34} o={8} ridge={s} wall={m.wood} />
-        {/* Woodpile */}
-        {[0, 1, 2].map((i) => {
-          const [x, y] = P(ox + 86 + 4, oy + 42 + i * 9, 4);
-          return <circle key={i} cx={x} cy={y} r={3.6} fill={m.wood.base} stroke={m.wood.dark} strokeWidth={1} />;
-        })}
+        <Firewood at={P(ox + 88, oy + 36, 3)} wood={m.wood} />
       </g>
     );
   }
@@ -669,6 +760,12 @@ function Lodge({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
       <IsoWindow points={leftQuad(ground, 0.12, 0.3, 0.4, 0.72)} lit={lit} />
       <IsoWindow points={leftQuad(ground, 0.74, 0.9, 0.4, 0.72)} lit={lit} />
       <IsoWindow points={rightQuad(ground, 0.35, 0.65, 0.4, 0.72)} lit={lit} />
+      {[[0.1, 0.32], [0.72, 0.92]].map(([u0, u1]) => {
+        const zz = ground.z0 + (ground.z1 - ground.z0) * 0.36;
+        const fx = (u: number) => ground.x0 + (ground.x1 - ground.x0) * u;
+        return <FlowerBox key={u0} a={P(fx(u0), ground.y1 + 2, zz)} b={P(fx(u1), ground.y1 + 2, zz)} />;
+      })}
+      <Firewood at={P(ox + 92, oy + 34, plinth.z1)} wood={m.wood} />
       {upper && (
         <g>
           <IsoBox b={upper} s={m.wood} />
@@ -686,12 +783,7 @@ function Lodge({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
       <Crest at={P(top.x1, (top.y0 + top.y1) / 2, top.z1 + 15)} size={grand ? 13 : 11} s={s} gold={grand} />
       {/* Chimney */}
       <IsoBox b={{ x0: ox + 60, y0: oy + 32, x1: ox + 72, y1: oy + 44, z0: top.z1 + 8, z1: top.z1 + (grand ? 44 : 36) }} s={grand ? darkStone(m) : m.stone} courses={false} />
-      {lit && (
-        <g opacity={0.5} className="base-smoke">
-          <circle cx={P(ox + 66, oy + 38, top.z1 + 54)[0]} cy={P(ox + 66, oy + 38, top.z1 + 54)[1]} r={4} fill="#c9ced6" />
-          <circle cx={P(ox + 66, oy + 38, top.z1 + 66)[0] + 5} cy={P(ox + 66, oy + 38, top.z1 + 66)[1]} r={3} fill="#c9ced6" />
-        </g>
-      )}
+      <ChimneySmoke at={P(ox + 66, oy + 38, top.z1 + (grand ? 46 : 38))} strong={lit} />
       {grand && <Flag at={P(top.x0 + 4, (top.y0 + top.y1) / 2, top.z1 + 40)} s={s} h={22} />}
     </g>
   );
@@ -744,6 +836,7 @@ function Forge({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
         <polygon points={leftQuad(b, 0.38, 0.62, 0, grand ? 0.56 : 0.48)} fill={lit ? FIRE : '#5a3020'} className={lit ? 'base-flame' : undefined} />
         <polygon points={leftQuad(b, 0.43, 0.57, 0, grand ? 0.34 : 0.28)} fill={lit ? WINDOW_LIT : '#7a4a28'} />
       </g>
+      <Sparks at={P(b.x0 + (b.x1 - b.x0) * 0.5, b.y1 + 2, b.z0 + (b.z1 - b.z0) * 0.3)} />
       <IsoWindow points={rightQuad(b, 0.35, 0.65, 0.45, 0.72)} lit={lit} />
       <IsoDecorations kind={decoration} b={b} s={s} lit={lit} />
       <GableRoof x0={b.x0} y0={b.y0} x1={b.x1} y1={b.y1} z={b.z1} rise={26} o={5} s={s} wall={stone} />
@@ -752,12 +845,7 @@ function Forge({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
         <g key={x}>
           <IsoBox b={{ x0: x, y0: oy + 28, x1: x + 14, y1: oy + 42, z0: b.z1 + 4, z1: b.z1 + (grand ? 66 : 54) }} s={stone} />
           {grand && <polygon points={leftQuad({ x0: x, y0: oy + 28, x1: x + 14, y1: oy + 42, z0: b.z1 + 4, z1: b.z1 + 66 }, 0, 1, 0.9, 0.97)} fill={GOLD.base} />}
-          {lit && (
-            <g opacity={0.55} className="base-smoke">
-              <circle cx={P(x + 7, oy + 35, b.z1 + (grand ? 80 : 68))[0]} cy={P(x + 7, oy + 35, b.z1 + (grand ? 80 : 68))[1]} r={5} fill="#c9ced6" />
-              <circle cx={P(x + 7, oy + 35, b.z1 + (grand ? 96 : 84))[0] + 6} cy={P(x + 7, oy + 35, b.z1 + (grand ? 96 : 84))[1]} r={3.5} fill="#c9ced6" />
-            </g>
-          )}
+          <ChimneySmoke at={P(x + 7, oy + 35, b.z1 + (grand ? 68 : 56))} strong={lit} />
         </g>
       ))}
       {/* Anvil out front */}

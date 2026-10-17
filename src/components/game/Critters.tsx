@@ -8,7 +8,7 @@ import { occupancy, type GameState } from '../../game/engine';
  * Uses SVG motion (no state updates), and stays still for reduced motion.
  */
 
-type Kind = 'cow' | 'sheep' | 'chicken' | 'bunny' | 'duck' | 'pig' | 'dog' | 'cat' | 'fox';
+type Kind = 'cow' | 'sheep' | 'chicken' | 'bunny' | 'duck' | 'pig' | 'dog' | 'cat' | 'fox' | 'villager1' | 'villager2' | 'villager3' | 'villager4';
 
 /** Small seeded random generator, so animals stay put while you're on the screen. */
 function mulberry32(seed: number) {
@@ -262,7 +262,52 @@ function Fox() {
   );
 }
 
+/**
+ * Villagers: little townsfolk in the same chunky style as the animals. They
+ * walk with the same leg swing and look around when they stop.
+ */
+function Villager({ shirt, pants, skin, hair, carry }: { shirt: string; pants: string; skin: string; hair: string; carry?: 'basket' | 'wood' }) {
+  return (
+    <g>
+      <ellipse cx={0} cy={11} rx={6.5} ry={2} fill="#000" opacity={0.25} />
+      <Leg x={-1.8} y={2} h={8.5} w={2.6} color={pants} pair="b" />
+      <g className="critter-body">
+        <Leg x={1.8} y={2} h={8.5} w={2.6} color={pants} pair="a" />
+        <rect x={-4.6} y={-9.5} width={9.2} height={12.5} rx={3.6} fill={shirt} />
+        <rect x={-4.6} y={-9.5} width={9.2} height={12.5} rx={3.6} fill="url(#hf-body)" />
+        <rect x={-4.6} y={0.6} width={9.2} height={1.6} fill="#000" opacity={0.18} />
+        {carry === 'basket' && (
+          <g>
+            <path d="M3 -3 Q 7.5 -9 12 -3" stroke="#7a4a20" strokeWidth={1} fill="none" />
+            <path d="M2.6 -3 H12.4 L11.4 2 H3.6 Z" fill="#c08a4a" stroke="#7a4a20" strokeWidth={0.7} />
+            <circle cx={5.6} cy={-3.6} r={1.5} fill="#e5484d" />
+            <circle cx={8.6} cy={-3.8} r={1.5} fill="#f2a541" />
+          </g>
+        )}
+        {carry === 'wood' && (
+          <g>
+            {[0, 1, 2].map((i) => (
+              <rect key={i} x={1.4} y={-6.4 + i * 2.6} width={9.6} height={2.4} rx={1.2} fill="#a0703c" stroke="#5a3a1c" strokeWidth={0.6} />
+            ))}
+          </g>
+        )}
+        <rect x={0.8} y={-7.6} width={2.8} height={carry ? 5.6 : 8.6} rx={1.4} fill={shirt} stroke="#000" strokeOpacity={0.15} strokeWidth={0.5} />
+        <g className="critter-head critter-head--look">
+          <circle cx={0.6} cy={-13.6} r={4.4} fill={skin} />
+          <path d="M-3.8 -13.8 Q -3.6 -18.8 0.8 -18.4 Q 5 -18.2 5 -14.4 Q 2.4 -16.2 -0.4 -15.6 Q -2.6 -15 -3.8 -13.8 Z" fill={hair} />
+          <circle cx={3} cy={-13.6} r={0.75} fill="#1a1a1a" />
+          <circle cx={3.6} cy={-11.8} r={0.9} fill="#ff8a8a" opacity={0.5} />
+        </g>
+      </g>
+    </g>
+  );
+}
+
 const ART: Record<Kind, () => JSX.Element> = {
+  villager1: () => <Villager shirt="#e5484d" pants="#3b3f58" skin="#f1c27d" hair="#5a3825" carry="basket" />,
+  villager2: () => <Villager shirt="#3b82f6" pants="#4b3a2a" skin="#c68642" hair="#1f1a17" />,
+  villager3: () => <Villager shirt="#f2a541" pants="#3f4a3a" skin="#8d5524" hair="#141010" carry="wood" />,
+  villager4: () => <Villager shirt="#8b5cf6" pants="#2f3542" skin="#ffdbac" hair="#c58b3a" />,
   cow: Cow,
   sheep: Sheep,
   chicken: Chicken,
@@ -274,7 +319,7 @@ const ART: Record<Kind, () => JSX.Element> = {
   fox: Fox
 };
 /** Walking speed in board units per second. */
-const SPEED: Record<Kind, number> = { cow: 16, sheep: 18, pig: 20, chicken: 34, bunny: 42, duck: 22, dog: 40, cat: 30, fox: 36 };
+const SPEED: Record<Kind, number> = { cow: 16, sheep: 18, pig: 20, chicken: 34, bunny: 42, duck: 22, dog: 40, cat: 30, fox: 36, villager1: 22, villager2: 24, villager3: 20, villager4: 23 };
 /** Animals are drawn a bit larger than life so they read as cute on phones. */
 const CRITTER_SCALE = 1.45;
 
@@ -387,6 +432,20 @@ function planRoutes(state: GameState, seed: number, project: Project): Route[] {
       routes.push(buildRoute(kind, points.map(project), rnd));
     }
   }
+  // Villagers live near the buildings: one for the HQ, more as the Lodge grows.
+  const structures = state.placed.filter((p) => p.level > 0 && ['hq', 'lodge', 'forge', 'watchtower', 'spring', 'yard'].includes(p.itemId));
+  const lodgeLevel = state.placed.find((p) => p.itemId === 'lodge')?.level ?? 0;
+  const villagers = Math.min(4, 1 + lodgeLevel + (structures.length > 3 ? 1 : 0));
+  const nearHome = land.filter((pt) =>
+    structures.some((st) => Math.abs(pt[0] - (st.x * 100 + 50)) < 320 && Math.abs(pt[1] - (st.y * 100 + 50)) < 320)
+  );
+  const villageKinds: Kind[] = ['villager1', 'villager2', 'villager3', 'villager4'];
+  for (let i = 0; i < villagers && nearHome.length >= 2; i++) {
+    const stops = 3 + Math.floor(rnd() * 2);
+    const points: Point[] = Array.from({ length: stops }, () => pick(nearHome));
+    routes.push(buildRoute(villageKinds[i], points.map(project), rnd));
+  }
+
   const ducks = Math.min(4, Math.ceil(water.length / 4));
   for (let i = 0; i < ducks && water.length; i++) {
     const points: Point[] = [pick(water), pick(water), pick(water)];

@@ -423,6 +423,10 @@ If the home screen shows a red error banner:
 
 ## Your base (the game)
 
+### A lived-in base
+
+Your base feels inhabited: **villagers** stroll between your buildings (one for the HQ, more as your Lodge grows; some carry baskets or firewood) and stop to look around. Windows always glow warmly (brighter on days you train, and a few flicker like candlelight), chimneys smoke, flags flutter, sparks rise from the Forge, and buildings get lived-in details: firewood and a chopping block by the Lodge, flower boxes under its windows, barrels and crates by the HQ and a lantern at its door.
+
 ### Performance (how the map stays smooth)
 
 The ground (terrain, grass, flowers, edges and the cut-away sides) is about 16,000 drawing elements, so the map **bakes it into a single image** and draws only the living parts live: buildings, decorations, trophies, animals and fireflies. The ground is re-baked automatically when it changes (painting, expanding land, placing or moving something); while you paint, the ground is drawn live so changes appear instantly. On a fully built base this cut the map from about 18,600 elements to about 2,100, and from 1,194 simultaneous animations to 95.
