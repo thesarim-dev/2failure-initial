@@ -80,6 +80,30 @@ export type GameCopy = {
     moreSlots: string;
     none: string;
   };
+  goals: {
+    title: string;
+    building: (name: string) => string;
+    upgrading: (name: string, level: number) => string;
+    setsToGo: (sets: number) => string;
+    upgrade: (name: string, level: number) => string;
+    build: (name: string) => string;
+    reach: (title: string) => string;
+    pointsToGo: (points: number) => string;
+    unlocks: (list: string) => string;
+    pointsHow: string;
+    land: string;
+    landSub: (cost: number) => string;
+    benefit: Record<string, string>;
+    coins: string;
+    builders: (need: number) => string;
+    weeks: (need: number) => string;
+    aboutSets: (sets: number, kind: 'upper' | 'legs' | 'core' | 'any') => string;
+    needLodge: string;
+    buildersBusy: string;
+    weeksLeft: (weeks: number) => string;
+    ready: string;
+    action: { build: string; upgrade: string; land: string; decorate: string; view: string };
+  };
   roles: {
     hq: (weeksDone: number, weeksNeeded: number, nextLevel: number) => string;
     hqMax: string;
@@ -316,6 +340,38 @@ const en: GameCopy = {
     done: 'Done',
     moreSlots: 'Build or upgrade a Watchtower for more quests.',
     none: "Quests appear once today's workout loads."
+  },
+  goals: {
+    title: 'Next up',
+    building: (name) => `Building ${name}`,
+    upgrading: (name, level) => `Upgrading ${name} to level ${level}`,
+    setsToGo: (sets) => (sets === 1 ? "1 more set and it's done" : `${sets} more sets and it's done`),
+    upgrade: (name, level) => `Upgrade ${name} to level ${level}`,
+    build: (name) => `Build a ${name}`,
+    reach: (title) => `Reach ${title}`,
+    pointsToGo: (points) => `${points} more points`,
+    unlocks: (list) => `Unlocks ${list}`,
+    pointsHow: 'Every building, upgrade, decoration and trophy adds points.',
+    land: 'Expand your land',
+    landSub: (cost) => `More room to build · ${cost} coins`,
+    benefit: {
+      hq: 'Bigger upgrades and new buildings',
+      lodge: '+1 builder, so you can build two things at once',
+      watchtower: 'Daily quests with bonus materials',
+      forge: 'Trade one material for another',
+      spring: 'Bonus materials for stretching and comebacks',
+      yard: 'Bonus materials for finishing your plan'
+    },
+    coins: 'coins',
+    builders: (need) => (need === 1 ? 'a free builder' : `${need} free builders`),
+    weeks: (need) => `${need} weeks on target`,
+    aboutSets: (sets, kind) =>
+      `≈ ${sets} ${kind === 'upper' ? 'upper-body ' : kind === 'legs' ? 'leg ' : kind === 'core' ? 'core ' : ''}set${sets === 1 ? '' : 's'}`,
+    needLodge: 'Build or upgrade a Lodge',
+    buildersBusy: 'Free after the current build',
+    weeksLeft: (weeks) => `${weeks} more week${weeks === 1 ? '' : 's'}`,
+    ready: 'Ready',
+    action: { build: 'Build it', upgrade: 'Upgrade', land: 'Expand', decorate: 'Decorate', view: 'View' }
   },
   roles: {
     hq: (weeksDone, weeksNeeded, next) =>
@@ -585,6 +641,38 @@ const he: GameCopy = {
     moreSlots: 'בנה או שדרג מגדל תצפית כדי לקבל עוד משימות.',
     none: 'המשימות יופיעו כשהאימון של היום ייטען.'
   },
+  goals: {
+    title: 'הבא בתור',
+    building: (name) => `בונים: ${name}`,
+    upgrading: (name, level) => `משדרגים ${name} לרמה ${level}`,
+    setsToGo: (sets) => (sets === 1 ? 'עוד סט אחד וזה מוכן' : `עוד ${sets} סטים וזה מוכן`),
+    upgrade: (name, level) => `שדרגו ${name} לרמה ${level}`,
+    build: (name) => `בנו ${name}`,
+    reach: (title) => `הגיעו ל${title}`,
+    pointsToGo: (points) => `עוד ${points} נקודות`,
+    unlocks: (list) => `פותח ${list}`,
+    pointsHow: 'כל בניין, שדרוג, קישוט וגביע מוסיפים נקודות.',
+    land: 'הרחיבו את השטח',
+    landSub: (cost) => `יותר מקום לבנות · ${cost} מטבעות`,
+    benefit: {
+      hq: 'שדרוגים גדולים יותר ובניינים חדשים',
+      lodge: '+1 בנאי, כדי לבנות שני דברים במקביל',
+      watchtower: 'משימות יומיות עם חומרים בונוס',
+      forge: 'החלפת חומר אחד באחר',
+      spring: 'חומרים בונוס על מתיחות וחזרה לאימון',
+      yard: 'חומרים בונוס על סיום התוכנית'
+    },
+    coins: 'מטבעות',
+    builders: (need) => (need === 1 ? 'בנאי פנוי' : `${need} בנאים פנויים`),
+    weeks: (need) => `${need} שבועות ביעד`,
+    aboutSets: (sets, kind) =>
+      `≈ ${sets} סטים${kind === 'upper' ? ' של פלג גוף עליון' : kind === 'legs' ? ' של רגליים' : kind === 'core' ? ' של ליבה' : ''}`,
+    needLodge: 'בנו או שדרגו בקתה',
+    buildersBusy: 'יתפנה אחרי הבנייה הנוכחית',
+    weeksLeft: (weeks) => `עוד ${weeks} שבועות`,
+    ready: 'מוכן',
+    action: { build: 'בנו', upgrade: 'שדרגו', land: 'הרחיבו', decorate: 'קשטו', view: 'הצג' }
+  },
   roles: {
     hq: (weeksDone, weeksNeeded, next) =>
       `שלב ${next} דורש ${weeksNeeded} שבועות ביעד. יש לך ${weeksDone}.`,
@@ -852,6 +940,38 @@ const ar: GameCopy = {
     done: 'تم',
     moreSlots: 'ابنِ برج مراقبة أو طوّره للحصول على مهام أكثر.',
     none: 'ستظهر المهام عند تحميل تمرين اليوم.'
+  },
+  goals: {
+    title: 'التالي',
+    building: (name) => `جارٍ بناء ${name}`,
+    upgrading: (name, level) => `جارٍ تطوير ${name} إلى المستوى ${level}`,
+    setsToGo: (sets) => (sets === 1 ? 'مجموعة واحدة أخرى وينتهي' : `${sets} مجموعات أخرى وينتهي`),
+    upgrade: (name, level) => `طوّر ${name} إلى المستوى ${level}`,
+    build: (name) => `ابنِ ${name}`,
+    reach: (title) => `صِل إلى ${title}`,
+    pointsToGo: (points) => `${points} نقطة أخرى`,
+    unlocks: (list) => `يفتح ${list}`,
+    pointsHow: 'كل مبنى وتطوير وزينة وكأس يضيف نقاطاً.',
+    land: 'وسّع أرضك',
+    landSub: (cost) => `مساحة أكبر للبناء · ${cost} عملة`,
+    benefit: {
+      hq: 'تطويرات أكبر ومبانٍ جديدة',
+      lodge: '+1 بنّاء، لتبني شيئين معاً',
+      watchtower: 'مهام يومية مع مواد إضافية',
+      forge: 'بادل مادة بأخرى',
+      spring: 'مواد إضافية للإطالة والعودة للتدريب',
+      yard: 'مواد إضافية عند إنهاء خطتك'
+    },
+    coins: 'عملات',
+    builders: (need) => (need === 1 ? 'بنّاء متاح' : `${need} بنّائين متاحين`),
+    weeks: (need) => `${need} أسابيع على الهدف`,
+    aboutSets: (sets, kind) =>
+      `≈ ${sets} مجموعات${kind === 'upper' ? ' للجزء العلوي' : kind === 'legs' ? ' للأرجل' : kind === 'core' ? ' للجذع' : ''}`,
+    needLodge: 'ابنِ أو طوّر النُّزُل',
+    buildersBusy: 'يتفرّغ بعد البناء الحالي',
+    weeksLeft: (weeks) => `${weeks} أسابيع أخرى`,
+    ready: 'جاهز',
+    action: { build: 'ابنِه', upgrade: 'طوّر', land: 'وسّع', decorate: 'زيّن', view: 'عرض' }
   },
   roles: {
     hq: (weeksDone, weeksNeeded, next) =>

@@ -63,6 +63,8 @@ import {
 } from '../../game/engine';
 import type { BaseGame } from '../../game/useBaseGame';
 import { BaseBoard, ItemPreview } from './BaseBoard';
+import { GoalsCard } from './GoalsCard';
+import { computeGoals, type Goal } from '../../game/goals';
 
 type Draft = { kind: 'item'; itemId: string } | { kind: 'trophy'; trophyId: string };
 
@@ -86,12 +88,6 @@ const TERRAIN_SWATCH: Record<TerrainId, string> = {
 };
 
 /** What reaching a base level unlocks: decorations and ground types. */
-function unlocksAt(level: number): { decor: string[]; terrain: TerrainId[] } {
-  return {
-    decor: DECOR.filter((d) => d.unlockBase === level).map((d) => d.id),
-    terrain: TERRAIN.filter((t) => t.unlockBase === level).map((t) => t.id)
-  };
-}
 
 const RESOURCE_ICON: Record<ResourceId, string> = {
   stone: stoneIcon,
@@ -343,46 +339,6 @@ function hasCustomization(itemId: string): boolean {
   return !!(options?.styles?.length || options?.colors);
 }
 
-function BaseLevelCard({ game }: { game: BaseGame }) {
-  const { t } = useLanguage();
-  const g = t.game;
-  const info = baseLevel(game.state);
-  const nextLevel = info.level + 1;
-  const unlocks = info.next !== null ? unlocksAt(nextLevel) : null;
-  const unlockNames = unlocks
-    ? [...unlocks.decor.map((id) => g.items[id]?.name ?? id), ...unlocks.terrain.map((id) => g.terrainNames[id])]
-    : [];
-  const span = info.next !== null ? info.next - info.floor : 1;
-  const progress = info.next !== null ? Math.min(1, (info.score - info.floor) / span) : 1;
-  return (
-    <section className="base-level-card normal-case" aria-label={g.baseLevel.level(info.level)}>
-      <div className="base-level-head">
-        <span className="base-level-badge" aria-hidden="true">
-          {info.level}
-        </span>
-        <div className="min-w-0">
-          <p className="base-level-title">{g.baseLevel.titles[info.title]}</p>
-          <p className="base-level-sub">{g.baseLevel.level(info.level)}</p>
-        </div>
-        {info.next !== null && (
-          <span className="base-level-score tabular-nums">{g.baseLevel.progress(info.score, info.next)}</span>
-        )}
-      </div>
-      <div className="base-progress base-progress--gold" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
-        <span style={{ width: `${Math.round(progress * 100)}%` }} />
-      </div>
-      {info.next !== null ? (
-        <p className="base-level-next">
-          <strong>{g.baseLevel.next(g.baseLevel.titles[BASE_LEVEL_TITLES[info.level]])}</strong>
-          {unlockNames.length > 0 && <> · {g.baseLevel.unlocks(unlockNames.join(', '))}</>}
-        </p>
-      ) : (
-        <p className="base-level-next">{g.baseLevel.max}</p>
-      )}
-    </section>
-  );
-}
-
 export function BaseScreen({
   game,
   coins,
@@ -518,6 +474,30 @@ export function BaseScreen({
     .join(' · ');
   const landSide = LAND_SIDES[state.landLevel];
   const landCost = nextLandCost(state);
+  const goals = useMemo(() => computeGoals(state, coins), [state, coins]);
+  const levelProgress =
+    levelInfo.next === null ? 1 : Math.min(1, (levelInfo.score - levelInfo.floor) / Math.max(1, levelInfo.next - levelInfo.floor));
+
+  /** One tap from a goal to the thing that completes it. */
+  const handleGoal = (goal: Goal) => {
+    fx.tap();
+    if (goal.kind === 'upgrade') {
+      setSheet({ uid: goal.uid });
+    } else if (goal.kind === 'build') {
+      if (goal.ready) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        choose({ kind: 'item', itemId: goal.itemId });
+      } else {
+        setBuildTab('structures');
+        setSheet('build');
+      }
+    } else if (goal.kind === 'level') {
+      setBuildTab('decor');
+      setSheet('build');
+    } else if (goal.kind === 'land') {
+      setSheet('land');
+    }
+  };
 
   const labelForItem = (item: PlacedItem) => {
     const def = getItemDef(item.itemId);
@@ -545,14 +525,10 @@ export function BaseScreen({
         ))}
       </div>
 
-      <BaseLevelCard game={game} />
-
       {!state.introSeen && (
-        <section className="base-intro cyber-panel normal-case">
-          <h2 className="base-intro-title">{g.intro.title}</h2>
+        <section className="base-intro-strip normal-case">
           <p>{g.intro.body}</p>
-          <p className="base-intro-rule">{g.intro.rule}</p>
-          <button type="button" className="base-primary-btn" onClick={game.dismissIntro}>
+          <button type="button" className="base-intro-ok" onClick={game.dismissIntro}>
             {g.intro.ok}
           </button>
         </section>
@@ -631,39 +607,55 @@ export function BaseScreen({
             {notice}
           </p>
         )}
+
+        {/* Game-style controls floating on the map */}
+        <div className="map-level" aria-label={`${g.baseLevel.level(levelInfo.level)} · ${g.baseLevel.titles[levelInfo.title]}`}>
+          <span
+            className="map-level-ring"
+            style={{
+              background: `conic-gradient(#f7c948 ${levelProgress * 360}deg, rgba(255,255,255,0.18) 0deg)`
+            }}>
+            <span className="map-level-num">{levelInfo.level}</span>
+          </span>
+          <span className="map-level-title">{g.baseLevel.titles[levelInfo.title]}</span>
+        </div>
+        <button
+          type="button"
+          className={`map-builders ${busy > 0 ? 'is-busy' : ''}`}
+          aria-label={`${g.builders.chip(total - busy, total)}${jobsText ? ` · ${jobsText}` : ''}`}
+          onClick={() => {
+            if (jobsText) setNotice(jobsText);
+          }}>
+          <HardHat size={16} strokeWidth={2.6} aria-hidden="true" />
+          <span className="tabular-nums">
+            {total - busy}/{total}
+          </span>
+        </button>
+        {mode.kind === 'idle' && !paintWith && (
+          <div className="map-dock">
+            <button type="button" className="map-round-btn" onClick={() => setSheet('land')} aria-label={g.land.button}>
+              <Expand size={20} strokeWidth={2.5} aria-hidden="true" />
+            </button>
+            <button type="button" className="map-build-btn" onClick={() => setSheet('build')}>
+              <Hammer size={20} strokeWidth={2.6} aria-hidden="true" />
+              {g.build}
+            </button>
+            <button type="button" className="map-round-btn" onClick={() => setPaintWith('dirt')} aria-label={g.paint.button}>
+              <Brush size={20} strokeWidth={2.5} aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </div>
 
       {mode.kind === 'idle' && !paintWith && (
-        <div className="base-actions base-actions--grid">
-          <div className="base-build-row">
-            <button type="button" className="base-primary-btn base-build-btn" onClick={() => setSheet('build')}>
-              <Hammer size={18} strokeWidth={2.5} aria-hidden="true" />
-              {g.build}
-            </button>
-            {/* Free builders out of total; counts down while things are being built. */}
-            <button
-              type="button"
-              className={`base-builders-chip ${busy > 0 ? 'is-busy' : ''}`}
-              aria-label={`${g.builders.chip(total - busy, total)}${jobsText ? ` · ${jobsText}` : ''}`}
-              title={jobsText || undefined}
-              onClick={() => {
-                if (jobsText) setNotice(jobsText);
-              }}>
-              <HardHat size={17} strokeWidth={2.5} aria-hidden="true" />
-              <span className="tabular-nums">
-                {total - busy}/{total}
-              </span>
-            </button>
-          </div>
-          <button type="button" className="base-secondary-btn" onClick={() => setSheet('land')}>
-            <Expand size={18} strokeWidth={2.5} aria-hidden="true" />
-            {g.land.button}
-          </button>
-          <button type="button" className="base-secondary-btn" onClick={() => setPaintWith('dirt')}>
-            <Brush size={18} strokeWidth={2.5} aria-hidden="true" />
-            {g.paint.button}
-          </button>
-        </div>
+        <GoalsCard
+          goals={goals}
+          coins={coins}
+          totalBuilders={total}
+          nameOf={nameOf}
+          titleOf={(title) => g.baseLevel.titles[title as keyof typeof g.baseLevel.titles] ?? title}
+          onAction={handleGoal}
+        />
       )}
 
       <TodayPanel game={game} plan={game.plan} />

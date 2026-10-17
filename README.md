@@ -441,6 +441,12 @@ If the home screen shows a red error banner:
 
 ## Your base (the game)
 
+### The Base tab at a glance
+
+- **The map comes first.** Floating on it: your **base level** (top left, with a ring showing progress to the next level), your **builders** (top right; tap to see what's being built), and the **Build** button with **Expand land** and **Paint** beside it.
+- **Next up** sits under the map: your next goals, worked out from the game's rules and in the order that makes sense (for example, a **Lodge** comes before the **HQ upgrade** that needs its second builder). The top goal shows a checklist of exactly what's still missing, with about how many sets that is (for example *timber 14/22 · ≈ 2 leg sets*, *coins 120/300 · ≈ 7 sets*). When a goal is ready, one tap starts it.
+- **Today** (plan progress, weekly bonus and quests) is below that.
+
 Every set you finish earns materials for your own base. Tap **Base** in the bottom bar to see it.
 
 **Coins:** every finished set (10 seconds or more) earns 20 coins, plus up to 10 for a longer set and 5 or 10 more for pro or elite moves, so a typical set earns about 25–30.
