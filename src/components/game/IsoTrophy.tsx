@@ -110,7 +110,7 @@ const pr = (v: V3) => P(v[0], v[1], v[2]);
 const poly = (vs: V3[]) => pts(vs.map(pr));
 const EDGE = 0.45;
 /** Sculptures are drawn larger than life so they read as monuments on their pedestals. */
-const SCULPT_SCALE = 1.55;
+const SCULPT_SCALE = 1.4;
 
 function SculptDefs({ gid, m, accent }: { gid: string; m: M; accent: M }) {
   return (
@@ -120,6 +120,12 @@ function SculptDefs({ gid, m, accent }: { gid: string; m: M; accent: M }) {
         <stop offset="0.35" stopColor={m.light} />
         <stop offset="0.75" stopColor={m.base} />
         <stop offset="1" stopColor={m.dark} />
+      </linearGradient>
+      <linearGradient id={`${gid}-stone`} x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stopColor="#cdc6bc" />
+        <stop offset="0.35" stopColor="#efebe5" />
+        <stop offset="0.75" stopColor="#cdc6bc" />
+        <stop offset="1" stopColor="#9c948a" />
       </linearGradient>
       <radialGradient id={`${gid}-orb`} cx="0.35" cy="0.3" r="0.8">
         <stop offset="0" stopColor="#ffffff" />
@@ -153,7 +159,7 @@ function Block3({ c, w, d, z0, h, m }: { c: [number, number]; w: number; d: numb
 }
 
 /** Upright drum (cylinder). */
-function Drum({ c, r, z0, h, gid, m }: { c: [number, number]; r: number; z0: number; h: number; gid: string; m: M }) {
+function Drum({ c, r, z0, h, gid, m, grad = 'drum' }: { c: [number, number]; r: number; z0: number; h: number; gid: string; m: M; grad?: 'drum' | 'stone' }) {
   const [bx, by] = P(c[0], c[1], z0);
   const [tx, ty] = P(c[0], c[1], z0 + h);
   const rx = r * 0.707;
@@ -162,7 +168,7 @@ function Drum({ c, r, z0, h, gid, m }: { c: [number, number]; r: number; z0: num
     <g stroke={m.dark} strokeWidth={EDGE}>
       <path
         d={`M${bx - rx} ${by} L${tx - rx} ${ty} L${tx + rx} ${ty} L${bx + rx} ${by} A${rx} ${ry} 0 0 1 ${bx - rx} ${by} Z`}
-        fill={`url(#${gid}-drum)`}
+        fill={`url(#${gid}-${grad})`}
       />
       <ellipse cx={tx} cy={ty} rx={rx} ry={ry} fill={m.light} />
     </g>
@@ -198,27 +204,6 @@ function Beam({ a, b, t, m }: { a: V3; b: V3; t: number; m: M }) {
   );
 }
 
-/** A crystal shard: a stretched square bipyramid. Burns in fire colours when lit. */
-function Shard({ c, w, z0, h, m, gid, lit }: { c: [number, number]; w: number; z0: number; h: number; m: M; gid: string; lit: boolean }) {
-  const [cx, cy] = c;
-  const mid = z0 + h * 0.3;
-  const top: V3 = [cx, cy, z0 + h];
-  const bot: V3 = [cx, cy, z0];
-  const S: V3 = [cx - w, cy + w, mid];
-  const E: V3 = [cx + w, cy + w, mid];
-  const F: V3 = [cx + w, cy - w, mid];
-  const fills = lit
-    ? { a: `url(#${gid}-fire)`, b: '#ff8a3d', c: '#e85520', d: '#c2410c' }
-    : { a: m.light, b: m.base, c: m.dark, d: m.dark };
-  return (
-    <g stroke={lit ? '#9a3412' : m.dark} strokeWidth={EDGE} strokeLinejoin="round" className={lit ? 'base-flame' : undefined}>
-      <polygon points={poly([bot, S, E])} fill={fills.c} />
-      <polygon points={poly([bot, E, F])} fill={fills.d} />
-      <polygon points={poly([top, S, E])} fill={fills.a} />
-      <polygon points={poly([top, E, F])} fill={fills.b} />
-    </g>
-  );
-}
 
 /** A cut gem (octahedron) in the accent colour, with a glint. */
 function Gem({ c, z, r, accent }: { c: [number, number]; z: number; r: number; accent: M }) {
@@ -274,13 +259,155 @@ function UprightDisc({ c, zc, r, thick, m, hole = 0, half = false }: { c: [numbe
   );
 }
 
-function Pyramid4({ c, w, z0, h, m }: { c: [number, number]; w: number; z0: number; h: number; m: M }) {
+
+/** Granite for monuments; the tier metal is used for caps, emblems and bands. */
+const GRANITE: M = { light: '#efebe5', base: '#cdc6bc', dark: '#9c948a' };
+
+/** A tapered square shaft (obelisk body) with a metal pyramidion cap. */
+function Obelisk({ c, w0, w1, z0, h, cap, m, bands = [] }: { c: [number, number]; w0: number; w1: number; z0: number; h: number; cap: number; m: M; bands?: number[] }) {
   const [cx, cy] = c;
-  const top: V3 = [cx, cy, z0 + h];
+  const z1 = z0 + h;
+  const at = (w: number, z: number) => ({
+    fl: [cx - w, cy + w, z] as V3, // front-left corner
+    fr: [cx + w, cy + w, z] as V3, // front corner
+    br: [cx + w, cy - w, z] as V3 // right corner
+  });
+  const b = at(w0, z0);
+  const t = at(w1, z1);
+  const apex: V3 = [cx, cy, z1 + cap];
+  const bandAt = (frac: number) => {
+    const z = z0 + h * frac;
+    const w = w0 + (w1 - w0) * frac;
+    const k = at(w, z);
+    const k2 = at(w, z + 2.4);
+    return (
+      <g key={frac}>
+        <polygon points={poly([k.fl, k.fr, k2.fr, k2.fl])} fill={m.base} stroke={m.dark} strokeWidth={EDGE} />
+        <polygon points={poly([k.fr, k.br, k2.br, k2.fr])} fill={m.dark} stroke={m.dark} strokeWidth={EDGE} />
+      </g>
+    );
+  };
   return (
-    <g stroke={m.dark} strokeWidth={EDGE} strokeLinejoin="round">
-      <polygon points={poly([[cx - w, cy + w, z0], [cx + w, cy + w, z0], top])} fill={m.base} />
-      <polygon points={poly([[cx + w, cy + w, z0], [cx + w, cy - w, z0], top])} fill={m.dark} />
+    <g strokeLinejoin="round">
+      <polygon points={poly([b.fl, b.fr, t.fr, t.fl])} fill={GRANITE.base} stroke={GRANITE.dark} strokeWidth={EDGE} />
+      <polygon points={poly([b.fr, b.br, t.br, t.fr])} fill={GRANITE.dark} stroke={GRANITE.dark} strokeWidth={EDGE} />
+      {/* a sunlit edge down the front corner */}
+      <line x1={pr(b.fr)[0]} y1={pr(b.fr)[1]} x2={pr(t.fr)[0]} y2={pr(t.fr)[1]} stroke="#ffffff" strokeOpacity={0.5} strokeWidth={0.8} />
+      {bands.map(bandAt)}
+      <polygon points={poly([t.fl, t.fr, apex])} fill={m.light} stroke={m.dark} strokeWidth={EDGE} />
+      <polygon points={poly([t.fr, t.br, apex])} fill={m.base} stroke={m.dark} strokeWidth={EDGE} />
+    </g>
+  );
+}
+
+/** A flame drawn upright at a point, burning bright when lit, embers when not. */
+function FireAt({ at, size, lit, gid }: { at: V3; size: number; lit: boolean; gid: string }) {
+  const [x, y] = pr(at);
+  const s = size;
+  return (
+    <g>
+      {lit && <circle cx={x} cy={y - s * 0.9} r={s * 1.6} fill="#ff9a2e" opacity={0.2} />}
+      <g className={lit ? 'base-flame' : undefined} opacity={lit ? 1 : 0.55}>
+        <path
+          d={`M${x} ${y - s * 2.2} C ${x + s * 0.9} ${y - s * 1.4}, ${x + s * 0.95} ${y - s * 0.5}, ${x} ${y} C ${x - s * 0.95} ${y - s * 0.5}, ${x - s * 0.9} ${y - s * 1.4}, ${x} ${y - s * 2.2} Z`}
+          fill={lit ? `url(#${gid}-fire)` : '#8a4a28'}
+          stroke={lit ? '#c2410c' : '#5a2d16'}
+          strokeWidth={0.5}
+        />
+        <path
+          d={`M${x} ${y - s * 1.2} C ${x + s * 0.45} ${y - s * 0.75}, ${x + s * 0.4} ${y - s * 0.25}, ${x} ${y - s * 0.05} C ${x - s * 0.4} ${y - s * 0.25}, ${x - s * 0.45} ${y - s * 0.75}, ${x} ${y - s * 1.2} Z`}
+          fill={lit ? '#fff4c2' : '#c06a34'}
+        />
+      </g>
+    </g>
+  );
+}
+
+/** A fire bowl on top of a pillar/tower at height z. */
+function FireBowl({ c, z, r, m, gid, lit, flame }: { c: [number, number]; z: number; r: number; m: M; gid: string; lit: boolean; flame: number }) {
+  const [x, y] = P(c[0], c[1], z);
+  const rx = r * 0.707;
+  const ry = r * 0.354;
+  return (
+    <g>
+      <path d={`M${x - rx} ${y} Q ${x} ${y + ry * 4.2}, ${x + rx} ${y} Z`} fill={`url(#${gid}-drum)`} stroke={m.dark} strokeWidth={EDGE} />
+      <ellipse cx={x} cy={y} rx={rx} ry={ry} fill="#3a2214" stroke={m.dark} strokeWidth={EDGE} />
+      <FireAt at={[c[0], c[1], z + 1]} size={flame} lit={lit} gid={gid} />
+    </g>
+  );
+}
+
+/** Olympic-style pictograms (Otl Aicher), in face coordinates: u ∈ [-1, 1] across, v ∈ [0, 1] up. */
+const PICTOGRAMS: Record<string, { lines: Array<Array<[number, number]>>; head: [number, number] }> = {
+  pushup: {
+    lines: [
+      [[-0.62, 0.22], [0.42, 0.42]],
+      [[0.36, 0.41], [0.42, 0.14]],
+      [[-0.85, 0.1], [0.85, 0.1]]
+    ],
+    head: [0.6, 0.5]
+  },
+  pullup: {
+    lines: [
+      [[-0.75, 0.9], [0.75, 0.9]],
+      [[-0.28, 0.9], [-0.16, 0.66]],
+      [[0.28, 0.9], [0.16, 0.66]],
+      [[0, 0.64], [0, 0.36]],
+      [[0, 0.36], [-0.14, 0.12]],
+      [[0, 0.36], [0.14, 0.12]]
+    ],
+    head: [0, 0.8]
+  },
+  pistol: {
+    lines: [
+      [[-0.1, 0.62], [-0.18, 0.4]],
+      [[-0.1, 0.58], [0.5, 0.58]],
+      [[-0.18, 0.4], [0.62, 0.42]],
+      [[-0.18, 0.4], [0.1, 0.26]],
+      [[0.1, 0.26], [-0.08, 0.1]]
+    ],
+    head: [-0.02, 0.76]
+  }
+};
+
+/** An engraved stone tablet with an inlaid metal pictogram on its front face. */
+function Stele({ c, w, z0, h, m, glyph, frame = false }: { c: [number, number]; w: number; z0: number; h: number; m: M; glyph: keyof typeof PICTOGRAMS; frame?: boolean }) {
+  const [cx, cy] = c;
+  const d = 5;
+  const faceY = cy + d / 2;
+  const toFace = (u: number, v: number): [number, number] =>
+    pr([cx + u * (w / 2 - 3), faceY + 0.01, z0 + 4 + v * (h - 10)]);
+  const g = PICTOGRAMS[glyph];
+  const path = (pts2: Array<[number, number]>) => pts2.map(([u, v], i) => `${i ? 'L' : 'M'}${toFace(u, v)[0]} ${toFace(u, v)[1]}`).join(' ');
+  const [hx, hy] = toFace(g.head[0], g.head[1]);
+  return (
+    <g>
+      {frame && (
+        <>
+          <Block3 c={[cx - w / 2 - 3, cy]} w={3.4} d={3.4} z0={z0} h={h + 6} m={m} />
+        </>
+      )}
+      <Block3 c={c} w={w} d={d} z0={z0} h={h} m={GRANITE} />
+      {/* bevelled cap */}
+      <Block3 c={c} w={w + 2} d={d + 2} z0={z0 + h} h={2.4} m={GRANITE} />
+      {/* inset panel and the inlaid metal pictogram */}
+      <polygon
+        points={pts([toFace(-1.05, -0.06), toFace(1.05, -0.06), toFace(1.05, 1.04), toFace(-1.05, 1.04)])}
+        fill="#b5aea4"
+        stroke={GRANITE.dark}
+        strokeWidth={0.5}
+      />
+      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {g.lines.map((l, i) => (
+          <path key={`o${i}`} d={path(l)} stroke={m.dark} strokeWidth={3.4} />
+        ))}
+        {g.lines.map((l, i) => (
+          <path key={`i${i}`} d={path(l)} stroke={m.light} strokeWidth={2} />
+        ))}
+      </g>
+      <circle cx={hx} cy={hy} r={2.6} fill={m.light} stroke={m.dark} strokeWidth={0.7} />
+      {frame && <Block3 c={[cx + w / 2 + 3, cy]} w={3.4} d={3.4} z0={z0} h={h + 6} m={m} />}
+      {frame && <Block3 c={c} w={w + 10} d={3.4} z0={z0 + h + 6} h={3} m={m} />}
     </g>
   );
 }
@@ -288,140 +415,136 @@ function Pyramid4({ c, w, z0, h, m }: { c: [number, number]; w: number; z0: numb
 function Sculpture({ id, c, z, m, accent, gid, lit }: { id: string; c: [number, number]; z: number; m: M; accent: M; gid: string; lit: boolean }) {
   const [cx, cy] = c;
   const at = (dx: number, dy: number): [number, number] => [cx + dx, cy + dy];
-  const plates = (radii: number[]) => {
-    let zz = z;
-    return radii.map((r, i) => {
-      const el = <Drum key={i} c={c} r={r} z0={zz} h={5} gid={gid} m={m} />;
-      zz += 6;
-      return el;
-    });
-  };
   switch (id) {
-    // Sets: a growing stack of weight plates, crowned with a jewel.
+    // ---- Volume: the cornerstone, then obelisks that grow ----
     case 'first-set':
       return (
         <g>
-          {plates([16])}
-          <Orb c={c} z={z + 12} r={7} gid={gid} />
+          <Block3 c={c} w={20} d={20} z0={z} h={14} m={GRANITE} />
+          <Block3 c={c} w={8} d={8} z0={z + 14} h={2} m={m} />
+          <Gem c={c} z={z + 22} r={5} accent={accent} />
         </g>
       );
     case 'sets-50':
       return (
         <g>
-          {plates([17, 14, 11])}
-          <Orb c={c} z={z + 24} r={7} gid={gid} />
+          <Block3 c={c} w={18} d={18} z0={z} h={5} m={GRANITE} />
+          <Obelisk c={c} w0={6} w1={4.2} z0={z + 5} h={58} cap={9} m={m} />
         </g>
       );
     case 'sets-250':
       return (
         <g>
-          <Ring c={c} r={16} z={z} m={m} />
-          {plates([18, 16, 14, 12, 10])}
-          <Gem c={c} z={z + 44} r={8} accent={accent} />
+          {[[-12, -12], [12, -12], [-12, 12]].map(([dx, dy]) => (
+            <Block3 key={`${dx}${dy}`} c={at(dx, dy)} w={4} d={4} z0={z} h={10} m={m} />
+          ))}
+          <Block3 c={c} w={20} d={20} z0={z} h={4} m={GRANITE} />
+          <Block3 c={c} w={15} d={15} z0={z + 4} h={4} m={GRANITE} />
+          <Obelisk c={c} w0={6.4} w1={4.4} z0={z + 8} h={80} cap={11} m={m} bands={[0.18, 0.62]} />
+          <Gem c={c} z={z + 103} r={3.6} accent={accent} />
+          <Block3 c={at(12, 12)} w={4} d={4} z0={z} h={10} m={m} />
         </g>
       );
-    // Streaks: crystal flames that multiply and grow; fire-lit on training days.
+    // ---- Consistency: eternal flames that grow ----
     case 'streak-3':
-      return <Shard c={c} w={7} z0={z} h={40} m={m} gid={gid} lit={lit} />;
+      return (
+        <g>
+          <Drum c={c} r={10} z0={z} h={10} gid={gid} m={GRANITE} grad="stone" />
+          <FireBowl c={c} z={z + 13} r={10} m={m} gid={gid} lit={lit} flame={6} />
+        </g>
+      );
     case 'streak-7':
       return (
         <g>
-          <Shard c={at(8, -7)} w={5} z0={z} h={26} m={m} gid={gid} lit={lit} />
-          <Shard c={c} w={8} z0={z} h={50} m={m} gid={gid} lit={lit} />
+          <Drum c={c} r={8} z0={z} h={4} gid={gid} m={GRANITE} grad="stone" />
+          <Drum c={c} r={4.2} z0={z + 4} h={30} gid={gid} m={GRANITE} grad="stone" />
+          <Drum c={c} r={5.4} z0={z + 22} h={2.4} gid={gid} m={m} />
+          <FireBowl c={c} z={z + 38} r={9} m={m} gid={gid} lit={lit} flame={7} />
         </g>
       );
     case 'streak-30':
       return (
         <g>
-          <Ring c={c} r={16} z={z} m={m} />
-          <Shard c={at(9, -8)} w={5} z0={z} h={30} m={m} gid={gid} lit={lit} />
-          <Shard c={c} w={9} z0={z} h={58} m={m} gid={gid} lit={lit} />
-          <Shard c={at(-10, 8)} w={6} z0={z} h={34} m={m} gid={gid} lit={lit} />
+          <Block3 c={c} w={16} d={16} z0={z} h={6} m={GRANITE} />
+          <Block3 c={c} w={11} d={11} z0={z + 6} h={34} m={GRANITE} />
+          <Block3 c={c} w={13} d={13} z0={z + 26} h={2.6} m={m} />
+          <Block3 c={c} w={14} d={14} z0={z + 40} h={3} m={m} />
+          <FireBowl c={c} z={z + 46} r={11} m={m} gid={gid} lit={lit} flame={9} />
         </g>
       );
     case 'streak-100':
       return (
         <g>
-          <Ring c={c} r={16} z={z} m={m} />
-          <Shard c={at(10, -9)} w={5} z0={z} h={32} m={m} gid={gid} lit={lit} />
-          <Shard c={at(-11, -4)} w={5} z0={z} h={28} m={m} gid={gid} lit={lit} />
-          <Shard c={c} w={10} z0={z} h={66} m={m} gid={gid} lit={lit} />
-          <Shard c={at(11, 6)} w={5} z0={z} h={30} m={m} gid={gid} lit={lit} />
-          <Shard c={at(-9, 10)} w={6} z0={z} h={38} m={m} gid={gid} lit={lit} />
-          <Ring c={c} r={13} z={z + 80} m={m} width={2.2} />
+          {[[-13, -13], [13, -13], [-13, 13]].map(([dx, dy]) => (
+            <g key={`${dx}${dy}`}>
+              <Block3 c={at(dx, dy)} w={5} d={5} z0={z} h={10} m={GRANITE} />
+              <FireAt at={[cx + dx, cy + dy, z + 10]} size={3.2} lit={lit} gid={gid} />
+            </g>
+          ))}
+          <Block3 c={c} w={14} d={14} z0={z} h={50} m={GRANITE} />
+          <Block3 c={c} w={16} d={16} z0={z + 22} h={3} m={m} />
+          <Block3 c={c} w={17} d={17} z0={z + 50} h={3.4} m={m} />
+          <FireBowl c={c} z={z + 57} r={13} m={m} gid={gid} lit={lit} flame={12} />
+          <Ring c={c} r={9} z={z + 92} m={m} width={2.2} />
+          <Block3 c={at(13, 13)} w={5} d={5} z0={z} h={10} m={GRANITE} />
+          <FireAt at={[cx + 13, cy + 13, z + 10]} size={3.2} lit={lit} gid={gid} />
         </g>
       );
-    // Pushups: the plank, a rising beam on a pillar.
+    // ---- Skills: engraved steles with Olympic-style pictograms ----
     case 'pushups-30':
-      return (
-        <g>
-          <Block3 c={at(12, 0)} w={6} d={6} z0={z} h={20} m={m} />
-          <Beam a={[cx - 22, cy, z]} b={[cx + 16, cy, z + 22]} t={6} m={m} />
-        </g>
-      );
+      return <Stele c={c} w={30} z0={z} h={40} m={m} glyph="pushup" />;
     case 'pushups-50':
-      return (
-        <g>
-          <Ring c={c} r={16} z={z} m={m} />
-          <Block3 c={at(12, 0)} w={6} d={6} z0={z} h={20} m={m} />
-          <Beam a={[cx - 22, cy, z]} b={[cx + 16, cy, z + 22]} t={6} m={m} />
-          <Orb c={at(22, 0)} z={z + 32} r={7} gid={gid} />
-        </g>
-      );
-    // Pull-up: the gate, a sphere risen above the bar.
+      return <Stele c={c} w={30} z0={z} h={44} m={m} glyph="pushup" frame />;
     case 'first-pull-up':
-      return (
-        <g>
-          <Block3 c={at(-14, 0)} w={5} d={5} z0={z} h={46} m={m} />
-          <Block3 c={at(14, 0)} w={5} d={5} z0={z} h={46} m={m} />
-          <Block3 c={c} w={34} d={5} z0={z + 46} h={5} m={m} />
-          <Orb c={c} z={z + 61} r={8} gid={gid} glow />
-        </g>
-      );
-    // Pistol squat: the cantilever, a column holding a long arm out in balance.
+      return <Stele c={c} w={26} z0={z} h={48} m={m} glyph="pullup" />;
     case 'first-pistol':
-      return (
-        <g>
-          <Block3 c={at(-8, 0)} w={8} d={8} z0={z} h={30} m={m} />
-          <Beam a={[cx - 8, cy, z + 30]} b={[cx + 26, cy, z + 30]} t={5} m={m} />
-          <Block3 c={at(24, 0)} w={6} d={6} z0={z + 35} h={6} m={m} />
-          <Orb c={at(-8, 0)} z={z + 42} r={7} gid={gid} />
-        </g>
-      );
-    // First loaded set: a weight plate standing on its edge in a cradle.
+      return <Stele c={c} w={28} z0={z} h={44} m={m} glyph="pistol" />;
+    // ---- Specials ----
     case 'first-loaded':
       return (
         <g>
-          <Block3 c={c} w={22} d={10} z0={z} h={3} m={m} />
-          <UprightDisc c={c} zc={z + 19} r={16} thick={5} m={m} hole={3.4} />
+          <Block3 c={c} w={24} d={10} z0={z} h={4} m={GRANITE} />
+          <UprightDisc c={c} zc={z + 21} r={17} thick={5} m={m} hole={3.6} />
         </g>
       );
-    // First elite move: a hovering cut gem.
     case 'first-elite':
       return (
         <g>
-          <Drum c={c} r={8} z0={z} h={4} gid={gid} m={m} />
-          <circle cx={P(cx, cy, z + 4)[0]} cy={P(cx, cy, z + 4)[1]} r={9} fill={`url(#${gid}-glow)`} />
+          <Drum c={c} r={9} z0={z} h={6} gid={gid} m={GRANITE} grad="stone" />
+          <circle cx={P(cx, cy, z + 6)[0]} cy={P(cx, cy, z + 6)[1]} r={10} fill={`url(#${gid}-glow)`} />
           <g className="statue-hover">
-            <Gem c={c} z={z + 26} r={11} accent={accent} />
+            <Gem c={c} z={z + 30} r={12} accent={accent} />
           </g>
         </g>
       );
-    // Balanced week: a beam balanced on a fulcrum with two equal spheres.
-    case 'balanced-week':
+    case 'balanced-week': {
+      // Hanging scales: a post, a level beam, chains and two equal pans.
+      const pan = (dx: number) => {
+        const top = pr([cx + dx, cy, z + 48]);
+        const [px, py] = P(cx + dx, cy, z + 28);
+        return (
+          <g key={dx}>
+            <line x1={top[0]} y1={top[1]} x2={px - 5} y2={py} stroke={m.dark} strokeWidth={0.7} />
+            <line x1={top[0]} y1={top[1]} x2={px + 5} y2={py} stroke={m.dark} strokeWidth={0.7} />
+            <path d={`M${px - 7} ${py} Q ${px} ${py + 6}, ${px + 7} ${py} Z`} fill={`url(#${gid}-drum)`} stroke={m.dark} strokeWidth={EDGE} />
+            <ellipse cx={px} cy={py} rx={7} ry={2} fill={m.light} stroke={m.dark} strokeWidth={EDGE} />
+          </g>
+        );
+      };
       return (
         <g>
-          <Orb c={at(-22, 0)} z={z + 28} r={6.5} gid={gid} />
-          <Pyramid4 c={c} w={8} z0={z} h={20} m={m} />
-          <Beam a={[cx - 24, cy, z + 20]} b={[cx + 24, cy, z + 20]} t={4} m={m} />
-          <Orb c={at(22, 0)} z={z + 28} r={6.5} gid={gid} />
+          <Block3 c={c} w={16} d={16} z0={z} h={5} m={GRANITE} />
+          {pan(-18)}
+          <Drum c={c} r={2.6} z0={z + 5} h={44} gid={gid} m={GRANITE} grad="stone" />
+          <Beam a={[cx - 20, cy, z + 48]} b={[cx + 20, cy, z + 48]} t={3} m={m} />
+          <Orb c={c} z={z + 54} r={5} gid={gid} />
+          {pan(18)}
         </g>
       );
-    // First session: sunrise, a half sun rising from a block.
+    }
     case 'first-session':
       return (
         <g>
-          {/* Rays fan out behind the rising sun. */}
           {Array.from({ length: 7 }, (_, i) => {
             const ang = (Math.PI * (i + 0.5)) / 7;
             const from = pr([cx + Math.cos(ang) * 17, cy - 1, z + 6 + Math.sin(ang) * 17]);
@@ -434,58 +557,84 @@ function Sculpture({ id, c, z, m, accent, gid, lit }: { id: string; c: [number, 
             );
           })}
           <UprightDisc c={c} zc={z + 6} r={15} thick={4} m={accent} half />
-          <Block3 c={c} w={34} d={10} z0={z} h={6} m={m} />
+          <Block3 c={c} w={34} d={10} z0={z} h={6} m={GRANITE} />
         </g>
       );
-    // First week: seven rising steps.
-    case 'first-week':
-      return (
-        <g>
-          {/* Climbs away from the viewer, so every step is visible. */}
-          {Array.from({ length: 7 }, (_, i) => (
-            <Block3 key={i} c={at(-18 + i * 6, 0)} w={6} d={14} z0={z} h={4 + (6 - i) * 6} m={m} />
-          ))}
-          <Orb c={at(-18, 0)} z={z + 47} r={5} gid={gid} />
-        </g>
-      );
-    // Four weeks: four stacked drums, like an endless column.
-    case 'weeks-4':
-      return (
-        <g>
-          {[14, 11, 8, 5].map((r, i) => (
-            <g key={i}>
-              {i > 0 && <Drum c={c} r={3.5} z0={z + i * 12 - 4} h={4} gid={gid} m={m} />}
-              <Drum c={c} r={r} z0={z + i * 12} h={8} gid={gid} m={m} />
-            </g>
-          ))}
-          <Gem c={c} z={z + 56} r={5} accent={accent} />
-        </g>
-      );
-    // Twelve weeks: a ring of twelve pillars around a spire.
-    case 'weeks-12': {
-      const ring = Array.from({ length: 12 }, (_, i) => {
-        const a = (Math.PI * 2 * i) / 12;
-        return { x: cx + Math.cos(a) * 22, y: cy + Math.sin(a) * 22 };
+    // ---- Time: calendar monuments ----
+    case 'first-week': {
+      // A sundial: a stone dial with seven day marks and a metal gnomon.
+      const [dx0, dy0] = P(cx, cy, z + 8);
+      const marks = Array.from({ length: 7 }, (_, i) => {
+        const ang = Math.PI * 0.15 + (i * Math.PI * 0.7) / 6;
+        const p1 = P(cx + Math.cos(ang) * 11, cy + Math.sin(ang) * 11, z + 8);
+        const p2 = P(cx + Math.cos(ang) * 14, cy + Math.sin(ang) * 14, z + 8);
+        return <line key={i} x1={p1[0]} y1={p1[1]} x2={p2[0]} y2={p2[1]} stroke={m.dark} strokeWidth={1.2} strokeLinecap="round" />;
       });
-      const back = ring.filter((p) => p.x + p.y < cx + cy);
-      const front = ring.filter((p) => p.x + p.y >= cx + cy);
-      const pillar = (p: { x: number; y: number }, i: number) => <Block3 key={i} c={[p.x, p.y]} w={4} d={4} z0={z} h={16} m={m} />;
       return (
         <g>
-          {back.sort((a, b) => a.x + a.y - (b.x + b.y)).map(pillar)}
-          <Drum c={c} r={6} z0={z} h={44} gid={gid} m={m} />
-          <Gem c={c} z={z + 56} r={7} accent={accent} />
-          {front.sort((a, b) => a.x + a.y - (b.x + b.y)).map(pillar)}
+          <Drum c={c} r={10} z0={z} h={4} gid={gid} m={GRANITE} grad="stone" />
+          <Drum c={c} r={16} z0={z + 4} h={4} gid={gid} m={GRANITE} grad="stone" />
+          <ellipse cx={dx0} cy={dy0} rx={14.5 * 0.707} ry={14.5 * 0.354} fill="none" stroke={m.base} strokeWidth={1} />
+          {marks}
+          <polygon points={poly([[cx - 1, cy - 9, z + 8], [cx - 1, cy + 9, z + 8], [cx - 1, cy - 9, z + 24]])} fill={m.base} stroke={m.dark} strokeWidth={EDGE} />
+          <polygon points={poly([[cx + 1, cy - 9, z + 8], [cx + 1, cy + 9, z + 8], [cx + 1, cy - 9, z + 24]])} fill={m.light} stroke={m.dark} strokeWidth={EDGE} />
+        </g>
+      );
+    }
+    case 'weeks-4': {
+      // A four-pillar shrine with a domed roof.
+      const posts: Array<[number, number]> = [[-11, -11], [11, -11], [-11, 11], [11, 11]];
+      const [rx2, ry2] = P(cx, cy, z + 40);
+      return (
+        <g>
+          <Block3 c={c} w={30} d={30} z0={z} h={4} m={GRANITE} />
+          {posts.slice(0, 3).map(([dx, dy]) => (
+            <Drum key={`${dx}${dy}`} c={at(dx, dy)} r={2.6} z0={z + 4} h={30} gid={gid} m={GRANITE} grad="stone" />
+          ))}
+          <Gem c={c} z={z + 16} r={5} accent={accent} />
+          <Drum c={at(11, 11)} r={2.6} z0={z + 4} h={30} gid={gid} m={GRANITE} grad="stone" />
+          <Block3 c={c} w={30} d={30} z0={z + 34} h={4} m={GRANITE} />
+          <path
+            d={`M${rx2 - 13 * 0.707} ${ry2} A ${13 * 0.707} ${13 * 0.6} 0 0 1 ${rx2 + 13 * 0.707} ${ry2} A ${13 * 0.707} ${13 * 0.354} 0 0 1 ${rx2 - 13 * 0.707} ${ry2} Z`}
+            fill={`url(#${gid}-drum)`}
+            stroke={m.dark}
+            strokeWidth={EDGE}
+          />
+          <circle cx={rx2} cy={ry2 - 13 * 0.6 - 2} r={2.2} fill={m.light} stroke={m.dark} strokeWidth={0.6} />
+        </g>
+      );
+    }
+    case 'weeks-12': {
+      // A stone circle: twelve megaliths around a jewel on an altar.
+      const ring = Array.from({ length: 12 }, (_, i) => {
+        const ang = (Math.PI * 2 * i) / 12;
+        return { x: cx + Math.cos(ang) * 19, y: cy + Math.sin(ang) * 19, i };
+      });
+      const byDepth = (p: { x: number; y: number }, q: { x: number; y: number }) => p.x + p.y - (q.x + q.y);
+      const back = ring.filter((p) => p.x + p.y < cx + cy).sort(byDepth);
+      const front = ring.filter((p) => p.x + p.y >= cx + cy).sort(byDepth);
+      // Slim megaliths; every other pair is capped with a lintel, Stonehenge-style.
+      const stone = (p: { x: number; y: number; i: number }) => {
+        const next = ring[(p.i + 1) % 12];
+        return (
+          <g key={p.i}>
+            <Block3 c={[p.x, p.y]} w={3} d={3} z0={z} h={22} m={GRANITE} />
+            {p.i % 2 === 0 && <Beam a={[p.x, p.y, z + 22]} b={[next.x, p.y + (next.y - p.y), z + 22]} t={2.6} m={GRANITE} />}
+          </g>
+        );
+      };
+      return (
+        <g>
+          <Ring c={c} r={22} z={z} m={m} />
+          {back.map(stone)}
+          <Block3 c={c} w={8} d={8} z0={z} h={6} m={m} />
+          <Gem c={c} z={z + 14} r={5} accent={accent} />
+          {front.map(stone)}
         </g>
       );
     }
     default:
-      return (
-        <g>
-          {plates([16])}
-          <Orb c={c} z={z + 12} r={7} gid={gid} />
-        </g>
-      );
+      return <Block3 c={c} w={18} d={18} z0={z} h={12} m={GRANITE} />;
   }
 }
 
