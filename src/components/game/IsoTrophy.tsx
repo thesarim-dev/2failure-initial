@@ -1,6 +1,5 @@
-import type { ReactNode } from 'react';
 import { getTrophyDef } from '../../game/catalog';
-import { FIRE, WINDOW_LIT, themeFor, type Shades } from './BaseArt';
+import { themeFor, type Shades } from './BaseArt';
 import { P } from './IsoArt';
 
 /**
@@ -99,433 +98,394 @@ function Pedestal({ ox, oy, h, tier, number, accent }: { ox: number; oy: number;
 }
 
 // ---------------------------------------------------------------------------
-// Statues: polished metal figurines, drawn upright with their base at (0, 0)
-// on the pedestal top. Each tier gets real metal shading (highlight → base →
-// shadow); far-side limbs are darker so figures read as 3D.
+// Sculptures: abstract isometric monuments built from the same 3D primitives
+// as the buildings (blocks, drums, spheres, beams, crystals), lit the same way:
+// light tops, mid-tone front-left faces, darker front-right faces. Their form
+// encodes the achievement (taller stacks, more crystals, a ring of 12 pillars).
 // ---------------------------------------------------------------------------
 
 type M = Shades;
-type J = [number, number];
+type V3 = [number, number, number];
+const pr = (v: V3) => P(v[0], v[1], v[2]);
+const poly = (vs: V3[]) => pts(vs.map(pr));
+const EDGE = 0.45;
+/** Sculptures are drawn larger than life so they read as monuments on their pedestals. */
+const SCULPT_SCALE = 1.55;
 
-/** Metal gradients for a tier, shared by every part of the statue. */
-function MetalDefs({ id, m }: { id: string; m: M }) {
+function SculptDefs({ gid, m, accent }: { gid: string; m: M; accent: M }) {
   return (
     <defs>
-      <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stopColor={m.light} />
-        <stop offset="0.45" stopColor={m.base} />
-        <stop offset="1" stopColor={m.dark} />
-      </linearGradient>
-      <linearGradient id={`${id}-far`} x1="0" y1="0" x2="1" y2="1">
+      <linearGradient id={`${gid}-drum`} x1="0" y1="0" x2="1" y2="0">
         <stop offset="0" stopColor={m.base} />
+        <stop offset="0.35" stopColor={m.light} />
+        <stop offset="0.75" stopColor={m.base} />
         <stop offset="1" stopColor={m.dark} />
       </linearGradient>
-      {/* Cylinder sheen for cups, posts and bowls */}
-      <linearGradient id={`${id}-cyl`} x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stopColor={m.dark} />
-        <stop offset="0.3" stopColor={m.light} />
-        <stop offset="0.6" stopColor={m.base} />
-        <stop offset="1" stopColor={m.dark} />
+      <radialGradient id={`${gid}-orb`} cx="0.35" cy="0.3" r="0.8">
+        <stop offset="0" stopColor="#ffffff" />
+        <stop offset="0.18" stopColor={accent.light} />
+        <stop offset="0.62" stopColor={accent.base} />
+        <stop offset="1" stopColor={accent.dark} />
+      </radialGradient>
+      <linearGradient id={`${gid}-fire`} x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stopColor="#ff5a1a" />
+        <stop offset="0.55" stopColor="#ffb347" />
+        <stop offset="1" stopColor="#fff1a8" />
       </linearGradient>
+      <radialGradient id={`${gid}-glow`} cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stopColor={accent.light} stopOpacity="0.55" />
+        <stop offset="1" stopColor={accent.light} stopOpacity="0" />
+      </radialGradient>
     </defs>
   );
 }
 
-/** A tapered body segment from a to b with rounded joints. */
-function Bone({ a, b, wa, wb, fill, edge }: { a: J; b: J; wa: number; wb: number; fill: string; edge: string }) {
+/** Axis-aligned block: top, front-left (+y) and front-right (+x) faces. */
+function Block3({ c, w, d, z0, h, m }: { c: [number, number]; w: number; d: number; z0: number; h: number; m: M }) {
+  const [x0, x1, y0, y1, z1] = [c[0] - w / 2, c[0] + w / 2, c[1] - d / 2, c[1] + d / 2, z0 + h];
+  return (
+    <g stroke={m.dark} strokeWidth={EDGE} strokeLinejoin="round">
+      <polygon points={poly([[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]])} fill={m.base} />
+      <polygon points={poly([[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]])} fill={m.dark} />
+      <polygon points={poly([[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]])} fill={m.light} />
+    </g>
+  );
+}
+
+/** Upright drum (cylinder). */
+function Drum({ c, r, z0, h, gid, m }: { c: [number, number]; r: number; z0: number; h: number; gid: string; m: M }) {
+  const [bx, by] = P(c[0], c[1], z0);
+  const [tx, ty] = P(c[0], c[1], z0 + h);
+  const rx = r * 0.707;
+  const ry = r * 0.354;
+  return (
+    <g stroke={m.dark} strokeWidth={EDGE}>
+      <path
+        d={`M${bx - rx} ${by} L${tx - rx} ${ty} L${tx + rx} ${ty} L${bx + rx} ${by} A${rx} ${ry} 0 0 1 ${bx - rx} ${by} Z`}
+        fill={`url(#${gid}-drum)`}
+      />
+      <ellipse cx={tx} cy={ty} rx={rx} ry={ry} fill={m.light} />
+    </g>
+  );
+}
+
+function Orb({ c, z, r, gid, glow = false }: { c: [number, number]; z: number; r: number; gid: string; glow?: boolean }) {
+  const [x, y] = P(c[0], c[1], z);
+  const sr = r * 0.62;
+  return (
+    <g>
+      {glow && <circle cx={x} cy={y} r={sr * 2.4} fill={`url(#${gid}-glow)`} />}
+      <circle cx={x} cy={y} r={sr} fill={`url(#${gid}-orb)`} stroke="rgba(0,0,0,0.35)" strokeWidth={0.5} />
+    </g>
+  );
+}
+
+/** A beam in the x–z plane from a to b (same y), thickness t: top, front and end faces. */
+function Beam({ a, b, t, m }: { a: V3; b: V3; t: number; m: M }) {
   const dx = b[0] - a[0];
-  const dy = b[1] - a[1];
-  const len = Math.hypot(dx, dy) || 1;
-  const nx = -dy / len;
-  const ny = dx / len;
-  const quad: J[] = [
-    [a[0] + (nx * wa) / 2, a[1] + (ny * wa) / 2],
-    [b[0] + (nx * wb) / 2, b[1] + (ny * wb) / 2],
-    [b[0] - (nx * wb) / 2, b[1] - (ny * wb) / 2],
-    [a[0] - (nx * wa) / 2, a[1] - (ny * wa) / 2]
-  ];
+  const dz = b[2] - a[2];
+  const len = Math.hypot(dx, dz) || 1;
+  const n: [number, number] = [-dz / len, dx / len];
+  const off = (v: V3, dy: number, up: number): V3 => [v[0] + n[0] * up, v[1] + dy, v[2] + n[1] * up];
+  const A1 = off(a, t / 2, 0), B0 = off(b, -t / 2, 0), B1 = off(b, t / 2, 0);
+  const A0u = off(a, -t / 2, t), A1u = off(a, t / 2, t), B0u = off(b, -t / 2, t), B1u = off(b, t / 2, t);
   return (
-    <g fill={fill} stroke={edge} strokeWidth={0.5}>
-      <circle cx={a[0]} cy={a[1]} r={wa / 2} />
-      <circle cx={b[0]} cy={b[1]} r={wb / 2} />
-      <polygon points={pts(quad)} stroke="none" />
-      <path d={`M${quad[0][0]} ${quad[0][1]} L${quad[1][0]} ${quad[1][1]} M${quad[2][0]} ${quad[2][1]} L${quad[3][0]} ${quad[3][1]}`} fill="none" />
+    <g stroke={m.dark} strokeWidth={EDGE} strokeLinejoin="round">
+      <polygon points={poly([A1, B1, B1u, A1u])} fill={m.base} />
+      <polygon points={poly([B0, B1, B1u, B0u])} fill={m.dark} />
+      <polygon points={poly([A0u, B0u, B1u, A1u])} fill={m.light} />
     </g>
   );
 }
 
-/** A limb: two bones (upper and lower) through a joint. */
-function Limb2({ a, j, b, w, fill, edge }: { a: J; j: J; b: J; w: [number, number, number]; fill: string; edge: string }) {
+/** A crystal shard: a stretched square bipyramid. Burns in fire colours when lit. */
+function Shard({ c, w, z0, h, m, gid, lit }: { c: [number, number]; w: number; z0: number; h: number; m: M; gid: string; lit: boolean }) {
+  const [cx, cy] = c;
+  const mid = z0 + h * 0.3;
+  const top: V3 = [cx, cy, z0 + h];
+  const bot: V3 = [cx, cy, z0];
+  const S: V3 = [cx - w, cy + w, mid];
+  const E: V3 = [cx + w, cy + w, mid];
+  const F: V3 = [cx + w, cy - w, mid];
+  const fills = lit
+    ? { a: `url(#${gid}-fire)`, b: '#ff8a3d', c: '#e85520', d: '#c2410c' }
+    : { a: m.light, b: m.base, c: m.dark, d: m.dark };
   return (
-    <g>
-      <Bone a={a} b={j} wa={w[0]} wb={w[1]} fill={fill} edge={edge} />
-      <Bone a={j} b={b} wa={w[1]} wb={w[2]} fill={fill} edge={edge} />
+    <g stroke={lit ? '#9a3412' : m.dark} strokeWidth={EDGE} strokeLinejoin="round" className={lit ? 'base-flame' : undefined}>
+      <polygon points={poly([bot, S, E])} fill={fills.c} />
+      <polygon points={poly([bot, E, F])} fill={fills.d} />
+      <polygon points={poly([top, S, E])} fill={fills.a} />
+      <polygon points={poly([top, E, F])} fill={fills.b} />
     </g>
   );
 }
 
-function HeadBall({ c, r, fill, m }: { c: J; r: number; fill: string; m: M }) {
+/** A cut gem (octahedron) in the accent colour, with a glint. */
+function Gem({ c, z, r, accent }: { c: [number, number]; z: number; r: number; accent: M }) {
+  const [cx, cy] = c;
+  const top: V3 = [cx, cy, z + r * 1.3];
+  const bot: V3 = [cx, cy, z - r * 1.3];
+  const S: V3 = [cx - r, cy + r, z];
+  const E: V3 = [cx + r, cy + r, z];
+  const F: V3 = [cx + r, cy - r, z];
+  const [gx, gy] = P(cx - r * 0.3, cy + r * 0.3, z + r * 0.6);
   return (
-    <g>
-      <circle cx={c[0]} cy={c[1]} r={r} fill={fill} stroke={m.dark} strokeWidth={0.6} />
-      <circle cx={c[0] - r * 0.35} cy={c[1] - r * 0.38} r={r * 0.32} fill="#ffffff" opacity={0.55} />
+    <g stroke={accent.dark} strokeWidth={EDGE} strokeLinejoin="round">
+      <polygon points={poly([bot, S, E])} fill={accent.base} />
+      <polygon points={poly([bot, E, F])} fill={accent.dark} />
+      <polygon points={poly([top, S, E])} fill={accent.light} />
+      <polygon points={poly([top, E, F])} fill={accent.base} />
+      <path d={`M${gx - 2.4} ${gy} L${gx} ${gy - 2.4} L${gx + 2.4} ${gy} L${gx} ${gy + 2.4} Z`} fill="#ffffff" stroke="none" opacity={0.9} className="base-sparkle" />
     </g>
   );
 }
 
-type Pose = 'plank' | 'hang' | 'pistol' | 'lift' | 'flex';
-
-function Athlete({ pose, m, gid }: { pose: Pose; m: M; gid: string }) {
-  const near = `url(#${gid})`;
-  const far = `url(#${gid}-far)`;
-  const edge = m.dark;
-  switch (pose) {
-    case 'plank':
-      // Side view, top of a pushup: straight line from head to heels.
-      return (
-        <g>
-          <Limb2 a={[9.5, -16.5]} j={[10.5, -9]} b={[10.5, -1.6]} w={[3, 2.4, 2]} fill={far} edge={edge} />
-          <Limb2 a={[-9, -11.8]} j={[-17, -7.8]} b={[-25, -3.4]} w={[3.2, 2.4, 1.8]} fill={far} edge={edge} />
-          <polygon points="13,-18.6 12.6,-13 4,-11.2 -9,-9 -10.6,-13.6 0,-17.8" fill={near} stroke={edge} strokeWidth={0.6} />
-          <path d="M3 -16.6 Q 7 -18.2 11.5 -17.6" stroke={m.light} strokeWidth={1} fill="none" opacity={0.8} />
-          <Limb2 a={[-9, -11.2]} j={[-17, -7]} b={[-25, -2.6]} w={[3.6, 2.8, 2]} fill={near} edge={edge} />
-          <ellipse cx={-27} cy={-1.2} rx={2.3} ry={1.1} fill={near} stroke={edge} strokeWidth={0.5} />
-          <Bone a={[11.5, -17]} b={[15, -18.6]} wa={2.6} wb={2.2} fill={near} edge={edge} />
-          <HeadBall c={[17.4, -19.4]} r={3.4} fill={near} m={m} />
-          <Limb2 a={[11, -16]} j={[12, -8.6]} b={[12, -1.4]} w={[3.4, 2.8, 2.2]} fill={near} edge={edge} />
-          <ellipse cx={13.4} cy={-0.7} rx={2.3} ry={0.9} fill={near} stroke={edge} strokeWidth={0.5} />
-        </g>
-      );
-    case 'hang':
-      // Front view, mid pull-up, lats spread.
-      return (
-        <g>
-          <rect x={-15.5} y={-58} width={2.4} height={58} rx={1} fill={`url(#${gid}-cyl)`} stroke={edge} strokeWidth={0.4} />
-          <rect x={13.1} y={-58} width={2.4} height={58} rx={1} fill={`url(#${gid}-cyl)`} stroke={edge} strokeWidth={0.4} />
-          <rect x={-17} y={-58.6} width={34} height={2.2} rx={1.1} fill={near} stroke={edge} strokeWidth={0.4} />
-          <Limb2 a={[-5.6, -56]} j={[-9, -49]} b={[-6, -43]} w={[1.9, 2.5, 3.1]} fill={near} edge={edge} />
-          <Limb2 a={[5.6, -56]} j={[9, -49]} b={[6, -43]} w={[1.9, 2.5, 3.1]} fill={near} edge={edge} />
-          <Limb2 a={[-2.3, -28]} j={[-2.7, -18]} b={[-1.9, -9]} w={[3.3, 2.6, 2]} fill={far} edge={edge} />
-          <Limb2 a={[2.3, -28]} j={[2.7, -18]} b={[1.9, -9]} w={[3.3, 2.6, 2]} fill={near} edge={edge} />
-          <polygon points="-7.2,-43.8 7.2,-43.8 5.6,-36 3.7,-27.6 -3.7,-27.6 -5.6,-36" fill={near} stroke={edge} strokeWidth={0.6} />
-          <path d="M-5 -39.5 Q 0 -37.8 5 -39.5 M0 -38.6 V-29 M-2.4 -34.6 H2.4 M-2.2 -31.6 H2.2" stroke={edge} strokeWidth={0.5} fill="none" opacity={0.55} />
-          <HeadBall c={[0, -47.6]} r={3.3} fill={near} m={m} />
-        </g>
-      );
-    case 'pistol':
-      // Side view: deep on one leg, the other straight out, arms forward.
-      return (
-        <g>
-          <Limb2 a={[-3, -9.6]} j={[6, -10.6]} b={[15, -11.6]} w={[3.2, 2.6, 2]} fill={far} edge={edge} />
-          <ellipse cx={16} cy={-13.4} rx={1.1} ry={2.2} fill={far} stroke={edge} strokeWidth={0.5} />
-          <Limb2 a={[2.6, -21.4]} j={[9, -20.4]} b={[15.4, -19.8]} w={[2.6, 2.2, 1.8]} fill={far} edge={edge} />
-          <polygon points="-5,-7.6 -1,-12.2 1,-23.6 5.6,-21.6 3.6,-14 -0.6,-6.6" fill={near} stroke={edge} strokeWidth={0.6} />
-          <Limb2 a={[-3, -8]} j={[6.2, -6.6]} b={[1, -1.2]} w={[3.6, 2.8, 2.1]} fill={near} edge={edge} />
-          <ellipse cx={3} cy={-0.6} rx={3} ry={1.1} fill={near} stroke={edge} strokeWidth={0.5} />
-          <Bone a={[3, -22]} b={[5, -24.2]} wa={2.4} wb={2.2} fill={near} edge={edge} />
-          <HeadBall c={[6, -26.6]} r={3.4} fill={near} m={m} />
-          <Limb2 a={[3.6, -20.4]} j={[9.6, -19]} b={[16, -18.4]} w={[3, 2.5, 2]} fill={near} edge={edge} />
-          <circle cx={16.8} cy={-18.3} r={1.5} fill={near} stroke={edge} strokeWidth={0.5} />
-        </g>
-      );
-    case 'lift':
-      // Side view: pressing a dumbbell overhead, other hand on the hip.
-      return (
-        <g>
-          <Limb2 a={[-0.4, -15]} j={[-1.8, -8]} b={[-2.4, -1.2]} w={[3.3, 2.6, 2]} fill={far} edge={edge} />
-          <Limb2 a={[-0.6, -28]} j={[-4.6, -22.4]} b={[-2, -17]} w={[2.7, 2.3, 1.9]} fill={far} edge={edge} />
-          <polygon points="-3.2,-15 3.2,-15 4.8,-28.6 -2.8,-29.8" fill={near} stroke={edge} strokeWidth={0.6} />
-          <path d="M1 -27.6 Q 3.6 -25.6 3.2 -21.6" stroke={m.light} strokeWidth={0.9} fill="none" opacity={0.8} />
-          <Limb2 a={[1, -15]} j={[2.6, -8]} b={[3, -1.2]} w={[3.6, 2.8, 2.1]} fill={near} edge={edge} />
-          <ellipse cx={4.6} cy={-0.6} rx={2.6} ry={1} fill={near} stroke={edge} strokeWidth={0.5} />
-          <Bone a={[1, -29]} b={[2, -31.4]} wa={2.4} wb={2.2} fill={near} edge={edge} />
-          <HeadBall c={[2.6, -34]} r={3.3} fill={near} m={m} />
-          <Limb2 a={[2, -28.6]} j={[3.6, -36.6]} b={[3.2, -44]} w={[3.1, 2.6, 2]} fill={near} edge={edge} />
-          <rect x={-2.5} y={-45.7} width={11.4} height={1.6} rx={0.8} fill={m.dark} />
-          <rect x={-4.4} y={-49} width={3.2} height={8.2} rx={1.1} fill={`url(#${gid}-cyl)`} stroke={edge} strokeWidth={0.5} />
-          <rect x={7.6} y={-49} width={3.2} height={8.2} rx={1.1} fill={`url(#${gid}-cyl)`} stroke={edge} strokeWidth={0.5} />
-        </g>
-      );
-    case 'flex':
-    default:
-      // Front view: double-biceps victory pose.
-      return (
-        <g>
-          <Limb2 a={[-2.6, -16]} j={[-3.8, -8.4]} b={[-3.4, -1.2]} w={[3.6, 2.8, 2.2]} fill={near} edge={edge} />
-          <Limb2 a={[2.6, -16]} j={[3.8, -8.4]} b={[3.4, -1.2]} w={[3.6, 2.8, 2.2]} fill={far} edge={edge} />
-          <ellipse cx={-4} cy={-0.7} rx={2.4} ry={0.9} fill={near} stroke={edge} strokeWidth={0.5} />
-          <ellipse cx={4} cy={-0.7} rx={2.4} ry={0.9} fill={far} stroke={edge} strokeWidth={0.5} />
-          {[-1, 1].map((side) => (
-            <g key={side}>
-              <Bone a={[side * 7.4, -31.6]} b={[side * 14.4, -30.2]} wa={3.4} wb={2.8} fill={near} edge={edge} />
-              <Bone a={[side * 14.4, -30.2]} b={[side * 15, -39.4]} wa={2.8} wb={2.3} fill={near} edge={edge} />
-              <ellipse cx={side * 11} cy={-32.4} rx={3.1} ry={2.3} fill={near} stroke={edge} strokeWidth={0.5} />
-              <circle cx={side * 15.1} cy={-40.2} r={1.9} fill={near} stroke={edge} strokeWidth={0.5} />
-            </g>
-          ))}
-          <polygon points="-8,-32.8 8,-32.8 6.6,-26 3.8,-16.6 -3.8,-16.6 -6.6,-26" fill={near} stroke={edge} strokeWidth={0.6} />
-          <path d="M-5.6 -28.4 Q 0 -26.2 5.6 -28.4 M0 -27.6 V-18 M-2.6 -23.8 H2.6 M-2.4 -20.8 H2.4" stroke={edge} strokeWidth={0.5} fill="none" opacity={0.55} />
-          <Bone a={[0, -32.6]} b={[0, -35]} wa={2.8} wb={2.6} fill={near} edge={edge} />
-          <HeadBall c={[0, -37.6]} r={3.6} fill={near} m={m} />
-        </g>
-      );
-  }
-}
-
-function Cup({ m, gid, grand = false }: { m: M; gid: string; grand?: boolean }) {
-  const fill = `url(#${gid})`;
-  const cyl = `url(#${gid}-cyl)`;
+/** A ring lying flat (xy plane) or a halo. */
+function Ring({ c, r, z, m, width = 1.6 }: { c: [number, number]; r: number; z: number; m: M; width?: number }) {
+  const [x, y] = P(c[0], c[1], z);
   return (
-    <g transform={grand ? 'scale(1.18)' : undefined}>
-      <rect x={-8} y={-3} width={16} height={3} rx={0.8} fill={cyl} stroke={m.dark} strokeWidth={0.5} />
-      <rect x={-6} y={-5.6} width={12} height={2.8} rx={0.8} fill={cyl} stroke={m.dark} strokeWidth={0.5} />
-      <path d="M-1.8 -5.6 C -1.6 -9, -1.2 -11.5, -2.4 -14 H2.4 C 1.2 -11.5, 1.6 -9, 1.8 -5.6 Z" fill={cyl} stroke={m.dark} strokeWidth={0.5} />
-      <ellipse cx={0} cy={-9.6} rx={2.6} ry={1} fill={m.base} stroke={m.dark} strokeWidth={0.4} />
-      <g fill="none" stroke={m.dark} strokeWidth={3.2} strokeLinecap="round">
-        <path d="M-11.4 -29 C -19 -29, -19 -19.5, -8.4 -18.6" />
-        <path d="M11.4 -29 C 19 -29, 19 -19.5, 8.4 -18.6" />
-      </g>
-      <g fill="none" stroke={m.base} strokeWidth={1.8} strokeLinecap="round">
-        <path d="M-11.4 -29 C -19 -29, -19 -19.5, -8.4 -18.6" />
-        <path d="M11.4 -29 C 19 -29, 19 -19.5, 8.4 -18.6" />
-      </g>
-      <path d="M-12 -32 H12 C 12 -20.5, 7 -14, 0 -14 C -7 -14, -12 -20.5, -12 -32 Z" fill={cyl} stroke={m.dark} strokeWidth={0.6} />
-      <path d="M-8.6 -29.6 C -8.6 -23, -5.6 -18.6, -2.6 -17.2" stroke="#ffffff" strokeWidth={1.4} fill="none" opacity={0.55} strokeLinecap="round" />
-      <ellipse cx={0} cy={-32} rx={12} ry={2.4} fill={m.light} stroke={m.dark} strokeWidth={0.5} />
-      <ellipse cx={0} cy={-32} rx={10.2} ry={1.5} fill={m.dark} opacity={0.6} />
-      {grand && (
-        <g>
-          <path d="M-12 -31 C -18 -34, -24 -40, -26 -46 C -20 -43, -16 -40, -12.6 -36.6 Z" fill={fill} stroke={m.dark} strokeWidth={0.5} />
-          <path d="M12 -31 C 18 -34, 24 -40, 26 -46 C 20 -43, 16 -40, 12.6 -36.6 Z" fill={fill} stroke={m.dark} strokeWidth={0.5} />
-          <path d="M-9 -33.5 Q 0 -41 9 -33.5 Z" fill={fill} stroke={m.dark} strokeWidth={0.5} />
-          <circle cx={0} cy={-40.6} r={2.4} fill={fill} stroke={m.dark} strokeWidth={0.5} />
-        </g>
-      )}
+    <g fill="none">
+      <ellipse cx={x} cy={y} rx={r * 0.707} ry={r * 0.354} stroke={m.dark} strokeWidth={width + 1.2} />
+      <ellipse cx={x} cy={y} rx={r * 0.707} ry={r * 0.354} stroke={m.light} strokeWidth={width} />
     </g>
   );
 }
 
-function Medal({ m, gid, accent }: { m: M; gid: string; accent: M }) {
+/** A disc standing upright in the x–z plane (facing the front-left), e.g. a weight plate or the sun. */
+function UprightDisc({ c, zc, r, thick, m, hole = 0, half = false }: { c: [number, number]; zc: number; r: number; thick: number; m: M; hole?: number; half?: boolean }) {
+  const ring = (y: number, rad: number) =>
+    Array.from({ length: 33 }, (_, i) => {
+      const a = half ? Math.PI * (i / 32) : (Math.PI * 2 * i) / 32;
+      return [c[0] + Math.cos(a) * rad, y, zc + Math.sin(a) * rad] as V3;
+    });
+  const back = ring(c[1] - thick / 2, r);
+  const front = ring(c[1] + thick / 2, r);
   return (
-    <g>
-      <rect x={-7} y={-2.4} width={14} height={2.4} rx={0.8} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.5} />
-      <rect x={-1.3} y={-42} width={2.6} height={40} rx={1} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.4} />
-      <rect x={-9} y={-43.4} width={18} height={2.4} rx={1.1} fill={`url(#${gid})`} stroke={m.dark} strokeWidth={0.4} />
-      <path d="M-8 -41 L-1.5 -26 L1.6 -26 L-4.6 -41 Z" fill={accent.base} stroke={accent.dark} strokeWidth={0.4} />
-      <path d="M8 -41 L1.5 -26 L-1.6 -26 L4.6 -41 Z" fill={accent.dark} stroke={accent.dark} strokeWidth={0.4} />
-      <circle cx={0} cy={-18} r={9.4} fill={`url(#${gid})`} stroke={m.dark} strokeWidth={0.8} />
-      <circle cx={0} cy={-18} r={7} fill="none" stroke={m.dark} strokeWidth={0.6} opacity={0.7} />
-      <path d="M0 -23.4 l1.7 3.5 l3.8 0.4 l-2.8 2.5 l0.9 3.7 l-3.6 -2 l-3.6 2 l0.9 -3.7 l-2.8 -2.5 l3.8 -0.4 Z" fill={m.light} stroke={m.dark} strokeWidth={0.4} />
-      <circle cx={-3.6} cy={-21.6} r={1.6} fill="#ffffff" opacity={0.5} />
-    </g>
-  );
-}
-
-function Laurel({ m, gid, y = -18, r = 15 }: { m: M; gid: string; y?: number; r?: number }) {
-  const leaves: ReactNode[] = [];
-  for (let k = 0; k < 7; k++) {
-    const a = Math.PI * (0.62 + k * 0.11);
-    for (const side of [-1, 1]) {
-      const x = side * Math.cos(a) * r * -1;
-      const yy = y + Math.sin(a) * r * 0.9;
-      leaves.push(
-        <g key={`${k}${side}`} transform={`rotate(${side * (40 - k * 12)} ${x} ${yy})`}>
-          <ellipse cx={x} cy={yy} rx={3.6} ry={1.7} fill={`url(#${gid})`} stroke={m.dark} strokeWidth={0.5} />
-          <path d={`M${x - 3} ${yy} H${x + 3}`} stroke={m.dark} strokeWidth={0.35} opacity={0.6} />
-        </g>
-      );
-    }
-  }
-  return <g>{leaves}</g>;
-}
-
-/** A metal bowl the flame burns in, so flames never float. */
-function Brazier({ m, gid }: { m: M; gid: string }) {
-  return (
-    <g>
-      <rect x={-6} y={-2.4} width={12} height={2.4} rx={0.8} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.5} />
-      <path d="M-1.6 -2.4 L-1.2 -8 H1.2 L1.6 -2.4 Z" fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.4} />
-      <path d="M-10 -14 Q 0 -4, 10 -14 Z" fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.6} />
-      <ellipse cx={0} cy={-14} rx={10} ry={1.9} fill={m.light} stroke={m.dark} strokeWidth={0.5} />
-    </g>
-  );
-}
-
-function Flame({ m, gid, size = 1, torch = false, crown = false, laurel = false, lit }: { m: M; gid: string; size?: number; torch?: boolean; crown?: boolean; laurel?: boolean; lit: boolean }) {
-  const top = torch ? -24 : -14;
-  return (
-    <g>
-      {laurel && <Laurel m={m} gid={gid} y={top - 14 * size} r={17 * size} />}
-      {torch ? (
-        <g>
-          <rect x={-6} y={-2.4} width={12} height={2.4} rx={0.8} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.5} />
-          <path d="M-2.2 -2.4 L-3.4 -20 H3.4 L2.2 -2.4 Z" fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.5} />
-          <path d="M-3.4 -12 H3.4 M-3.1 -7 H3.1" stroke={m.dark} strokeWidth={0.6} opacity={0.6} />
-          <path d="M-6.4 -24 L-3.4 -19.6 H3.4 L6.4 -24 Z" fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.5} />
-          <ellipse cx={0} cy={-24} rx={6.4} ry={1.4} fill={m.light} stroke={m.dark} strokeWidth={0.4} />
-        </g>
-      ) : (
-        <Brazier m={m} gid={gid} />
-      )}
-      <g transform={`translate(0 ${top}) scale(${size})`} className={lit ? 'base-flame' : undefined}>
-        <path
-          d="M0 -30 C 7 -22, 11 -17, 9.4 -9 C 8 -2.4, 3.6 0, 0 0 C -3.6 0, -8 -2.4, -9.4 -9 C -11 -17, -5 -20, -3.4 -25 C -2.6 -20, -1 -18.6, 0 -18.6 C -1.6 -23.6, -1.6 -27, 0 -30 Z"
-          fill={lit ? FIRE : `url(#${gid})`}
-          stroke={lit ? '#c2410c' : m.dark}
-          strokeWidth={0.7}
-        />
-        <path d="M0 -17 C 3.4 -12, 5 -8.6, 4.2 -5 C 3.4 -1.6, 1.6 -0.8, 0 -0.8 C -1.6 -0.8, -4.2 -2.4, -4.2 -5.8 C -4.2 -9.4, -1.6 -12, 0 -17 Z" fill={lit ? WINDOW_LIT : m.light} />
-      </g>
-      {crown && (
-        <g transform={`translate(0 ${top - 33 * size})`}>
-          <path d="M-9.4 0 L-9.4 -7.6 L-4.8 -3.4 L0 -10 L4.8 -3.4 L9.4 -7.6 L9.4 0 Z" fill={`url(#${gid})`} stroke={m.dark} strokeWidth={0.7} />
-          <rect x={-9.4} y={-1.6} width={18.8} height={2.2} fill={m.dark} opacity={0.5} />
-          {[-9.4, 0, 9.4].map((x, i) => (
-            <circle key={i} cx={x} cy={i === 1 ? -10 : -7.6} r={1.5} fill={m.light} stroke={m.dark} strokeWidth={0.4} />
-          ))}
-          <circle cx={0} cy={-3} r={1.4} fill="#e5484d" />
-        </g>
-      )}
-    </g>
-  );
-}
-
-function Star({ m, gid }: { m: M; gid: string }) {
-  const cx = 0;
-  const cy = -28;
-  const outer = 15;
-  const inner = 6.4;
-  const p = (i: number, r: number): J => {
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
-  };
-  const facets: ReactNode[] = [];
-  for (let i = 0; i < 10; i++) {
-    const a = p(i, i % 2 ? inner : outer);
-    const b = p(i + 1, (i + 1) % 2 ? inner : outer);
-    facets.push(<polygon key={i} points={pts([[cx, cy], a, b])} fill={i % 2 ? m.dark : m.light} opacity={i % 2 ? 0.9 : 1} />);
-  }
-  return (
-    <g>
-      <rect x={-6} y={-2.4} width={12} height={2.4} rx={0.8} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.5} />
-      <path d="M-2 -2.4 L-1.4 -13 H1.4 L2 -2.4 Z" fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.4} />
-      <polygon points={pts(Array.from({ length: 10 }, (_, i) => p(i, i % 2 ? inner : outer)))} fill={m.base} stroke={m.dark} strokeWidth={0.9} />
-      {facets}
-      <polygon points={pts(Array.from({ length: 10 }, (_, i) => p(i, i % 2 ? inner : outer)))} fill="none" stroke={m.dark} strokeWidth={0.7} />
-    </g>
-  );
-}
-
-function Scales({ m, gid }: { m: M; gid: string }) {
-  return (
-    <g>
-      <rect x={-7} y={-2.6} width={14} height={2.6} rx={0.8} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.5} />
-      <rect x={-1.5} y={-41} width={3} height={38.6} rx={1} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.4} />
-      <path d="M-18 -36.6 Q 0 -39.4 18 -36.6" stroke={m.dark} strokeWidth={2.8} fill="none" strokeLinecap="round" />
-      <path d="M-18 -36.6 Q 0 -39.4 18 -36.6" stroke={m.light} strokeWidth={1.4} fill="none" strokeLinecap="round" />
-      <circle cx={0} cy={-42} r={2.6} fill={`url(#${gid})`} stroke={m.dark} strokeWidth={0.5} />
-      {[-15.5, 15.5].map((x) => (
-        <g key={x}>
-          <path d={`M${x} -36.4 L${x - 6.4} -24.4 M${x} -36.4 L${x + 6.4} -24.4`} stroke={m.dark} strokeWidth={0.6} />
-          <path d={`M${x - 8.4} -24.4 H${x + 8.4} Q${x} -16.6 ${x - 8.4} -24.4 Z`} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.6} />
-          <ellipse cx={x} cy={-24.4} rx={8.4} ry={1.3} fill={m.light} stroke={m.dark} strokeWidth={0.4} />
-        </g>
+    <g stroke={m.dark} strokeWidth={EDGE} strokeLinejoin="round">
+      <polygon points={poly(back)} fill={m.dark} />
+      {/* rim: join front and back outlines */}
+      {front.slice(0, -1).map((v, i) => (
+        <polygon key={i} points={poly([back[i], back[i + 1], front[i + 1], v])} fill={m.base} stroke="none" />
       ))}
+      <polygon points={poly(front)} fill={m.light} />
+      {hole > 0 && <polygon points={poly(ring(c[1] + thick / 2, hole))} fill={m.dark} />}
+      {!half && <polygon points={poly(ring(c[1] + thick / 2 + 0.01, r * 0.72))} fill="none" stroke={m.base} strokeWidth={0.9} />}
     </g>
   );
 }
 
-function Kettlebell({ m, gid }: { m: M; gid: string }) {
+function Pyramid4({ c, w, z0, h, m }: { c: [number, number]; w: number; z0: number; h: number; m: M }) {
+  const [cx, cy] = c;
+  const top: V3 = [cx, cy, z0 + h];
   return (
-    <g>
-      <path d="M-7.6 -27 C -7.6 -38.6, 7.6 -38.6, 7.6 -27" stroke={m.dark} strokeWidth={4.6} fill="none" strokeLinecap="round" />
-      <path d="M-7.6 -27 C -7.6 -38.6, 7.6 -38.6, 7.6 -27" stroke={m.base} strokeWidth={2.8} fill="none" strokeLinecap="round" />
-      <path d="M-5.4 -34.6 C -3 -36.6, 3 -36.6, 5.4 -34.6" stroke={m.light} strokeWidth={0.9} fill="none" opacity={0.8} />
-      <circle cx={0} cy={-14.4} r={13.4} fill={`url(#${gid})`} stroke={m.dark} strokeWidth={0.8} />
-      <ellipse cx={-4.6} cy={-19.6} rx={4} ry={3} fill="#ffffff" opacity={0.45} />
-      <rect x={-8} y={-2.4} width={16} height={2.4} rx={1} fill={m.dark} />
+    <g stroke={m.dark} strokeWidth={EDGE} strokeLinejoin="round">
+      <polygon points={poly([[cx - w, cy + w, z0], [cx + w, cy + w, z0], top])} fill={m.base} />
+      <polygon points={poly([[cx + w, cy + w, z0], [cx + w, cy - w, z0], top])} fill={m.dark} />
     </g>
   );
 }
 
-function Obelisk({ m, gid }: { m: M; gid: string }) {
-  return (
-    <g>
-      <rect x={-9} y={-3} width={18} height={3} rx={0.8} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.5} />
-      <polygon points="-6.4,-3 0,-3 0,-46 -4.6,-44" fill={`url(#${gid})`} stroke={m.dark} strokeWidth={0.5} />
-      <polygon points="0,-3 6.4,-3 4.6,-44 0,-46" fill={`url(#${gid}-far)`} stroke={m.dark} strokeWidth={0.5} />
-      <polygon points="-4.6,-44 0,-46 0,-54" fill={m.light} stroke={m.dark} strokeWidth={0.5} />
-      <polygon points="0,-46 4.6,-44 0,-54" fill={m.base} stroke={m.dark} strokeWidth={0.5} />
-      <path d="M-3 -38 V-10" stroke="#ffffff" strokeWidth={1} opacity={0.4} />
-    </g>
-  );
-}
-
-function Wreath({ m, gid }: { m: M; gid: string }) {
-  return (
-    <g>
-      <rect x={-6} y={-2.4} width={12} height={2.4} rx={0.8} fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.5} />
-      <path d="M-1.8 -2.4 L-1.2 -16 H1.2 L1.8 -2.4 Z" fill={`url(#${gid}-cyl)`} stroke={m.dark} strokeWidth={0.4} />
-      <Laurel m={m} gid={gid} y={-30} r={14} />
-      <path d="M-3 -16.6 L0 -19.6 L3 -16.6" stroke={m.dark} strokeWidth={1.4} fill="none" />
-    </g>
-  );
-}
-
-function Statue({ id, m, gid, accent, lit }: { id: string; m: M; gid: string; accent: M; lit: boolean }) {
+function Sculpture({ id, c, z, m, accent, gid, lit }: { id: string; c: [number, number]; z: number; m: M; accent: M; gid: string; lit: boolean }) {
+  const [cx, cy] = c;
+  const at = (dx: number, dy: number): [number, number] => [cx + dx, cy + dy];
+  const plates = (radii: number[]) => {
+    let zz = z;
+    return radii.map((r, i) => {
+      const el = <Drum key={i} c={c} r={r} z0={zz} h={5} gid={gid} m={m} />;
+      zz += 6;
+      return el;
+    });
+  };
   switch (id) {
+    // Sets: a growing stack of weight plates, crowned with a jewel.
     case 'first-set':
-      return <Medal m={m} gid={gid} accent={accent} />;
+      return (
+        <g>
+          {plates([16])}
+          <Orb c={c} z={z + 12} r={7} gid={gid} />
+        </g>
+      );
     case 'sets-50':
-      return <Cup m={m} gid={gid} />;
+      return (
+        <g>
+          {plates([17, 14, 11])}
+          <Orb c={c} z={z + 24} r={7} gid={gid} />
+        </g>
+      );
     case 'sets-250':
       return (
         <g>
-          <Laurel m={m} gid={gid} y={-24} r={21} />
-          <Cup m={m} gid={gid} grand />
+          <Ring c={c} r={16} z={z} m={m} />
+          {plates([18, 16, 14, 12, 10])}
+          <Gem c={c} z={z + 44} r={8} accent={accent} />
         </g>
       );
+    // Streaks: crystal flames that multiply and grow; fire-lit on training days.
     case 'streak-3':
-      return <Flame m={m} gid={gid} size={0.8} lit={lit} />;
+      return <Shard c={c} w={7} z0={z} h={40} m={m} gid={gid} lit={lit} />;
     case 'streak-7':
-      return <Flame m={m} gid={gid} size={0.75} torch lit={lit} />;
+      return (
+        <g>
+          <Shard c={at(8, -7)} w={5} z0={z} h={26} m={m} gid={gid} lit={lit} />
+          <Shard c={c} w={8} z0={z} h={50} m={m} gid={gid} lit={lit} />
+        </g>
+      );
     case 'streak-30':
-      return <Flame m={m} gid={gid} size={0.9} laurel lit={lit} />;
+      return (
+        <g>
+          <Ring c={c} r={16} z={z} m={m} />
+          <Shard c={at(9, -8)} w={5} z0={z} h={30} m={m} gid={gid} lit={lit} />
+          <Shard c={c} w={9} z0={z} h={58} m={m} gid={gid} lit={lit} />
+          <Shard c={at(-10, 8)} w={6} z0={z} h={34} m={m} gid={gid} lit={lit} />
+        </g>
+      );
     case 'streak-100':
-      return <Flame m={m} gid={gid} size={1} crown laurel lit={lit} />;
+      return (
+        <g>
+          <Ring c={c} r={16} z={z} m={m} />
+          <Shard c={at(10, -9)} w={5} z0={z} h={32} m={m} gid={gid} lit={lit} />
+          <Shard c={at(-11, -4)} w={5} z0={z} h={28} m={m} gid={gid} lit={lit} />
+          <Shard c={c} w={10} z0={z} h={66} m={m} gid={gid} lit={lit} />
+          <Shard c={at(11, 6)} w={5} z0={z} h={30} m={m} gid={gid} lit={lit} />
+          <Shard c={at(-9, 10)} w={6} z0={z} h={38} m={m} gid={gid} lit={lit} />
+          <Ring c={c} r={13} z={z + 80} m={m} width={2.2} />
+        </g>
+      );
+    // Pushups: the plank, a rising beam on a pillar.
     case 'pushups-30':
-      return <Athlete pose="plank" m={m} gid={gid} />;
+      return (
+        <g>
+          <Block3 c={at(12, 0)} w={6} d={6} z0={z} h={20} m={m} />
+          <Beam a={[cx - 22, cy, z]} b={[cx + 16, cy, z + 22]} t={6} m={m} />
+        </g>
+      );
     case 'pushups-50':
       return (
         <g>
-          <Laurel m={m} gid={gid} y={-18} r={19} />
-          <Athlete pose="plank" m={m} gid={gid} />
+          <Ring c={c} r={16} z={z} m={m} />
+          <Block3 c={at(12, 0)} w={6} d={6} z0={z} h={20} m={m} />
+          <Beam a={[cx - 22, cy, z]} b={[cx + 16, cy, z + 22]} t={6} m={m} />
+          <Orb c={at(22, 0)} z={z + 32} r={7} gid={gid} />
         </g>
       );
+    // Pull-up: the gate, a sphere risen above the bar.
     case 'first-pull-up':
-      return <Athlete pose="hang" m={m} gid={gid} />;
-    case 'first-pistol':
-      return <Athlete pose="pistol" m={m} gid={gid} />;
-    case 'first-loaded':
-      return <Kettlebell m={m} gid={gid} />;
-    case 'first-elite':
-      return <Star m={m} gid={gid} />;
-    case 'balanced-week':
-      return <Scales m={m} gid={gid} />;
-    case 'first-session':
-      return <Athlete pose="lift" m={m} gid={gid} />;
-    case 'first-week':
-      return <Obelisk m={m} gid={gid} />;
-    case 'weeks-4':
-      return <Wreath m={m} gid={gid} />;
-    case 'weeks-12':
       return (
-        <g transform="scale(1.12)">
-          <Athlete pose="flex" m={m} gid={gid} />
+        <g>
+          <Block3 c={at(-14, 0)} w={5} d={5} z0={z} h={46} m={m} />
+          <Block3 c={at(14, 0)} w={5} d={5} z0={z} h={46} m={m} />
+          <Block3 c={c} w={34} d={5} z0={z + 46} h={5} m={m} />
+          <Orb c={c} z={z + 61} r={8} gid={gid} glow />
         </g>
       );
+    // Pistol squat: the cantilever, a column holding a long arm out in balance.
+    case 'first-pistol':
+      return (
+        <g>
+          <Block3 c={at(-8, 0)} w={8} d={8} z0={z} h={30} m={m} />
+          <Beam a={[cx - 8, cy, z + 30]} b={[cx + 26, cy, z + 30]} t={5} m={m} />
+          <Block3 c={at(24, 0)} w={6} d={6} z0={z + 35} h={6} m={m} />
+          <Orb c={at(-8, 0)} z={z + 42} r={7} gid={gid} />
+        </g>
+      );
+    // First loaded set: a weight plate standing on its edge in a cradle.
+    case 'first-loaded':
+      return (
+        <g>
+          <Block3 c={c} w={22} d={10} z0={z} h={3} m={m} />
+          <UprightDisc c={c} zc={z + 19} r={16} thick={5} m={m} hole={3.4} />
+        </g>
+      );
+    // First elite move: a hovering cut gem.
+    case 'first-elite':
+      return (
+        <g>
+          <Drum c={c} r={8} z0={z} h={4} gid={gid} m={m} />
+          <circle cx={P(cx, cy, z + 4)[0]} cy={P(cx, cy, z + 4)[1]} r={9} fill={`url(#${gid}-glow)`} />
+          <g className="statue-hover">
+            <Gem c={c} z={z + 26} r={11} accent={accent} />
+          </g>
+        </g>
+      );
+    // Balanced week: a beam balanced on a fulcrum with two equal spheres.
+    case 'balanced-week':
+      return (
+        <g>
+          <Orb c={at(-22, 0)} z={z + 28} r={6.5} gid={gid} />
+          <Pyramid4 c={c} w={8} z0={z} h={20} m={m} />
+          <Beam a={[cx - 24, cy, z + 20]} b={[cx + 24, cy, z + 20]} t={4} m={m} />
+          <Orb c={at(22, 0)} z={z + 28} r={6.5} gid={gid} />
+        </g>
+      );
+    // First session: sunrise, a half sun rising from a block.
+    case 'first-session':
+      return (
+        <g>
+          {/* Rays fan out behind the rising sun. */}
+          {Array.from({ length: 7 }, (_, i) => {
+            const ang = (Math.PI * (i + 0.5)) / 7;
+            const from = pr([cx + Math.cos(ang) * 17, cy - 1, z + 6 + Math.sin(ang) * 17]);
+            const to = pr([cx + Math.cos(ang) * 25, cy - 1, z + 6 + Math.sin(ang) * 25]);
+            return (
+              <g key={i} strokeLinecap="round">
+                <line x1={from[0]} y1={from[1]} x2={to[0]} y2={to[1]} stroke={m.dark} strokeWidth={2.6} />
+                <line x1={from[0]} y1={from[1]} x2={to[0]} y2={to[1]} stroke={m.light} strokeWidth={1.4} />
+              </g>
+            );
+          })}
+          <UprightDisc c={c} zc={z + 6} r={15} thick={4} m={accent} half />
+          <Block3 c={c} w={34} d={10} z0={z} h={6} m={m} />
+        </g>
+      );
+    // First week: seven rising steps.
+    case 'first-week':
+      return (
+        <g>
+          {/* Climbs away from the viewer, so every step is visible. */}
+          {Array.from({ length: 7 }, (_, i) => (
+            <Block3 key={i} c={at(-18 + i * 6, 0)} w={6} d={14} z0={z} h={4 + (6 - i) * 6} m={m} />
+          ))}
+          <Orb c={at(-18, 0)} z={z + 47} r={5} gid={gid} />
+        </g>
+      );
+    // Four weeks: four stacked drums, like an endless column.
+    case 'weeks-4':
+      return (
+        <g>
+          {[14, 11, 8, 5].map((r, i) => (
+            <g key={i}>
+              {i > 0 && <Drum c={c} r={3.5} z0={z + i * 12 - 4} h={4} gid={gid} m={m} />}
+              <Drum c={c} r={r} z0={z + i * 12} h={8} gid={gid} m={m} />
+            </g>
+          ))}
+          <Gem c={c} z={z + 56} r={5} accent={accent} />
+        </g>
+      );
+    // Twelve weeks: a ring of twelve pillars around a spire.
+    case 'weeks-12': {
+      const ring = Array.from({ length: 12 }, (_, i) => {
+        const a = (Math.PI * 2 * i) / 12;
+        return { x: cx + Math.cos(a) * 22, y: cy + Math.sin(a) * 22 };
+      });
+      const back = ring.filter((p) => p.x + p.y < cx + cy);
+      const front = ring.filter((p) => p.x + p.y >= cx + cy);
+      const pillar = (p: { x: number; y: number }, i: number) => <Block3 key={i} c={[p.x, p.y]} w={4} d={4} z0={z} h={16} m={m} />;
+      return (
+        <g>
+          {back.sort((a, b) => a.x + a.y - (b.x + b.y)).map(pillar)}
+          <Drum c={c} r={6} z0={z} h={44} gid={gid} m={m} />
+          <Gem c={c} z={z + 56} r={7} accent={accent} />
+          {front.sort((a, b) => a.x + a.y - (b.x + b.y)).map(pillar)}
+        </g>
+      );
+    }
     default:
-      return <Cup m={m} gid={gid} />;
+      return (
+        <g>
+          {plates([16])}
+          <Orb c={c} z={z + 12} r={7} gid={gid} />
+        </g>
+      );
   }
 }
 
@@ -547,7 +507,8 @@ export function IsoTrophy({
   const def = getTrophyDef(trophyId);
   const tierKey = def?.tier ?? 'bronze';
   const tier = TIER[tierKey];
-  const gid = `trophy-metal-${tierKey}`;
+  // Gradient ids include the accent so differently coloured trophies don't share jewels.
+  const gid = `trophy-${tierKey}-${(color ?? 'base').replace(/[^a-z0-9]/gi, '')}`;
   const accent = color ? themeFor('trophy', color) : { light: '#ff8fa3', base: '#e5484d', dark: '#9c2a33' };
   const h = 30;
   const [sx, sy] = P(ox + 50, oy + 50, h + 5);
@@ -556,10 +517,11 @@ export function IsoTrophy({
     <g>
       <ellipse cx={P(ox + 50, oy + 50)[0] + 4} cy={P(ox + 50, oy + 50)[1] + 3} rx={30} ry={11} fill="url(#hf-shadow)" />
       <Pedestal ox={ox} oy={oy} h={h} tier={tier} number={NUMBER[trophyId] ?? ''} accent={accent} />
-      <g transform={`translate(${sx} ${sy}) scale(1.35)`}>
-        <MetalDefs id={gid} m={tier} />
-        <ellipse cx={0} cy={0.4} rx={11} ry={3.2} fill="#000" opacity={0.22} />
-        <Statue id={trophyId} m={tier} gid={gid} accent={accent} lit={lit} />
+      <SculptDefs gid={gid} m={tier} accent={accent} />
+      <ellipse cx={sx} cy={sy + 1} rx={20} ry={7.5} fill="#000" opacity={0.18} />
+      {/* The projection is linear, so scaling around the base keeps the iso geometry exact. */}
+      <g transform={`translate(${sx} ${sy}) scale(${SCULPT_SCALE}) translate(${-sx} ${-sy})`}>
+        <Sculpture id={trophyId} c={[ox + 50, oy + 50]} z={h + 5} m={tier} accent={accent} gid={gid} lit={lit} />
       </g>
       {verified && (
         <g transform={`translate(${vx} ${vy})`}>

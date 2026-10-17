@@ -6734,4 +6734,18 @@
   .dark .goals-title {
     color: #f7c948;
   }
+
+  /* Trophy sculptures: the elite gem hovers gently */
+  .statue-hover {
+    animation: statue-hover 3.2s ease-in-out infinite;
+  }
+  @keyframes statue-hover {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .statue-hover {
+      animation: none;
+    }
+  }
 }
