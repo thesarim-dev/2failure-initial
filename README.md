@@ -423,6 +423,10 @@ If the home screen shows a red error banner:
 
 ## Your base (the game)
 
+### Performance (how the map stays smooth)
+
+The ground (terrain, grass, flowers, edges and the cut-away sides) is about 16,000 drawing elements, so the map **bakes it into a single image** and draws only the living parts live: buildings, decorations, trophies, animals and fireflies. The ground is re-baked automatically when it changes (painting, expanding land, placing or moving something); while you paint, the ground is drawn live so changes appear instantly. On a fully built base this cut the map from about 18,600 elements to about 2,100, and from 1,194 simultaneous animations to 95.
+
 ### The Base tab at a glance
 
 - **The map comes first.** Floating on it: your **base level** (top left, with a ring showing progress to the next level), your **builders** (top right; tap to see what's being built), and the **Build** button with **Expand land** and **Paint** beside it.

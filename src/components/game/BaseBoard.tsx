@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseCritters } from './Critters';
 import { GroundDetail, GroundEdges } from './GroundDetail';
 import { SlabSides } from './SlabSides';
+import { bakeGround } from './groundBake';
 import { IsoItemArt, IsoScaffold, P as isoP, isIsoItem } from './IsoArt';
 
 export { ItemArt, TrophyArt } from './BaseArt';
@@ -187,10 +188,6 @@ export function BaseBoard({
   for (let y = min; y <= max; y++) {
     for (let x = min; x <= max; x++) {
       ground.push(<TerrainTile key={`t${x},${y}`} x={x} y={y} terrain={state.terrain?.[`${x},${y}`] ?? 'grass'} />);
-      ground.push(
-        <rect key={`c${x},${y}`} x={x * T} y={y * T} width={T} height={T} fill="transparent"
-          onClick={inert ? undefined : () => onTile(x, y)} />
-      );
     }
   }
 
@@ -490,21 +487,14 @@ export function BaseBoard({
     return <circle key={i} cx={fx} cy={fy - 30} r={3} className="base-firefly" style={{ animationDelay: `${i * 0.9}s` }} />;
   });
 
-  return (
-    <svg
-      ref={svgRef}
-      id={svgId}
-      viewBox={viewBox}
-      preserveAspectRatio="xMidYMid meet"
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerEnd}
-      onPointerCancel={onPointerEnd}
-      onClickCapture={onClickCapture}
-      className={`base-board is-iso ${lit ? 'is-lit' : 'is-quiet'} ${placing ? 'is-placing' : ''} ${painting ? 'is-painting' : ''} ${cam.zoom > 1.02 ? 'is-zoomed' : ''}`}
-      role="group">
+  // --- Static batching: the ground is baked into one image ------------------
+  const [lx, ly] = project([a, b]);
+  const [bx, by] = project([b, b]);
+  const [rx, ry] = project([b, a]);
+  const staticLayers = (
+    <>
       <defs>
- <radialGradient id="base-land-light" cx="0.5" cy="0.5" r="0.7">
+        <radialGradient id="base-land-light" cx="0.5" cy="0.5" r="0.7">
           <stop offset="0" stopColor="#fff6c8" stopOpacity="0.12" />
           <stop offset="0.7" stopColor="#000" stopOpacity="0" />
           <stop offset="1" stopColor="#000" stopOpacity="0.22" />
@@ -521,33 +511,139 @@ export function BaseBoard({
           <stop offset="0" stopColor="#000" stopOpacity="0.45" />
           <stop offset="1" stopColor="#000" stopOpacity="0" />
         </radialGradient>
+      </defs>
+      <ArtDefs />
+      <g pointerEvents="none">
+        <ellipse cx={bx} cy={by + SLAB + 6} rx={span * 0.55} ry={span * 0.09} fill="url(#base-slab-shadow)" />
+        <polygon points={`${lx},${ly} ${bx},${by} ${bx},${by + SLAB} ${lx},${ly + SLAB}`} fill="url(#base-slab-left)" />
+        <polygon points={`${bx},${by} ${rx},${ry} ${rx},${ry + SLAB} ${bx},${by + SLAB}`} fill="url(#base-slab-right)" />
+        <SlabSides L={[lx, ly]} B={[bx, by]} R={[rx, ry]} depth={SLAB} span={span} />
+        <line x1={bx} y1={by} x2={bx} y2={by + SLAB} stroke="#000" strokeOpacity={0.25} strokeWidth={1.5} />
+      </g>
+      <g transform={ISO} pointerEvents="none">
+        {ground}
+        <GroundEdges state={state} />
+        <rect x={a} y={a} width={span} height={span} fill="url(#base-land-light)" />
+      </g>
+      <GroundDetail state={state} project={project} />
+    </>
+  );
+  const staticRef = useRef<ReactNode>(staticLayers);
+  staticRef.current = staticLayers;
+  const bakeRect = useMemo(() => ({ x: -span / 2 - 14, y: topY, w: span + 28, h: bottomY - topY }), [span, topY, bottomY]);
+  const occupancyKey = useMemo(
+    () =>
+      state.placed
+        .map((p) => `${p.itemId}@${p.x},${p.y}`)
+        .sort()
+        .join('|'),
+    [state.placed]
+  );
+  const bakeKey = `${land}|${JSON.stringify(state.terrain ?? {})}|${occupancyKey}`;
+  const [baked, setBaked] = useState<{ url: string; rect: typeof bakeRect } | null>(null);
+  const [bakeFailed, setBakeFailed] = useState(false);
+  useEffect(() => {
+    if (painting || bakeFailed) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      const cssW = svgRef.current?.clientWidth || 400;
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      const px = (bakeRect.w / viewW) * cssW * dpr * 2.5;
+      bakeGround(staticRef.current, bakeRect, px)
+        .then((url) => {
+          if (cancelled) {
+            URL.revokeObjectURL(url);
+            return;
+          }
+          setBaked((prev) => {
+            if (prev) URL.revokeObjectURL(prev.url);
+            return { url, rect: bakeRect };
+          });
+        })
+        .catch(() => {
+          if (!cancelled) setBakeFailed(true);
+        });
+    }, 60);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bakeKey, painting, bakeFailed, bakeRect]);
+  useEffect(
+    () => () => {
+      setBaked((prev) => {
+        if (prev) URL.revokeObjectURL(prev.url);
+        return null;
+      });
+    },
+    []
+  );
+  const showLiveGround = painting || bakeFailed;
+  const groundView = showLiveGround ? (
+    staticLayers
+  ) : baked && baked.rect === bakeRect ? (
+    <image
+      href={baked.url}
+      x={baked.rect.x}
+      y={baked.rect.y}
+      width={baked.rect.w}
+      height={baked.rect.h}
+      preserveAspectRatio="none"
+      pointerEvents="none"
+      className="base-baked"
+    />
+  ) : (
+    // Instant placeholder while the first bake finishes: plain land and sides.
+    <g pointerEvents="none">
+      <polygon points={`${lx},${ly} ${bx},${by} ${bx},${by + SLAB} ${lx},${ly + SLAB}`} fill="#7a5436" />
+      <polygon points={`${bx},${by} ${rx},${ry} ${rx},${ry + SLAB} ${bx},${by + SLAB}`} fill="#5a3c25" />
+      <g transform={ISO}>
+        <rect x={a} y={a} width={span} height={span} fill="#4f8f3e" />
+      </g>
+    </g>
+  );
+
+  return (
+    <svg
+      ref={svgRef}
+      id={svgId}
+      viewBox={viewBox}
+      preserveAspectRatio="xMidYMid meet"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerEnd}
+      onPointerCancel={onPointerEnd}
+      onClickCapture={onClickCapture}
+      className={`base-board is-iso ${lit ? 'is-lit' : 'is-quiet'} ${placing ? 'is-placing' : ''} ${painting ? 'is-painting' : ''} ${cam.zoom > 1.02 ? 'is-zoomed' : ''}`}
+      role="group">
+      <defs>
         <pattern id="base-scaffold-hatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
           <line x1="0" y1="0" x2="0" y2="16" className="base-scaffold-line" strokeWidth="3" />
         </pattern>
       </defs>
       <ArtDefs />
 
-      {/* The block of land: soft shadow, then its dirt sides. */}
-      {(() => {
-        const [lx, ly] = project([a, b]);
-        const [bx, by] = project([b, b]);
-        const [rx, ry] = project([b, a]);
-        return (
-          <g pointerEvents="visiblePainted">
-            <ellipse pointerEvents="none" cx={bx} cy={by + SLAB + 6} rx={span * 0.55} ry={span * 0.09} fill="url(#base-slab-shadow)" />
-            <polygon points={`${lx},${ly} ${bx},${by} ${bx},${by + SLAB} ${lx},${ly + SLAB}`} fill="url(#base-slab-left)" />
-            <polygon points={`${bx},${by} ${rx},${ry} ${rx},${ry + SLAB} ${bx},${by + SLAB}`} fill="url(#base-slab-right)" />
-            <SlabSides L={[lx, ly]} B={[bx, by]} R={[rx, ry]} depth={SLAB} span={span} />
-            <line x1={bx} y1={by} x2={bx} y2={by + SLAB} stroke="#000" strokeOpacity={0.25} strokeWidth={1.5} />
-          </g>
-        );
-      })()}
+      {groundView}
 
       {/* The ground, in world units, tilted into diamonds. */}
       <g ref={groundRef} transform={ISO} pointerEvents="visiblePainted">
-        {ground}
-        <GroundEdges state={state} />
-        <rect x={a} y={a} width={span} height={span} fill="url(#base-land-light)" pointerEvents="none" />
+        {/* One tap target for the whole land (was one per tile). */}
+        <rect
+          x={a}
+          y={a}
+          width={span}
+          height={span}
+          fill="transparent"
+          onClick={
+            inert
+              ? undefined
+              : (e) => {
+                  const tile = tileAt(e.clientX, e.clientY);
+                  if (tile) onTile(tile[0], tile[1]);
+                }
+          }
+        />
         {groundItems}
         {selected && (
           <rect
@@ -594,9 +690,6 @@ export function BaseBoard({
             );
           })}
       </g>
-
-      {/* Upright grass, flowers, pebbles and reeds give the ground dimension. */}
-      <GroundDetail state={state} project={project} />
 
       <BaseCritters state={state} animate={animate} project={project} />
 
