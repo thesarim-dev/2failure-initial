@@ -32,6 +32,28 @@ export type HubCopy = {
     ladder: string;
   };
   settingsLink: { title: string; description: string; open: string };
+  quest: {
+    free: string;
+    welcomeTitle: string;
+    welcomeSub: string;
+    loop: [string, string, string];
+    loopSub: [string, string, string];
+    start: string;
+    skip: string;
+    next: string;
+    base: string;
+    build: string;
+    pick: string;
+    choose: string;
+    place: string;
+    train: string;
+    pushups: (name: string) => string;
+    receipt: string;
+    celebrateTitle: string;
+    celebrateSub: string;
+    tips: [string, string, string, string];
+    done: string;
+  };
   plan: {
     title: string;
     days: string;
@@ -132,6 +154,33 @@ const en: HubCopy = {
     programLocked: 'The program chooses your exercises',
     empty: 'Nothing matches these filters.',
     ladder: 'Progression'
+  },
+  quest: {
+    free: 'FREE',
+    welcomeTitle: 'Welcome to 2failure 👋',
+    welcomeSub: "Here's the whole idea in three steps. Let's do them together, right now.",
+    loop: ['Train to failure', 'Earn materials', 'Build your base'],
+    loopSub: ['Do as many good reps as you can.', 'Every set pays stone, timber or crystal.', 'Your training turns into a little town.'],
+    start: "Let's start",
+    skip: 'Skip',
+    next: 'Next',
+    base: 'This is your base. Right now it\'s just your HQ, so let\'s build something.',
+    build: 'Tap Build to see what you can make.',
+    pick: 'Your first building is free! Pick the Lodge: it gives you an extra builder.',
+    choose: 'Looks good. Tap the button to choose where it goes.',
+    place: 'Tap any glowing tile to place your Lodge.',
+    train: 'Your Lodge needs one set to finish. Let\'s build it with a workout. Tap Train.',
+    pushups: (name) => `Start ${name}. Do as many good reps as you can, until you can't do one more. That's training to failure.`,
+    receipt: 'Your set just finished your Lodge! Tap here to go see it.',
+    celebrateTitle: 'Your first building is up! 🎉',
+    celebrateSub: "That's how it works: every set you do builds your base.",
+    tips: [
+      'Do 2 sets a day to keep your flame lit.',
+      'Next up on the Base tab shows what to build next.',
+      'Coins from every set unlock bigger buildings and more land.',
+      'Tap Edit plan on the home screen to set your days and equipment.'
+    ],
+    done: "Let's go"
   },
   settingsLink: { title: 'Your plan', description: 'Days per week, your equipment and exercise levels.', open: 'Open' },
   plan: {
@@ -248,6 +297,28 @@ const he: HubCopy = {
     empty: 'אין תוצאות למסננים האלה.',
     ladder: 'התקדמות'
   },
+  quest: {
+    free: 'חינם',
+    welcomeTitle: 'ברוכים הבאים ל-2failure 👋',
+    welcomeSub: 'כל הרעיון בשלושה צעדים. בואו נעשה אותם יחד, עכשיו.',
+    loop: ['מתאמנים עד כשל', 'מרוויחים חומרים', 'בונים את הבסיס'],
+    loopSub: ['עושים כמה שיותר חזרות טובות.', 'כל סט נותן אבן, עץ או קריסטל.', 'האימונים הופכים לעיירה קטנה.'],
+    start: 'בואו נתחיל',
+    skip: 'דלגו',
+    next: 'הבא',
+    base: 'זה הבסיס שלכם. כרגע יש בו רק מפקדה, אז בואו נבנה משהו.',
+    build: 'הקישו על בנייה כדי לראות מה אפשר לבנות.',
+    pick: 'הבניין הראשון בחינם! בחרו בבקתה: היא נותנת בנאי נוסף.',
+    choose: 'נראה טוב. הקישו על הכפתור כדי לבחור מקום.',
+    place: 'הקישו על משבצת זוהרת כדי להציב את הבקתה.',
+    train: 'הבקתה צריכה סט אחד כדי להיגמר. בואו נבנה אותה באימון. הקישו על אימון.',
+    pushups: (name) => `התחילו ${name}. עשו כמה שיותר חזרות טובות, עד שאי אפשר עוד אחת. זה אימון עד כשל.`,
+    receipt: 'הסט שלכם סיים את הבקתה! הקישו כאן כדי לראות אותה.',
+    celebrateTitle: 'הבניין הראשון שלכם עומד! 🎉',
+    celebrateSub: 'ככה זה עובד: כל סט בונה את הבסיס.',
+    tips: ['עשו 2 סטים ביום כדי לשמור על הלהבה.', 'הבא בתור בלשונית הבסיס מראה מה לבנות.', 'מטבעות מכל סט פותחים בניינים גדולים ועוד שטח.', 'הקישו על עריכת תוכנית במסך הבית כדי לבחור ימים וציוד.'],
+    done: 'יאללה'
+  },
   settingsLink: { title: 'התוכנית שלך', description: 'ימים בשבוע, הציוד שלך ורמות התרגילים.', open: 'פתח' },
   plan: {
     title: 'התוכנית שלך',
@@ -362,6 +433,28 @@ const ar: HubCopy = {
     programLocked: 'البرنامج يختار تمارينك',
     empty: 'لا شيء يطابق هذه المرشحات.',
     ladder: 'التقدّم'
+  },
+  quest: {
+    free: 'مجاناً',
+    welcomeTitle: 'مرحباً بك في 2failure 👋',
+    welcomeSub: 'الفكرة كلها في ثلاث خطوات. لنقم بها معاً الآن.',
+    loop: ['تدرّب حتى الإرهاق', 'اكسب المواد', 'ابنِ قاعدتك'],
+    loopSub: ['أدِّ أكبر عدد من التكرارات الجيدة.', 'كل مجموعة تمنحك حجراً أو خشباً أو كريستالاً.', 'تمارينك تتحوّل إلى بلدة صغيرة.'],
+    start: 'لنبدأ',
+    skip: 'تخطَّ',
+    next: 'التالي',
+    base: 'هذه قاعدتك. فيها الآن مقرّك فقط، فلنبنِ شيئاً.',
+    build: 'اضغط بناء لترى ما يمكنك بناؤه.',
+    pick: 'أول مبنى مجاناً! اختر النُّزُل: يمنحك بنّاءً إضافياً.',
+    choose: 'يبدو جيداً. اضغط الزر لتختار مكانه.',
+    place: 'اضغط على أي مربع مضيء لتضع النُّزُل.',
+    train: 'النُّزُل يحتاج مجموعة واحدة ليكتمل. لنبنِه بتمرين. اضغط تدريب.',
+    pushups: (name) => `ابدأ ${name}. أدِّ أكبر عدد من التكرارات الجيدة حتى لا تستطيع واحدة أخرى. هذا هو التدريب حتى الإرهاق.`,
+    receipt: 'مجموعتك أكملت النُّزُل! اضغط هنا لتراه.',
+    celebrateTitle: 'أول مبنى لك قائم! 🎉',
+    celebrateSub: 'هكذا يعمل الأمر: كل مجموعة تبني قاعدتك.',
+    tips: ['أدِّ مجموعتين يومياً لتبقى شعلتك مشتعلة.', '«التالي» في تبويب القاعدة يريك ما تبنيه بعد ذلك.', 'العملات من كل مجموعة تفتح مباني أكبر وأرضاً أوسع.', 'اضغط «تعديل الخطة» في الشاشة الرئيسية لتختار الأيام والمعدات.'],
+    done: 'هيا بنا'
   },
   settingsLink: { title: 'خطتك', description: 'أيام الأسبوع ومعداتك ومستوى التمارين.', open: 'فتح' },
   plan: {

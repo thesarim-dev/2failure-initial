@@ -42,6 +42,7 @@ import { useAuth } from './context/AuthContext';
 import type { SetRepResult } from './types/repProgress';
 import { useOnboarding } from './hooks/useOnboarding';
 import { GuidedTour } from './components/GuidedTour';
+import { QuestOnboarding, readQuestStage } from './components/QuestOnboarding';
 import { FirstSetCoach, type FirstSetStage } from './components/FirstSetCoach';
 import { isPoseAiTrackingEnabled } from './config/features';
 import { isPoseExerciseId } from './lib/pose/repCounterFactory';
@@ -510,6 +511,20 @@ export function MainApp() {
     window.scrollTo({ top: 0 });
     replayTutorial();
   };
+  // Onboarding quest for brand-new players: build the free Lodge, then finish
+  // it with the first set to failure. Replays use the classic home tour.
+  const questStage = user ? readQuestStage(user.id) : 'done';
+  const questActive =
+    showTutorial &&
+    !!user &&
+    questStage !== 'done' &&
+    (questStage !== 'welcome' || (baseGame.state.firstBuildFree === true && !baseGame.state.placed.some((p) => p.itemId === 'lodge')));
+  const firstExerciseName = (() => {
+    const id = lineupForToday.upper[0] ?? lineupForToday.lower[0] ?? lineupForToday.core[0];
+    const variant = id ? getVariantById(id) : undefined;
+    return variant ? localizeVariant(variant, t.moves).name : '';
+  })();
+
   const handleTourClose = (started: boolean) => {
     dismissTutorial();
     if (started) setGuidingFirstSet(true);
@@ -706,7 +721,22 @@ export function MainApp() {
         />
       )}
 
-      {showTutorial && appState === 'HOME' && <GuidedTour onClose={handleTourClose} />}
+      {questActive && user ? (
+        <QuestOnboarding
+          userId={user.id}
+          appState={appState}
+          hasConstruction={baseGame.state.constructions.length > 0}
+          firstExerciseName={firstExerciseName}
+          onGoBase={() => {
+            baseGame.dismissIntro();
+            setAppState('BASE');
+          }}
+          onStartFirstSet={() => setGuidingFirstSet(true)}
+          onDone={dismissTutorial}
+        />
+      ) : (
+        showTutorial && appState === 'HOME' && <GuidedTour onClose={handleTourClose} />
+      )}
 
       {firstSetStage && <FirstSetCoach stage={firstSetStage} />}
     </div>

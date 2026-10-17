@@ -28,7 +28,7 @@ export function AppTabBar({ active, onChange, baseHasNews }: AppTabBarProps) {
             type="button"
             className={`app-tab ${isActive ? 'is-active' : ''}`}
             aria-current={isActive ? 'page' : undefined}
-            data-tour={id === 'base' ? 'base-tab' : id === 'settings' ? 'settings' : undefined}
+            data-tour={id === 'base' ? 'base-tab' : id === 'settings' ? 'settings' : 'train-tab'}
             onClick={() => onChange(id)}>
             <span className="app-tab-icon">
               <Icon size={22} strokeWidth={2.4} aria-hidden="true" />

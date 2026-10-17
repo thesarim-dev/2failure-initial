@@ -21,7 +21,7 @@ const en: TutorialContent = {
     },
     streak: {
       title: 'Your streak',
-      body: 'Do at least 2 sets a day to keep the flame going. Miss a day and it resets, unless you restore it with coins.'
+      body: 'Do at least 2 sets a day to light the flame. Rest days are built into your week, so missing one is fine. Go over your rest days and the streak resets, unless you restore it with coins.'
     },
     coins: {
       title: 'Coins',
@@ -82,7 +82,7 @@ const he: TutorialContent = {
     },
     streak: {
       title: 'הרצף שלכם',
-      body: 'עשו לפחות 2 סטים ביום כדי לשמור על הלהבה. פספסתם יום? הרצף מתאפס, אלא אם תשחזרו אותו במטבעות.'
+      body: 'עשו לפחות 2 סטים ביום כדי להדליק את הלהבה. ימי מנוחה כלולים בשבוע, אז פספוס יום זה בסדר. חרגתם מימי המנוחה? הרצף מתאפס, אלא אם תשחזרו אותו במטבעות.'
     },
     coins: {
       title: 'מטבעות',
@@ -143,7 +143,7 @@ const ar: TutorialContent = {
     },
     streak: {
       title: 'سلسلتك',
-      body: 'أنجز مجموعتين على الأقل يومياً لتبقى الشعلة مشتعلة. إذا فاتك يوم تبدأ السلسلة من الصفر، إلا إذا استعدتها بالعملات.'
+      body: 'أنجز مجموعتين على الأقل يومياً لتشعل الشعلة. أيام الراحة جزء من أسبوعك، فلا بأس بتفويت يوم. إذا تجاوزت أيام الراحة تبدأ السلسلة من الصفر، إلا إذا استعدتها بالعملات.'
     },
     coins: {
       title: 'العملات',

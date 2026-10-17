@@ -6748,4 +6748,256 @@
       animation: none;
     }
   }
+
+  /* ---------- Onboarding quest ---------- */
+  .quest-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem;
+    background: rgba(6, 8, 14, 0.72);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+  .quest-modal-card {
+    position: relative;
+    width: min(100%, 25rem);
+    max-height: calc(100vh - 2.4rem);
+    overflow-y: auto;
+    padding: 1.6rem 1.3rem 1.1rem;
+    border-radius: 1.6rem;
+    text-align: center;
+    background: linear-gradient(170deg, #ffffff 0%, #f3f7ea 100%);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  }
+  .dark .quest-modal-card {
+    background: linear-gradient(170deg, #1f2419 0%, #15151d 70%);
+    border: 1px solid rgba(200, 240, 50, 0.25);
+  }
+  .quest-modal-title {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.45rem;
+    line-height: 1.15;
+    text-transform: none;
+  }
+  .quest-modal-sub {
+    margin-top: 0.5rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    opacity: 0.75;
+    line-height: 1.45;
+  }
+  .quest-loop {
+    margin: 1.2rem 0 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    text-align: start;
+  }
+  .quest-loop li {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 1rem;
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .dark .quest-loop li {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .quest-loop-icon {
+    flex-shrink: 0;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
+  }
+  .quest-loop-icon.is-0 {
+    background: linear-gradient(180deg, #ff8a4c 0%, #e85520 100%);
+  }
+  .quest-loop-icon.is-1 {
+    background: linear-gradient(180deg, #a98bff 0%, #6f4fe0 100%);
+  }
+  .quest-loop-icon.is-2 {
+    color: #0c0f02;
+    background: linear-gradient(180deg, #dcf75f 0%, #9bd11f 100%);
+  }
+  .quest-loop-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .quest-loop-label {
+    font-weight: 900;
+    font-size: 1rem;
+  }
+  .quest-loop-sub {
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0.7;
+  }
+  .quest-primary {
+    width: 100%;
+    min-height: 3.4rem;
+    border-radius: 1rem;
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    color: #0c0f02;
+    background: linear-gradient(180deg, #dcf75f 0%, #b9e02a 100%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), 0 5px 0 #6a9e00;
+  }
+  .quest-primary:active {
+    transform: translateY(4px);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), 0 1px 0 #6a9e00;
+  }
+  .quest-skip {
+    margin-top: 0.6rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    opacity: 0.6;
+  }
+  .quest-tips {
+    margin: 1.1rem 0 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    text-align: start;
+  }
+  .quest-tips li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.9rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.35;
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .dark .quest-tips li {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .quest-tips svg {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    color: #f2a541;
+  }
+  .quest-confetti {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .quest-confetti span {
+    position: absolute;
+    top: -10px;
+    width: 8px;
+    height: 12px;
+    border-radius: 2px;
+    background: #c8f032;
+    animation: quest-confetti 2.4s ease-in infinite;
+  }
+  .quest-confetti span:nth-child(3n) {
+    background: #ff8a4c;
+  }
+  .quest-confetti span:nth-child(3n + 1) {
+    background: #8b95f0;
+  }
+  @keyframes quest-confetti {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(420px) rotate(540deg); opacity: 0; }
+  }
+
+  /* Coach: spotlight + speech bubble. Never blocks taps. */
+  .quest-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    pointer-events: none;
+  }
+  .quest-spot {
+    position: fixed;
+    border-radius: 1.1rem;
+    box-shadow: 0 0 0 9999px rgba(6, 8, 14, 0.55);
+    transition: top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease;
+  }
+  .quest-spot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    border: 3px solid #c8f032;
+    animation: quest-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes quest-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(1.03); }
+  }
+  .quest-bubble {
+    position: fixed;
+    left: 50%;
+    width: min(92vw, 23rem);
+    margin-left: calc(min(92vw, 23rem) / -2);
+    padding: 0.95rem 1rem 0.6rem;
+    border-radius: 1.2rem;
+    pointer-events: auto;
+    color: #14161c;
+    background: #ffffff;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    border: 2px solid #c8f032;
+  }
+  .quest-bubble-text {
+    font-size: 0.98rem;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .quest-bubble-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.3rem;
+  }
+  .quest-bubble .quest-skip {
+    margin: 0;
+    color: #14161c;
+  }
+  .quest-next {
+    min-height: 2.5rem;
+    padding: 0 1.2rem;
+    border-radius: 0.8rem;
+    font-weight: 900;
+    color: #0c0f02;
+    background: #c8f032;
+    box-shadow: 0 3px 0 #6a9e00;
+  }
+  .base-free-badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: #0c0f02;
+    background: #c8f032;
+  }
+  :is(.quest-primary, .quest-skip, .quest-next):focus-visible {
+    outline: 2px solid #00b2ff;
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .quest-spot::after,
+    .quest-confetti span {
+      animation: none;
+    }
+  }
 }

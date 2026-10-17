@@ -706,6 +706,7 @@ export function BaseScreen({
                     <button
                       type="button"
                       className="base-catalog-item"
+                      data-item={def.id}
                       disabled={blocker !== null}
                       onClick={() => choose({ kind: 'item', itemId: def.id })}>
                       <ItemPreview itemId={def.id} />
@@ -713,7 +714,11 @@ export function BaseScreen({
                         <span className="base-catalog-name">{g.items[def.id]?.name}</span>
                         <span className="base-catalog-desc">{g.items[def.id]?.description}</span>
                         <span className="base-catalog-meta">
-                          <CostList cost={cost} resources={state.resources} />
+                          {state.firstBuildFree && blocker === null ? (
+                            <span className="base-free-badge">{t.hub.quest.free}</span>
+                          ) : (
+                            <CostList cost={cost} resources={state.resources} />
+                          )}
                           <span className="base-catalog-sets">
                             {g.setsToBuild(sets)} · {g.builders.needs(1)}
                           </span>
@@ -790,6 +795,7 @@ export function BaseScreen({
           <button
             type="button"
             className="base-primary-btn"
+            data-quest="choose-spot"
             onClick={() => {
               setSheet(null);
               setMode(

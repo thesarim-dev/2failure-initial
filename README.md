@@ -16,7 +16,7 @@
 1. [Introduction](#1-introduction)
 2. [Before you begin](#2-before-you-begin)
 3. [Create an account and sign in](#3-create-an-account-and-sign-in)
-4. [Take the welcome tour](#4-take-the-welcome-tour)
+4. [Your first session (the onboarding quest)](#4-your-first-session-the-onboarding-quest)
 5. [Understand the home screen](#5-understand-the-home-screen)
 6. [Complete a workout](#6-complete-a-workout)
 7. [Log reps and weight](#7-log-reps-and-weight)
@@ -93,36 +93,18 @@ The sun/moon icon on the login screen toggles between **day mode** and **night m
 
 ---
 
-## 4. Take the welcome tour
+## 4. Your first session (the onboarding quest)
 
-The first time you sign in, 2failure dims the home screen and walks you through it, highlighting each real button as it explains it. The tour ends by starting your first workout.
+New players are guided through one short, hands-on quest the first time they sign in:
 
-| Step | What's highlighted | What you learn |
-|---|---|---|
-| 1 | — | Welcome and what the tour covers |
-| 2 | Set counter on the first card | Each card is one of today's exercises; the counter shows sets done out of today's goal |
-| 3 | Streak badge | 2 sets a day keeps your streak alive |
-| 4 | Coins badge | Every finished set earns coins |
-| 5 | Edit your workout card | Plan your week and unlock exercises |
-| 6 | Settings tab | Language, units, sounds, night mode |
-| 7 | Today's day | Which day of your week it is and what it trains |
-| 8 | First exercise card | Tap **Start** to begin your first set |
+1. **Welcome:** the whole idea in three steps: *train to failure → earn materials → build your base*.
+2. **Your base:** the app opens the Base tab and introduces your plot.
+3. **Build your first building, free:** tap **Build**, pick the **Lodge** (marked **FREE**), choose a spot and tap a glowing tile. Construction starts: the Lodge needs **one set** to finish.
+4. **Build it with a workout:** tap **Train**, then the first exercise (Pushups). Do as many good reps as you can, until you can't do one more. That's training to failure. A coach guides you through the set.
+5. **Your set finishes the Lodge:** the receipt shows *Lodge is finished!*; tap **See your base**.
+6. **Celebrate:** a quick recap of the basics: 2 sets a day keep your flame lit, **Next up** shows what to build next, coins unlock bigger buildings and land, and **Edit plan** sets your days and equipment.
 
-**Navigation**
-
-- Tap **Next** (or press the right arrow key) to advance, and **Back** to revisit a step.
-- Tap **Skip tour** (or press Escape) to go straight to the home screen.
-- On the last step, tap the glowing card or **Start [exercise]** to begin your first workout.
-
-**Your first set**
-
-During the set the tour started, a small tip appears on each screen: when to tap the finish button, how to log your reps, and, on the receipt, that one more set today starts your streak. Tap **×** to hide a tip.
-
-**Replay the tour**
-
-Open **Settings** → **App tour** → **Replay tour**.
-
----
+A coach bubble points at what to tap at every step and moves on when you do it. **Skip** ends the quest at any time. To see the classic tour of the home screen again, use **Settings → Replay tour**.
 
 ## 5. Understand the home screen
 

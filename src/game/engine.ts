@@ -133,6 +133,8 @@ export type TodayPlan = {
 
 export type GameState = {
   version: 3;
+  /** New players: their first building costs nothing (the onboarding quest). */
+  firstBuildFree?: boolean;
   resources: Resources;
   placed: PlacedItem[];
   /** Jobs in progress; several can run at once if there are free builders. */
@@ -157,6 +159,7 @@ export type GameState = {
 
 export function createInitialState(): GameState {
   return {
+    firstBuildFree: true,
     version: 3,
     resources: { ...STARTING_RESOURCES },
     placed: [{ uid: 'u1', itemId: 'hq', x: HQ_POSITION.x, y: HQ_POSITION.y, level: 1 }],
@@ -865,7 +868,8 @@ export function placeBlocker(state: GameState, itemId: string): ActionError | nu
   if (def.kind === 'structure' && countPlaced(state, itemId) >= def.maxCount(level)) return 'maxCount';
   if (freeBuilders(state) < 1) return 'builderBusy';
   const cost = def.kind === 'structure' ? def.levels[0].cost : def.cost;
-  if (!canAfford(state.resources, cost)) return 'cantAfford';
+  const free = def.kind === 'structure' && state.firstBuildFree === true;
+  if (!free && !canAfford(state.resources, cost)) return 'cantAfford';
   return null;
 }
 
@@ -883,7 +887,12 @@ export function placeItem(
   const state = structuredClone(prev);
   const uid = `u${state.nextUid++}`;
   const sets = def.kind === 'structure' ? def.levels[0].sets : DECOR_BUILD_SETS;
-  pay(state, def.kind === 'structure' ? def.levels[0].cost : def.cost);
+  if (def.kind === 'structure' && state.firstBuildFree) {
+    // The first building is on the house.
+    state.firstBuildFree = false;
+  } else {
+    pay(state, def.kind === 'structure' ? def.levels[0].cost : def.cost);
+  }
   const item: PlacedItem = { uid, itemId, x, y, level: sets === 0 ? 1 : 0 };
   applyCustom(item, custom);
   state.placed.push(item);
