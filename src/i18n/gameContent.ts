@@ -464,7 +464,7 @@ const en: GameCopy = {
   },
   fences: {
     title: 'Fences & walls',
-    hint: 'Tap between two tiles to build. Tap one again to remove it.',
+    hint: 'Drag along the lines between tiles to draw. Start on a piece to erase.',
     done: 'Done',
     kinds: { fence: 'Wooden fence', wall: 'Stone wall', hedge: 'Hedge' }
   },
@@ -770,7 +770,7 @@ const he: GameCopy = {
   },
   fences: {
     title: 'גדרות וחומות',
-    hint: 'הקישו בין שתי משבצות כדי לבנות. הקישו שוב כדי להסיר.',
+    hint: 'גררו לאורך הקווים שבין המשבצות כדי לצייר. התחילו על חלק קיים כדי למחוק.',
     done: 'סיום',
     kinds: { fence: 'גדר עץ', wall: 'חומת אבן', hedge: 'גדר חיה' }
   },
@@ -1076,7 +1076,7 @@ const ar: GameCopy = {
   },
   fences: {
     title: 'الأسوار والجدران',
-    hint: 'اضغط بين مربعين للبناء. اضغط مرة أخرى للإزالة.',
+    hint: 'اسحب على الخطوط بين المربعات للرسم. ابدأ على قطعة موجودة للمسح.',
     done: 'تم',
     kinds: { fence: 'سياج خشبي', wall: 'جدار حجري', hedge: 'سياج نباتي' }
   },

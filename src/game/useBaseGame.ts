@@ -10,6 +10,7 @@ import {
   flipItem,
   paintTerrain,
   toggleEdge,
+  setEdge,
   liftPathsToTerrain,
   setBaseName,
   createInitialState,
@@ -339,6 +340,7 @@ export function useBaseGame(
     customize: (uid: string, custom: Customization) => run(customizeItem(stateRef.current, uid, custom)),
     paint: (tiles: Array<[number, number]>, terrain: TerrainId) => run(paintTerrain(stateRef.current, tiles, terrain)),
     toggleEdge: (key: string, kind: EdgeKind) => run(toggleEdge(stateRef.current, key, kind)),
+    setEdge: (key: string, kind: EdgeKind | null) => run(setEdge(stateRef.current, key, kind)),
     flip: (uid: string) => run(flipItem(stateRef.current, uid)),
     rename: (name: string) => commit(setBaseName(stateRef.current, name)),
     /** Demo build only: change the save directly (cheats for testing). */

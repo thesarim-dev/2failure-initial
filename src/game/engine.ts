@@ -1182,6 +1182,27 @@ export function toggleEdge(prev: GameState, key: string, kind: EdgeKind): Action
   return { ok: true, state };
 }
 
+/**
+ * Set an edge to a kind, or clear it (kind = null). Idempotent, so a drawing
+ * stroke can pass over the same edge repeatedly without toggling it.
+ */
+export function setEdge(prev: GameState, key: string, kind: EdgeKind | null): ActionResult {
+  if (!edgeInLand(key, prev.landLevel)) return { ok: false, error: 'blocked' };
+  const current = prev.edges?.[key] ?? null;
+  if (current === kind) return { ok: false, error: 'blocked' };
+  const edges = { ...(prev.edges ?? {}) };
+  if (kind === null) {
+    delete edges[key];
+    return { ok: true, state: { ...prev, edges } };
+  }
+  const cost = EDGE_COST[kind];
+  if (!canAfford(prev.resources, cost)) return { ok: false, error: 'cantAfford' };
+  const state: GameState = { ...prev, resources: { ...prev.resources }, edges };
+  pay(state, cost);
+  edges[key] = kind;
+  return { ok: true, state };
+}
+
 /** Old saves: path items become painted path terrain (they no longer take a square). */
 export function liftPathsToTerrain(prev: GameState): GameState {
   const paths = prev.placed.filter((p) => p.itemId === 'path');

@@ -12,7 +12,7 @@ import { BaseCritters } from './Critters';
 import { GroundDetail, GroundEdges } from './GroundDetail';
 import { SlabSides } from './SlabSides';
 import { bakeGround } from './groundBake';
-import { IsoEdge, IsoItemArt, IsoScaffold, P as isoP, isIsoItem } from './IsoArt';
+import { IsoEdge, IsoEdgePost, IsoItemArt, IsoScaffold, P as isoP, isIsoItem } from './IsoArt';
 
 export { ItemArt, TrophyArt } from './BaseArt';
 
@@ -87,7 +87,8 @@ type BoardProps = {
   /** Paint mode: drag across tiles to paint terrain. */
   /** Fence mode: taps pick the nearest tile edge. */
   fencing?: boolean;
-  onEdge?: (edgeKey: string) => void;
+  /** A drawing stroke: 'add' if it started on an empty edge, 'remove' if on a filled one. */
+  onEdge?: (edgeKey: string, mode: 'add' | 'remove') => void;
   painting?: boolean;
   onPaint?: (tile: [number, number]) => void;
   svgId?: string;
@@ -338,15 +339,53 @@ export function BaseBoard({
     });
   }
   // Fences, walls and hedges along tile edges sit between the two tiles' depths.
-  for (const [edgeKey, kind] of Object.entries(state.edges ?? {})) {
+  // Each piece knows whether its run continues, so joins are seamless.
+  const edges = state.edges ?? {};
+  const vertexEdges = new Map<string, Array<{ dir: 'h' | 'v'; kind: string }>>();
+  const touch = (vx: number, vy: number, dir: 'h' | 'v', kind: string) => {
+    const k = `${vx},${vy}`;
+    if (!vertexEdges.has(k)) vertexEdges.set(k, []);
+    vertexEdges.get(k)!.push({ dir, kind });
+  };
+  for (const [edgeKey, kind] of Object.entries(edges)) {
     const m = /^([nw]):(-?\d+),(-?\d+)$/.exec(edgeKey);
     if (!m) continue;
+    const ex = Number(m[2]);
+    const ey = Number(m[3]);
+    const along = m[1] === 'n';
+    const prevKey = along ? `n:${ex - 1},${ey}` : `w:${ex},${ey - 1}`;
+    const nextKey = along ? `n:${ex + 1},${ey}` : `w:${ex},${ey + 1}`;
+    if (along) {
+      touch(ex, ey, 'h', kind);
+      touch(ex + 1, ey, 'h', kind);
+    } else {
+      touch(ex, ey, 'v', kind);
+      touch(ex, ey + 1, 'v', kind);
+    }
     sprites.push({
       key: `edge-${edgeKey}`,
-      depth: Number(m[2]) + Number(m[3]) + 0.5,
+      depth: ex + ey + 0.5,
       node: (
         <g key={`edge-${edgeKey}`}>
-          <IsoEdge edgeKey={edgeKey} kind={kind} />
+          <IsoEdge edgeKey={edgeKey} kind={kind} prev={edges[prevKey] === kind} next={edges[nextKey] === kind} />
+        </g>
+      )
+    });
+  }
+  // Posts: fences get one at every joint; walls get a pier where they turn, meet or end.
+  for (const [k, list] of vertexEdges) {
+    const [vx, vy] = k.split(',').map(Number);
+    const fence = list.some((e) => e.kind === 'fence');
+    const walls = list.filter((e) => e.kind === 'wall');
+    const straightWall = walls.length === 2 && list.length === 2 && walls[0].dir === walls[1].dir;
+    const kind = walls.length && !straightWall ? 'wall' : fence ? 'fence' : null;
+    if (!kind) continue;
+    sprites.push({
+      key: `post-${k}`,
+      depth: vx + vy + 0.55,
+      node: (
+        <g key={`post-${k}`}>
+          <IsoEdgePost vx={vx} vy={vy} kind={kind} />
         </g>
       )
     });
@@ -374,8 +413,10 @@ export function BaseBoard({
     const y = Math.floor(point.y / T);
     return isTileBuildable(x, y, land) ? [x, y] : null;
   };
+  const fenceStroke = useRef<{ mode: 'add' | 'remove'; last: string } | null>(null);
+  const [hoverEdge, setHoverEdge] = useState<string | null>(null);
   /** Screen point → the nearest edge between tiles (`n:x,y` or `w:x,y`). */
-  const edgeAt = (clientX: number, clientY: number): string | null => {
+  const edgeAt = (clientX: number, clientY: number, stickTo?: string): string | null => {
     const ctm = groundRef.current?.getScreenCTM();
     if (!ctm) return null;
     const point = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
@@ -383,7 +424,12 @@ export function BaseBoard({
     const fy = point.y / T;
     const nearX = Math.round(fx);
     const nearY = Math.round(fy);
-    return Math.abs(fy - nearY) < Math.abs(fx - nearX) ? `n:${Math.floor(fx)},${nearY}` : `w:${nearX},${Math.floor(fy)}`;
+    const dy = Math.abs(fy - nearY);
+    const dx = Math.abs(fx - nearX);
+    // Near a corner both lines are equally close: a stroke stays on its current
+    // piece until it clearly heads off along one of the lines.
+    if (stickTo && dx < 0.24 && dy < 0.24) return stickTo;
+    return dy < dx ? `n:${Math.floor(fx)},${nearY}` : `w:${nearX},${Math.floor(fy)}`;
   };
   const paintAt = (clientX: number, clientY: number) => {
     const tile = tileAt(clientX, clientY);
@@ -450,6 +496,18 @@ export function BaseBoard({
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.current.size === 1) moved.current = false;
     beginGesture();
+    if (pointers.current.size === 1 && fencing) {
+      // Start a fence stroke: erase if it starts on a piece, otherwise draw.
+      const key = edgeAt(event.clientX, event.clientY);
+      if (key) {
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        const mode = state.edges?.[key] ? 'remove' : 'add';
+        fenceStroke.current = { mode, last: key };
+        setHoverEdge(key);
+        onEdge?.(key, mode);
+      }
+      return;
+    }
     if (pointers.current.size === 1 && painting) {
       event.currentTarget.setPointerCapture?.(event.pointerId);
       lastPainted.current = null;
@@ -458,6 +516,19 @@ export function BaseBoard({
   };
 
   const onPointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (fencing && pointers.current.size <= 1) {
+      // Preview the edge under the pointer, and keep drawing while pressed.
+      const stroke = fenceStroke.current;
+      const key = edgeAt(event.clientX, event.clientY, stroke?.last);
+      setHoverEdge(key);
+      if (stroke && key && key !== stroke.last && (event.buttons || event.pointerType !== 'mouse')) {
+        stroke.last = key;
+        moved.current = true;
+        onEdge?.(key, stroke.mode);
+      }
+      if (pointers.current.has(event.pointerId)) pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      return;
+    }
     if (!pointers.current.has(event.pointerId)) return;
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     const g = gesture.current;
@@ -501,6 +572,8 @@ export function BaseBoard({
   const onPointerEnd = (event: React.PointerEvent<SVGSVGElement>) => {
     pointers.current.delete(event.pointerId);
     lastPainted.current = null;
+    fenceStroke.current = null;
+    if (event.pointerType !== 'mouse') setHoverEdge(null);
     beginGesture();
   };
 
@@ -726,11 +799,7 @@ export function BaseBoard({
             inert
               ? undefined
               : (e) => {
-                  if (fencing) {
-                    const edge = edgeAt(e.clientX, e.clientY);
-                    if (edge && onEdge) onEdge(edge);
-                    return;
-                  }
+                  if (fencing) return; // fence strokes are handled on press / drag
                   const tile = tileAt(e.clientX, e.clientY);
                   if (tile) onTile(tile[0], tile[1]);
                 }
@@ -793,6 +862,24 @@ export function BaseBoard({
       </g>
       {/* In fence mode taps pass through buildings to the edge beneath them. */}
       <g pointerEvents={fencing ? 'none' : 'visiblePainted'}>{sprites.map((sprite) => sprite.node)}</g>
+      {fencing && hoverEdge && (() => {
+        const m = /^([nw]):(-?\d+),(-?\d+)$/.exec(hoverEdge);
+        if (!m) return null;
+        const ex = Number(m[2]) * T;
+        const ey = Number(m[3]) * T;
+        const [x1, y1] = project([ex, ey]);
+        const [x2, y2] = m[1] === 'n' ? project([ex + T, ey]) : project([ex, ey + T]);
+        const erase = !!state.edges?.[hoverEdge];
+        const color = erase ? '#ff6b6b' : '#c8f032';
+        return (
+          <g pointerEvents="none" className="base-edge-preview">
+            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeOpacity={0.35} strokeWidth={9} strokeLinecap="round" />
+            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth={3} strokeLinecap="round" />
+            <circle cx={x1} cy={y1} r={3.4} fill="#fff" />
+            <circle cx={x2} cy={y2} r={3.4} fill="#fff" />
+          </g>
+        );
+      })()}
       {/* Cloud shadows drifting slowly over the land. */}
       <g pointerEvents="none" className="base-cloud-shadows">
         {[0, 1].map((k) => (

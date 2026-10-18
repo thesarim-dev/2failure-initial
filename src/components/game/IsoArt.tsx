@@ -39,7 +39,22 @@ type Box = { x0: number; y0: number; x1: number; y1: number; z0: number; z1: num
  * Small parts (courses = false) stay smooth. A soft shade sits where walls
  * meet the ground.
  */
-function IsoBox({ b, s, courses = true, mat = 'stone' }: { b: Box; s: Shades; courses?: boolean; mat?: 'stone' | 'plank' }) {
+function IsoBox({
+  b,
+  s,
+  courses = true,
+  mat = 'stone',
+  hideRight = false,
+  hideLeft = false
+}: {
+  b: Box;
+  s: Shades;
+  courses?: boolean;
+  mat?: 'stone' | 'plank';
+  /** Skip a face that a neighbouring piece continues (seamless runs). */
+  hideRight?: boolean;
+  hideLeft?: boolean;
+}) {
   const { x0, y0, x1, y1, z0, z1 } = b;
   const left = pts([P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z1), P(x0, y1, z1)]);
   const right = pts([P(x1, y0, z0), P(x1, y1, z0), P(x1, y1, z1), P(x1, y0, z1)]);
@@ -48,23 +63,41 @@ function IsoBox({ b, s, courses = true, mat = 'stone' }: { b: Box; s: Shades; co
   const aoH = Math.min(10, (z1 - z0) * 0.35);
   return (
     <g>
-      <polygon points={left} fill={s.base} />
-      {textured && <polygon points={left} fill={`url(#mat-${mat}-L)`} />}
-      <polygon points={left} fill="url(#hf-face)" />
-      <polygon points={right} fill={s.dark} />
-      {textured && <polygon points={right} fill={`url(#mat-${mat}-R)`} />}
-      <polygon points={right} fill="url(#hf-side)" />
+      {!hideLeft && (
+        <g>
+          <polygon points={left} fill={s.base} />
+          {textured && <polygon points={left} fill={`url(#mat-${mat}-L)`} />}
+          <polygon points={left} fill="url(#hf-face)" />
+        </g>
+      )}
+      {!hideRight && (
+        <g>
+          <polygon points={right} fill={s.dark} />
+          {textured && <polygon points={right} fill={`url(#mat-${mat}-R)`} />}
+          <polygon points={right} fill="url(#hf-side)" />
+        </g>
+      )}
       {z0 <= 1 && z1 - z0 > 8 && (
         <g>
-          <polygon points={pts([P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z0 + aoH), P(x0, y1, z0 + aoH)])} fill="url(#mat-ao)" />
-          <polygon points={pts([P(x1, y0, z0), P(x1, y1, z0), P(x1, y1, z0 + aoH), P(x1, y0, z0 + aoH)])} fill="url(#mat-ao)" />
+          {!hideLeft && <polygon points={pts([P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z0 + aoH), P(x0, y1, z0 + aoH)])} fill="url(#mat-ao)" />}
+          {!hideRight && <polygon points={pts([P(x1, y0, z0), P(x1, y1, z0), P(x1, y1, z0 + aoH), P(x1, y0, z0 + aoH)])} fill="url(#mat-ao)" />}
         </g>
       )}
       <polygon points={top} fill={s.light} />
       <polygon points={top} fill="url(#hf-top)" />
       {/* Lit top edges and the shaded corner. */}
-      <polyline points={pts([P(x0, y1, z1), P(x1, y1, z1), P(x1, y0, z1)])} fill="none" stroke="#fff" strokeOpacity={0.45} strokeWidth={1} />
-      <line x1={P(x1, y1, z0)[0]} y1={P(x1, y1, z0)[1]} x2={P(x1, y1, z1)[0]} y2={P(x1, y1, z1)[1]} stroke="#000" strokeOpacity={0.2} strokeWidth={0.9} />
+      <polyline
+        points={pts(
+          hideRight ? [P(x0, y1, z1), P(x1, y1, z1)] : hideLeft ? [P(x1, y1, z1), P(x1, y0, z1)] : [P(x0, y1, z1), P(x1, y1, z1), P(x1, y0, z1)]
+        )}
+        fill="none"
+        stroke="#fff"
+        strokeOpacity={0.45}
+        strokeWidth={1}
+      />
+      {!hideLeft && !hideRight && (
+        <line x1={P(x1, y1, z0)[0]} y1={P(x1, y1, z0)[1]} x2={P(x1, y1, z1)[0]} y2={P(x1, y1, z1)[1]} stroke="#000" strokeOpacity={0.2} strokeWidth={0.9} />
+      )}
     </g>
   );
 }
@@ -1388,50 +1421,79 @@ export function IsoItemArt({
 const EDGE_STONE: Shades = { light: '#ece6dc', base: '#c3baac', dark: '#91897c' };
 const EDGE_WOOD: Shades = { light: '#e0b06f', base: '#ad7840', dark: '#7a5228' };
 const EDGE_HEDGE: Shades = { light: '#86e3a4', base: '#3faa63', dark: '#25744a' };
-export function IsoEdge({ edgeKey, kind }: { edgeKey: string; kind: 'fence' | 'wall' | 'hedge' }) {
+export function IsoEdge({
+  edgeKey,
+  kind,
+  prev = false,
+  next = false
+}: {
+  edgeKey: string;
+  kind: 'fence' | 'wall' | 'hedge';
+  /** The same kind continues before / after this segment (draw seamlessly). */
+  prev?: boolean;
+  next?: boolean;
+}) {
   const m = /^([nw]):(-?\d+),(-?\d+)$/.exec(edgeKey);
   if (!m) return null;
   const T = 100;
   const x = Number(m[2]) * T;
   const y = Number(m[3]) * T;
   const along = m[1] === 'n';
-  // A strip of the given thickness centred on the edge line.
-  const strip = (thick: number, z0: number, z1: number, inset = 0): Box =>
-    along
-      ? { x0: x + inset, x1: x + T - inset, y0: y - thick / 2, y1: y + thick / 2, z0, z1 }
-      : { x0: x - thick / 2, x1: x + thick / 2, y0: y + inset, y1: y + T - inset, z0, z1 };
-  const post = (u: number): Box =>
-    along
-      ? { x0: x + u * T - 3, x1: x + u * T + 3, y0: y - 3, y1: y + 3, z0: 0, z1: 26 }
-      : { x0: x - 3, x1: x + 3, y0: y + u * T - 3, y1: y + u * T + 3, z0: 0, z1: 26 };
+  // Strip centred on the edge; ends stretch to meet neighbours, or pull in a little at a run's end.
+  const strip = (thick: number, z0: number, z1: number, endInset: number): Box => {
+    const a0 = prev ? 0 : endInset;
+    const a1 = next ? 0 : endInset;
+    return along
+      ? { x0: x + a0, x1: x + T - a1, y0: y - thick / 2, y1: y + thick / 2, z0, z1 }
+      : { x0: x - thick / 2, x1: x + thick / 2, y0: y + a0, y1: y + T - a1, z0, z1 };
+  };
+  // The face at the far end is the only end face we can see; hide it when the run continues.
+  const end = along ? { hideRight: next } : { hideLeft: next };
   if (kind === 'wall') {
     return (
       <g pointerEvents="none">
-        <IsoBox b={strip(9, 0, 20)} s={EDGE_STONE} />
-        <IsoBox b={strip(12, 20, 24, -1)} s={{ light: '#f6f2ea', base: '#d6cec2', dark: '#a39b8e' }} courses={false} />
+        <IsoBox b={strip(9, 0, 20, 4)} s={EDGE_STONE} {...end} />
+        <IsoBox b={strip(12, 20, 24, 3)} s={{ light: '#f6f2ea', base: '#d6cec2', dark: '#a39b8e' }} courses={false} {...end} />
       </g>
     );
   }
   if (kind === 'hedge') {
-    const top = strip(13, 0, 22, 2);
     const dots = [0.2, 0.42, 0.64, 0.86].map((u) => {
       const [px, py] = along ? P(x + u * T, y, 22) : P(x, y + u * T, 22);
       return <circle key={u} cx={px} cy={py - 1} r={2.6} fill={EDGE_HEDGE.light} opacity={0.75} />;
     });
     return (
       <g pointerEvents="none">
-        <IsoBox b={top} s={EDGE_HEDGE} courses={false} />
+        <IsoBox b={strip(13, 0, 22, 4)} s={EDGE_HEDGE} courses={false} {...end} />
         {dots}
+      </g>
+    );
+  }
+  // Fence: just the rails; posts are shared at the joints (IsoEdgePost).
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={strip(2.6, 8, 11.5, 2)} s={EDGE_WOOD} courses={false} {...end} />
+      <IsoBox b={strip(2.6, 17, 20.5, 2)} s={EDGE_WOOD} courses={false} {...end} />
+    </g>
+  );
+}
+
+/** A shared post / pier where edge pieces meet, turn or end. */
+export function IsoEdgePost({ vx, vy, kind }: { vx: number; vy: number; kind: 'fence' | 'wall' }) {
+  const x = vx * 100;
+  const y = vy * 100;
+  if (kind === 'wall') {
+    return (
+      <g pointerEvents="none">
+        <IsoBox b={{ x0: x - 8, x1: x + 8, y0: y - 8, y1: y + 8, z0: 0, z1: 27 }} s={EDGE_STONE} />
+        <IsoBox b={{ x0: x - 10, x1: x + 10, y0: y - 10, y1: y + 10, z0: 27, z1: 31 }} s={{ light: '#f6f2ea', base: '#d6cec2', dark: '#a39b8e' }} courses={false} />
       </g>
     );
   }
   return (
     <g pointerEvents="none">
-      <IsoBox b={post(0.06)} s={EDGE_WOOD} courses={false} />
-      <IsoBox b={strip(2.6, 8, 11.5, 4)} s={EDGE_WOOD} courses={false} />
-      <IsoBox b={strip(2.6, 17, 20.5, 4)} s={EDGE_WOOD} courses={false} />
-      <IsoBox b={post(0.5)} s={EDGE_WOOD} courses={false} />
-      <IsoBox b={post(0.94)} s={EDGE_WOOD} courses={false} />
+      <IsoBox b={{ x0: x - 3, x1: x + 3, y0: y - 3, y1: y + 3, z0: 0, z1: 26 }} s={EDGE_WOOD} courses={false} />
+      <IsoBox b={{ x0: x - 3.6, x1: x + 3.6, y0: y - 3.6, y1: y + 3.6, z0: 26, z1: 28 }} s={EDGE_WOOD} courses={false} />
     </g>
   );
 }

@@ -427,7 +427,7 @@ If the home screen shows a red error banner:
 
 **Paths are painted like terrain.** Choose **Path** in the build menu (or pick it in **Paint**) and drag across the ground to lay cobblestones. Paths no longer take up a square of their own, and older path pieces are converted automatically.
 
-**Fences, walls and hedges run between tiles.** Choose **Wall** in the build menu to open the fence tool, pick **Wooden fence** (2 timber), **Stone wall** (3 stone) or **Hedge** (1 timber, 1 crystal), and tap near the line between two tiles to build a segment. Tap a segment again to remove it. Because they sit on the edges, you can fence a garden or line a path without losing any space.
+**Fences, walls and hedges run between tiles.** Choose **Wall** in the build menu to open the fence tool and pick **Wooden fence** (2 timber per piece), **Stone wall** (3 stone) or **Hedge** (1 timber, 1 crystal). Then **drag along the lines between tiles** to draw: a glowing line shows exactly where the next piece will go, and you can turn corners in the same stroke. Start a stroke on an existing piece to **erase** instead. A single tap adds or removes one piece. Pieces join seamlessly: walls flow as one continuous run with piers only where they turn or end, and fence pieces share their posts.
 
 ### Every building and decoration has its own story
 

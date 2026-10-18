@@ -642,11 +642,11 @@ export function BaseScreen({
           onItem={(uid) => setSheet({ uid })}
           painting={paintWith !== null}
           fencing={fenceKind !== null}
-          onEdge={(edgeKey) => {
+          onEdge={(edgeKey, strokeMode) => {
             if (!fenceKind) return;
-            const result = game.toggleEdge(edgeKey, fenceKind);
-            if (result.ok) fx.tap();
-            else setNotice(errorText(result.error));
+            const result = game.setEdge(edgeKey, strokeMode === 'add' ? fenceKind : null);
+            if (result.ok) fx.tick();
+            else if (result.error === 'cantAfford') setNotice(errorText(result.error));
           }}
           onPaint={(tile) => {
             if (!paintWith) return;
