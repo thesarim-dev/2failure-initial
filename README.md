@@ -423,6 +423,10 @@ If the home screen shows a red error banner:
 
 ## Your base (the game)
 
+### Materials, light and sky
+
+Buildings have real materials: stone walls show cut-stone courses and wooden walls show planks, both following the isometric perspective, and roofs have rows of scalloped shingles. Everything that stands up casts a soft shadow away from the light, walls darken slightly where they meet the ground, cloud shadows drift slowly over the land, and the grass has gentle colour patches. The island floats in a sky (blue by day in light mode, a starry dusk in dark mode) with clouds drifting behind it.
+
 ### A lived-in base
 
 Your base feels inhabited: **villagers** stroll between your buildings (one for the HQ, more as your Lodge grows; some carry baskets or firewood) and stop to look around. Windows always glow warmly (brighter on days you train, and a few flicker like candlelight), chimneys smoke, flags flutter, sparks rise from the Forge, and buildings get lived-in details: firewood and a chopping block by the Lodge, flower boxes under its windows, barrels and crates by the HQ and a lantern at its door.

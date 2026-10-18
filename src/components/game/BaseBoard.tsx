@@ -487,6 +487,49 @@ export function BaseBoard({
     return <circle key={i} cx={fx} cy={fy - 30} r={3} className="base-firefly" style={{ animationDelay: `${i * 0.9}s` }} />;
   });
 
+  // --- Cast shadows: light from the front-left, shadows fall back-right ----
+  const shadowHeight = (itemId: string, level: number): number => {
+    if (itemId === 'hq') return 120 + level * 20;
+    if (itemId === 'watchtower') return 130 + level * 15;
+    if (itemId === 'lodge' || itemId === 'forge') return 70 + level * 12;
+    if (itemId.startsWith('trophy:')) return 70;
+    if (['pine', 'windmill', 'barn', 'gazebo', 'arch', 'banner', 'lamp', 'torch'].includes(itemId)) return 70;
+    if (['path', 'garden', 'flowers', 'grass', 'dirt', 'meadow', 'sand', 'plaza', 'water', 'snow', 'lilypad', 'bridge'].includes(itemId)) return 0;
+    return 30;
+  };
+  const castShadows: ReactNode[] = [];
+  for (const item of state.placed) {
+    const h = item.level === 0 ? 20 : shadowHeight(item.itemId, item.level);
+    if (h <= 0) continue;
+    const size = itemSize(item.itemId);
+    const inset = isIsoItem(item.itemId) ? 6 : size * 26;
+    const x0 = item.x * T + inset;
+    const y0 = item.y * T + inset;
+    const x1 = (item.x + size) * T - inset;
+    const y1 = (item.y + size) * T - inset;
+    const dx = h * 0.28;
+    const dy = -h * 0.9;
+    const corners: Array<[number, number]> = [
+      [x0, y0], [x1, y0], [x1, y1], [x0, y1],
+      [x0 + dx, y0 + dy], [x1 + dx, y0 + dy], [x1 + dx, y1 + dy], [x0 + dx, y1 + dy]
+    ].map(([wx, wy]) => project([wx, wy]));
+    // Convex hull (monotone chain) of the footprint and its shifted copy.
+    const sorted = [...corners].sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+    const cross = (o: [number, number], a: [number, number], b: [number, number]) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const lower: Array<[number, number]> = [];
+    for (const p of sorted) {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+      lower.push(p);
+    }
+    const upper: Array<[number, number]> = [];
+    for (const p of [...sorted].reverse()) {
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+      upper.push(p);
+    }
+    const hull = [...lower.slice(0, -1), ...upper.slice(0, -1)];
+    castShadows.push(<polygon key={item.uid} points={hull.map((p) => p.join(',')).join(' ')} fill="#10200f" />);
+  }
+
   // --- Static batching: the ground is baked into one image ------------------
   const [lx, ly] = project([a, b]);
   const [bx, by] = project([b, b]);
@@ -522,6 +565,26 @@ export function BaseBoard({
       </g>
       <g transform={ISO} pointerEvents="none">
         {ground}
+        {/* Gentle colour patches so the grass isn't one flat green. */}
+        {Array.from({ length: (max - min + 1) * (max - min + 1) }, (_, i) => {
+          const x = min + (i % (max - min + 1));
+          const y = min + Math.floor(i / (max - min + 1));
+          const terr = state.terrain?.[`${x},${y}`] ?? 'grass';
+          if (terr !== 'grass' && terr !== 'meadow') return null;
+          const n = Math.sin(x * 0.61 + y * 0.27) + Math.cos(x * 0.33 - y * 0.71) + Math.sin((x + y) * 0.19) * 0.6;
+          if (Math.abs(n) < 0.7) return null;
+          return (
+            <rect
+              key={`tint${x},${y}`}
+              x={x * T}
+              y={y * T}
+              width={T}
+              height={T}
+              fill={n > 0 ? '#fff4b8' : '#06331a'}
+              opacity={Math.min(0.13, (Math.abs(n) - 0.7) * 0.09)}
+            />
+          );
+        })}
         <GroundEdges state={state} />
         <rect x={a} y={a} width={span} height={span} fill="url(#base-land-light)" />
       </g>
@@ -551,14 +614,8 @@ export function BaseBoard({
       const px = (bakeRect.w / viewW) * cssW * dpr * 2.5;
       bakeGround(staticRef.current, bakeRect, px)
         .then((url) => {
-          if (cancelled) {
-            URL.revokeObjectURL(url);
-            return;
-          }
-          setBaked((prev) => {
-            if (prev) URL.revokeObjectURL(prev.url);
-            return { url, rect: bakeRect };
-          });
+          if (cancelled) return;
+          setBaked({ url, rect: bakeRect });
         })
         .catch(() => {
           if (!cancelled) setBakeFailed(true);
@@ -570,15 +627,6 @@ export function BaseBoard({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bakeKey, painting, bakeFailed, bakeRect]);
-  useEffect(
-    () => () => {
-      setBaked((prev) => {
-        if (prev) URL.revokeObjectURL(prev.url);
-        return null;
-      });
-    },
-    []
-  );
   const showLiveGround = painting || bakeFailed;
   const groundView = showLiveGround ? (
     staticLayers
@@ -618,6 +666,14 @@ export function BaseBoard({
       className={`base-board is-iso ${lit ? 'is-lit' : 'is-quiet'} ${placing ? 'is-placing' : ''} ${painting ? 'is-painting' : ''} ${cam.zoom > 1.02 ? 'is-zoomed' : ''}`}
       role="group">
       <defs>
+        <filter id="base-soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="2.6" />
+        </filter>
+        <radialGradient id="base-cloud-shadow" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#0b1a10" stopOpacity="0.16" />
+          <stop offset="0.7" stopColor="#0b1a10" stopOpacity="0.07" />
+          <stop offset="1" stopColor="#0b1a10" stopOpacity="0" />
+        </radialGradient>
         <pattern id="base-scaffold-hatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
           <line x1="0" y1="0" x2="0" y2="16" className="base-scaffold-line" strokeWidth="3" />
         </pattern>
@@ -693,7 +749,27 @@ export function BaseBoard({
 
       <BaseCritters state={state} animate={animate} project={project} />
 
+      {/* Cast shadows: one soft, blurred layer under everything that stands up. */}
+      <g filter="url(#base-soft-shadow)" opacity={0.24} pointerEvents="none">
+        {castShadows}
+      </g>
       <g pointerEvents="visiblePainted">{sprites.map((sprite) => sprite.node)}</g>
+      {/* Cloud shadows drifting slowly over the land. */}
+      <g pointerEvents="none" className="base-cloud-shadows">
+        {[0, 1].map((k) => (
+          <ellipse key={k} cx={0} cy={by * (0.35 + k * 0.3)} rx={span * 0.2} ry={span * 0.075} fill="url(#base-cloud-shadow)">
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              from={`${-span * 0.75} ${k * 30}`}
+              to={`${span * 0.75} ${-60 + k * 30}`}
+              dur={`${70 + k * 25}s`}
+              begin={`${-k * 40}s`}
+              repeatCount="indefinite"
+            />
+          </ellipse>
+        ))}
+      </g>
 
 
       <g className="base-fireflies" pointerEvents="none">{fireflies}</g>

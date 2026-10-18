@@ -33,25 +33,33 @@ const pts = (list: Array<[number, number]>) => list.map(([x, y]) => `${x.toFixed
 type Box = { x0: number; y0: number; x1: number; y1: number; z0: number; z1: number };
 
 /** A block with its top and the two visible walls, plus subtle courses and lit edges. */
-function IsoBox({ b, s, courses = true }: { b: Box; s: Shades; courses?: boolean }) {
+/**
+ * A block with real materials: stone walls get cut-stone courses, wooden ones
+ * planks, both mapped into the wall's plane so they follow the perspective.
+ * Small parts (courses = false) stay smooth. A soft shade sits where walls
+ * meet the ground.
+ */
+function IsoBox({ b, s, courses = true, mat = 'stone' }: { b: Box; s: Shades; courses?: boolean; mat?: 'stone' | 'plank' }) {
   const { x0, y0, x1, y1, z0, z1 } = b;
   const left = pts([P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z1), P(x0, y1, z1)]);
   const right = pts([P(x1, y0, z0), P(x1, y1, z0), P(x1, y1, z1), P(x1, y0, z1)]);
   const top = pts([P(x0, y0, z1), P(x1, y0, z1), P(x1, y1, z1), P(x0, y1, z1)]);
-  const rows: number[] = [];
-  if (courses && z1 - z0 > 20) for (let z = z0 + 11; z < z1 - 4; z += 11) rows.push(z);
+  const textured = courses && z1 - z0 > 14;
+  const aoH = Math.min(10, (z1 - z0) * 0.35);
   return (
     <g>
       <polygon points={left} fill={s.base} />
+      {textured && <polygon points={left} fill={`url(#mat-${mat}-L)`} />}
       <polygon points={left} fill="url(#hf-face)" />
       <polygon points={right} fill={s.dark} />
+      {textured && <polygon points={right} fill={`url(#mat-${mat}-R)`} />}
       <polygon points={right} fill="url(#hf-side)" />
-      {rows.map((z) => (
-        <g key={z} stroke="#000" strokeOpacity={0.09} strokeWidth={0.8}>
-          <line x1={P(x0, y1, z)[0]} y1={P(x0, y1, z)[1]} x2={P(x1, y1, z)[0]} y2={P(x1, y1, z)[1]} />
-          <line x1={P(x1, y0, z)[0]} y1={P(x1, y0, z)[1]} x2={P(x1, y1, z)[0]} y2={P(x1, y1, z)[1]} />
+      {z0 <= 1 && z1 - z0 > 8 && (
+        <g>
+          <polygon points={pts([P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z0 + aoH), P(x0, y1, z0 + aoH)])} fill="url(#mat-ao)" />
+          <polygon points={pts([P(x1, y0, z0), P(x1, y1, z0), P(x1, y1, z0 + aoH), P(x1, y0, z0 + aoH)])} fill="url(#mat-ao)" />
         </g>
-      ))}
+      )}
       <polygon points={top} fill={s.light} />
       <polygon points={top} fill="url(#hf-top)" />
       {/* Lit top edges and the shaded corner. */}
@@ -218,8 +226,27 @@ function GableRoof({ x0, y0, x1, y1, z, rise, o = 6, s, wall }: { x0: number; y0
   const G0 = P(x1, y0, z);
   const G1 = P(x1, y1, z);
   const GT = P(x1, ym, z + rise - 4);
-  const rows = [0.2, 0.4, 0.6, 0.8];
+  const rows = [0.17, 0.34, 0.51, 0.68, 0.85];
   const lerp = (p: [number, number], q: [number, number], t: number) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+  // Scalloped shingles: each row is a run of small arcs that bulge toward the eave.
+  const down: [number, number] = [(F0[0] - R0[0]) * 0.07, (F0[1] - R0[1]) * 0.07];
+  const shingleRow = (t: number, k: number) => {
+    const a = lerp(R0, F0, t);
+    const b = lerp(R1, F1, t);
+    const n = 9;
+    const off = k % 2 ? 0.5 / n : 0;
+    let d = '';
+    for (let i = 0; i < n; i++) {
+      const u0 = Math.min(1, i / n + off);
+      const u1 = Math.min(1, (i + 1) / n + off);
+      if (u0 >= 1) break;
+      const p0 = [a[0] + (b[0] - a[0]) * u0, a[1] + (b[1] - a[1]) * u0];
+      const p1 = [a[0] + (b[0] - a[0]) * u1, a[1] + (b[1] - a[1]) * u1];
+      const mid = [(p0[0] + p1[0]) / 2 + down[0], (p0[1] + p1[1]) / 2 + down[1]];
+      d += `M${p0[0]} ${p0[1]} Q ${mid[0]} ${mid[1]} ${p1[0]} ${p1[1]} `;
+    }
+    return d;
+  };
   return (
     <g>
       {/* Gable end wall, then the overhanging roof edge above it. */}
@@ -227,11 +254,8 @@ function GableRoof({ x0, y0, x1, y1, z, rise, o = 6, s, wall }: { x0: number; y0
       <polygon points={pts([G0, G1, GT])} fill="url(#hf-side)" />
       <polygon points={pts([P(x1 + o, y0 - o, z), F1, R1])} fill="none" stroke={s.dark} strokeWidth={4} strokeLinejoin="round" />
       <polygon points={pts([R0, R1, F1, F0])} fill={s.base} />
-      {rows.map((t) => {
-        const [a1, a2] = lerp(R0, F0, t);
-        const [b1, b2] = lerp(R1, F1, t);
-        return <line key={t} x1={a1} y1={a2} x2={b1} y2={b2} stroke="#000" strokeOpacity={0.14} strokeWidth={0.9} />;
-      })}
+      <path d={rows.map(shingleRow).join(' ')} fill="none" stroke="#000" strokeOpacity={0.26} strokeWidth={1} />
+      <path d={rows.map((t, k) => shingleRow(t - 0.03, k)).join(' ')} fill="none" stroke="#fff" strokeOpacity={0.16} strokeWidth={0.8} />
       <polygon points={pts([R0, R1, F1, F0])} fill="url(#hf-roof)" />
       <line x1={R0[0]} y1={R0[1]} x2={R1[0]} y2={R1[1]} stroke="#fff" strokeOpacity={0.55} strokeWidth={1.6} />
       <line x1={F0[0]} y1={F0[1]} x2={F1[0]} y2={F1[1]} stroke="#000" strokeOpacity={0.25} strokeWidth={1.6} />
@@ -559,7 +583,7 @@ function Headquarters({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
       <g>
         <IsoShadow x0={hall.x0} y0={hall.y0} x1={hall.x1} y1={hall.y1} />
         <IsoBox b={{ x0: ox + 70, y0: hall.y1, x1: ox + 130, y1: oy + 182, z0: 0, z1: 5 }} s={m.wood} courses={false} />
-        <IsoBox b={hall} s={m.wood} />
+        <IsoBox b={hall} s={m.wood} mat="plank" />
         <TimberFrame b={hall} brace={false} />
         <IsoDoor points={leftQuad(hall, 0.42, 0.58, 0, 0.62)} />
         <Lantern at={P(hall.x0 + (hall.x1 - hall.x0) * 0.62, hall.y1 + 1, 34)} lit />
@@ -735,7 +759,7 @@ function Lodge({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
     return (
       <g>
         <IsoShadow x0={b.x0} y0={b.y0} x1={b.x1} y1={b.y1} />
-        <IsoBox b={b} s={m.wood} />
+        <IsoBox b={b} s={m.wood} mat="plank" />
         <IsoDoor points={leftQuad(b, 0.42, 0.62, 0, 0.66)} />
         <polygon points={leftQuad(b, 0.42, 0.62, 0, 0.66)} fill={s.dark} opacity={0.55} />
         <IsoWindow points={leftQuad(b, 0.12, 0.3, 0.38, 0.7)} lit={lit} />
@@ -754,7 +778,7 @@ function Lodge({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
     <g>
       <IsoShadow x0={plinth.x0} y0={plinth.y0} x1={plinth.x1} y1={plinth.y1} />
       <Plinth b={plinth} s={grand ? darkStone(m) : m.stone} />
-      <IsoBox b={ground} s={grand ? m.stone : m.wood} />
+      <IsoBox b={ground} s={grand ? m.stone : m.wood} mat={grand ? 'stone' : 'plank'} />
       {!grand && <TimberFrame b={ground} />}
       {grand ? <BandedDoor b={ground} u0={0.4} u1={0.62} h={0.8} s={s} /> : <IsoDoor points={leftQuad(ground, 0.42, 0.62, 0, 0.62)} />}
       <IsoWindow points={leftQuad(ground, 0.12, 0.3, 0.4, 0.72)} lit={lit} />
@@ -768,7 +792,7 @@ function Lodge({ ox, oy, level, lit, s, m, decoration }: IsoProps) {
       <Firewood at={P(ox + 92, oy + 34, plinth.z1)} wood={m.wood} />
       {upper && (
         <g>
-          <IsoBox b={upper} s={m.wood} />
+          <IsoBox b={upper} s={m.wood} mat="plank" />
           <TimberFrame b={upper} />
           <IsoWindow points={leftQuad(upper, 0.2, 0.36, 0.25, 0.7)} lit={lit} />
           <IsoWindow points={leftQuad(upper, 0.64, 0.8, 0.25, 0.7)} lit={lit} />

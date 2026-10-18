@@ -7046,4 +7046,66 @@
       animation: none;
     }
   }
+
+  /* ---------- Sky behind the floating island ---------- */
+  .base-board-wrap {
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 92%, rgba(255, 236, 190, 0.55) 0%, rgba(255, 236, 190, 0) 70%),
+      linear-gradient(180deg, #9fd3ff 0%, #c7e6ff 45%, #fde9c8 100%);
+    isolation: isolate;
+  }
+  .dark .base-board-wrap {
+    background:
+      radial-gradient(1.5px 1.5px at 12% 18%, rgba(255, 255, 255, 0.8) 50%, transparent 51%),
+      radial-gradient(1px 1px at 28% 9%, rgba(255, 255, 255, 0.7) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 71% 14%, rgba(255, 255, 255, 0.75) 50%, transparent 51%),
+      radial-gradient(1px 1px at 86% 26%, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
+      radial-gradient(1px 1px at 47% 6%, rgba(255, 255, 255, 0.6) 50%, transparent 51%),
+      radial-gradient(ellipse 60% 40% at 50% 95%, rgba(255, 150, 110, 0.28) 0%, rgba(255, 150, 110, 0) 70%),
+      linear-gradient(180deg, #141a33 0%, #232a4d 50%, #3b2d4f 100%);
+  }
+  /* Two soft clouds drifting behind the island. */
+  .base-board-wrap::before,
+  .base-board-wrap::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    width: 9rem;
+    height: 2.6rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 2.2rem -0.9rem 0 0.2rem rgba(255, 255, 255, 0.75), 4.6rem 0.1rem 0 -0.2rem rgba(255, 255, 255, 0.7);
+    filter: blur(1px);
+    pointer-events: none;
+    animation: base-sky-cloud 90s linear infinite;
+  }
+  .base-board-wrap::before {
+    top: 14%;
+    left: -12rem;
+  }
+  .base-board-wrap::after {
+    top: 30%;
+    left: -12rem;
+    transform: scale(0.7);
+    opacity: 0.8;
+    animation-duration: 130s;
+    animation-delay: -60s;
+  }
+  .dark .base-board-wrap::before,
+  .dark .base-board-wrap::after {
+    background: rgba(170, 180, 230, 0.16);
+    box-shadow: 2.2rem -0.9rem 0 0.2rem rgba(170, 180, 230, 0.16), 4.6rem 0.1rem 0 -0.2rem rgba(170, 180, 230, 0.14);
+  }
+  @keyframes base-sky-cloud {
+    from { translate: 0 0; }
+    to { translate: calc(100vw + 24rem) 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .base-board-wrap::before,
+    .base-board-wrap::after,
+    .base-cloud-shadows {
+      animation: none;
+      display: none;
+    }
+  }
 }

@@ -37,7 +37,7 @@ function toMarkup(node: ReactNode, rect: BakeRect, pxW: number, pxH: number): st
 }
 
 /**
- * Bake `node` (SVG content in map units) covering `rect` into a PNG object URL.
+ * Bake `node` (SVG content in map units) covering `rect` into a PNG data URL.
  * `pxW` is the bitmap width; height follows the rect's aspect ratio.
  */
 export async function bakeGround(node: ReactNode, rect: BakeRect, pxW: number): Promise<string> {
@@ -49,22 +49,17 @@ export async function bakeGround(node: ReactNode, rect: BakeRect, pxW: number): 
     h = MAX;
   }
   const markup = toMarkup(node, rect, w, h);
+  // data: URLs (not blob:) so the bake also works on hosts with strict
+  // content-security policies, which often allow only data: images.
   const img = new Image();
   img.decoding = 'async';
-  const svgUrl = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }));
-  try {
-    img.src = svgUrl;
-    await img.decode();
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('no canvas');
-    ctx.drawImage(img, 0, 0, w, h);
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
-    if (!blob) throw new Error('no blob');
-    return URL.createObjectURL(blob);
-  } finally {
-    URL.revokeObjectURL(svgUrl);
-  }
+  img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
+  await img.decode();
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('no canvas');
+  ctx.drawImage(img, 0, 0, w, h);
+  return canvas.toDataURL('image/png');
 }

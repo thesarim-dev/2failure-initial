@@ -105,6 +105,40 @@ const DEPTH_Y = 0.55;
 export function ArtDefs() {
   return (
     <defs>
+      {/*
+        Material textures, mapped into each wall's plane. Pattern units are
+        world units: u along the wall, v down the wall. L = front-left walls
+        (y = y1, running along X); R = front-right walls (x = x1, along Y).
+      */}
+      {(['L', 'R'] as const).map((side) => {
+        const tf = side === 'L' ? 'matrix(0.5 0.25 0 0.6 0 0)' : 'matrix(-0.5 0.25 0 0.6 0 0)';
+        return (
+          <g key={side}>
+            <pattern id={`mat-stone-${side}`} width="48" height="22" patternUnits="userSpaceOnUse" patternTransform={tf}>
+              <rect x="0" y="0" width="17" height="11" fill="#000" opacity="0.05" />
+              <rect x="31" y="0" width="17" height="11" fill="#fff" opacity="0.05" />
+              <rect x="10" y="11" width="20" height="11" fill="#fff" opacity="0.06" />
+              <path d="M0 0.5 H48 M0 11.5 H48 M17 0 V11 M31 0 V11 M10 11 V22 M30 11 V22" stroke="#000" strokeOpacity="0.26" strokeWidth="1.3" fill="none" />
+              <path d="M1 2 H16 M18 2 H30 M32 2 H47 M1 13 H9 M11 13 H29 M31 13 H47" stroke="#fff" strokeOpacity="0.22" strokeWidth="0.9" fill="none" />
+              <circle cx="7" cy="6" r="0.9" fill="#000" opacity="0.14" />
+              <circle cx="40" cy="17" r="1.1" fill="#000" opacity="0.12" />
+              <circle cx="22" cy="5" r="0.7" fill="#fff" opacity="0.18" />
+            </pattern>
+            <pattern id={`mat-plank-${side}`} width="44" height="8" patternUnits="userSpaceOnUse" patternTransform={tf}>
+              <path d="M0 7.5 H44" stroke="#000" strokeOpacity="0.32" strokeWidth="1.3" />
+              <path d="M0 1 H44" stroke="#fff" strokeOpacity="0.16" strokeWidth="0.9" />
+              <path d="M6 4 Q 12 3.2 18 4 M26 3.4 Q 32 4.4 38 3.6" stroke="#000" strokeOpacity="0.12" strokeWidth="0.7" fill="none" />
+              <path d="M22 0 V7" stroke="#000" strokeOpacity="0.18" strokeWidth="0.8" />
+              <circle cx="20" cy="2.6" r="0.7" fill="#000" opacity="0.3" />
+            </pattern>
+          </g>
+        );
+      })}
+      <linearGradient id="mat-ao" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stopColor="#000" stopOpacity="0.32" />
+        <stop offset="1" stopColor="#000" stopOpacity="0" />
+      </linearGradient>
+
       {/* Walls: lit from above, darker toward the ground (ambient occlusion). */}
       <linearGradient id="hf-face" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#ffffff" stopOpacity="0.22" />
