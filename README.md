@@ -423,6 +423,10 @@ If the home screen shows a red error banner:
 
 ## Your base (the game)
 
+### Every building and decoration has its own story
+
+Buildings carry the apparatus of their job: the Watchtower has a ladder and an alarm bell, the Forge an anvil and hammer, a quench barrel and a coal heap, the Training Yard a straw dummy and a stand of weight plates, the Crystal Spring reeds and a frog on a stone, the Garden a watering can, and stone walls are climbed by ivy. Decorations look used: a book and a mug on the bench, a pot over the campfire, a pigeon on the statue, a towel on the pull-up bar, gloves by the punching bag, a bucket on the well, a lantern and boots by the tent, a basket on the picnic table, a jack-o'-lantern among the pumpkins, a bluebird at the birdhouse, a butterfly over the flowers, a frog on the lily pad, and more.
+
 ### Materials, light and sky
 
 Buildings have real materials: stone walls show cut-stone courses and wooden walls show planks, both following the isometric perspective, and roofs have rows of scalloped shingles. Everything that stands up casts a soft shadow away from the light, walls darken slightly where they meet the ground, cloud shadows drift slowly over the land, and the grass has gentle colour patches. The island floats in a sky (blue by day in light mode, a starry dusk in dark mode) with clouds drifting behind it.

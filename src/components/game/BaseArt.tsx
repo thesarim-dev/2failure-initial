@@ -742,6 +742,309 @@ function TrainingYard({ level, lit, s, m, decoration, plan }: BuildingProps & { 
 // Decor
 // ---------------------------------------------------------------------------
 
+
+/**
+ * Lived-in details on decorations: the small story of who uses each thing
+ * (a book left on the bench, a pot over the fire, a pigeon on the statue).
+ * Drawn in the same 100 × 100 box as the decoration.
+ */
+function LivedIn({ id, lit, style }: { id: string; lit: boolean; style?: string }) {
+  switch (id) {
+    case 'bench':
+      return (
+        <g>
+          <rect x={27} y={53} width={13} height={4.5} rx={0.8} fill="#c0392b" />
+          <rect x={28} y={53.6} width={11} height={1.6} fill="#fff6e0" />
+          <rect x={64} y={49} width={6} height={7} rx={1} fill="#f5f0e6" stroke="#8a7a66" strokeWidth={0.5} />
+          <path d="M70 51 q 3 0 3 2.5 q 0 2.5 -3 2.5" stroke="#8a7a66" strokeWidth={0.9} fill="none" />
+          <ellipse cx={67} cy={49.4} rx={2.6} ry={0.8} fill="#5a3a20" />
+        </g>
+      );
+    case 'campfire':
+      return (
+        <g>
+          {/* Tripod with the pot hanging just above the flames. */}
+          <g stroke="#5a3a20" strokeWidth={2} strokeLinecap="round">
+            <line x1={50} y1={2} x2={28} y2={82} />
+            <line x1={50} y1={2} x2={72} y2={82} />
+            <line x1={50} y1={2} x2={55} y2={88} />
+          </g>
+          <line x1={50} y1={4} x2={50} y2={14} stroke="#4b4f57" strokeWidth={1} />
+          <ellipse cx={50} cy={21} rx={10} ry={7} fill="#2b2d31" />
+          <ellipse cx={50} cy={15} rx={10} ry={2.4} fill="#4a4d54" />
+          <ellipse cx={46.4} cy={19.6} rx={2.6} ry={3.4} fill="#ffffff" opacity={0.12} />
+          <g className="base-smoke" opacity={0.6}>
+            <circle cx={52} cy={8} r={3} fill="#e5e7eb" />
+          </g>
+          {[0, 1, 2].map((i) => (
+            <g key={i}>
+              <circle cx={82 + (i % 2) * 6} cy={84 - Math.floor(i / 2) * 5} r={3.4} fill="#8a5a2b" stroke="#4b2e14" strokeWidth={0.6} />
+              <circle cx={82 + (i % 2) * 6} cy={84 - Math.floor(i / 2) * 5} r={1.4} fill="#d9a55a" />
+            </g>
+          ))}
+        </g>
+      );
+    case 'picnic':
+      return (
+        <g>
+          <path d="M22 38 Q 29 26 36 38" stroke="#7a4a20" strokeWidth={1.4} fill="none" />
+          <path d="M21 38 H37 L35 48 H23 Z" fill="#c08a4a" stroke="#7a4a20" strokeWidth={0.7} />
+          <path d="M22 41 H36 M22.6 44 H35.4" stroke="#7a4a20" strokeWidth={0.6} opacity={0.7} />
+          <path d="M24 38 L27 34 L31 37 Z" fill="#e5484d" />
+        </g>
+      );
+    case 'statue': {
+      const [x, y] = style === 'runner' ? [54, 11] : [51, 13];
+      return (
+        <g>
+          <ellipse cx={x + 1.5} cy={y} rx={5} ry={3.2} fill="#8b8f99" />
+          <path d={`M${x + 5} ${y - 1} l4 -1 l-1 3 Z`} fill="#6b7280" />
+          <circle cx={x - 2.6} cy={y - 2.4} r={2.4} fill="#9aa1ad" />
+          <circle cx={x - 3.2} cy={y - 2.8} r={0.55} fill="#111" />
+          <path d={`M${x - 5} ${y - 2.2} l-1.6 0.8 l1.6 0.6 Z`} fill="#f2a541" />
+          <path d={`M${x - 0.5} ${y - 0.5} q 1.2 1.2 2.6 0.2`} stroke="#5cc7a8" strokeWidth={0.8} fill="none" />
+        </g>
+      );
+    }
+    case 'pullupbar':
+      return (
+        <g>
+          <path d="M27 17 H36 V38 L33 36 L30 38 L27 36 Z" fill="#3b82f6" />
+          <rect x={27} y={17} width={9} height={4} fill="#2563eb" />
+          <path d="M27 27 H36 M27 30 H36" stroke="#ffffff" strokeWidth={1} opacity={0.8} />
+        </g>
+      );
+    case 'punchbag':
+      return (
+        <g>
+          {[[72, 86], [83, 82]].map(([x, y], i) => (
+            <g key={i}>
+              <ellipse cx={x} cy={y} rx={5.2} ry={4} fill="#c0392b" />
+              <ellipse cx={x - 1.6} cy={y - 1.2} rx={1.6} ry={1} fill="#ff8a8a" opacity={0.7} />
+              <rect x={x + 3} y={y - 2} width={3} height={4} rx={1} fill="#f5f0e6" />
+            </g>
+          ))}
+        </g>
+      );
+    case 'well':
+      return (
+        <g>
+          <line x1={50} y1={40} x2={68} y2={47} stroke="#a0703c" strokeWidth={0.9} />
+          <path d="M62 47 H74 L72 57 H64 Z" fill="#8a5a2b" stroke="#4b2e14" strokeWidth={0.7} />
+          <path d="M62.6 50 H73.4 M63.4 54 H72.6" stroke="#3b3f46" strokeWidth={0.8} />
+          <ellipse cx={68} cy={47} rx={6} ry={1.5} fill="#2f4a5a" />
+        </g>
+      );
+    case 'tent':
+      return (
+        <g>
+          {lit && <circle cx={88} cy={70} r={9} fill="#ffcf5a" opacity={0.25} />}
+          <rect x={85} y={66} width={6} height={9} rx={1.2} fill={lit ? '#ffe28a' : '#d9c48a'} stroke="#5a4a2a" strokeWidth={0.8} />
+          <path d="M84 66 H92 M86 63 Q 88 60.5 90 63" stroke="#5a4a2a" strokeWidth={0.9} fill="none" />
+          <rect x={84} y={75} width={8} height={1.6} fill="#5a4a2a" />
+          <path d="M16 86 h6 l1 -5 h-4 v-3 h-3 Z M24 88 h6 l1 -5 h-4 v-3 h-3 Z" fill="#5a3a20" />
+        </g>
+      );
+    case 'sandcastle':
+      return (
+        <g>
+          <path d="M78 74 H90 L88 86 H80 Z" fill="#e5484d" stroke="#9c2a33" strokeWidth={0.7} />
+          <path d="M79 76 Q 84 70 89 76" stroke="#9c2a33" strokeWidth={0.8} fill="none" />
+          <line x1={12} y1={88} x2={20} y2={70} stroke="#f2a541" strokeWidth={1.6} strokeLinecap="round" />
+          <path d="M18 72 L24 66 L22 64 L16 70 Z" fill="#3b82f6" />
+        </g>
+      );
+    case 'parasol':
+      return (
+        <g>
+          <path d="M12 82 L36 76 L42 86 L18 92 Z" fill="#3b82f6" />
+          <path d="M16 81 L38 75.6 M19 85 L40 80" stroke="#ffffff" strokeWidth={1.4} opacity={0.85} />
+          <circle cx={80} cy={80} r={6} fill="#ffffff" stroke="#9aa1ad" strokeWidth={0.6} />
+          <path d="M74 80 A6 6 0 0 1 80 74 L80 80 Z" fill="#e5484d" />
+          <path d="M80 86 A6 6 0 0 1 74 80 L80 80 Z" fill="#3b82f6" />
+          <path d="M86 80 A6 6 0 0 1 80 86 L80 80 Z" fill="#f2d03b" />
+        </g>
+      );
+    case 'coop':
+      return (
+        <g fill="#e9c46a">
+          {[[34, 89], [40, 91], [47, 88], [55, 91], [61, 89], [68, 91], [44, 93], [58, 93]].map(([x, y], i) => (
+            <ellipse key={i} cx={x} cy={y} rx={1.1} ry={0.7} />
+          ))}
+        </g>
+      );
+    case 'birdhouse':
+      return (
+        <g>
+          <ellipse cx={66} cy={40} rx={4.2} ry={3} fill="#3b82f6" />
+          <circle cx={63} cy={37.6} r={2.2} fill="#60a5fa" />
+          <path d="M61 37.8 l-2 0.7 l2 0.6 Z" fill="#f2a541" />
+          <circle cx={62.6} cy={37.2} r={0.5} fill="#111" />
+          <path d="M69 40 l4 -1 l-1 2.6 Z" fill="#1e40af" />
+          <ellipse cx={66} cy={41.4} rx={2.6} ry={1.2} fill="#fde68a" />
+        </g>
+      );
+    case 'pumpkins':
+      return (
+        <g fill={lit ? '#ffcf5a' : '#5a2d0c'}>
+          <path d="M28 66 l3 -4 l3 4 Z M36 66 l3 -4 l3 4 Z" />
+          <path d="M28 73 Q 34 79 40 73 L38 74 L36 72 L34 74 L32 72 L30 74 Z" />
+          {lit && <circle cx={34} cy={70} r={14} fill="#ffb347" opacity={0.16} />}
+        </g>
+      );
+    case 'rock':
+      return (
+        <g>
+          {[[22, 84, 1], [29, 86, 0.8]].map(([x, y, k], i) => (
+            <g key={i}>
+              <rect x={x - 1} y={y - 6 * k} width={2} height={6 * k} fill="#f5f0e6" />
+              <path d={`M${x - 4.2 * k} ${y - 5 * k} Q ${x} ${y - 11 * k} ${x + 4.2 * k} ${y - 5 * k} Z`} fill="#e5484d" />
+              <circle cx={x - 1.4 * k} cy={y - 7 * k} r={0.8} fill="#fff" />
+              <circle cx={x + 1.6 * k} cy={y - 6.4 * k} r={0.6} fill="#fff" />
+            </g>
+          ))}
+          {style !== 'mossy' && <path d="M48 40 Q 56 36 64 42 Q 56 42 48 44 Z" fill="#5f9e4a" opacity={0.85} />}
+        </g>
+      );
+    case 'bush':
+      return style === 'flowering' ? null : (
+        <g fill="#c0392b">
+          {[[38, 60], [46, 68], [60, 56], [66, 66], [52, 54]].map(([x, y], i) => (
+            <g key={i}>
+              <circle cx={x} cy={y} r={2.4} />
+              <circle cx={x - 0.7} cy={y - 0.7} r={0.7} fill="#ff9a9a" />
+            </g>
+          ))}
+        </g>
+      );
+    case 'flowers':
+      return (
+        <g className="base-flutter">
+          <path d="M60 14 q -6 -6 -7 1 q 2 4 7 -1 Z M60 14 q 6 -6 7 1 q -2 4 -7 -1 Z" fill="#f2a541" stroke="#a0581a" strokeWidth={0.5} />
+          <line x1={60} y1={11} x2={60} y2={18} stroke="#3b2a1a" strokeWidth={1} />
+        </g>
+      );
+    case 'barn':
+      return (
+        <g>
+          <path d="M80 90 L88 84 L96 88 L88 94 Z" fill="#e9c46a" stroke="#b8952e" strokeWidth={0.6} />
+          <path d="M80 90 L80 84 L88 78 L96 82 L96 88" fill="#f2d27a" stroke="#b8952e" strokeWidth={0.6} />
+          <line x1={74} y1={92} x2={84} y2={62} stroke="#7a5230" strokeWidth={1.4} strokeLinecap="round" />
+          <path d="M81 60 l1 -6 M84 61 l1.4 -6 M87 62 l1.6 -6 M81 60 L88 62" stroke="#6b7280" strokeWidth={1} fill="none" />
+        </g>
+      );
+    case 'lamp':
+      return (
+        <g className="base-buzz" fill="#f5f0e6" opacity={lit ? 0.9 : 0.5}>
+          <circle cx={60} cy={14} r={1.2} />
+          <circle cx={40} cy={22} r={1} />
+          <circle cx={56} cy={28} r={0.9} />
+        </g>
+      );
+    case 'signpost':
+      return (
+        <g>
+          <rect x={41} y={64} width={10} height={12} fill="#fff8e6" stroke="#c9b48a" strokeWidth={0.5} transform="rotate(-6 46 70)" />
+          <path d="M43 68 h6 M43 71 h5 M43 74 h6" stroke="#8a7a66" strokeWidth={0.6} transform="rotate(-6 46 70)" />
+          <circle cx={46} cy={65.4} r={1.1} fill="#e5484d" />
+        </g>
+      );
+    case 'pine':
+      return (
+        <g>
+          {[[36, 88], [62, 90], [44, 92]].map(([x, y], i) => (
+            <g key={i}>
+              <ellipse cx={x} cy={y} rx={2.6} ry={3.4} fill="#8a5a2b" transform={`rotate(${i * 40 - 30} ${x} ${y})`} />
+              <path d={`M${x - 2} ${y - 1} h4 M${x - 2} ${y + 1} h4`} stroke="#5a3a1c" strokeWidth={0.6} transform={`rotate(${i * 40 - 30} ${x} ${y})`} />
+            </g>
+          ))}
+        </g>
+      );
+    case 'gazebo':
+      return (
+        <g>
+          <rect x={44} y={70} width={12} height={2.4} rx={1} fill="#8a5a2b" />
+          <rect x={49} y={72} width={2} height={7} fill="#5a3a1c" />
+          <ellipse cx={50} cy={67.5} rx={3.6} ry={2.8} fill="#f5f0e6" stroke="#9aa1ad" strokeWidth={0.5} />
+          <path d="M53.4 67 l3 -2" stroke="#9aa1ad" strokeWidth={1} strokeLinecap="round" />
+          <circle cx={50} cy={64.6} r={0.9} fill="#9aa1ad" />
+          <rect x={44.6} y={68} width={2.4} height={2} rx={0.5} fill="#f5f0e6" />
+        </g>
+      );
+    case 'plyobox':
+      return (
+        <g>
+          {[[44, 50], [56, 49]].map(([x, y], i) => (
+            <g key={i} fill="#ffffff" opacity={0.75}>
+              <ellipse cx={x} cy={y} rx={2.6} ry={1.6} />
+              {[-2, -0.8, 0.6, 2].map((d) => (
+                <ellipse key={d} cx={x + d} cy={y - 2} rx={0.5} ry={0.9} />
+              ))}
+            </g>
+          ))}
+          <path d="M14 86 q 6 -6 14 -2 q 8 4 2 8 q -8 3 -16 -2 Z" fill="none" stroke="#e5484d" strokeWidth={1.2} />
+          <rect x={12} y={83} width={3} height={5} rx={1} fill="#1f2937" />
+          <rect x={28} y={88} width={3} height={5} rx={1} fill="#1f2937" />
+        </g>
+      );
+    case 'hay':
+      return (
+        <g>
+          <line x1={58} y1={44} x2={74} y2={14} stroke="#7a5230" strokeWidth={1.6} strokeLinecap="round" />
+          <path d="M55 46 l-2 7 M58 47 l-1 7 M61 48 l0 7 M54.5 46 L62 48.5" stroke="#6b7280" strokeWidth={1.1} fill="none" />
+        </g>
+      );
+    case 'barrels':
+      return (
+        <g>
+          <rect x={46} y={30} width={7} height={6} rx={1} fill="#f5f0e6" stroke="#8a7a66" strokeWidth={0.5} />
+          <ellipse cx={49.5} cy={30} rx={3.5} ry={1} fill="#e9c46a" />
+          <path d="M53 31.5 q 2.6 0 2.6 2 q 0 2 -2.6 2" stroke="#8a7a66" strokeWidth={0.8} fill="none" />
+          <rect x={30} y={64} width={4} height={3} fill="#9aa1ad" />
+          <rect x={31} y={67} width={1.6} height={3} fill="#6b7280" />
+        </g>
+      );
+    case 'fountain':
+      return (
+        <g fill="#f2d03b">
+          {[[40, 74], [57, 76], [64, 72], [47, 77]].map(([x, y], i) => (
+            <ellipse key={i} cx={x} cy={y} rx={1.4} ry={0.7} className={i % 2 ? 'base-sparkle' : undefined} />
+          ))}
+        </g>
+      );
+    case 'lilypad':
+      return (
+        <g>
+          <ellipse cx={44} cy={46} rx={6} ry={4.2} fill="#4caf50" />
+          <circle cx={41} cy={42.4} r={2} fill="#5cc760" />
+          <circle cx={47} cy={42.4} r={2} fill="#5cc760" />
+          <circle cx={41} cy={42.2} r={0.8} fill="#111" />
+          <circle cx={47} cy={42.2} r={0.8} fill="#111" />
+          <path d="M41 47 q 3 1.6 6 0" stroke="#2e7d32" strokeWidth={0.8} fill="none" />
+        </g>
+      );
+    case 'arch':
+      return (
+        <g>
+          <line x1={50} y1={16} x2={50} y2={24} stroke="#4b3a2a" strokeWidth={0.9} />
+          {lit && <circle cx={50} cy={28} r={7} fill="#ffcf5a" opacity={0.25} />}
+          <rect x={47} y={24} width={6} height={8} rx={1.2} fill={lit ? '#ffe28a' : '#d9c48a'} stroke="#5a4a2a" strokeWidth={0.7} />
+          <path d="M46 24 H54 M46 32 H54" stroke="#5a4a2a" strokeWidth={0.9} />
+        </g>
+      );
+    case 'dipbars':
+      return (
+        <g>
+          <rect x={84} y={76} width={5} height={11} rx={1.6} fill="#38bdf8" opacity={0.85} />
+          <rect x={84.6} y={74} width={3.8} height={2.4} rx={0.6} fill="#1e3a8a" />
+          <rect x={85} y={79} width={1.2} height={6} fill="#ffffff" opacity={0.6} />
+        </g>
+      );
+    default:
+      return null;
+  }
+}
+
 function Decor({ id, lit, style, color }: { id: string; lit: boolean; style?: string; color?: string }) {
   const accent = color ? THEME_SHADES[color as PaletteId] : undefined;
   switch (id) {
@@ -1679,7 +1982,12 @@ export function ItemArt({
     case 'yard':
       return <TrainingYard {...props} plan={plan} />;
     default:
-      return <Decor id={item.itemId} lit={lit} style={item.style} color={item.color} />;
+      return (
+        <g>
+          <Decor id={item.itemId} lit={lit} style={item.style} color={item.color} />
+          <LivedIn id={item.itemId} lit={lit} style={item.style} />
+        </g>
+      );
   }
 }
 

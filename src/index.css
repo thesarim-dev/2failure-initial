@@ -7108,4 +7108,22 @@
       display: none;
     }
   }
+
+  /* A butterfly flutters over the flower bed. */
+  .base-flutter {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: base-flutter 2.4s ease-in-out infinite;
+  }
+  @keyframes base-flutter {
+    0%, 100% { transform: translate(0, 0) scaleX(1); }
+    25% { transform: translate(-4px, -3px) scaleX(0.4); }
+    50% { transform: translate(-7px, 1px) scaleX(1); }
+    75% { transform: translate(-3px, 3px) scaleX(0.4); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .base-flutter {
+      animation: none;
+    }
+  }
 }

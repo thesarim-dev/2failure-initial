@@ -1165,6 +1165,138 @@ export function isIsoItem(itemId: string): boolean {
  * Draw an isometric model for a placed item at (ox, oy) = its footprint's
  * top corner in world units.
  */
+
+/**
+ * Each building's signature: the apparatus that says what happens there,
+ * standing on the ground in front of it so the place feels used.
+ */
+function Signature({ itemId, ox, oy, lit, level, style }: { itemId: string; ox: number; oy: number; lit: boolean; level: number; style?: string }) {
+  const at = (x: number, y: number, z = 0) => P(ox + x, oy + y, z);
+  switch (itemId) {
+    case 'watchtower': {
+      // A ladder up the front wall and an alarm bell under the deck.
+      const r0 = at(40, 74, 0);
+      const r1 = at(40, 74, 54);
+      const s0 = at(52, 74, 0);
+      const s1 = at(52, 74, 54);
+      const [bx, by] = at(78, 78, 58);
+      return (
+        <g pointerEvents="none">
+          <g stroke="#7a5230" strokeWidth={1.8} strokeLinecap="round">
+            <line x1={r0[0]} y1={r0[1]} x2={r1[0]} y2={r1[1]} />
+            <line x1={s0[0]} y1={s0[1]} x2={s1[0]} y2={s1[1]} />
+            {[0.15, 0.32, 0.49, 0.66, 0.83].map((t) => {
+              const a = [r0[0] + (r1[0] - r0[0]) * t, r0[1] + (r1[1] - r0[1]) * t];
+              const b = [s0[0] + (s1[0] - s0[0]) * t, s0[1] + (s1[1] - s0[1]) * t];
+              return <line key={t} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} strokeWidth={1.4} />;
+            })}
+          </g>
+          <line x1={bx} y1={by - 10} x2={bx} y2={by - 4} stroke="#4b3a2a" strokeWidth={1.2} />
+          <path d={`M${bx - 5} ${by + 4} Q ${bx - 4.6} ${by - 5}, ${bx} ${by - 5} Q ${bx + 4.6} ${by - 5}, ${bx + 5} ${by + 4} Z`} fill="#c9962e" stroke="#7a5a18" strokeWidth={0.7} />
+          <ellipse cx={bx} cy={by + 4} rx={5} ry={1.3} fill="#7a5a18" />
+          <circle cx={bx} cy={by + 5.4} r={1.1} fill="#5a4010" />
+          <path d={`M${bx - 2.6} ${by - 2} Q ${bx - 2.4} ${by - 4} ${bx - 1} ${by - 4.2}`} stroke="#fff3c4" strokeWidth={0.8} fill="none" />
+        </g>
+      );
+    }
+    case 'forge': {
+      // Anvil and hammer, a quench barrel, and a heap of coal.
+      const [ax, ay] = at(16, 92, 0);
+      const [qx, qy] = at(92, 26, 0);
+      const [cx, cy] = at(92, 52, 0);
+      return (
+        <g pointerEvents="none">
+          <rect x={ax - 3} y={ay - 6} width={6} height={6} fill="#4b4f57" />
+          <path d={`M${ax - 9} ${ay - 9} H${ax + 8} Q ${ax + 11} ${ay - 9} ${ax + 12} ${ay - 7} H${ax + 6} L${ax + 4} ${ay - 6} H${ax - 6} Z`} fill="#5c616b" stroke="#2f3238" strokeWidth={0.6} />
+          <path d={`M${ax - 8} ${ay - 9} H${ax + 8}`} stroke="#9aa1ad" strokeWidth={0.8} />
+          <line x1={ax - 2} y1={ay - 10} x2={ax + 5} y2={ay - 16} stroke="#7a5230" strokeWidth={1.2} strokeLinecap="round" />
+          <rect x={ax + 3} y={ay - 18.5} width={5} height={3} rx={0.6} fill="#3b3f46" transform={`rotate(-40 ${ax + 5.5} ${ay - 17})`} />
+          <rect x={qx - 5} y={qy - 9} width={10} height={9} rx={2} fill="#8a5a2b" stroke="#4b2e14" strokeWidth={0.7} />
+          <ellipse cx={qx} cy={qy - 9} rx={5} ry={1.8} fill="#2f4a5a" stroke="#4b2e14" strokeWidth={0.6} />
+          <path d={`M${qx - 5} ${qy - 6} h10 M${qx - 5} ${qy - 2.5} h10`} stroke="#3b3f46" strokeWidth={0.8} />
+          <path d={`M${cx - 7} ${cy} Q ${cx - 4} ${cy - 7}, ${cx} ${cy - 6} Q ${cx + 5} ${cy - 7}, ${cx + 7} ${cy} Z`} fill="#1f1f22" />
+          {[[-3, -3], [1, -5], [3, -2]].map(([dx, dy], i) => (
+            <circle key={i} cx={cx + dx} cy={cy + dy} r={1} fill={lit ? '#ff8a3d' : '#3a3a3e'} />
+          ))}
+        </g>
+      );
+    }
+    case 'yard': {
+      // A straw training dummy and a stand of weight plates.
+      const [dx, dy] = at(30, 172, 0);
+      const [px, py] = at(172, 30, 0);
+      return (
+        <g pointerEvents="none">
+          <line x1={dx} y1={dy} x2={dx} y2={dy - 26} stroke="#7a5230" strokeWidth={2} />
+          <line x1={dx - 8} y1={dy - 18} x2={dx + 8} y2={dy - 18} stroke="#7a5230" strokeWidth={1.8} />
+          <ellipse cx={dx} cy={dy - 15} rx={5.4} ry={7} fill="#d9b76a" stroke="#a07a32" strokeWidth={0.8} />
+          <path d={`M${dx - 5} ${dy - 15} h10 M${dx - 4.6} ${dy - 12} h9.2`} stroke="#a07a32" strokeWidth={0.7} />
+          <circle cx={dx} cy={dy - 26} r={3.8} fill="#e2c47c" stroke="#a07a32" strokeWidth={0.8} />
+          <line x1={px} y1={py} x2={px} y2={py - 16} stroke="#4b5563" strokeWidth={1.6} />
+          {[0, 1, 2].map((i) => (
+            <ellipse key={i} cx={px} cy={py - 2 - i * 3.2} rx={6.4 - i * 1.1} ry={2.2} fill={i === 0 ? '#2f3542' : i === 1 ? '#c0392b' : '#2f6fd1'} stroke="#111827" strokeWidth={0.5} />
+          ))}
+        </g>
+      );
+    }
+    case 'spring': {
+      // Reeds by the water and a frog on a stone.
+      const [rx, ry] = at(12, 88, 0);
+      const [fx, fy] = at(88, 84, 0);
+      return (
+        <g pointerEvents="none">
+          {[-3, 0, 3, 5].map((d, i) => (
+            <g key={i}>
+              <path d={`M${rx + d} ${ry} Q ${rx + d - 1} ${ry - 8}, ${rx + d + (i % 2 ? 2 : -2)} ${ry - 14 - i}`} stroke="#3f8a3a" strokeWidth={1.2} fill="none" />
+              {i % 2 === 0 && <ellipse cx={rx + d + (i % 2 ? 2 : -2)} cy={ry - 12 - i} rx={0.9} ry={2.4} fill="#7a5230" />}
+            </g>
+          ))}
+          <ellipse cx={fx} cy={fy - 1.5} rx={6} ry={2.6} fill="#9aa1ad" stroke="#6b7280" strokeWidth={0.5} />
+          <ellipse cx={fx} cy={fy - 5} rx={3.4} ry={2.4} fill="#4caf50" />
+          <circle cx={fx - 1.6} cy={fy - 7.2} r={1.2} fill="#5cc760" />
+          <circle cx={fx + 1.6} cy={fy - 7.2} r={1.2} fill="#5cc760" />
+          <circle cx={fx - 1.6} cy={fy - 7.4} r={0.5} fill="#111" />
+          <circle cx={fx + 1.6} cy={fy - 7.4} r={0.5} fill="#111" />
+        </g>
+      );
+    }
+    case 'garden': {
+      const [wx, wy] = at(90, 86, 0);
+      return (
+        <g pointerEvents="none">
+          <path d={`M${wx - 5} ${wy} L${wx - 4} ${wy - 8} H${wx + 4} L${wx + 5} ${wy} Z`} fill="#2f8a6f" stroke="#1f5e4b" strokeWidth={0.6} />
+          <path d={`M${wx + 4} ${wy - 6} L${wx + 10} ${wy - 11}`} stroke="#2f8a6f" strokeWidth={1.6} strokeLinecap="round" />
+          <path d={`M${wx - 3} ${wy - 8} Q ${wx} ${wy - 13} ${wx + 3} ${wy - 8}`} stroke="#1f5e4b" strokeWidth={1} fill="none" />
+        </g>
+      );
+    }
+    case 'wall': {
+      if (style === 'hedge' || style === 'fence') return null;
+      // Ivy climbing the stone face.
+      const vine = (pts2: Array<[number, number]>) => pts2.map(([x, z]) => P(ox + x, oy + 70.5, z));
+      const runs = [vine([[10, 0], [14, 8], [12, 15], [18, 22], [26, 25]]), vine([[66, 0], [70, 7], [76, 12], [80, 19]])];
+      return (
+        <g pointerEvents="none">
+          {runs.map((run, k) => (
+            <g key={k}>
+              <polyline points={run.map((p) => p.join(',')).join(' ')} fill="none" stroke="#2f6b2f" strokeWidth={0.9} />
+              {run.map(([x, y], i) => (
+                <g key={i}>
+                  <ellipse cx={x - 2} cy={y} rx={2.6} ry={1.7} fill="#3f8a3a" transform={`rotate(-30 ${x - 2} ${y})`} />
+                  <ellipse cx={x + 2} cy={y - 1} rx={2.4} ry={1.6} fill="#58a84a" transform={`rotate(25 ${x + 2} ${y - 1})`} />
+                </g>
+              ))}
+            </g>
+          ))}
+        </g>
+      );
+    }
+    default:
+      void level;
+      return null;
+  }
+}
+
 export function IsoItemArt({
   item,
   ox,
@@ -1195,26 +1327,35 @@ export function IsoItemArt({
     decoration: item.style,
     plan
   };
-  switch (item.itemId) {
-    case 'hq':
-      return <Headquarters {...props} />;
-    case 'watchtower':
-      return <Watchtower {...props} />;
-    case 'lodge':
-      return <Lodge {...props} />;
-    case 'forge':
-      return <Forge {...props} />;
-    case 'spring':
-      return <Spring {...props} />;
-    case 'yard':
-      return <TrainingYard {...props} />;
-    case 'wall':
-      return <IsoWall ox={ox} oy={oy} style={item.style} />;
-    case 'garden':
-      return <IsoGarden ox={ox} oy={oy} style={item.style} color={item.color} />;
-    default:
-      return null;
-  }
+  const art = (() => {
+    switch (item.itemId) {
+      case 'hq':
+        return <Headquarters {...props} />;
+      case 'watchtower':
+        return <Watchtower {...props} />;
+      case 'lodge':
+        return <Lodge {...props} />;
+      case 'forge':
+        return <Forge {...props} />;
+      case 'spring':
+        return <Spring {...props} />;
+      case 'yard':
+        return <TrainingYard {...props} />;
+      case 'wall':
+        return <IsoWall ox={ox} oy={oy} style={item.style} />;
+      case 'garden':
+        return <IsoGarden ox={ox} oy={oy} style={item.style} color={item.color} />;
+      default:
+        return null;
+    }
+  })();
+  if (!art) return null;
+  return (
+    <g>
+      {art}
+      <Signature itemId={item.itemId} ox={ox} oy={oy} lit={lit} level={props.level} style={item.style} />
+    </g>
+  );
 }
 
 /** Scaffolding over a footprint while something is being built. */
