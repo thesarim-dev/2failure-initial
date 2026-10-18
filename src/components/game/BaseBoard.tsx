@@ -12,7 +12,7 @@ import { BaseCritters } from './Critters';
 import { GroundDetail, GroundEdges } from './GroundDetail';
 import { SlabSides } from './SlabSides';
 import { bakeGround } from './groundBake';
-import { IsoItemArt, IsoScaffold, P as isoP, isIsoItem } from './IsoArt';
+import { IsoEdge, IsoItemArt, IsoScaffold, P as isoP, isIsoItem } from './IsoArt';
 
 export { ItemArt, TrophyArt } from './BaseArt';
 
@@ -85,6 +85,9 @@ type BoardProps = {
   onItem: (uid: string) => void;
   tileLabel: (x: number, y: number) => string;
   /** Paint mode: drag across tiles to paint terrain. */
+  /** Fence mode: taps pick the nearest tile edge. */
+  fencing?: boolean;
+  onEdge?: (edgeKey: string) => void;
   painting?: boolean;
   onPaint?: (tile: [number, number]) => void;
   svgId?: string;
@@ -119,13 +122,16 @@ export function BaseBoard({
   onTile,
   onItem,
   tileLabel,
+  fencing = false,
+  onEdge,
   painting = false,
   onPaint,
   svgId
 }: BoardProps) {
   // Land is bought with coins, separately from HQ level.
   const land = state.landLevel;
-  const placing = validTiles !== null;
+  // The fence tool shows the tile grid as a guide, but it isn't placing a building.
+  const placing = validTiles !== null && !fencing;
   const inert = placing || painting;
   const jobs = new Map(state.constructions.map((job) => [job.uid, job]));
   const { min, max } = buildableBounds(land);
@@ -331,6 +337,20 @@ export function BaseBoard({
       )
     });
   }
+  // Fences, walls and hedges along tile edges sit between the two tiles' depths.
+  for (const [edgeKey, kind] of Object.entries(state.edges ?? {})) {
+    const m = /^([nw]):(-?\d+),(-?\d+)$/.exec(edgeKey);
+    if (!m) continue;
+    sprites.push({
+      key: `edge-${edgeKey}`,
+      depth: Number(m[2]) + Number(m[3]) + 0.5,
+      node: (
+        <g key={`edge-${edgeKey}`}>
+          <IsoEdge edgeKey={edgeKey} kind={kind} />
+        </g>
+      )
+    });
+  }
   sprites.sort((p, q) => p.depth - q.depth);
 
   const selected = state.placed.find((p) => p.uid === selectedUid);
@@ -353,6 +373,17 @@ export function BaseBoard({
     const x = Math.floor(point.x / T);
     const y = Math.floor(point.y / T);
     return isTileBuildable(x, y, land) ? [x, y] : null;
+  };
+  /** Screen point → the nearest edge between tiles (`n:x,y` or `w:x,y`). */
+  const edgeAt = (clientX: number, clientY: number): string | null => {
+    const ctm = groundRef.current?.getScreenCTM();
+    if (!ctm) return null;
+    const point = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
+    const fx = point.x / T;
+    const fy = point.y / T;
+    const nearX = Math.round(fx);
+    const nearY = Math.round(fy);
+    return Math.abs(fy - nearY) < Math.abs(fx - nearX) ? `n:${Math.floor(fx)},${nearY}` : `w:${nearX},${Math.floor(fy)}`;
   };
   const paintAt = (clientX: number, clientY: number) => {
     const tile = tileAt(clientX, clientY);
@@ -695,6 +726,11 @@ export function BaseBoard({
             inert
               ? undefined
               : (e) => {
+                  if (fencing) {
+                    const edge = edgeAt(e.clientX, e.clientY);
+                    if (edge && onEdge) onEdge(edge);
+                    return;
+                  }
                   const tile = tileAt(e.clientX, e.clientY);
                   if (tile) onTile(tile[0], tile[1]);
                 }
@@ -735,13 +771,15 @@ export function BaseBoard({
                 width={T - 12}
                 height={T - 12}
                 rx={10}
-                className="base-valid-tile"
+                className={fencing ? 'base-valid-tile is-guide' : 'base-valid-tile'}
                 vectorEffect="non-scaling-stroke"
-                role="button"
-                tabIndex={0}
-                aria-label={tileLabel(x, y)}
-                onClick={() => onTile(x, y)}
-                onKeyDown={(e) => onKeyActivate(e, () => onTile(x, y))}
+                // In fence mode the tiles are only a guide; taps go to the nearest edge.
+                pointerEvents={fencing ? 'none' : undefined}
+                role={fencing ? undefined : 'button'}
+                tabIndex={fencing ? -1 : 0}
+                aria-label={fencing ? undefined : tileLabel(x, y)}
+                onClick={fencing ? undefined : () => onTile(x, y)}
+                onKeyDown={fencing ? undefined : (e) => onKeyActivate(e, () => onTile(x, y))}
               />
             );
           })}
@@ -753,7 +791,8 @@ export function BaseBoard({
       <g filter="url(#base-soft-shadow)" opacity={0.24} pointerEvents="none">
         {castShadows}
       </g>
-      <g pointerEvents="visiblePainted">{sprites.map((sprite) => sprite.node)}</g>
+      {/* In fence mode taps pass through buildings to the edge beneath them. */}
+      <g pointerEvents={fencing ? 'none' : 'visiblePainted'}>{sprites.map((sprite) => sprite.node)}</g>
       {/* Cloud shadows drifting slowly over the land. */}
       <g pointerEvents="none" className="base-cloud-shadows">
         {[0, 1].map((k) => (

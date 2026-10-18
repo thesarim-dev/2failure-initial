@@ -9,6 +9,8 @@ import {
   expandLand,
   flipItem,
   paintTerrain,
+  toggleEdge,
+  liftPathsToTerrain,
   setBaseName,
   createInitialState,
   createInitialStats,
@@ -28,7 +30,7 @@ import {
   type SetReward,
   type SetTier
 } from './engine';
-import type { Customization, ResourceId, TerrainId, TrainingPattern } from './catalog';
+import type { Customization, EdgeKind, ResourceId, TerrainId, TrainingPattern } from './catalog';
 
 /**
  * The base is saved in Supabase (table `base_games`) so it follows the player
@@ -109,7 +111,7 @@ function parseSave(input: unknown): GameState {
       delete resources.iron;
     }
     // Fill in fields added after the save was made.
-    return {
+    return liftPathsToTerrain({
       ...createInitialState(),
       ...state,
       resources: { stone: resources.stone ?? 0, timber: resources.timber ?? 0, crystal: resources.crystal ?? 0 },
@@ -118,8 +120,9 @@ function parseSave(input: unknown): GameState {
       landLevel: state.landLevel ?? 0,
       quests: state.quests ?? null,
       shields: state.shields ?? 0,
-      terrain: state.terrain ?? {}
-    };
+      terrain: state.terrain ?? {},
+      edges: state.edges ?? {}
+    });
   } catch {
     return createInitialState();
   }
@@ -335,6 +338,7 @@ export function useBaseGame(
     expandLand: (coins: number) => run(expandLand(stateRef.current, coins)),
     customize: (uid: string, custom: Customization) => run(customizeItem(stateRef.current, uid, custom)),
     paint: (tiles: Array<[number, number]>, terrain: TerrainId) => run(paintTerrain(stateRef.current, tiles, terrain)),
+    toggleEdge: (key: string, kind: EdgeKind) => run(toggleEdge(stateRef.current, key, kind)),
     flip: (uid: string) => run(flipItem(stateRef.current, uid)),
     rename: (name: string) => commit(setBaseName(stateRef.current, name)),
     /** Demo build only: change the save directly (cheats for testing). */

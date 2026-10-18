@@ -166,6 +166,12 @@ export type GameCopy = {
   };
   paint: { button: string; title: string; hint: string; done: string; locked: (level: number) => string };
   terrainNames: Record<import('../game/catalog').TerrainId, string>;
+  fences: {
+    title: string;
+    hint: string;
+    done: string;
+    kinds: Record<import('../game/catalog').EdgeKind, string>;
+  };
   decorGroups: Record<import('../game/catalog').DecorGroup, string>;
   zoomIn: string;
   zoomOut: string;
@@ -456,7 +462,13 @@ const en: GameCopy = {
     done: 'Done',
     locked: (level) => `Base level ${level}`
   },
-  terrainNames: { grass: 'Grass', meadow: 'Meadow', dirt: 'Dirt', sand: 'Sand', plaza: 'Plaza', water: 'Water', snow: 'Snow' },
+  fences: {
+    title: 'Fences & walls',
+    hint: 'Tap between two tiles to build. Tap one again to remove it.',
+    done: 'Done',
+    kinds: { fence: 'Wooden fence', wall: 'Stone wall', hedge: 'Hedge' }
+  },
+  terrainNames: { grass: 'Grass', meadow: 'Meadow', dirt: 'Dirt', path: 'Path', sand: 'Sand', plaza: 'Plaza', water: 'Water', snow: 'Snow' },
   decorGroups: { nature: 'Nature', farm: 'Farm', fun: 'Fun', comfort: 'Comfort', lights: 'Lights', training: 'Training', paths: 'Paths & walls', water: 'Water' },
   sound: { title: 'Sounds', description: 'Soft chimes and light vibrations for taps and wins.', on: 'sounds on', off: 'sounds off' },
   zoomIn: 'Zoom in',
@@ -756,7 +768,13 @@ const he: GameCopy = {
     done: 'סיום',
     locked: (level) => `רמת בסיס ${level}`
   },
-  terrainNames: { grass: 'דשא', meadow: 'אחו', dirt: 'עפר', sand: 'חול', plaza: 'רחבה', water: 'מים', snow: 'שלג' },
+  fences: {
+    title: 'גדרות וחומות',
+    hint: 'הקישו בין שתי משבצות כדי לבנות. הקישו שוב כדי להסיר.',
+    done: 'סיום',
+    kinds: { fence: 'גדר עץ', wall: 'חומת אבן', hedge: 'גדר חיה' }
+  },
+  terrainNames: { grass: 'דשא', meadow: 'אחו', dirt: 'עפר', path: 'שביל', sand: 'חול', plaza: 'רחבה', water: 'מים', snow: 'שלג' },
   decorGroups: { nature: 'טבע', farm: 'חווה', fun: 'כיף', comfort: 'נוחות', lights: 'תאורה', training: 'אימון', paths: 'שבילים וחומות', water: 'מים' },
   sound: { title: 'צלילים', description: 'צלצולים רכים ורטט קל להקשות ולהצלחות.', on: 'צלילים פועלים', off: 'צלילים כבויים' },
   zoomIn: 'הגדלה',
@@ -1056,7 +1074,13 @@ const ar: GameCopy = {
     done: 'تم',
     locked: (level) => `مستوى القاعدة ${level}`
   },
-  terrainNames: { grass: 'عشب', meadow: 'مرج', dirt: 'تراب', sand: 'رمل', plaza: 'ساحة', water: 'ماء', snow: 'ثلج' },
+  fences: {
+    title: 'الأسوار والجدران',
+    hint: 'اضغط بين مربعين للبناء. اضغط مرة أخرى للإزالة.',
+    done: 'تم',
+    kinds: { fence: 'سياج خشبي', wall: 'جدار حجري', hedge: 'سياج نباتي' }
+  },
+  terrainNames: { grass: 'عشب', meadow: 'مرج', dirt: 'تراب', path: 'ممر', sand: 'رمل', plaza: 'ساحة', water: 'ماء', snow: 'ثلج' },
   decorGroups: { nature: 'طبيعة', farm: 'مزرعة', fun: 'مرح', comfort: 'راحة', lights: 'إضاءة', training: 'تدريب', paths: 'ممرات وأسوار', water: 'ماء' },
   sound: { title: 'الأصوات', description: 'نغمات ناعمة واهتزاز خفيف للنقرات والإنجازات.', on: 'الأصوات مفعّلة', off: 'الأصوات متوقفة' },
   zoomIn: 'تكبير',

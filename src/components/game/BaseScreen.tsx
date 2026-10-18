@@ -33,7 +33,11 @@ import {
   getItemDef,
   type Cost,
   type ResourceId,
-  type Resources
+  type Resources,
+  EDGE_COST,
+  EDGE_KINDS,
+  isTileBuildable,
+  type EdgeKind
 } from '../../game/catalog';
 import {
   WEEKLY_BONUS_AMOUNT,
@@ -81,6 +85,7 @@ const TERRAIN_SWATCH: Record<TerrainId, string> = {
   grass: '#2f6a42',
   meadow: '#3d7a46',
   dirt: '#6b4a2e',
+  path: '#b9a68a',
   sand: '#c9a86a',
   plaza: '#7f8a99',
   water: '#1f6f9c',
@@ -358,6 +363,7 @@ export function BaseScreen({
   const [draftCustom, setDraftCustom] = useState<Customization>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [paintWith, setPaintWith] = useState<TerrainId | null>(null);
+  const [fenceKind, setFenceKind] = useState<EdgeKind | null>(null);
   const lastPaintSound = useRef(0);
   const [decorGroup, setDecorGroup] = useState<DecorGroup | 'all'>('all');
   const levelInfo = baseLevel(state);
@@ -418,6 +424,12 @@ export function BaseScreen({
           : null;
 
   const validTiles = useMemo(() => {
+    if (fenceKind) {
+      // Show every tile so the edges between them are easy to see.
+      const all = new Set<string>();
+      for (let y = 0; y < GRID_SIZE; y++) for (let x = 0; x < GRID_SIZE; x++) if (isTileBuildable(x, y, state.landLevel)) all.add(`${x},${y}`);
+      return all;
+    }
     if (!modeItemId) return null;
     const ignore = mode.kind === 'move' ? mode.uid : undefined;
     const set = new Set<string>();
@@ -427,7 +439,7 @@ export function BaseScreen({
       }
     }
     return set;
-  }, [mode, modeItemId, state]);
+  }, [mode, modeItemId, state, fenceKind]);
 
   const handleTile = (x: number, y: number) => {
     if (mode.kind === 'idle') {
@@ -453,6 +465,19 @@ export function BaseScreen({
   const choose = (draft: Draft) => {
     const itemId = draft.kind === 'item' ? draft.itemId : `${TROPHY_ITEM_PREFIX}${draft.trophyId}`;
     setDraftCustom({});
+    // Paths are painted like terrain; walls run along the edges between tiles.
+    if (itemId === 'path') {
+      setSheet(null);
+      setFenceKind(null);
+      setPaintWith('path');
+      return;
+    }
+    if (itemId === 'wall') {
+      setSheet(null);
+      setPaintWith(null);
+      setFenceKind('wall');
+      return;
+    }
     if (hasCustomization(itemId)) {
       setSheet({ draft });
       return;
@@ -578,6 +603,32 @@ export function BaseScreen({
         </div>
       )}
 
+      {fenceKind && (
+        <div className="base-paint-bar" role="toolbar" aria-label={g.fences.title}>
+          <div className="base-paint-head">
+            <span>{g.fences.hint}</span>
+            <button type="button" className="base-ghost-btn" onClick={() => setFenceKind(null)}>
+              {g.fences.done}
+            </button>
+          </div>
+          <div className="base-paint-swatches" role="radiogroup" aria-label={g.fences.title}>
+            {EDGE_KINDS.map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                role="radio"
+                aria-checked={fenceKind === kind}
+                className={`base-paint-swatch ${fenceKind === kind ? 'is-active' : ''}`}
+                onClick={() => setFenceKind(kind)}>
+                <span className={`base-fence-chip is-${kind}`} aria-hidden="true" />
+                <span className="base-paint-label">{g.fences.kinds[kind]}</span>
+                <CostList cost={EDGE_COST[kind]} resources={state.resources} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="base-board-wrap" dir="ltr">
         <BaseBoard
           state={state}
@@ -590,6 +641,13 @@ export function BaseScreen({
           onTile={handleTile}
           onItem={(uid) => setSheet({ uid })}
           painting={paintWith !== null}
+          fencing={fenceKind !== null}
+          onEdge={(edgeKey) => {
+            if (!fenceKind) return;
+            const result = game.toggleEdge(edgeKey, fenceKind);
+            if (result.ok) fx.tap();
+            else setNotice(errorText(result.error));
+          }}
           onPaint={(tile) => {
             if (!paintWith) return;
             const result = game.paint([tile], paintWith);
@@ -631,7 +689,7 @@ export function BaseScreen({
             {total - busy}/{total}
           </span>
         </button>
-        {mode.kind === 'idle' && !paintWith && (
+        {mode.kind === 'idle' && !paintWith && !fenceKind && (
           <div className="map-dock">
             <button type="button" className="map-round-btn" onClick={() => setSheet('land')} aria-label={g.land.button}>
               <Expand size={20} strokeWidth={2.5} aria-hidden="true" />
@@ -647,7 +705,7 @@ export function BaseScreen({
         )}
       </div>
 
-      {mode.kind === 'idle' && !paintWith && (
+      {mode.kind === 'idle' && !paintWith && !fenceKind && (
         <GoalsCard
           goals={goals}
           coins={coins}

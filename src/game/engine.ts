@@ -32,7 +32,9 @@ import {
   type ResourceId,
   type Resources,
   type StructureDef,
-  type TrainingPattern
+  type TrainingPattern,
+  EDGE_COST,
+  type EdgeKind
 } from './catalog';
 
 // ---------------------------------------------------------------------------
@@ -135,6 +137,8 @@ export type GameState = {
   version: 3;
   /** New players: their first building costs nothing (the onboarding quest). */
   firstBuildFree?: boolean;
+  /** Fences, walls and hedges along tile edges (see EDGE_KINDS). */
+  edges?: Record<string, EdgeKind>;
   resources: Resources;
   placed: PlacedItem[];
   /** Jobs in progress; several can run at once if there are free builders. */
@@ -1145,4 +1149,49 @@ export function isQuietToday(state: GameState, now: Date = new Date()): boolean 
 
 export function resourcesOf(reward: SetReward): Array<[ResourceId, number]> {
   return RESOURCE_IDS.filter((id) => reward.earned[id] > 0).map((id) => [id, reward.earned[id]]);
+}
+
+
+// ---------------------------------------------------------------------------
+// Edges and paths
+// ---------------------------------------------------------------------------
+
+/** Is an edge on (or bordering) your land? */
+export function edgeInLand(key: string, landLevel: number): boolean {
+  const m = /^([nw]):(-?\d+),(-?\d+)$/.exec(key);
+  if (!m) return false;
+  const x = Number(m[2]);
+  const y = Number(m[3]);
+  if (isTileBuildable(x, y, landLevel)) return true;
+  return m[1] === 'n' ? isTileBuildable(x, y - 1, landLevel) : isTileBuildable(x - 1, y, landLevel);
+}
+
+/** Place a fence / wall / hedge on an edge, or remove the one that's there. */
+export function toggleEdge(prev: GameState, key: string, kind: EdgeKind): ActionResult {
+  if (!edgeInLand(key, prev.landLevel)) return { ok: false, error: 'blocked' };
+  const edges = { ...(prev.edges ?? {}) };
+  if (edges[key]) {
+    delete edges[key];
+    return { ok: true, state: { ...prev, edges } };
+  }
+  const cost = EDGE_COST[kind];
+  if (!canAfford(prev.resources, cost)) return { ok: false, error: 'cantAfford' };
+  const state: GameState = { ...prev, resources: { ...prev.resources }, edges };
+  pay(state, cost);
+  edges[key] = kind;
+  return { ok: true, state };
+}
+
+/** Old saves: path items become painted path terrain (they no longer take a square). */
+export function liftPathsToTerrain(prev: GameState): GameState {
+  const paths = prev.placed.filter((p) => p.itemId === 'path');
+  if (!paths.length) return prev;
+  const terrain = { ...(prev.terrain ?? {}) };
+  for (const p of paths) terrain[`${p.x},${p.y}`] = 'path';
+  return {
+    ...prev,
+    terrain,
+    placed: prev.placed.filter((p) => p.itemId !== 'path'),
+    constructions: prev.constructions.filter((c) => !paths.some((p) => p.uid === c.uid))
+  };
 }

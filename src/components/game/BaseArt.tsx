@@ -1187,17 +1187,52 @@ function Decor({ id, lit, style, color }: { id: string; lit: boolean; style?: st
           </g>
         );
       }
-      return (
-        <g>
-          <Shadow rx={26} />
-          <rect x={46} y={70} width={8} height={18} fill={WOOD.base} />
-          <polygon points="50,6 74,46 26,46" fill={LEAF.base} />
-          <polygon points="50,6 74,46 52,46" fill={LEAF.dark} />
-          <polygon points="50,26 80,76 20,76" fill={LEAF.base} />
-          <polygon points="50,26 80,76 52,76" fill={LEAF.dark} />
-          <polygon points="50,8 34,36 40,36" fill={LEAF.light} opacity={0.6} />
-        </g>
-      );
+      {
+        // Three tiers of foliage, each with a scalloped hem, a lit left side,
+        // a shaded right side and a few needle strokes.
+        const tier = (top: number, bottom: number, half: number, k: number) => {
+          const hem = (side: 1 | -1) =>
+            Array.from({ length: 3 }, (_, i) => {
+              const x0 = 50 + side * half * (1 - i / 3);
+              const x1 = 50 + side * half * (1 - (i + 1) / 3);
+              return `Q ${(x0 + x1) / 2} ${bottom + 5} ${x1} ${bottom + (i === 2 ? 1 : 0)}`;
+            }).join(' ');
+          const shape = `M50 ${top} L${50 + half} ${bottom} ${hem(1)} ${hem(-1).replace(/^Q/, 'Q')} L${50 - half} ${bottom}`;
+          return (
+            <g key={k}>
+              <path d={`M50 ${top} L${50 + half} ${bottom} ${hem(1)} L50 ${bottom + 1} Q ${50 - half / 3} ${bottom + 5} ${50 - (2 * half) / 3} ${bottom} Q ${50 - (5 * half) / 6} ${bottom + 5} ${50 - half} ${bottom} Z`} fill={LEAF.base} />
+              <path d={`M50 ${top} L${50 + half} ${bottom} ${hem(1)} L50 ${bottom + 1} Z`} fill={LEAF.dark} />
+              <path d={`M50 ${top + 2} L${50 - half * 0.75} ${bottom - 2} L${50 - half * 0.45} ${bottom - 2} Z`} fill={LEAF.light} opacity={0.45} />
+              <path
+                d={[0.3, 0.55, 0.8]
+                  .map((t) => {
+                    const y = top + (bottom - top) * t;
+                    const w = half * t * 0.7;
+                    return `M${50 - w} ${y} l3 -2.4 M${50 - w * 0.4} ${y + 3} l3 -2.4 M${50 + w * 0.5} ${y + 1} l-3 -2.4`;
+                  })
+                  .join(' ')}
+                stroke="#0f3d22"
+                strokeOpacity={0.35}
+                strokeWidth={1}
+                strokeLinecap="round"
+              />
+              <path d={`M50 ${top} L${50 + half} ${bottom}`} stroke="#0f3d22" strokeOpacity={0.25} strokeWidth={0.8} />
+              {void shape}
+            </g>
+          );
+        };
+        return (
+          <g>
+            <Shadow rx={28} />
+            <rect x={45.5} y={72} width={9} height={17} rx={1.5} fill={WOOD.base} />
+            <rect x={51} y={72} width={3.5} height={17} fill={WOOD.dark} />
+            <path d="M47.5 76 v4 M49.5 82 v5 M47 85 v3" stroke={WOOD.dark} strokeWidth={0.9} strokeLinecap="round" />
+            {tier(30, 78, 30, 2)}
+            {tier(16, 56, 23, 1)}
+            {tier(4, 34, 16, 0)}
+          </g>
+        );
+      }
     case 'lamp': {
       const glow = accent?.light ?? WINDOW_LIT;
       const head =
@@ -1293,17 +1328,35 @@ function Decor({ id, lit, style, color }: { id: string; lit: boolean; style?: st
     }
     case 'fountain': {
       const water = (
-        <g className={lit ? 'base-light is-lit' : undefined}>
-          <ellipse cx={50} cy={66} rx={28} ry={10} fill={GLASS.dark} />
-          <ellipse cx={50} cy={67} rx={26} ry={8.5} fill={GLASS.base} />
-          <ellipse cx={42} cy={65} rx={9} ry={2.5} fill={GLASS.light} opacity={0.8} />
+        <g>
+          <defs>
+            <radialGradient id="fountain-water" cx="0.45" cy="0.4" r="0.7">
+              <stop offset="0" stopColor="#8fe3ff" />
+              <stop offset="0.55" stopColor="#3aa7d6" />
+              <stop offset="1" stopColor="#1f6f9c" />
+            </radialGradient>
+          </defs>
+          <ellipse cx={50} cy={66} rx={31} ry={11.5} fill="url(#fountain-water)" />
+          <ellipse cx={50} cy={66} rx={31} ry={11.5} fill="none" stroke="#0f4f73" strokeOpacity={0.5} strokeWidth={1.2} />
+          <ellipse cx={50} cy={66} rx={16} ry={5.6} fill="none" stroke="#ffffff" strokeOpacity={0.55} strokeWidth={0.9} className="base-ripple" />
+          <ellipse cx={50} cy={66} rx={16} ry={5.6} fill="none" stroke="#ffffff" strokeOpacity={0.45} strokeWidth={0.8} className="base-ripple" style={{ animationDelay: '1.3s' }} />
+          <ellipse cx={38} cy={63} rx={8} ry={2} fill="#ffffff" opacity={0.45} />
         </g>
       );
       return (
         <g>
           <Shadow rx={40} cy={86} />
-          <ellipse cx={50} cy={72} rx={38} ry={16} fill={STONE.dark} />
-          <ellipse cx={50} cy={66} rx={38} ry={16} fill={STONE.base} />
+          {/* Carved basin: front wall with block joints, a lit rim, the inner lip. */}
+          <path d="M12 66 V74 A38 15 0 0 0 88 74 V66 A38 15 0 0 1 12 66 Z" fill={STONE.base} />
+          <path d="M60 80.6 A38 15 0 0 0 88 74 V66 A38 15 0 0 1 60 72.6 Z" fill={STONE.dark} opacity={0.75} />
+          {[18, 28, 40, 52, 64, 76].map((x) => {
+            const t = (x - 50) / 38;
+            const y = 66 + 15 * Math.sqrt(Math.max(0, 1 - t * t));
+            return <line key={x} x1={x} y1={y} x2={x} y2={y + 8} stroke="#000" strokeOpacity={0.18} strokeWidth={0.9} />;
+          })}
+          <path d="M12 70 A38 15 0 0 0 88 70" fill="none" stroke="#000" strokeOpacity={0.12} strokeWidth={0.9} />
+          <ellipse cx={50} cy={66} rx={38} ry={15} fill={STONE.light} />
+          <ellipse cx={50} cy={66} rx={34} ry={13} fill={STONE.base} />
           {water}
           {style === 'tiered' ? (
             <g>
@@ -1322,10 +1375,23 @@ function Decor({ id, lit, style, color }: { id: string; lit: boolean; style?: st
             </g>
           ) : (
             <g>
-              <rect x={46} y={40} width={8} height={26} fill={STONE.base} />
-              <rect x={51} y={40} width={3} height={26} fill={STONE.dark} />
-              <path d="M50 40 C 40 24, 30 30, 28 48" fill="none" stroke={GLASS.base} strokeWidth={4} strokeLinecap="round" />
-              <path d="M50 40 C 60 24, 70 30, 72 48" fill="none" stroke={GLASS.light} strokeWidth={4} strokeLinecap="round" />
+              {/* Pedestal and bowl, then glossy arcs of water with falling drops. */}
+              <rect x={45.5} y={42} width={9} height={24} fill={STONE.base} />
+              <rect x={51} y={42} width={3.5} height={24} fill={STONE.dark} />
+              <ellipse cx={50} cy={43} rx={13} ry={4.4} fill={STONE.dark} />
+              <ellipse cx={50} cy={41} rx={13} ry={4.4} fill={STONE.light} />
+              <ellipse cx={50} cy={41} rx={10} ry={3} fill="#3aa7d6" />
+              {[
+                'M50 38 C 42 18, 30 22, 26 52',
+                'M50 38 C 58 18, 70 22, 74 52'
+              ].map((d, i) => (
+                <g key={d}>
+                  <path d={d} fill="none" stroke="#2a8fc0" strokeWidth={3.6} strokeLinecap="round" opacity={0.85} />
+                  <path d={d} fill="none" stroke="#bff0ff" strokeWidth={1.4} strokeLinecap="round" />
+                  <circle cx={i ? 74 : 26} cy={56} r={1.4} fill="#bff0ff" className="base-drip" style={{ animationDelay: `${i * 0.5}s` }} />
+                </g>
+              ))}
+              <circle cx={50} cy={36} r={2.4} fill="#e6fbff" />
             </g>
           )}
         </g>
@@ -2003,6 +2069,7 @@ const TERRAIN_COLORS: Record<string, { base: string; light: string; dark: string
   dirt: { base: '#6b4a2e', light: '#7a5636', dark: '#5a3d25', detail: '#8f6a45' },
   sand: { base: '#c9a86a', light: '#d6b87c', dark: '#b8975a', detail: '#e8d29d' },
   plaza: { base: '#7f8a99', light: '#8c97a6', dark: '#727d8c', detail: '#a9b3c0' },
+  path: { base: '#8f7a5e', light: '#cdbb9e', dark: '#7a6650', detail: '#e2d4ba' },
   water: { base: '#1f6f9c', light: '#2a80ad', dark: '#1a5f88', detail: '#7fd3f5' },
   snow: { base: '#dfe8f1', light: '#eef3f8', dark: '#cfdae6', detail: '#ffffff' }
 };
@@ -2064,7 +2131,28 @@ export function TerrainTile({ x, y, terrain }: { x: number; y: number; terrain: 
   return (
     <g pointerEvents="none">
       <rect x={px - 0.5} y={py - 0.5} width={101} height={101} fill={c.base} />
-      {terrain !== 'plaza' && blotches}
+      {terrain !== 'plaza' && terrain !== 'path' && blotches}
+      {terrain === 'path' && (
+        <g>
+          {/* Rounded cobblestones in packed earth; each stone lit on its top edge. */}
+          {[
+            [6, 6, 26, 20], [36, 4, 28, 22], [68, 6, 26, 20],
+            [4, 30, 20, 22], [28, 30, 30, 20], [62, 28, 32, 24],
+            [6, 56, 30, 20], [40, 54, 24, 22], [68, 56, 26, 20],
+            [4, 80, 24, 16], [32, 80, 30, 16], [66, 80, 28, 16]
+          ].map(([sx, sy, w, ht], i) => {
+            const j = (tileHash(x, y, 40 + i) % 5) - 2;
+            const shade = tileHash(x, y, 60 + i) % 3;
+            return (
+              <g key={`c${i}`}>
+                <rect x={px + sx + j} y={py + sy + j} width={w} height={ht} rx={7} fill={shade === 0 ? '#b8a586' : shade === 1 ? '#c4b292' : '#ab987a'} />
+                <rect x={px + sx + j + 2} y={py + sy + j + 1} width={w - 4} height={ht * 0.42} rx={5} fill={c.light} opacity={0.55} />
+                <rect x={px + sx + j} y={py + sy + j} width={w} height={ht} rx={7} fill="none" stroke="#5e4c38" strokeOpacity={0.35} strokeWidth={1.2} />
+              </g>
+            );
+          })}
+        </g>
+      )}
       {terrain === 'plaza' && (
         <g>
           {[0, 1].flatMap((i) =>

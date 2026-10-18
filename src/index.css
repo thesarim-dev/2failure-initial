@@ -7126,4 +7126,56 @@
       animation: none;
     }
   }
+
+  /* Fence tool chips */
+  .base-fence-chip {
+    width: 2.2rem;
+    height: 1.4rem;
+    border-radius: 0.4rem;
+    display: block;
+  }
+  .base-fence-chip.is-fence {
+    background: repeating-linear-gradient(90deg, #ad7840 0 4px, transparent 4px 11px), linear-gradient(180deg, transparent 30%, #c48a4c 30% 42%, transparent 42% 64%, #c48a4c 64% 76%, transparent 76%);
+  }
+  .base-fence-chip.is-wall {
+    background: linear-gradient(180deg, #ece6dc 0 22%, #c3baac 22%);
+    box-shadow: inset 0 -3px 0 #91897c;
+  }
+  .base-fence-chip.is-hedge {
+    background: radial-gradient(circle at 30% 35%, #86e3a4 0 18%, transparent 19%), radial-gradient(circle at 70% 45%, #86e3a4 0 15%, transparent 16%), #3faa63;
+    border-radius: 0.7rem;
+  }
+
+  /* Fountain: ripples spreading and droplets falling */
+  .base-ripple {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: base-ripple 2.6s ease-out infinite;
+  }
+  @keyframes base-ripple {
+    0% { transform: scale(0.4); opacity: 0.9; }
+    100% { transform: scale(1.75); opacity: 0; }
+  }
+  .base-drip {
+    transform-box: fill-box;
+    animation: base-drip 1s ease-in infinite;
+  }
+  @keyframes base-drip {
+    0% { transform: translateY(-6px); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(8px); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .base-ripple,
+    .base-drip {
+      animation: none;
+    }
+  }
+
+  /* Fence mode: tiles are a faint guide so the edges between them stand out. */
+  .base-valid-tile.is-guide {
+    fill: rgba(255, 255, 255, 0.06);
+    stroke: rgba(255, 255, 255, 0.35);
+    animation: none;
+  }
 }

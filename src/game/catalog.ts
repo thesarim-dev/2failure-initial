@@ -328,10 +328,11 @@ export const DECOR: DecorDef[] = [
 // Terrain (free to paint, unlocked by base level)
 // ---------------------------------------------------------------------------
 
-export type TerrainId = 'grass' | 'meadow' | 'dirt' | 'sand' | 'plaza' | 'water' | 'snow';
+export type TerrainId = 'grass' | 'meadow' | 'dirt' | 'path' | 'sand' | 'plaza' | 'water' | 'snow';
 export const TERRAIN: Array<{ id: TerrainId; unlockBase: number }> = [
   { id: 'grass', unlockBase: 1 },
   { id: 'dirt', unlockBase: 1 },
+  { id: 'path', unlockBase: 1 },
   { id: 'meadow', unlockBase: 2 },
   { id: 'sand', unlockBase: 2 },
   { id: 'plaza', unlockBase: 3 },
@@ -427,3 +428,16 @@ export function sumCost(costs: Cost[]): Resources {
 export function canAfford(resources: Resources, cost: Cost): boolean {
   return RESOURCE_IDS.every((id) => resources[id] >= (cost[id] ?? 0));
 }
+
+// ---------------------------------------------------------------------------
+// Edges: thin fences, walls and hedges that run along the lines between
+// tiles instead of filling a square. Key: `n:x,y` (top edge of tile x,y) or
+// `w:x,y` (left edge of tile x,y).
+// ---------------------------------------------------------------------------
+export type EdgeKind = 'fence' | 'wall' | 'hedge';
+export const EDGE_KINDS: EdgeKind[] = ['fence', 'wall', 'hedge'];
+export const EDGE_COST: Record<EdgeKind, Cost> = {
+  fence: { timber: 2 },
+  wall: { stone: 3 },
+  hedge: { timber: 1, crystal: 1 }
+};

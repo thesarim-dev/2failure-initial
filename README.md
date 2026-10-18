@@ -423,6 +423,12 @@ If the home screen shows a red error banner:
 
 ## Your base (the game)
 
+### Paths, fences and walls
+
+**Paths are painted like terrain.** Choose **Path** in the build menu (or pick it in **Paint**) and drag across the ground to lay cobblestones. Paths no longer take up a square of their own, and older path pieces are converted automatically.
+
+**Fences, walls and hedges run between tiles.** Choose **Wall** in the build menu to open the fence tool, pick **Wooden fence** (2 timber), **Stone wall** (3 stone) or **Hedge** (1 timber, 1 crystal), and tap near the line between two tiles to build a segment. Tap a segment again to remove it. Because they sit on the edges, you can fence a garden or line a path without losing any space.
+
 ### Every building and decoration has its own story
 
 Buildings carry the apparatus of their job: the Watchtower has a ladder and an alarm bell, the Forge an anvil and hammer, a quench barrel and a coal heap, the Training Yard a straw dummy and a stand of weight plates, the Crystal Spring reeds and a frog on a stone, the Garden a watering can, and stone walls are climbed by ivy. Decorations look used: a book and a mug on the bench, a pot over the campfire, a pigeon on the statue, a towel on the pull-up bar, gloves by the punching bag, a bucket on the well, a lantern and boots by the tent, a basket on the picnic table, a jack-o'-lantern among the pumpkins, a bluebird at the birdhouse, a butterfly over the flowers, a frog on the lily pad, and more.

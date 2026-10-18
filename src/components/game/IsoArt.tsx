@@ -971,17 +971,40 @@ function TrainingYard({ ox, oy, level, lit, s, m, plan }: IsoProps) {
     posts.push([ox + 8 + i * 46, oy + 192]);
     posts.push([ox + 192, oy + 8 + i * 46]);
   }
+  // A real arena: packed sand, then a running track (L2+) and bright turf with chalk lines (L3).
+  const sand: Shades = { light: '#efd8a6', base: '#d8b878', dark: '#a98545' };
+  const quad = (i: number) => pts([P(ox + i, oy + i, 6), P(ox + 200 - i, oy + i, 6), P(ox + 200 - i, oy + 200 - i, 6), P(ox + i, oy + 200 - i, 6)]);
+  const speckles = Array.from({ length: 26 }, (_, k) => {
+    const u = ((k * 37) % 100) / 100;
+    const v = ((k * 61) % 100) / 100;
+    return P(ox + 20 + u * 160, oy + 20 + v * 160, 6);
+  });
+  void turf;
   return (
     <g>
-      <IsoBox b={pad} s={turf} courses={false} />
+      <IsoBox b={pad} s={sand} courses={false} />
+      {/* Timber border */}
+      <polygon points={quad(8)} fill="none" stroke="#8a5a2b" strokeWidth={3} strokeLinejoin="round" />
+      <polygon points={quad(8)} fill="none" stroke="#c48a4c" strokeWidth={1.2} strokeLinejoin="round" />
+      {speckles.map(([x, y], k) => (
+        <circle key={k} cx={x} cy={y} r={k % 3 ? 0.9 : 1.4} fill={k % 2 ? '#b8975a' : '#f6e3b8'} opacity={0.8} />
+      ))}
+      {level >= 2 && (
+        <g>
+          <polygon points={quad(16)} fill="#c0573e" />
+          <polygon points={quad(40)} fill={level >= 3 ? '#4fb56a' : '#e3c48a'} />
+          {[22, 28, 34].map((i) => (
+            <polygon key={i} points={quad(i)} fill="none" stroke="#ffffff" strokeOpacity={0.75} strokeWidth={0.8} />
+          ))}
+          <polygon points={quad(16)} fill="none" stroke="#7a2f20" strokeOpacity={0.6} strokeWidth={0.8} />
+        </g>
+      )}
       {level >= 3 && (
-        <polygon
-          points={pts([P(ox + 24, oy + 24, 6), P(ox + 176, oy + 24, 6), P(ox + 176, oy + 176, 6), P(ox + 24, oy + 176, 6)])}
-          fill="none"
-          stroke="#e8ffe9"
-          strokeOpacity={0.6}
-          strokeWidth={1.4}
-        />
+        <g fill="none" stroke="#f2fff4" strokeOpacity={0.85} strokeWidth={1.1}>
+          <polygon points={quad(52)} />
+          <polyline points={pts([P(ox + 100, oy + 40, 6), P(ox + 100, oy + 160, 6)])} />
+          <ellipse cx={P(ox + 100, oy + 100, 6)[0]} cy={P(ox + 100, oy + 100, 6)[1]} rx={14} ry={7} />
+        </g>
       )}
       {(stations.length ? stations : []).map((st, i) => {
         const [x, y] = spots[i];
@@ -1354,6 +1377,61 @@ export function IsoItemArt({
     <g>
       {art}
       <Signature itemId={item.itemId} ox={ox} oy={oy} lit={lit} level={props.level} style={item.style} />
+    </g>
+  );
+}
+
+/**
+ * A thin fence, wall or hedge along a tile edge. Key: `n:x,y` runs along the
+ * top edge of tile (x, y); `w:x,y` along its left edge.
+ */
+const EDGE_STONE: Shades = { light: '#ece6dc', base: '#c3baac', dark: '#91897c' };
+const EDGE_WOOD: Shades = { light: '#e0b06f', base: '#ad7840', dark: '#7a5228' };
+const EDGE_HEDGE: Shades = { light: '#86e3a4', base: '#3faa63', dark: '#25744a' };
+export function IsoEdge({ edgeKey, kind }: { edgeKey: string; kind: 'fence' | 'wall' | 'hedge' }) {
+  const m = /^([nw]):(-?\d+),(-?\d+)$/.exec(edgeKey);
+  if (!m) return null;
+  const T = 100;
+  const x = Number(m[2]) * T;
+  const y = Number(m[3]) * T;
+  const along = m[1] === 'n';
+  // A strip of the given thickness centred on the edge line.
+  const strip = (thick: number, z0: number, z1: number, inset = 0): Box =>
+    along
+      ? { x0: x + inset, x1: x + T - inset, y0: y - thick / 2, y1: y + thick / 2, z0, z1 }
+      : { x0: x - thick / 2, x1: x + thick / 2, y0: y + inset, y1: y + T - inset, z0, z1 };
+  const post = (u: number): Box =>
+    along
+      ? { x0: x + u * T - 3, x1: x + u * T + 3, y0: y - 3, y1: y + 3, z0: 0, z1: 26 }
+      : { x0: x - 3, x1: x + 3, y0: y + u * T - 3, y1: y + u * T + 3, z0: 0, z1: 26 };
+  if (kind === 'wall') {
+    return (
+      <g pointerEvents="none">
+        <IsoBox b={strip(9, 0, 20)} s={EDGE_STONE} />
+        <IsoBox b={strip(12, 20, 24, -1)} s={{ light: '#f6f2ea', base: '#d6cec2', dark: '#a39b8e' }} courses={false} />
+      </g>
+    );
+  }
+  if (kind === 'hedge') {
+    const top = strip(13, 0, 22, 2);
+    const dots = [0.2, 0.42, 0.64, 0.86].map((u) => {
+      const [px, py] = along ? P(x + u * T, y, 22) : P(x, y + u * T, 22);
+      return <circle key={u} cx={px} cy={py - 1} r={2.6} fill={EDGE_HEDGE.light} opacity={0.75} />;
+    });
+    return (
+      <g pointerEvents="none">
+        <IsoBox b={top} s={EDGE_HEDGE} courses={false} />
+        {dots}
+      </g>
+    );
+  }
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={post(0.06)} s={EDGE_WOOD} courses={false} />
+      <IsoBox b={strip(2.6, 8, 11.5, 4)} s={EDGE_WOOD} courses={false} />
+      <IsoBox b={strip(2.6, 17, 20.5, 4)} s={EDGE_WOOD} courses={false} />
+      <IsoBox b={post(0.5)} s={EDGE_WOOD} courses={false} />
+      <IsoBox b={post(0.94)} s={EDGE_WOOD} courses={false} />
     </g>
   );
 }
