@@ -600,7 +600,6 @@ export function MainApp() {
         initial={screenEnter}
         animate={{ opacity: 1, x: 0, y: 0 }}
         transition={{ duration: DUR.base, ease: EASE_OUT }}
-        style={{ willChange: 'transform, opacity' }}
         onAnimationComplete={() => {
           // Leave no transform behind (keeps position: fixed working inside screens).
           const el = document.querySelector<HTMLElement>('[data-screen]');

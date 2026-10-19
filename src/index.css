@@ -7306,4 +7306,27 @@
       transform: none;
     }
   }
+
+  /* Build menu and item sheets: a card centred on the screen (no scrolling to find it). */
+  .base-sheet-root {
+    align-items: center;
+    padding: max(1rem, env(safe-area-inset-top, 0px)) 1rem max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  .base-sheet.cyber-panel {
+    max-height: min(76vh, 44rem);
+    border-radius: 1.5rem;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    animation: base-sheet-pop var(--dur-base, 280ms) var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  }
+  @keyframes base-sheet-pop {
+    from {
+      transform: scale(0.94) translateY(10px);
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .base-sheet.cyber-panel {
+      animation: none;
+    }
+  }
 }

@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { CoinsBadge } from '../CoinsBadge';
 import stoneIcon from '../../assets/resources/stone.png';
 import timberIcon from '../../assets/resources/timber.png';
@@ -142,7 +143,9 @@ function Sheet({ title, onClose, children }: { title: string; onClose: () => voi
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
-  return (
+  // Rendered at the top of the page (a portal), so it's always centred on the
+  // screen and never trapped inside an animating or scrolled container.
+  return createPortal(
     <div className="base-sheet-root">
       <div className="base-sheet-backdrop" onClick={onClose} aria-hidden="true" />
       <div className="base-sheet cyber-panel normal-case" role="dialog" aria-modal="true" aria-label={title}>
@@ -154,7 +157,8 @@ function Sheet({ title, onClose, children }: { title: string; onClose: () => voi
         </div>
         <div className="base-sheet-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
