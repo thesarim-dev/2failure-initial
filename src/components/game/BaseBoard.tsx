@@ -1,3 +1,4 @@
+import { fx } from '../../lib/feedback';
 import type { KeyboardEvent, ReactNode } from 'react';
 import {
   TROPHY_ITEM_PREFIX,
@@ -146,6 +147,7 @@ export function BaseBoard({
         else if ((seenLevels.current.get(p.uid) ?? p.level) < p.level) changes[p.uid] = 'built';
       }
       const keys = Object.keys(changes);
+      if (keys.some((k) => changes[k] === 'built')) window.setTimeout(() => fx.built(), 400);
       if (keys.length) {
         setFresh((f) => ({ ...f, ...changes }));
         window.setTimeout(() => {

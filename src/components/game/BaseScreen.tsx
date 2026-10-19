@@ -1,3 +1,4 @@
+import { startAmbient, stopAmbient } from '../../lib/ambient';
 import { createPortal } from 'react-dom';
 import { CoinsBadge } from '../CoinsBadge';
 import stoneIcon from '../../assets/resources/stone.png';
@@ -504,6 +505,20 @@ export function BaseScreen({
   const landSide = LAND_SIDES[state.landLevel];
   const landCost = nextLandCost(state);
   const goals = useMemo(() => computeGoals(state, coins), [state, coins]);
+
+  // Ambient soundscape while the Base is open: a breeze and birdsong, plus
+  // water and fire when the base has them. Paused in the background.
+  const hasWater = Object.values(state.terrain ?? {}).includes('water');
+  const hasFire = state.placed.some((p) => ['campfire', 'torch', 'forge'].includes(p.itemId) && p.level > 0);
+  useEffect(() => {
+    startAmbient({ water: hasWater, fire: hasFire });
+    const onVisibility = () => (document.hidden ? stopAmbient() : startAmbient({ water: hasWater, fire: hasFire }));
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      stopAmbient();
+    };
+  }, [hasWater, hasFire]);
   const levelProgress =
     levelInfo.next === null ? 1 : Math.min(1, (levelInfo.score - levelInfo.floor) / Math.max(1, levelInfo.next - levelInfo.floor));
 

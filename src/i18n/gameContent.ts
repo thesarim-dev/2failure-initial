@@ -176,6 +176,7 @@ export type GameCopy = {
   zoomIn: string;
   zoomOut: string;
   sound: { title: string; description: string; on: string; off: string };
+  ambient: { title: string; description: string; on: string; off: string };
   flip: string;
 };
 
@@ -471,6 +472,7 @@ const en: GameCopy = {
   terrainNames: { grass: 'Grass', meadow: 'Meadow', dirt: 'Dirt', path: 'Path', sand: 'Sand', plaza: 'Plaza', water: 'Water', snow: 'Snow' },
   decorGroups: { nature: 'Nature', farm: 'Farm', fun: 'Fun', comfort: 'Comfort', lights: 'Lights', training: 'Training', paths: 'Paths & walls', water: 'Water' },
   sound: { title: 'Sounds', description: 'Soft chimes and light vibrations for taps and wins.', on: 'sounds on', off: 'sounds off' },
+  ambient: { title: 'Ambient sounds', description: 'Birdsong, a breeze, water and crackling fires on your base.', on: 'ambient on', off: 'ambient off' },
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
 
@@ -777,6 +779,7 @@ const he: GameCopy = {
   terrainNames: { grass: 'דשא', meadow: 'אחו', dirt: 'עפר', path: 'שביל', sand: 'חול', plaza: 'רחבה', water: 'מים', snow: 'שלג' },
   decorGroups: { nature: 'טבע', farm: 'חווה', fun: 'כיף', comfort: 'נוחות', lights: 'תאורה', training: 'אימון', paths: 'שבילים וחומות', water: 'מים' },
   sound: { title: 'צלילים', description: 'צלצולים רכים ורטט קל להקשות ולהצלחות.', on: 'צלילים פועלים', off: 'צלילים כבויים' },
+  ambient: { title: 'צלילי אווירה', description: 'ציוץ ציפורים, רוח, מים ואש מתפצפצת בבסיס שלכם.', on: 'אווירה פועלת', off: 'אווירה כבויה' },
   zoomIn: 'הגדלה',
   zoomOut: 'הקטנה',
 
@@ -1083,6 +1086,7 @@ const ar: GameCopy = {
   terrainNames: { grass: 'عشب', meadow: 'مرج', dirt: 'تراب', path: 'ممر', sand: 'رمل', plaza: 'ساحة', water: 'ماء', snow: 'ثلج' },
   decorGroups: { nature: 'طبيعة', farm: 'مزرعة', fun: 'مرح', comfort: 'راحة', lights: 'إضاءة', training: 'تدريب', paths: 'ممرات وأسوار', water: 'ماء' },
   sound: { title: 'الأصوات', description: 'نغمات ناعمة واهتزاز خفيف للنقرات والإنجازات.', on: 'الأصوات مفعّلة', off: 'الأصوات متوقفة' },
+  ambient: { title: 'أصوات الأجواء', description: 'زقزقة العصافير ونسيم ومياه ونار تطقطق في قاعدتك.', on: 'الأجواء مفعّلة', off: 'الأجواء متوقفة' },
   zoomIn: 'تكبير',
   zoomOut: 'تصغير',
 

@@ -423,6 +423,12 @@ If the home screen shows a red error banner:
 
 ## Your base (the game)
 
+### Sound
+
+All sounds are synthesized live (no audio files), through a small sound engine (`src/lib/feedback.ts`): a soft room reverb, a gentle compressor and a safety limiter, with slight pitch and stereo variation on every play so repeats never feel robotic. The voices are themed to the village: wooden knocks for taps, bells for rewards, a hammer thud when placing, a sparkle chime when a build finishes, a little fanfare for levelling up, and a soft wooden "bonk" (never a harsh beep) for errors.
+
+**Ambient sounds** (`src/lib/ambient.ts`): while the Base is open you hear a quiet soundscape: a breeze and birdsong, plus babbling water if your base has water and crackling if it has a campfire, torch or forge. It sits well below the effects, fades in and out, pauses when the app is in the background, and can be switched off in **Settings → Ambient sounds** (it also follows the main **Sounds** switch).
+
 ### Motion
 
 Movement follows one shared vocabulary (`src/lib/motion.ts`, mirrored as `--dur-*` / `--ease-*` in CSS): three durations, a smooth settle easing, a slight overshoot for playful pops, and two springs (snappy for UI, bouncy for rewards).

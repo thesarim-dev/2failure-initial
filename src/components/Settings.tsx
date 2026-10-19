@@ -1,4 +1,5 @@
-import { CalendarDays, Compass, LogOut, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
+import { useAmbientSetting } from '../lib/ambient';
+import { CalendarDays, Compass, LogOut, Moon, Sun, Volume2, VolumeX, Trees } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { SettingsFaq } from './SettingsFaq';
 import { useAuth } from '../context/AuthContext';
@@ -35,6 +36,7 @@ export function Settings({
 }: SettingsProps) {
   const { signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { ambientOn, toggleAmbient } = useAmbientSetting();
   const s = t.settings;
 
   return (
@@ -131,6 +133,24 @@ export function Settings({
               className="settings-theme-toggle">
               {soundOn ? <Volume2 size={18} strokeWidth={2.35} /> : <VolumeX size={18} strokeWidth={2.35} />}
               <span className="settings-theme-toggle__label">{soundOn ? t.game.sound.on : t.game.sound.off}</span>
+            </button>
+          </div>
+        </section>
+
+        <section className="cyber-panel p-5 normal-case">
+          <div className="settings-appearance-row">
+            <div className="settings-appearance-copy">
+              <h2 className="settings-section-title">{t.game.ambient.title}</h2>
+              <p className="text-sm font-medium opacity-70">{t.game.ambient.description}</p>
+            </div>
+            <button
+              type="button"
+              onClick={toggleAmbient}
+              aria-pressed={ambientOn && soundOn}
+              disabled={!soundOn}
+              className="settings-theme-toggle">
+              {ambientOn && soundOn ? <Trees size={18} strokeWidth={2.35} /> : <VolumeX size={18} strokeWidth={2.35} />}
+              <span className="settings-theme-toggle__label">{ambientOn && soundOn ? t.game.ambient.on : t.game.ambient.off}</span>
             </button>
           </div>
         </section>
