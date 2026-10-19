@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { MotionConfig, motion } from 'framer-motion';
+import { DUR, EASE_OUT } from './lib/motion';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useScreenInit } from './useScreenInit';
@@ -565,17 +566,47 @@ export function MainApp() {
 
   const showTabBar = appState === 'HOME' || appState === 'BASE' || appState === 'SETTINGS';
 
+  // Where the next screen comes from: tabs slide toward the direction of travel,
+  // sub-screens slide in from the side, the workout flow rises from below.
+  const prevScreen = useRef(appState);
+  const SCREEN_ORDER: Record<string, number> = { HOME: 0, STORE: 0.5, BASE: 1, SETTINGS: 2 };
+  const screenEnter = (() => {
+    const from = prevScreen.current;
+    const to = appState;
+    if (from === to) return { opacity: 0 };
+    if (['WORKOUT', 'REP_PROMPT', 'WEIGHT_REP_PROMPT', 'SUMMARY'].includes(to)) return { opacity: 0, y: 28 };
+    const a = SCREEN_ORDER[from];
+    const b = SCREEN_ORDER[to];
+    if (a === undefined || b === undefined) return { opacity: 0, y: -12 };
+    return { opacity: 0, x: b > a ? 40 : -40 };
+  })();
+  useEffect(() => {
+    prevScreen.current = appState;
+  }, [appState]);
+
   return (
     <div
       className={`min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#BEF028] selection:text-black ${
         showTabBar ? 'has-tab-bar' : ''
       }`}>
-      {/* Screens fade in. Opacity only: a transform would break fixed-position screens. */}
+      {/*
+        Screens enter in the direction you navigate: tabs slide sideways, the
+        workout flow rises up. A short move that settles to no transform, so
+        fixed-position elements inside screens behave normally once it ends.
+      */}
+      <MotionConfig reducedMotion="user">
       <motion.div
         key={appState}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.22, ease: 'easeOut' }}>
+        initial={screenEnter}
+        animate={{ opacity: 1, x: 0, y: 0 }}
+        transition={{ duration: DUR.base, ease: EASE_OUT }}
+        style={{ willChange: 'transform, opacity' }}
+        onAnimationComplete={() => {
+          // Leave no transform behind (keeps position: fixed working inside screens).
+          const el = document.querySelector<HTMLElement>('[data-screen]');
+          if (el) el.style.transform = 'none';
+        }}
+        data-screen={appState}>
       {appState === 'HOME' &&
       <Dashboard
         coins={coins}
@@ -712,6 +743,7 @@ export function MainApp() {
         />
       )}
       </motion.div>
+      </MotionConfig>
 
       {showTabBar && (
         <AppTabBar

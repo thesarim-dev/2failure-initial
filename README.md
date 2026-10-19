@@ -423,6 +423,18 @@ If the home screen shows a red error banner:
 
 ## Your base (the game)
 
+### Motion
+
+Movement follows one shared vocabulary (`src/lib/motion.ts`, mirrored as `--dur-*` / `--ease-*` in CSS): three durations, a smooth settle easing, a slight overshoot for playful pops, and two springs (snappy for UI, bouncy for rewards).
+
+* **Screens move with you:** switching tabs slides toward the tab you picked, opening Your plan slides in from the side, and the workout, log-reps and receipt screens rise up from below.
+* **Tab bar:** one highlight pill glides to the tab you tap.
+* **Wallet:** coins count up to the new total (with a little bump) when you come back after earning them.
+* **Building moments:** a new building or decoration drops in with a squash-and-settle bounce and a puff of dust; when a build finishes (even while you were training), it gets a golden burst the next time you open the Base.
+* **Press feedback:** cards, tiles and big buttons give a springy press.
+
+Everything respects the phone's *reduce motion* setting.
+
 ### Paths, fences and walls
 
 **Paths are painted like terrain.** Choose **Path** in the build menu (or pick it in **Paint**) and drag across the ground to lay cobblestones. Paths no longer take up a square of their own, and older path pieces are converted automatically.

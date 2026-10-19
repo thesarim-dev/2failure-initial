@@ -113,6 +113,9 @@ export function project([x, y]: [number, number]): [number, number] {
 }
 
 
+/** What the map last showed (module-level, so it survives leaving the Base tab). */
+const lastSeen: { uids: Set<string> | null; levels: Map<string, number> } = { uids: null, levels: new Map() };
+
 export function BaseBoard({
   state,
   plan,
@@ -129,6 +132,35 @@ export function BaseBoard({
   onPaint,
   svgId
 }: BoardProps) {
+  // Remember what you've already seen on the map (across visits to the tab),
+  // so a build that finished while you trained bursts when you come back.
+  const [fresh, setFresh] = useState<Record<string, 'placed' | 'built'>>({});
+  useEffect(() => {
+    const seenUids = { current: lastSeen.uids };
+    const seenLevels = { current: lastSeen.levels };
+    const prev = seenUids.current;
+    if (prev) {
+      const changes: Record<string, 'placed' | 'built'> = {};
+      for (const p of state.placed) {
+        if (!prev.has(p.uid)) changes[p.uid] = 'placed';
+        else if ((seenLevels.current.get(p.uid) ?? p.level) < p.level) changes[p.uid] = 'built';
+      }
+      const keys = Object.keys(changes);
+      if (keys.length) {
+        setFresh((f) => ({ ...f, ...changes }));
+        window.setTimeout(() => {
+          setFresh((f) => {
+            const n = { ...f };
+            for (const k of keys) delete n[k];
+            return n;
+          });
+        }, 2300);
+      }
+    }
+    lastSeen.uids = new Set(state.placed.map((p) => p.uid));
+    lastSeen.levels = new Map(state.placed.map((p) => [p.uid, p.level]));
+  }, [state.placed]);
+
   // Land is bought with coins, separately from HQ level.
   const land = state.landLevel;
   // The fence tool shows the tile grid as a guide, but it isn't placing a building.
@@ -200,6 +232,9 @@ export function BaseBoard({
 
   // Everything upright, sorted back to front so nearer things overlap.
   type Sprite = { key: string; depth: number; node: ReactNode };
+  // Building moments: new items drop in with a puff of dust; finished builds
+  // and upgrades get a golden burst. (fresh is tracked below the sprites list.)
+
   const sprites: Sprite[] = [];
   const groundItems: ReactNode[] = [];
   for (const item of state.placed) {
@@ -212,7 +247,7 @@ export function BaseBoard({
           key: `${item.uid}-scaffold`,
           depth: item.x + item.y + 1,
           node: (
-            <g key={`${item.uid}-scaffold`} pointerEvents="none">
+            <g key={`${item.uid}-scaffold`} pointerEvents="none" className={fresh[item.uid] === 'placed' ? 'base-drop' : undefined}>
               <IsoScaffold ox={item.x * T} oy={item.y * T} size={1} setsRemaining={pathJob.setsRemaining} height={18} />
             </g>
           )
@@ -259,7 +294,7 @@ export function BaseBoard({
             onClick={inert ? undefined : () => onItem(item.uid)}
             onKeyDown={inert ? undefined : (e) => onKeyActivate(e, () => onItem(item.uid))}>
             <polygon points={foot} fill="transparent" />
-            <g className="base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1">
+            <g className={`base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1 ${fresh[item.uid] === 'placed' ? 'base-drop' : ''}`}>
               {construction && item.level === 0 ? null : (
                 <g className="base-pop">
                   <IsoItemArt
@@ -318,7 +353,7 @@ export function BaseBoard({
           <g transform={`translate(${cx - box / 2} ${cy - box * 0.9})`}>
             <rect x={box * 0.12} y={box * 0.1} width={box * 0.76} height={box * 0.82} fill="transparent" />
             {!(building && item.level === 0) && (
-              <g className="base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1">
+              <g className={`base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1 ${fresh[item.uid] === 'placed' ? 'base-drop' : ''}`}>
                 <g className="base-pop">
                   <g transform={item.flip ? `translate(${box} 0) scale(-1 1)` : undefined}>
                     <ItemArt item={item} lit={lit} verified={verified} plan={plan} />
@@ -338,6 +373,54 @@ export function BaseBoard({
       )
     });
   }
+  for (const [uid, kind] of Object.entries(fresh)) {
+    const item = state.placed.find((p) => p.uid === uid);
+    if (!item) continue;
+    const size = itemSize(item.itemId);
+    const [cx, cy] = project([(item.x + size / 2) * T, (item.y + size / 2) * T]);
+    sprites.push({
+      key: `fx-${uid}-${kind}`,
+      depth: item.x + item.y + size + 0.05,
+      node: (
+        <g key={`fx-${uid}-${kind}`} pointerEvents="none" transform={`translate(${cx} ${cy})`}>
+          {kind === 'placed' ? (
+            // A puff of dust kicked up around the footprint.
+            [0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+              const ang = (i / 8) * Math.PI * 2;
+              const r = 38 * size;
+              return (
+                <circle
+                  key={i}
+                  cx={Math.cos(ang) * r * 0.55}
+                  cy={Math.sin(ang) * r * 0.28}
+                  r={12 + (i % 3) * 4}
+                  className="base-dust"
+                  style={{ '--dx': `${Math.cos(ang) * r * 0.6}px`, '--dy': `${Math.sin(ang) * r * 0.3 - 6}px`, animationDelay: `${0.18 + (i % 4) * 0.03}s` } as React.CSSProperties}
+                />
+              );
+            })
+          ) : (
+            // A golden burst: rays, sparkles and a ring.
+            <g transform={`translate(0 ${-40 * size})`}>
+              <ellipse rx={44 * size} ry={22 * size} className="base-burst-ring" style={{ animationDelay: '0.4s' }} />
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => {
+                const ang = (i / 10) * Math.PI * 2;
+                return (
+                  <path
+                    key={i}
+                    d="M0 -8 L3 -3 L8 0 L3 3 L0 8 L-3 3 L-8 0 L-3 -3 Z"
+                    className="base-burst-spark"
+                    style={{ '--dx': `${Math.cos(ang) * 70 * size}px`, '--dy': `${Math.sin(ang) * 44 * size}px`, animationDelay: `${0.4 + (i % 3) * 0.05}s` } as React.CSSProperties}
+                  />
+                );
+              })}
+            </g>
+          )}
+        </g>
+      )
+    });
+  }
+
   // Fences, walls and hedges along tile edges sit between the two tiles' depths.
   // Each piece knows whether its run continues, so joins are seamless.
   const edges = state.edges ?? {};
