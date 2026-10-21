@@ -4,6 +4,9 @@ import { Move } from './moves';
 import { Camera, X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { WORKOUT_FINISH_BTN, WORKOUT_TIMER_GLOW } from './workoutUi';
+import { EffortRing } from './EffortRing';
+import { fx } from '../lib/feedback';
+import { prefersReducedMotion } from '../lib/motion';
 
 interface TimedWorkoutProps {
   move: Move;
@@ -33,8 +36,10 @@ export function TimedWorkout({
       ]
   );
   const seconds = externalSeconds ?? internalSeconds;
+  const [ended, setEnded] = useState(false);
 
   useEffect(() => {
+    if (ended) return; // the clock stops the moment the set ends
     if (externalSeconds === undefined) {
       const interval = setInterval(() => {
         setInternalSeconds((s) => s + 1);
@@ -49,7 +54,7 @@ export function TimedWorkout({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [externalSeconds, setSeconds]);
+  }, [externalSeconds, setSeconds, ended]);
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -59,7 +64,8 @@ export function TimedWorkout({
 
   return (
     <div
-      className={`flex flex-col w-full min-h-screen ${move.color} p-4 md:p-8 transition-colors duration-200`}>
+      className={`workout-hero flex flex-col w-full min-h-screen ${move.color} p-4 md:p-8 transition-colors duration-200 ${ended ? 'is-ended' : ''}`}>
+      <span className="workout-hero-bg" aria-hidden="true" />
       <header className="flex justify-between items-center mb-10 gap-3">
         <button
           type="button"
@@ -92,11 +98,12 @@ export function TimedWorkout({
 
         <div className="workout-timer-stack">
           <motion.div
-            className={`workout-timer ${WORKOUT_TIMER_GLOW[move.lineupSlot]}`}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}>
-            {formatTime(seconds)}
+            className={`workout-timer-hero ${WORKOUT_TIMER_GLOW[move.lineupSlot]}`}
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', bounce: 0.35 }}
+            aria-label={formatTime(seconds)}>
+            <EffortRing seconds={seconds} tier={move.tier ?? 'BASE'} done={ended} />
           </motion.div>
 
           <motion.button
@@ -104,8 +111,16 @@ export function TimedWorkout({
             initial={{ y: 16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: 'spring', bounce: 0.4, delay: 0.3 }}
-            disabled={finishing}
-            onClick={() => onFinish(seconds)}
+            disabled={finishing || ended}
+            onClick={() => {
+              // A satisfying finish: the ring snaps full with a flash and a chime,
+              // then the set moves on.
+              if (ended) return;
+              setEnded(true);
+              fx.success();
+              const final = seconds;
+              window.setTimeout(() => onFinish(final), prefersReducedMotion() ? 0 : 420);
+            }}
             className={`${WORKOUT_FINISH_BTN} normal-case`}>
             {finishing ? t.workout.saving : buttonLabel}
           </motion.button>

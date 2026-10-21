@@ -325,6 +325,18 @@ The FAQ section answers common training questions:
 - Weekly volume targets
 - Nutrition and sleep basics
 
+### The workout screen
+
+While you train, the set is the hero of the screen:
+
+* **Effort ring:** fills as you hold on, from 0 to 60 seconds (where the effort bonus is maxed), with a dot marking 0:10, where coins start counting. Past 60 seconds it turns gold and glows: you're beyond the max, so keep going to failure.
+* **Live coins:** inside the ring, under the timer, you see what this set is already worth ("+24 coins"), using the same formula as the receipt.
+* **Milestones:** small celebrations with a sound at 0:10 (*Coins unlocked!*), 0:30 (*Halfway to the max bonus*) and 1:00 (*Max effort bonus!*).
+* **Breathing halo:** a soft glow behind the ring slowly breathes at a calm pace.
+* **A satisfying finish:** when you tap the finish button, the clock stops, the ring snaps full with a flash and a chime, and you move on to logging your reps.
+
+The screen keeps the exercise's category colour, with soft drifting stripes and a vignette for depth. Everything respects *reduce motion*.
+
 ### Sounds
 
 Soft chimes play for key moments (starting a workout, finishing a set, completing a workout, personal records, trophies, building and base level-ups), with a light vibration on phones that support it. Turn them off with **Settings → Sounds**. All sounds are generated in the app, so there are no audio files to download.

@@ -158,6 +158,14 @@ const en: UiContent = {
   workout: {
     cancel: 'Cancel workout',
     failingInProgress: 'workout in progress',
+    hero: {
+      coins: (n) => `+${n} coins`,
+      startsAt: 'Coins start at 0:10',
+      unlocked: 'Coins unlocked!',
+      halfway: 'Halfway to the max bonus',
+      maxed: 'Max effort bonus!',
+      overtime: 'Beyond the max: keep going to failure'
+    },
     useAiTracking: 'Use AI tracking',
     useTimerOnly: 'Use timer only',
     statusLoading: 'loading AI...',
@@ -432,6 +440,14 @@ const he: UiContent = {
   workout: {
     cancel: 'בטל אימון',
     failingInProgress: 'אימון בתהליך',
+    hero: {
+      coins: (n) => `+${n} מטבעות`,
+      startsAt: 'המטבעות מתחילים ב-0:10',
+      unlocked: 'המטבעות נפתחו!',
+      halfway: 'חצי דרך לבונוס המקסימלי',
+      maxed: 'בונוס מאמץ מקסימלי!',
+      overtime: 'מעבר למקסימום: המשיכו עד כשל'
+    },
     useAiTracking: 'השתמש במעקב AI',
     useTimerOnly: 'השתמש בטיימר בלבד',
     statusLoading: 'טוען AI...',
@@ -706,6 +722,14 @@ const ar: UiContent = {
   workout: {
     cancel: 'إلغاء التمرين',
     failingInProgress: 'التمرين جارٍ',
+    hero: {
+      coins: (n) => `+${n} عملة`,
+      startsAt: 'العملات تبدأ عند 0:10',
+      unlocked: 'العملات مفتوحة!',
+      halfway: 'نصف الطريق إلى أقصى مكافأة',
+      maxed: 'أقصى مكافأة جهد!',
+      overtime: 'بعد الحد الأقصى: استمر حتى الإرهاق'
+    },
     useAiTracking: 'استخدم تتبع الذكاء الاصطناعي',
     useTimerOnly: 'استخدم المؤقت فقط',
     statusLoading: 'جارٍ تحميل الذكاء الاصطناعي...',

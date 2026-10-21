@@ -6,11 +6,11 @@
  */
 export const COIN_EARNING_CAP_SECONDS = 120;
 
-const MIN_SET_SECONDS = 10;
-const BASE_COINS = 20;
-const EFFORT_BONUS_MAX = 10;
+export const MIN_SET_SECONDS = 10;
+export const BASE_COINS = 20;
+export const EFFORT_BONUS_MAX = 10;
 /** Seconds at which the effort bonus is full. */
-const EFFORT_FULL_SECONDS = 60;
+export const EFFORT_FULL_SECONDS = 60;
 
 const TIER_BONUS = {
   BASE: 0,

@@ -7329,4 +7329,166 @@
       animation: none;
     }
   }
+
+  /* =====================================================================
+     Workout hero: effort ring, live coins, milestones, breathing halo
+     ===================================================================== */
+  .workout-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  /* Depth on the category colour: drifting stripes and a soft vignette. */
+  .workout-hero-bg {
+    position: absolute;
+    inset: -40px;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 55% at 50% 42%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 60%),
+      radial-gradient(ellipse 120% 90% at 50% 50%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.18) 100%),
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 18px, rgba(255, 255, 255, 0) 18px 40px);
+    animation: workout-stripes 14s linear infinite;
+  }
+  @keyframes workout-stripes {
+    from { background-position: 0 0, 0 0, 0 0; }
+    to { background-position: 0 0, 0 0, 113px 0; }
+  }
+  .workout-timer-hero {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.6rem;
+  }
+  .effort-ring {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    color: #0c0f02;
+  }
+  .effort-ring-milestone {
+    height: 2rem;
+    display: flex;
+    align-items: center;
+  }
+  .effort-ring-toast {
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: #fff;
+    background: rgba(12, 15, 2, 0.85);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+  .effort-ring-stage {
+    position: relative;
+    width: min(68vw, 16.5rem);
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+  }
+  .effort-ring-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .effort-ring-track {
+    fill: rgba(255, 255, 255, 0.28);
+    stroke: rgba(0, 0, 0, 0.12);
+    stroke-width: 14;
+  }
+  .effort-ring-fill {
+    fill: none;
+    stroke: #0c0f02;
+    stroke-width: 14;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.4s ease;
+  }
+  .effort-ring-mark {
+    fill: #ffffff;
+    stroke: #0c0f02;
+    stroke-width: 3;
+  }
+  .effort-ring.is-overtime .effort-ring-fill {
+    stroke: #b8860b;
+    filter: drop-shadow(0 0 6px rgba(255, 210, 90, 0.9));
+    animation: effort-glow 1.6s ease-in-out infinite;
+  }
+  @keyframes effort-glow {
+    0%, 100% { stroke-width: 14; }
+    50% { stroke-width: 17; }
+  }
+  .effort-ring.is-done .effort-ring-fill {
+    transition: stroke-dashoffset 0.35s var(--ease-out, ease-out);
+  }
+  /* A soft halo that breathes behind the ring (about 8 s per breath). */
+  .effort-ring-breathe {
+    position: absolute;
+    inset: -8%;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 68%);
+    animation: effort-breathe 8s ease-in-out infinite;
+  }
+  @keyframes effort-breathe {
+    0%, 100% { transform: scale(0.9); opacity: 0.55; }
+    50% { transform: scale(1.08); opacity: 1; }
+  }
+  .effort-ring-center {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .effort-ring-time {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: clamp(2.8rem, 13vw, 3.8rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .effort-ring-coins {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 0.95rem;
+    color: #fff;
+    background: rgba(12, 15, 2, 0.82);
+  }
+  .effort-ring-hint {
+    font-size: 0.78rem;
+    font-weight: 800;
+    opacity: 0.7;
+  }
+  .effort-ring-overtime {
+    margin-top: 0.2rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    opacity: 0.8;
+  }
+  /* The finish: a bright flash across the screen. */
+  .workout-hero.is-ended::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 65%);
+    animation: workout-flash 0.45s ease-out both;
+  }
+  @keyframes workout-flash {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .workout-hero-bg,
+    .effort-ring-breathe,
+    .effort-ring.is-overtime .effort-ring-fill,
+    .workout-hero.is-ended::after {
+      animation: none;
+    }
+  }
 }

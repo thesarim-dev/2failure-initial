@@ -201,6 +201,14 @@ export interface AppTranslations {
   workout: {
     cancel: string;
     failingInProgress: string;
+    hero: {
+      coins: (n: number) => string;
+      startsAt: string;
+      unlocked: string;
+      halfway: string;
+      maxed: string;
+      overtime: string;
+    };
     useAiTracking: string;
     useTimerOnly: string;
     statusLoading: string;
