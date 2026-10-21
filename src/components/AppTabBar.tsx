@@ -1,6 +1,4 @@
 import { Activity, Castle, Settings as SettingsIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { SPRING_SNAPPY } from '../lib/motion';
 import { useLanguage } from '../context/LanguageContext';
 
 export type AppTab = 'train' | 'base' | 'settings';
@@ -32,8 +30,6 @@ export function AppTabBar({ active, onChange, baseHasNews }: AppTabBarProps) {
             aria-current={isActive ? 'page' : undefined}
             data-tour={id === 'base' ? 'base-tab' : id === 'settings' ? 'settings' : 'train-tab'}
             onClick={() => onChange(id)}>
-            {/* One pill that glides to the active tab. */}
-            {isActive && <motion.span layoutId="app-tab-pill" className="app-tab-pill" transition={SPRING_SNAPPY} aria-hidden="true" />}
             <span className="app-tab-icon">
               <Icon size={22} strokeWidth={2.4} aria-hidden="true" />
               {id === 'base' && baseHasNews && !isActive && <span className="app-tab-dot" aria-hidden="true" />}

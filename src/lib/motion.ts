@@ -1,5 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
-
 /**
  * The app's motion vocabulary: a few durations, easings and springs used
  * everywhere, so movement feels like one consistent "physics".
@@ -15,49 +13,4 @@ export const SPRING_BOUNCY = { type: 'spring', stiffness: 320, damping: 18 } as 
 
 export function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
-}
-
-/**
- * A number that animates from its previous value to the new one (ease-out),
- * e.g. coins counting up in the wallet. Returns [shown, isChanging].
- */
-const lastShown = new Map<string, number>();
-
-export function useCountFrom(target: number, durationMs = 700, memoryKey?: string): [number, boolean] {
-  // With a memory key, a freshly mounted counter starts from what it last showed
-  // (e.g. the wallet counts up when you return home after earning coins).
-  const initial = memoryKey && lastShown.has(memoryKey) ? lastShown.get(memoryKey)! : target;
-  const [shown, setShown] = useState(initial);
-  const [changing, setChanging] = useState(false);
-  const from = useRef(initial);
-  useEffect(() => {
-    if (memoryKey) lastShown.set(memoryKey, shown);
-  }, [memoryKey, shown]);
-  useEffect(() => {
-    const start = from.current;
-    if (start === target || prefersReducedMotion()) {
-      from.current = target;
-      setShown(target);
-      return;
-    }
-    setChanging(true);
-    let frame = 0;
-    const t0 = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - t0) / durationMs);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setShown(Math.round(start + (target - start) * eased));
-      if (t < 1) frame = requestAnimationFrame(tick);
-      else {
-        from.current = target;
-        setChanging(false);
-      }
-    };
-    frame = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(frame);
-      from.current = target;
-    };
-  }, [target, durationMs]);
-  return [shown, changing];
 }

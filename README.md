@@ -437,21 +437,9 @@ If the home screen shows a red error banner:
 
 ### Sound
 
-All sounds are synthesized live (no audio files), through a small sound engine (`src/lib/feedback.ts`): a soft room reverb, a gentle compressor and a safety limiter, with slight pitch and stereo variation on every play so repeats never feel robotic. The voices are themed to the village: wooden knocks for taps, bells for rewards, a hammer thud when placing, a sparkle chime when a build finishes, a little fanfare for levelling up, and a soft wooden "bonk" (never a harsh beep) for errors.
+All sounds are synthesized live (no audio files), through a small sound engine (`src/lib/feedback.ts`): a soft room reverb, a gentle compressor and a safety limiter, with slight pitch and stereo variation on every play so repeats never feel robotic. The voices are themed to the village: wooden knocks for taps, bells for rewards, a hammer thud when placing, a sparkle chime when a build finishes (it plays when you next open the Base), a little fanfare for levelling up, and a soft wooden "bonk" (never a harsh beep) for errors.
 
 **Ambient sounds** (`src/lib/ambient.ts`): while the Base is open you hear a quiet soundscape: a breeze and birdsong, plus babbling water if your base has water and crackling if it has a campfire, torch or forge. It sits well below the effects, fades in and out, pauses when the app is in the background, and can be switched off in **Settings → Ambient sounds** (it also follows the main **Sounds** switch).
-
-### Motion
-
-Movement follows one shared vocabulary (`src/lib/motion.ts`, mirrored as `--dur-*` / `--ease-*` in CSS): three durations, a smooth settle easing, a slight overshoot for playful pops, and two springs (snappy for UI, bouncy for rewards).
-
-* **Screens move with you:** switching tabs slides toward the tab you picked, opening Your plan slides in from the side, and the workout, log-reps and receipt screens rise up from below.
-* **Tab bar:** one highlight pill glides to the tab you tap.
-* **Wallet:** coins count up to the new total (with a little bump) when you come back after earning them.
-* **Building moments:** a new building or decoration drops in with a squash-and-settle bounce and a puff of dust; when a build finishes (even while you were training), it gets a golden burst the next time you open the Base.
-* **Press feedback:** cards, tiles and big buttons give a springy press.
-
-Everything respects the phone's *reduce motion* setting.
 
 ### Paths, fences and walls
 
