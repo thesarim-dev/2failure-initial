@@ -9,6 +9,7 @@ import {
   X
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { profileFor } from '../lib/pose/profiles';
 import { usePoseRepTracker } from '../hooks/usePoseRepTracker';
 import type { PoseExerciseId } from '../lib/pose/repCounterFactory';
 import { TimedWorkout } from './TimedWorkout';
@@ -48,6 +49,8 @@ function AiRepTrackingView({
   const {
     videoRef,
     reps,
+    holdFix,
+    isHold,
     status,
     sessionPhase,
     positionGuidance,
@@ -120,7 +123,8 @@ function AiRepTrackingView({
 
       <div className="flex flex-col items-center w-full max-w-md mx-auto gap-2">
         <p className="text-xs font-semibold opacity-75 mb-1 normal-case text-center leading-snug max-w-sm">
-          {t.moves.poseAiHints[poseExerciseId]}
+          {(t.moves.poseAiHints as Record<string, string>)[poseExerciseId] ??
+            t.moves.poseAiViewHints[profileFor(poseExerciseId)?.view ?? 'floor_side']}
         </p>
 
         <div className="relative w-full aspect-[9/16] max-h-[68vh] workout-camera-frame">
@@ -178,11 +182,17 @@ function AiRepTrackingView({
           <div className="absolute top-3 left-3 workout-overlay-chip normal-case">
             {statusLabel}
           </div>
+          {/* Holds: live form feedback while the set is running. */}
+          {isHold && sessionPhase === 'active' && cameraEnabled && holdFix && (
+            <div className={`absolute top-12 left-1/2 -translate-x-1/2 workout-form-chip ${holdFix === 'ok' ? 'is-good' : 'is-fix'} normal-case`}>
+              {holdFix === 'ok' ? t.workout.formGood : t.workout.positionGuidance[holdFix]}
+            </div>
+          )}
 
           <div
             className={`absolute bottom-3 right-3 workout-rep-badge transition-opacity duration-300${trackingActive ? '' : ' opacity-35'}`}>
             <p className="text-[10px] font-bold lowercase tracking-wide opacity-80">
-              {t.workout.reps}
+              {isHold ? t.workout.heldInForm : t.workout.reps}
             </p>
             <p className="workout-rep-count">{reps}</p>
           </div>
@@ -229,13 +239,16 @@ function AiRepTrackingView({
         transition={{ type: 'spring', bounce: 0.35 }}
         disabled={finishing}
         onClick={() =>
-          onFinish(seconds, cameraEnabled && reps > 0 ? reps : undefined)
+          isHold
+            ? // Holds log the seconds actually held in good form (timer if the camera was off).
+              onFinish(cameraEnabled && reps > 0 ? reps : seconds, undefined)
+            : onFinish(seconds, cameraEnabled && reps > 0 ? reps : undefined)
         }
         className={`${WORKOUT_FINISH_BTN} mt-3 mb-3 !py-3 normal-case`}>
         <span>{finishing ? t.workout.saving : buttonLabel}</span>
         {reps > 0 && (
           <span className="block text-sm font-semibold mt-1 normal-case opacity-80">
-            {t.workout.loggingReps(reps)}
+            {isHold ? `${reps} ${t.workout.heldInForm}` : t.workout.loggingReps(reps)}
           </span>
         )}
       </motion.button>

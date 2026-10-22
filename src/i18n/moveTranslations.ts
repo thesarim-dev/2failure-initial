@@ -202,6 +202,12 @@ const en: MovesTranslations = {
     'NEED A BREAK',
     'FINISH SET'
   ],
+  poseAiViewHints: {
+    floor_side: 'Prop your phone on its side at floor level, about 2 m away, so your whole body is in view. Full range counts.',
+    standing_side: 'Stand side-on to your phone, 2 to 3 m away, with your whole body in view. Full range counts.',
+    bar_front: 'Face your phone from 2 to 3 m away so the bar, your arms and your body are in view. Full range counts.',
+    seated_side: 'Sit side-on to your phone, about 2 m away, so your hips and legs are in view.'
+  },
   poseAiHints: {
     pushups: 'Prop your phone to your side. Full pushup depth counts.',
     squats: 'Prop your phone to your side. Full squat depth counts.',
@@ -411,6 +417,12 @@ const he: MovesTranslations = {
     'צריך הפסקה',
     'סיים סט'
   ],
+  poseAiViewHints: {
+    floor_side: 'הניחו את הטלפון על הצד בגובה הרצפה, כ-2 מטרים מכם, כך שכל הגוף ייראה. טווח תנועה מלא נספר.',
+    standing_side: 'עמדו בצד לטלפון, 2 עד 3 מטרים ממנו, כשכל הגוף נראה. טווח תנועה מלא נספר.',
+    bar_front: 'עמדו מול הטלפון במרחק 2 עד 3 מטרים כך שהמוט, הזרועות והגוף ייראו. טווח תנועה מלא נספר.',
+    seated_side: 'שבו בצד לטלפון, כ-2 מטרים ממנו, כך שהאגן והרגליים ייראו.'
+  },
   poseAiHints: {
     pushups:
       'הצמד את הטלפון לצד. עומק מלא בשכיבת סמיכה נספר.',
@@ -621,6 +633,12 @@ const ar: MovesTranslations = {
     'أحتاج استراحة',
     'إنهاء المجموعة'
   ],
+  poseAiViewHints: {
+    floor_side: 'ضع هاتفك على جانبه بمستوى الأرض على بعد مترين تقريباً ليظهر جسمك كاملاً. المدى الكامل للحركة يُحسب.',
+    standing_side: 'قف بجانبك نحو الهاتف على بعد 2 إلى 3 أمتار ليظهر جسمك كاملاً. المدى الكامل للحركة يُحسب.',
+    bar_front: 'واجه هاتفك من 2 إلى 3 أمتار ليظهر العمود وذراعاك وجسمك. المدى الكامل للحركة يُحسب.',
+    seated_side: 'اجلس بجانبك نحو الهاتف على بعد مترين تقريباً ليظهر الوركان والساقان.'
+  },
   poseAiHints: {
     pushups: 'ضع هاتفك على الجانب. عمق الضغط الكامل يُحسب.',
     squats: 'ضع هاتفك على الجانب. عمق القرفصاء الكامل يُحسب.',

@@ -179,6 +179,28 @@ Tap **Cancel workout** to return to the home screen without logging a set. No co
 
 ---
 
+### AI camera tracking (every exercise)
+
+Every exercise can use the camera. MediaPipe's pose model runs **on your phone** (frames never leave the device) and reads 33 body points.
+
+* **Rep exercises** watch one measurement and count a rep on each full cycle. Half reps don't count, and a short wobble or a moment out of view can't fake or lose a rep.
+
+  | Family | What's measured | Exercises |
+  |---|---|---|
+  | Push | elbow angle | all pushup variants, dips, bench press (archer pushups watch the bending arm) |
+  | Pull | elbow angle | pull-ups, chin-ups, negatives, backpack pull-ups, all rows, superman pulls |
+  | Squat | knee angle | squats, jump/backpack/goblet squats; lunges, split squats, pistols and step-ups watch the working leg |
+  | Hip | hip angle | glute and single-leg bridges, leg raises, hanging knee and leg raises; crunches watch the torso curl |
+  | Whole body | hip height | burpees |
+  | Feet | heel lift | calf raises |
+
+* **Holds** (planks, side planks, hollow body, L-sit and the stretches) get a **form check** instead of a rep count: only the seconds you spend in good form count, and a live chip says *Good form: hold it!* or what to fix (*Keep your hips level*, *Lift your legs*…).
+* Before a set starts, the camera waits until you're in the starting position (top of a pushup, standing, hanging, lying for bridges…) and tells you if you're not.
+* Each exercise shows a camera-placement hint for its view (side-on at floor level, side-on standing, facing the bar, or seated).
+* Camera-counted reps are logged as **verified** (they count toward verified trophies). Weighted moves open the weight prompt with the camera's reps filled in. **Use timer only** is always available.
+
+AI tracking is on by default; set `VITE_ENABLE_POSE_AI=false` to turn it off. Developers: `npm run test:pose` runs a synthetic test of every exercise (full reps, half reps, jitter, dropouts, starting positions and holds).
+
 ## 7. Log reps and weight
 
 After you tap finish, 2failure may ask you to confirm what you accomplished. The prompt depends on the exercise.

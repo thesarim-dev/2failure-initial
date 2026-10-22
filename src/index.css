@@ -7372,4 +7372,22 @@
       animation: none;
     }
   }
+
+  /* AI holds: live form feedback chip */
+  .workout-form-chip {
+    max-width: 88%;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 900;
+    text-align: center;
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  }
+  .workout-form-chip.is-good {
+    background: rgba(34, 160, 80, 0.92);
+  }
+  .workout-form-chip.is-fix {
+    background: rgba(214, 110, 20, 0.94);
+  }
 }

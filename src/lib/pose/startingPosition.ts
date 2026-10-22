@@ -4,6 +4,8 @@ import { detectPushupPhase } from './pushupRepCounter';
 import type { PoseExerciseId } from './repCounterFactory';
 import { detectSquatPhase } from './squatRepCounter';
 import type { Point, RepPhase } from './types';
+import { profileFor, repPhase, type HoldFix } from './profiles';
+import { ARMS, FEET, LEGS } from './measures';
 
 export type PositionGuidanceKey =
   | 'no_pose'
@@ -14,7 +16,10 @@ export type PositionGuidanceKey =
   | 'legs_not_visible'
   | 'straighten_arms'
   | 'stand_up'
-  | 'hold_still';
+  | 'hold_still'
+  | 'body_not_visible'
+  | 'start_position'
+  | HoldFix;
 
 export const POSITION_STABLE_TARGET = 22;
 export const STABLE_GOOD_INCREMENT = 2;
@@ -84,10 +89,31 @@ function detectExercisePhase(
     case 'lunges':
       return detectLungePhase(landmarks);
   }
+  const profile = profileFor(exerciseId);
+  return profile && profile.kind === 'reps' ? repPhase(profile, landmarks) : 'unknown';
 }
 
 function keyLandmarks(exerciseId: PoseExerciseId): number[] {
-  return exerciseId === 'pushups' ? PUSHUP_LANDMARKS : LEG_LANDMARKS;
+  if (exerciseId === 'pushups') return PUSHUP_LANDMARKS;
+  if (exerciseId === 'squats' || exerciseId === 'lunges') return LEG_LANDMARKS;
+  return profileFor(exerciseId)?.keys ?? LEG_LANDMARKS;
+}
+
+/** Which "show yourself" message fits the body parts this exercise needs. */
+function notVisibleGuidance(exerciseId: PoseExerciseId): PositionGuidanceKey {
+  const keys = keyLandmarks(exerciseId);
+  if (keys === ARMS || keys === PUSHUP_LANDMARKS) return 'arms_not_visible';
+  if (keys === LEG_LANDMARKS || keys === LEGS || keys === FEET) return 'legs_not_visible';
+  return 'body_not_visible';
+}
+
+/** What to say when someone starts in the wrong end of the movement. */
+function wrongStartGuidance(exerciseId: PoseExerciseId): PositionGuidanceKey {
+  if (exerciseId.includes('pushups')) return 'straighten_arms';
+  if (exerciseId === 'squats' || exerciseId === 'lunges') return 'stand_up';
+  const profile = profileFor(exerciseId);
+  if (profile?.kind === 'reps' && profile.start === 'up' && profile.view === 'standing_side' && profile.keys === LEGS) return 'stand_up';
+  return 'start_position';
 }
 
 export interface StartingPositionAssessment {
@@ -115,14 +141,10 @@ export function assessStartingPosition(
 
   const keys = keyLandmarks(exerciseId);
   const visible = visibleCount(landmarks, keys);
-  const minVisible = exerciseId === 'pushups' ? 4 : 4;
+  const minVisible = Math.min(4, Math.ceil(keys.length * 0.6));
 
   if (visible < minVisible) {
-    return {
-      readiness: 'bad',
-      guidance:
-        exerciseId === 'pushups' ? 'arms_not_visible' : 'legs_not_visible'
-    };
+    return { readiness: 'bad', guidance: notVisibleGuidance(exerciseId) };
   }
 
   const visibility = averageVisibility(landmarks, keys);
@@ -130,16 +152,22 @@ export function assessStartingPosition(
     return { readiness: 'bad', guidance: 'blurry' };
   }
 
-  const phase = detectExercisePhase(exerciseId, landmarks);
-
-  if (phase === 'down') {
-    return {
-      readiness: 'bad',
-      guidance: exerciseId === 'pushups' ? 'straighten_arms' : 'stand_up'
-    };
+  // Holds: ready once you're in good form.
+  const profile = profileFor(exerciseId);
+  if (profile?.kind === 'hold') {
+    const result = profile.check(landmarks);
+    if (!result) return { readiness: 'bad', guidance: notVisibleGuidance(exerciseId) };
+    return result.ok ? { readiness: 'good', guidance: 'hold_still' } : { readiness: 'bad', guidance: result.fix };
   }
 
-  if (phase === 'up') {
+  const phase = detectExercisePhase(exerciseId, landmarks);
+  const startPhase = profile?.kind === 'reps' ? profile.start : 'up';
+
+  if (phase !== 'unknown' && phase !== startPhase) {
+    return { readiness: 'bad', guidance: wrongStartGuidance(exerciseId) };
+  }
+
+  if (phase === startPhase) {
     return { readiness: 'good', guidance: 'hold_still' };
   }
 

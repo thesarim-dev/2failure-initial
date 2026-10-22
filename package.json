@@ -8,7 +8,8 @@
     "build": "npx vite build",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "preview": "npx vite preview",
-    "demo": "vite build -c demo/vite.demo.config.ts"
+    "demo": "vite build -c demo/vite.demo.config.ts",
+    "test:pose": "esbuild scripts/pose-test.ts --bundle --platform=node --format=cjs --outfile=.tmp/pose-test.cjs --log-level=error && node .tmp/pose-test.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",

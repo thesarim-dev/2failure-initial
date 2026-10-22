@@ -6,8 +6,10 @@ import {
 } from '@mediapipe/tasks-vision';
 import {
   createRepCounter,
+  isHoldCounter,
   type PoseExerciseId
 } from '../lib/pose/repCounterFactory';
+import { profileFor, type HoldFix } from '../lib/pose/profiles';
 import {
   assessStartingPosition,
   COUNTDOWN_CANCEL_BAD_FRAMES,
@@ -76,6 +78,7 @@ export function usePoseRepTracker(
   const exerciseIdRef = useRef(exerciseId);
 
   const [reps, setReps] = useState(0);
+  const [holdFix, setHoldFix] = useState<HoldFix | 'ok' | null>(null);
   const [status, setStatus] = useState<TrackerStatus>('idle');
   const [sessionPhase, setSessionPhase] = useState<SessionPhase>('booting');
   const [positionGuidance, setPositionGuidance] =
@@ -209,9 +212,14 @@ export function usePoseRepTracker(
       }
     } else if (phase === 'active') {
       if (landmarks) {
-        const prevCount = counterRef.current.count;
-        const count = counterRef.current.update(landmarks);
-        if (count > prevCount) {
+        const counter = counterRef.current;
+        const prevCount = counter.count;
+        const count = counter.update(landmarks);
+        if (isHoldCounter(counter)) {
+          // Holds count seconds in form: chime every 10 s, and say what to fix.
+          if (Math.floor(count / 10) > Math.floor(prevCount / 10)) playRepCheckSound();
+          setHoldFix(counter.fix);
+        } else if (count > prevCount) {
           playRepCheckSound();
         }
         setReps(count);
@@ -450,6 +458,9 @@ export function usePoseRepTracker(
   return {
     videoRef,
     reps,
+    /** Holds: 'ok' while in good form, otherwise what to fix (null if unseen). */
+    holdFix,
+    isHold: profileFor(exerciseId)?.kind === 'hold',
     status,
     sessionPhase,
     positionGuidance,

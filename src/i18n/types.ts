@@ -34,6 +34,8 @@ export interface MovesTranslations {
   };
   buttonLabels: string[];
   poseAiHints: Record<'pushups' | 'squats' | 'lunges', string>;
+  /** Camera placement by view, for every other exercise. */
+  poseAiViewHints: Record<'floor_side' | 'standing_side' | 'bar_front' | 'seated_side', string>;
 }
 
 export interface MotivationQuote {
@@ -229,7 +231,18 @@ export interface AppTranslations {
       straighten_arms: string;
       stand_up: string;
       hold_still: string;
+      body_not_visible: string;
+      start_position: string;
+      hips_level: string;
+      lift_shoulders_legs: string;
+      lift_legs: string;
+      lift_chest: string;
+      sink_deeper: string;
+      reach_forward: string;
+      get_into_position: string;
     };
+    heldInForm: string;
+    formGood: string;
     loadingPoseModel: string;
     cameraUnavailable: string;
     cameraPaused: string;
