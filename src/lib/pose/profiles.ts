@@ -4,6 +4,9 @@ import {
   LEGS,
   TORSO_LEGS,
   aboveHips,
+  armLift,
+  hipAnkleMax,
+  hipKneeMax,
   ankles,
   bodyTilt,
   elbowAvg,
@@ -88,6 +91,12 @@ export const PROFILES: Record<string, PoseProfile> = {
   'incline-pushups': reps(elbowAvg, 110, 150, 'floor_side', ARMS),
   'diamond-pushups': reps(elbowAvg, 105, 150, 'floor_side', ARMS),
   'pike-pushups': reps(elbowAvg, 105, 150, 'floor_side', ARMS),
+  'incline-pike-pushups': reps(elbowAvg, 105, 150, 'floor_side', ARMS),
+  'elevated-pike-pushups': reps(elbowAvg, 105, 150, 'floor_side', ARMS),
+  'wall-handstand-pushups': reps(elbowAvg, 105, 150, 'floor_side', ARMS),
+  // Presses start with the weight at your shoulders (bent) and count each lockout.
+  'dumbbell-shoulder-press': reps(elbowAvg, 95, 150, 'standing_side', ARMS, { start: 'down' }),
+  'barbell-overhead-press': reps(elbowAvg, 95, 150, 'standing_side', ARMS, { start: 'down' }),
   'backpack-pushups': reps(elbowAvg, 110, 150, 'floor_side', ARMS),
   'archer-pushups': reps(elbowMin, 100, 150, 'floor_side', ARMS),
   dips: reps(elbowAvg, 100, 150, 'standing_side', ARMS),
@@ -102,12 +111,17 @@ export const PROFILES: Record<string, PoseProfile> = {
   'inverted-floor-rows': reps(elbowAvg, 95, 145, 'floor_side', ARMS),
   'doorway-rows': reps(elbowAvg, 95, 145, 'standing_side', ARMS),
   'superman-pulls': reps(elbowAvg, 110, 150, 'floor_side', ARMS),
+  'dumbbell-rows': reps(elbowAvg, 95, 145, 'standing_side', ARMS),
+  'barbell-rows': reps(elbowAvg, 95, 145, 'standing_side', ARMS),
+  // Y-T-W raises: the hands lift above shoulder height.
+  'prone-ytw-raises': reps(armLift, 0.25, 0.08, 'floor_side', ARMS, { rising: true }),
 
   // ---- Squat: knee angle ----
   squats: reps(kneeAvg, 115, 155, 'standing_side', LEGS),
   'jump-squats': reps(kneeAvg, 115, 155, 'standing_side', LEGS),
   'backpack-squats': reps(kneeAvg, 115, 155, 'standing_side', LEGS),
   'goblet-squats': reps(kneeAvg, 115, 155, 'standing_side', LEGS),
+  'barbell-back-squats': reps(kneeAvg, 115, 155, 'standing_side', LEGS),
   lunges: reps(kneeMin, 110, 155, 'standing_side', LEGS),
   'bulgarian-splits': reps(kneeMin, 110, 155, 'standing_side', LEGS),
   'pistol-squats': reps(kneeMin, 100, 155, 'standing_side', LEGS),
@@ -123,13 +137,43 @@ export const PROFILES: Record<string, PoseProfile> = {
   'hanging-knee-raises': reps(hipKnee, 110, 155, 'bar_front', TORSO_LEGS),
   'hanging-leg-raises': reps(hipAnkle, 110, 160, 'bar_front', TORSO_LEGS),
 
+  // ---- Hinge: the torso tips forward from upright ----
+  'single-leg-rdls': reps(torsoTilt, 45, 70, 'standing_side', TORSO_LEGS),
+  'backpack-rdls': reps(torsoTilt, 45, 70, 'standing_side', TORSO_LEGS),
+  'dumbbell-rdls': reps(torsoTilt, 45, 70, 'standing_side', TORSO_LEGS),
+  'barbell-deadlifts': reps(torsoTilt, 45, 70, 'standing_side', TORSO_LEGS),
+  // Nordic curls: kneeling upright (knee ~90°), the knee opens as the body lowers.
+  'nordic-curls': reps(kneeAvg, 140, 110, 'floor_side', TORSO_LEGS, { rising: true }),
+
+  // ---- Core extras ----
+  // Dead bugs: one leg reaches out long (shoulder–hip–ankle opens).
+  // Tabletop reads ~135°, a full reach ~178°: thresholds leave room for camera wobble.
+  'dead-bugs': reps(hipAnkleMax, 165, 148, 'floor_side', TORSO_LEGS, { rising: true }),
+  // Bird dogs: one leg reaches back (shoulder–hip–knee opens from ~90°).
+  'bird-dogs': reps(hipKneeMax, 150, 120, 'floor_side', TORSO_LEGS, { rising: true }),
+  // Side plank hip dips: the straight body line bends as the hips drop.
+  'side-plank-hip-dips': reps(hipAnkle, 155, 168, 'floor_side', TORSO_LEGS),
+
   // ---- Whole body / feet ----
-  burpees: reps(hipHeight, 0.35, 0.8, 'standing_side', TORSO_LEGS),
   'calf-raises': reps(heelLift, 0.12, 0.05, 'standing_side', FEET, { rising: true }),
+  'single-leg-calf-raises': reps(heelLift, 0.12, 0.05, 'standing_side', FEET, { rising: true }),
 
   // ---- Holds: form checks ----
   planks: { kind: 'hold', check: plankCheck(35), keys: TORSO_LEGS, view: 'floor_side' },
   'side-planks': { kind: 'hold', check: plankCheck(40), keys: TORSO_LEGS, view: 'floor_side' },
+  // From the knees: shoulders, hips and knees in one line.
+  'knee-side-planks': {
+    kind: 'hold',
+    keys: TORSO_LEGS,
+    view: 'floor_side',
+    check: (lm) => {
+      const line = hipKnee(lm);
+      const torso = torsoTilt(lm);
+      if (line === null || torso === null) return null;
+      if (torso > 50) return { ok: false, fix: 'get_into_position' };
+      return line >= 155 ? { ok: true } : { ok: false, fix: 'hips_level' };
+    }
+  },
   'hollow-body': {
     kind: 'hold',
     keys: TORSO_LEGS,
@@ -178,6 +222,29 @@ export const PROFILES: Record<string, PoseProfile> = {
       if (knee === null || torso === null) return null;
       if (torso < 45) return { ok: false, fix: 'get_into_position' };
       return knee <= 80 ? { ok: true } : { ok: false, fix: 'sink_deeper' };
+    }
+  },
+  'childs-pose': {
+    kind: 'hold',
+    keys: TORSO_LEGS,
+    view: 'floor_side',
+    check: (lm) => {
+      const knee = kneeMin(lm);
+      const torso = torsoTilt(lm);
+      if (knee === null || torso === null) return null;
+      return knee <= 70 && torso <= 40 ? { ok: true } : { ok: false, fix: 'sink_deeper' };
+    }
+  },
+  'pigeon-stretch': {
+    kind: 'hold',
+    keys: TORSO_LEGS,
+    view: 'floor_side',
+    check: (lm) => {
+      const knee = kneeMin(lm);
+      const height = hipHeight(lm);
+      if (knee === null || height === null) return null;
+      if (height > 0.6) return { ok: false, fix: 'get_into_position' };
+      return knee <= 100 ? { ok: true } : { ok: false, fix: 'sink_deeper' };
     }
   },
   'seated-hamstring-stretch': {

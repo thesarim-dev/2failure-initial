@@ -29,15 +29,23 @@ export type SlotDef = {
 export type TrainingPhase = Exclude<RotatingProgramPhase, 'recovery'>;
 
 export const SLOTS: Record<TrainingPhase, SlotDef[]> = {
+  // Every ladder runs easiest → hardest (BASE → PRO → ELITE), so Harder always means harder.
+  // `start` is where a new player begins: the first one their gear allows.
   push: [
     {
       key: 'push-chest',
       muscle: 'chest',
       sets: 3,
-      ladder: ['incline-pushups', 'pushups', 'archer-pushups', 'backpack-pushups', 'dips', 'bench-press'],
+      ladder: ['incline-pushups', 'pushups', 'backpack-pushups', 'dips', 'bench-press', 'archer-pushups'],
       start: ['bench-press', 'dips', 'pushups']
     },
-    { key: 'push-shoulders', muscle: 'shoulders', sets: 2, ladder: ['pike-pushups'], start: ['pike-pushups'] },
+    {
+      key: 'push-shoulders',
+      muscle: 'shoulders',
+      sets: 2,
+      ladder: ['incline-pike-pushups', 'pike-pushups', 'dumbbell-shoulder-press', 'barbell-overhead-press', 'elevated-pike-pushups', 'wall-handstand-pushups'],
+      start: ['barbell-overhead-press', 'dumbbell-shoulder-press', 'pike-pushups']
+    },
     { key: 'push-triceps', muscle: 'triceps', sets: 2, ladder: ['diamond-pushups', 'dips'], start: ['diamond-pushups'] },
     {
       key: 'push-abs',
@@ -46,7 +54,7 @@ export const SLOTS: Record<TrainingPhase, SlotDef[]> = {
       ladder: ['crunches', 'leg-raises', 'hanging-knee-raises', 'hanging-leg-raises'],
       start: ['leg-raises']
     },
-    { key: 'push-core', muscle: 'core', sets: 2, ladder: ['planks', 'hollow-body'], start: ['planks'] }
+    { key: 'push-core', muscle: 'core', sets: 2, ladder: ['dead-bugs', 'planks', 'hollow-body'], start: ['planks'] }
   ],
   pull: [
     {
@@ -60,32 +68,39 @@ export const SLOTS: Record<TrainingPhase, SlotDef[]> = {
       key: 'pull-rows',
       muscle: 'midBack',
       sets: 2,
-      ladder: ['doorway-rows', 'inverted-floor-rows', 'inverted-rows'],
-      start: ['inverted-rows', 'doorway-rows']
+      ladder: ['doorway-rows', 'inverted-floor-rows', 'inverted-rows', 'dumbbell-rows', 'barbell-rows'],
+      start: ['barbell-rows', 'dumbbell-rows', 'inverted-rows', 'doorway-rows']
     },
-    { key: 'pull-upper', muscle: 'upperBack', sets: 2, ladder: ['superman-pulls'], start: ['superman-pulls'] },
+    { key: 'pull-upper', muscle: 'upperBack', sets: 2, ladder: ['superman-pulls', 'prone-ytw-raises'], start: ['prone-ytw-raises'] },
     { key: 'pull-abs', muscle: 'abs', sets: 2, ladder: ['crunches', 'leg-raises', 'hanging-knee-raises', 'hanging-leg-raises'], start: ['crunches'] },
-    { key: 'pull-core', muscle: 'core', sets: 2, ladder: ['planks', 'hollow-body', 'l-sit'], start: ['hollow-body'] }
+    { key: 'pull-core', muscle: 'core', sets: 2, ladder: ['bird-dogs', 'planks', 'hollow-body', 'l-sit'], start: ['hollow-body'] }
   ],
   legs: [
     {
       key: 'legs-quads',
       muscle: 'quads',
       sets: 3,
-      ladder: ['squats', 'jump-squats', 'backpack-squats', 'goblet-squats', 'pistol-squats'],
-      start: ['goblet-squats', 'squats']
+      ladder: ['squats', 'jump-squats', 'backpack-squats', 'goblet-squats', 'barbell-back-squats', 'pistol-squats'],
+      start: ['barbell-back-squats', 'goblet-squats', 'squats']
     },
     { key: 'legs-single', muscle: 'singleLeg', sets: 2, ladder: ['lunges', 'step-ups', 'bulgarian-splits', 'pistol-squats'], start: ['lunges'] },
-    { key: 'legs-hams', muscle: 'hamstrings', sets: 2, ladder: ['glute-bridges', 'single-leg-bridges'], start: ['single-leg-bridges'] },
-    { key: 'legs-calves', muscle: 'calves', sets: 2, ladder: ['calf-raises'], start: ['calf-raises'] },
-    { key: 'legs-core', muscle: 'obliques', sets: 2, ladder: ['side-planks'], start: ['side-planks'] }
+    // The hip hinge: real hamstring work (bridges live on full-body day as glute work).
+    {
+      key: 'legs-hams',
+      muscle: 'hamstrings',
+      sets: 2,
+      ladder: ['single-leg-rdls', 'backpack-rdls', 'dumbbell-rdls', 'barbell-deadlifts', 'nordic-curls'],
+      start: ['barbell-deadlifts', 'dumbbell-rdls', 'single-leg-rdls']
+    },
+    { key: 'legs-calves', muscle: 'calves', sets: 2, ladder: ['calf-raises', 'single-leg-calf-raises'], start: ['calf-raises'] },
+    { key: 'legs-core', muscle: 'obliques', sets: 2, ladder: ['knee-side-planks', 'side-planks', 'side-plank-hip-dips'], start: ['side-planks'] }
   ],
   mixed: [
-    { key: 'full-push', muscle: 'push', sets: 3, ladder: ['pushups', 'diamond-pushups', 'archer-pushups', 'dips', 'bench-press'], start: ['dips', 'pushups'] },
-    { key: 'full-pull', muscle: 'pull', sets: 2, ladder: ['superman-pulls', 'doorway-rows', 'inverted-rows', 'chin-ups', 'pull-ups'], start: ['doorway-rows'] },
-    { key: 'full-legs', muscle: 'legs', sets: 2, ladder: ['squats', 'jump-squats', 'goblet-squats', 'pistol-squats'], start: ['jump-squats'] },
-    { key: 'full-hinge', muscle: 'glutes', sets: 2, ladder: ['glute-bridges', 'single-leg-bridges'], start: ['glute-bridges'] },
-    { key: 'full-core', muscle: 'core', sets: 2, ladder: ['planks', 'hollow-body'], start: ['planks'] }
+    { key: 'full-push', muscle: 'push', sets: 3, ladder: ['pushups', 'diamond-pushups', 'dips', 'bench-press', 'archer-pushups'], start: ['dips', 'pushups'] },
+    { key: 'full-pull', muscle: 'pull', sets: 2, ladder: ['superman-pulls', 'doorway-rows', 'inverted-rows', 'dumbbell-rows', 'chin-ups', 'pull-ups'], start: ['doorway-rows'] },
+    { key: 'full-legs', muscle: 'legs', sets: 2, ladder: ['squats', 'jump-squats', 'goblet-squats', 'barbell-back-squats', 'pistol-squats'], start: ['jump-squats'] },
+    { key: 'full-hinge', muscle: 'glutes', sets: 2, ladder: ['glute-bridges', 'single-leg-rdls', 'single-leg-bridges'], start: ['glute-bridges'] },
+    { key: 'full-core', muscle: 'core', sets: 2, ladder: ['dead-bugs', 'planks', 'hollow-body'], start: ['planks'] }
   ]
 };
 
@@ -110,8 +125,8 @@ export function unlocksFor(item: Gear): string[] {
   const headline: Partial<Record<Gear, string[]>> = {
     bar: ['pull-ups', 'chin-ups'],
     dipBars: ['dips', 'l-sit'],
-    dumbbell: ['goblet-squats'],
-    barbell: ['bench-press']
+    dumbbell: ['goblet-squats', 'dumbbell-rows', 'dumbbell-shoulder-press'],
+    barbell: ['barbell-deadlifts', 'barbell-back-squats', 'bench-press']
   };
   const first = (headline[item] ?? []).filter((id) => ids.has(id));
   return [...first, ...[...ids].filter((id) => !first.includes(id))];

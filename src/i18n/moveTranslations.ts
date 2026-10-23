@@ -108,10 +108,6 @@ const en: MovesTranslations = {
       name: 'Jump Squats',
       description: 'Squat down and jump as high as you can. Land soft.'
     },
-    burpees: {
-      name: 'Burpees',
-      description: 'Drop to the floor, kick back, and hop up in one crisp motion.'
-    },
     'bulgarian-splits': {
       name: 'Bulgarian Splits',
       description: 'Rear foot on a bench, squat as deep as you can with control.'
@@ -167,6 +163,86 @@ const en: MovesTranslations = {
     'hanging-leg-raises': {
       name: 'Hanging Leg Raises',
       description: 'Hang from a bar and lift straight legs to hip height or higher.'
+    },
+    'incline-pike-pushups': {
+      name: 'Incline Pike Pushups',
+      description: 'Hands on a chair, hips high, lower your head toward the seat. The easy way into pike pushups.'
+    },
+    'elevated-pike-pushups': {
+      name: 'Elevated Pike Pushups',
+      description: 'Feet up on a chair, hips high: more of your weight goes through your shoulders.'
+    },
+    'wall-handstand-pushups': {
+      name: 'Wall Handstand Pushups',
+      description: 'Kick up to a handstand against a wall and lower your head toward the floor with control. Only once elevated pike pushups feel solid.'
+    },
+    'dumbbell-shoulder-press': {
+      name: 'Dumbbell Shoulder Press',
+      description: 'Stand tall and press the dumbbells from your shoulders to straight overhead.'
+    },
+    'barbell-overhead-press': {
+      name: 'Barbell Overhead Press',
+      description: 'Squeeze your glutes and press the bar from your collarbones to straight overhead.'
+    },
+    'dumbbell-rows': {
+      name: 'Dumbbell Rows',
+      description: 'One hand on a chair, back flat: row the dumbbell to your hip, then lower it all the way.'
+    },
+    'barbell-rows': {
+      name: 'Barbell Rows',
+      description: 'Hinge forward with a flat back and row the bar to your belly.'
+    },
+    'prone-ytw-raises': {
+      name: 'Prone Y-T-W Raises',
+      description: 'Lie face down and lift your arms in Y, T and W shapes, squeezing your shoulder blades. Great for posture.'
+    },
+    'barbell-back-squats': {
+      name: 'Barbell Back Squats',
+      description: 'Bar across your upper back, brace, and squat until your thighs are at least parallel.'
+    },
+    'single-leg-rdls': {
+      name: 'Single-Leg RDLs',
+      description: 'Balance on one leg and hinge forward with a flat back, reaching toward the floor, then stand tall. Trains hamstrings and balance.'
+    },
+    'backpack-rdls': {
+      name: 'Backpack RDLs',
+      description: 'Hold a loaded backpack, soft knees, and hinge at the hips until you feel your hamstrings stretch.'
+    },
+    'dumbbell-rdls': {
+      name: 'Dumbbell RDLs',
+      description: 'Dumbbells in front of your thighs, hinge back with a flat back, then drive your hips forward to stand.'
+    },
+    'barbell-deadlifts': {
+      name: 'Barbell Deadlifts',
+      description: 'Bar over your midfoot, flat back, and stand up by driving through the floor. The king of the hinge.'
+    },
+    'nordic-curls': {
+      name: 'Nordic Curls',
+      description: 'Kneel with your feet anchored under a couch and lower your body forward as slowly as you can. Hard, and great for strong hamstrings.'
+    },
+    'single-leg-calf-raises': {
+      name: 'Single-Leg Calf Raises',
+      description: 'Rise onto the ball of one foot as high as you can, then lower slowly. Hold a wall for balance.'
+    },
+    'dead-bugs': {
+      name: 'Dead Bugs',
+      description: 'On your back, arms up and knees over hips: lower the opposite arm and leg toward the floor while your lower back stays down.'
+    },
+    'bird-dogs': {
+      name: 'Bird Dogs',
+      description: 'On all fours, reach the opposite arm and leg out long without twisting, then return.'
+    },
+    'knee-side-planks': {
+      name: 'Knee Side Planks',
+      description: 'A side plank from your knees: the easy way into full side planks. Both sides count as one set.'
+    },
+    'side-plank-hip-dips': {
+      name: 'Side Plank Hip Dips',
+      description: 'In a side plank, lower your hips toward the floor and lift them back up. Both sides count as one set.'
+    },
+    'pigeon-stretch': {
+      name: 'Pigeon Stretch',
+      description: 'Hold 45 seconds on each side, front shin across your body, to open the hips.'
     },
     'cobra-stretch': {
       name: 'Cobra Stretch',
@@ -323,10 +399,6 @@ const he: MovesTranslations = {
       name: 'סקוואט עם קפיצה',
       description: 'רד לסקוואט וקפוץ הכי גבוה שאתה יכול. נחת ברכות.'
     },
-    burpees: {
-      name: 'בורפי',
-      description: 'רד, בעיטה לאחור, קפיצה. בתנועה אחת חדה.'
-    },
     'bulgarian-splits': {
       name: 'ספליט בולגרי',
       description: 'רגל אחורית על ספסל, רד עמוק ככל שאתה יכול בשליטה.'
@@ -382,6 +454,86 @@ const he: MovesTranslations = {
     'hanging-leg-raises': {
       name: 'הרמת רגליים בתלייה',
       description: 'היתלה ממוט והרם רגליים ישרות לגובה האגן או יותר.'
+    },
+    'incline-pike-pushups': {
+      name: 'שכיבות סמיכה פייק בשיפוע',
+      description: 'ידיים על כיסא, אגן גבוה, הורידו את הראש לעבר המושב. הדרך הקלה לשכיבות פייק.'
+    },
+    'elevated-pike-pushups': {
+      name: 'שכיבות סמיכה פייק מוגבהות',
+      description: 'רגליים על כיסא, אגן גבוה: יותר ממשקל הגוף עובר דרך הכתפיים.'
+    },
+    'wall-handstand-pushups': {
+      name: 'שכיבות סמיכה בעמידת ידיים על קיר',
+      description: 'עלו לעמידת ידיים מול קיר והורידו את הראש לרצפה בשליטה. רק אחרי ששכיבות פייק מוגבהות יציבות.'
+    },
+    'dumbbell-shoulder-press': {
+      name: 'לחיצת כתפיים עם משקולות',
+      description: 'עמדו זקוף ולחצו את המשקולות מהכתפיים עד יישור מלא מעל הראש.'
+    },
+    'barbell-overhead-press': {
+      name: 'לחיצה מעל הראש עם מוט',
+      description: 'כווצו את הישבן ולחצו את המוט מעצמות הבריח עד יישור מלא מעל הראש.'
+    },
+    'dumbbell-rows': {
+      name: 'חתירה עם משקולת',
+      description: 'יד אחת על כיסא, גב ישר: משכו את המשקולת למותן, ואז הורידו עד הסוף.'
+    },
+    'barbell-rows': {
+      name: 'חתירה עם מוט',
+      description: 'התכופפו קדימה עם גב ישר ומשכו את המוט לבטן.'
+    },
+    'prone-ytw-raises': {
+      name: 'הרמות Y-T-W בשכיבה',
+      description: 'שכבו על הבטן והרימו את הידיים בצורות Y, T ו-W תוך כיווץ השכמות. מצוין ליציבה.'
+    },
+    'barbell-back-squats': {
+      name: 'סקוואט עם מוט על הגב',
+      description: 'מוט על הגב העליון, ייצוב, וסקוואט עד שהירכיים לפחות מקבילות לרצפה.'
+    },
+    'single-leg-rdls': {
+      name: 'דדליפט רומני על רגל אחת',
+      description: 'עמדו על רגל אחת והתכופפו מהאגן עם גב ישר לעבר הרצפה, ואז הזדקפו. מחזק את הירך האחורית ואת שיווי המשקל.'
+    },
+    'backpack-rdls': {
+      name: 'דדליפט רומני עם תיק',
+      description: 'החזיקו תיק עמוס, ברכיים רכות, והתכופפו מהאגן עד שתרגישו מתיחה בירך האחורית.'
+    },
+    'dumbbell-rdls': {
+      name: 'דדליפט רומני עם משקולות',
+      description: 'משקולות מול הירכיים, התכופפו אחורה עם גב ישר, ואז דחפו את האגן קדימה כדי להזדקף.'
+    },
+    'barbell-deadlifts': {
+      name: 'דדליפט עם מוט',
+      description: 'מוט מעל אמצע כף הרגל, גב ישר, והזדקפו בדחיפה ברצפה. מלך תרגילי הקיפוף.'
+    },
+    'nordic-curls': {
+      name: 'כפיפות נורדיות',
+      description: 'כרעו עם הרגליים מעוגנות מתחת לספה והורידו את הגוף קדימה לאט ככל שאפשר. קשה, ומצוין לירך אחורית חזקה.'
+    },
+    'single-leg-calf-raises': {
+      name: 'הרמות עקב על רגל אחת',
+      description: 'עלו על כרית כף רגל אחת גבוה ככל שאפשר, ואז רדו לאט. היעזרו בקיר לשיווי משקל.'
+    },
+    'dead-bugs': {
+      name: 'חיפושית מתה',
+      description: 'על הגב, ידיים למעלה וברכיים מעל האגן: הורידו יד ורגל נגדיות לעבר הרצפה כשהגב התחתון צמוד.'
+    },
+    'bird-dogs': {
+      name: 'ציפור-כלב',
+      description: 'על ארבע, הושיטו יד ורגל נגדיות לאורך בלי להסתובב, וחזרו.'
+    },
+    'knee-side-planks': {
+      name: 'פלאנק צד על הברכיים',
+      description: 'פלאנק צד מהברכיים: הדרך הקלה לפלאנק צד מלא. שני הצדדים נחשבים סט אחד.'
+    },
+    'side-plank-hip-dips': {
+      name: 'פלאנק צד עם הורדות אגן',
+      description: 'בפלאנק צד, הורידו את האגן לעבר הרצפה והרימו בחזרה. שני הצדדים נחשבים סט אחד.'
+    },
+    'pigeon-stretch': {
+      name: 'מתיחת יונה',
+      description: 'החזיקו 45 שניות בכל צד, שוק קדמית לרוחב הגוף, לפתיחת האגן.'
     },
     'cobra-stretch': {
       name: 'מתיחת קוברה',
@@ -539,10 +691,6 @@ const ar: MovesTranslations = {
       name: 'قرفصاء مع قفز',
       description: 'انزل للقرفصاء واقفز لأعلى ما تستطيع. اهبط بنعومة.'
     },
-    burpees: {
-      name: 'البربي',
-      description: 'انزل، اركل للخلف، واقفز في حركة واحدة حادة.'
-    },
     'bulgarian-splits': {
       name: 'الانقسام البلغاري',
       description: 'القدم الخلفية على مقعد، انزل بعمق بقدر ما تستطيع بتحكم.'
@@ -598,6 +746,86 @@ const ar: MovesTranslations = {
     'hanging-leg-raises': {
       name: 'رفع الساقين معلقاً',
       description: 'تعلّق من عارضة وارفع ساقين مستقيمتين إلى مستوى الورك أو أعلى.'
+    },
+    'incline-pike-pushups': {
+      name: 'ضغط بايك مائل',
+      description: 'اليدان على كرسي والوركان مرتفعان، أنزل رأسك نحو المقعد. الطريق السهل إلى ضغط البايك.'
+    },
+    'elevated-pike-pushups': {
+      name: 'ضغط بايك مرتفع',
+      description: 'القدمان على كرسي والوركان مرتفعان: يمر وزن أكبر عبر كتفيك.'
+    },
+    'wall-handstand-pushups': {
+      name: 'ضغط الوقوف على اليدين على الحائط',
+      description: 'اصعد إلى الوقوف على اليدين مقابل الحائط وأنزل رأسك نحو الأرض بتحكم. فقط بعد إتقان ضغط البايك المرتفع.'
+    },
+    'dumbbell-shoulder-press': {
+      name: 'ضغط الكتفين بالدمبل',
+      description: 'قف مستقيماً واضغط الدمبل من الكتفين حتى تستقيم الذراعان فوق الرأس.'
+    },
+    'barbell-overhead-press': {
+      name: 'الضغط فوق الرأس بالبار',
+      description: 'شد عضلات الأرداف واضغط البار من عظمتي الترقوة حتى يستقيم فوق الرأس.'
+    },
+    'dumbbell-rows': {
+      name: 'سحب الدمبل',
+      description: 'يد على كرسي والظهر مستقيم: اسحب الدمبل إلى وركك ثم أنزله بالكامل.'
+    },
+    'barbell-rows': {
+      name: 'سحب البار',
+      description: 'انحنِ للأمام بظهر مستقيم واسحب البار نحو بطنك.'
+    },
+    'prone-ytw-raises': {
+      name: 'رفع Y-T-W منبطحاً',
+      description: 'استلقِ على بطنك وارفع ذراعيك بأشكال Y وT وW مع ضم لوحي الكتف. ممتاز لاستقامة القوام.'
+    },
+    'barbell-back-squats': {
+      name: 'القرفصاء بالبار على الظهر',
+      description: 'البار على أعلى ظهرك، شد جذعك، وانزل حتى تصبح فخذاك موازيتين للأرض على الأقل.'
+    },
+    'single-leg-rdls': {
+      name: 'الرفعة الرومانية على ساق واحدة',
+      description: 'توازن على ساق واحدة وانحنِ من الوركين بظهر مستقيم نحو الأرض ثم قف. تقوي أوتار الركبة والتوازن.'
+    },
+    'backpack-rdls': {
+      name: 'الرفعة الرومانية بالحقيبة',
+      description: 'احمل حقيبة محملة، ركبتان مرنتان، وانحنِ من الوركين حتى تشعر بإطالة خلف الفخذ.'
+    },
+    'dumbbell-rdls': {
+      name: 'الرفعة الرومانية بالدمبل',
+      description: 'الدمبل أمام فخذيك، ادفع وركيك للخلف بظهر مستقيم ثم ادفعهما للأمام لتقف.'
+    },
+    'barbell-deadlifts': {
+      name: 'الرفعة الميتة بالبار',
+      description: 'البار فوق منتصف القدم، ظهر مستقيم، وقف بالدفع عبر الأرض. ملك تمارين الانحناء.'
+    },
+    'nordic-curls': {
+      name: 'الثني النوردي',
+      description: 'اجثُ وقدماك مثبتتان تحت الأريكة وأنزل جسمك للأمام ببطء قدر الإمكان. صعب وممتاز لأوتار ركبة قوية.'
+    },
+    'single-leg-calf-raises': {
+      name: 'رفع السمانة على ساق واحدة',
+      description: 'ارتفع على مقدمة قدم واحدة لأعلى ما يمكن ثم انزل ببطء. استند إلى الحائط للتوازن.'
+    },
+    'dead-bugs': {
+      name: 'الحشرة الميتة',
+      description: 'على ظهرك، الذراعان للأعلى والركبتان فوق الوركين: أنزل ذراعاً وساقاً متعاكستين نحو الأرض مع إبقاء أسفل الظهر ملاصقاً.'
+    },
+    'bird-dogs': {
+      name: 'الطائر والكلب',
+      description: 'على أربع، مدّ ذراعاً وساقاً متعاكستين دون التفاف ثم عد.'
+    },
+    'knee-side-planks': {
+      name: 'البلانك الجانبي على الركبتين',
+      description: 'بلانك جانبي من الركبتين: الطريق السهل إلى البلانك الجانبي الكامل. الجانبان يُحسبان مجموعة واحدة.'
+    },
+    'side-plank-hip-dips': {
+      name: 'البلانك الجانبي مع خفض الورك',
+      description: 'في البلانك الجانبي، أنزل وركك نحو الأرض ثم ارفعه. الجانبان يُحسبان مجموعة واحدة.'
+    },
+    'pigeon-stretch': {
+      name: 'إطالة الحمامة',
+      description: 'اثبت 45 ثانية لكل جانب، الساق الأمامية عرضياً أمام جسمك، لفتح الوركين.'
     },
     'cobra-stretch': {
       name: 'تمدد الكوبرا',

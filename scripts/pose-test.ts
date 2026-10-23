@@ -4,7 +4,7 @@ import { assessStartingPosition } from '../src/lib/pose/startingPosition';
 import type { Point } from '../src/lib/pose/types';
 
 // ---- A 2D stick figure from joint directions (degrees; 0 = right, 90 = up) ----
-type P = { torso: number; thigh: number; knee?: number; kneeL?: number; kneeR?: number; arm?: number; elbow?: number; elbowL?: number; elbowR?: number; heel?: number };
+type P = { torso: number; thigh: number; thighL?: number; thighR?: number; knee?: number; kneeL?: number; kneeR?: number; arm?: number; elbow?: number; elbowL?: number; elbowR?: number; heel?: number };
 const rad = (d: number) => (d * Math.PI) / 180;
 const step = (p: { x: number; y: number }, dir: number, len: number) => ({ x: p.x + Math.cos(rad(dir)) * len, y: p.y - Math.sin(rad(dir)) * len });
 let jitter = 0;
@@ -14,9 +14,10 @@ function figure(p: P, drop = false): Point[] {
   const hip = { x: 0.5, y: 0.55 };
   const shoulder = step(hip, p.torso + j(), 0.25);
   const side = (s: 'L' | 'R', dx: number) => {
-    const knee = step(hip, p.thigh + j(), 0.2);
+    const thigh = (s === 'L' ? p.thighL : p.thighR) ?? p.thigh;
+    const knee = step(hip, thigh + j(), 0.2);
     const kneeAngle = (s === 'L' ? p.kneeL : p.kneeR) ?? p.knee ?? 178;
-    const shinDir = p.thigh - (180 - kneeAngle) + j();
+    const shinDir = thigh - (180 - kneeAngle) + j();
     const ankle = step(knee, shinDir, 0.2);
     const elbow = step(shoulder, (p.arm ?? -90) + j(), 0.14);
     const elbowAngle = (s === 'L' ? p.elbowL : p.elbowR) ?? p.elbow ?? 175;
@@ -72,7 +73,25 @@ const R: Record<string, S> = {
   'hanging-knee-raises': { start: { ...hang }, down: { thigh: 0, knee: 90 }, half: { thigh: 315, knee: 120 } },
   'hanging-leg-raises': { start: { ...hang }, down: { thigh: 0 }, half: { thigh: 315 } },
   'calf-raises': { start: { ...stand }, down: { heel: 0.2 }, half: { heel: 0.085 } },
-  burpees: { start: { ...stand }, down: { torso: 0, thigh: 180 }, half: { thigh: 320, knee: 100 } }
+  'single-leg-calf-raises': { start: { ...stand }, down: { heel: 0.2 }, half: { heel: 0.085 } },
+  'incline-pike-pushups': { start: { ...plank, elbow: 172 }, down: { elbow: 80 }, half: { elbow: 128 } },
+  'elevated-pike-pushups': { start: { ...plank, elbow: 172 }, down: { elbow: 80 }, half: { elbow: 128 } },
+  'wall-handstand-pushups': { start: { ...plank, elbow: 172 }, down: { elbow: 80 }, half: { elbow: 128 } },
+  // Presses start bent at the shoulders; "down" here is the other end (the lockout).
+  'dumbbell-shoulder-press': { start: { ...stand, arm: 0, elbow: 80 }, down: { arm: 90, elbow: 172 }, half: { elbow: 125 } },
+  'barbell-overhead-press': { start: { ...stand, arm: 0, elbow: 80 }, down: { arm: 90, elbow: 172 }, half: { elbow: 125 } },
+  'dumbbell-rows': { start: { torso: 40, thigh: 270, arm: -90, elbow: 172 }, down: { elbow: 75 }, half: { elbow: 120 } },
+  'barbell-rows': { start: { torso: 40, thigh: 270, arm: -90, elbow: 172 }, down: { elbow: 75 }, half: { elbow: 120 } },
+  'prone-ytw-raises': { start: { ...plank, arm: 0, elbow: 175 }, down: { arm: 25 }, half: { arm: 9 } },
+  'barbell-back-squats': { start: { ...stand, knee: 176 }, down: { knee: 85, thigh: 340 }, half: { knee: 135, thigh: 300 } },
+  'single-leg-rdls': { start: { ...stand }, down: { torso: 30, thigh: 260 }, half: { torso: 58 } },
+  'backpack-rdls': { start: { ...stand }, down: { torso: 30, thigh: 260 }, half: { torso: 58 } },
+  'dumbbell-rdls': { start: { ...stand }, down: { torso: 30, thigh: 260 }, half: { torso: 58 } },
+  'barbell-deadlifts': { start: { ...stand }, down: { torso: 25, thigh: 255 }, half: { torso: 58 } },
+  'nordic-curls': { start: { torso: 90, thigh: 270, knee: 90 }, down: { torso: 30, thigh: 210, knee: 150 }, half: { torso: 60, thigh: 240, knee: 120 } },
+  'dead-bugs': { start: { torso: 180, thigh: 90, knee: 90 }, down: { thighL: 0, kneeL: 178 }, half: { thighL: 60, kneeL: 110 } },
+  'bird-dogs': { start: { torso: 0, thigh: 270, knee: 90 }, down: { thighL: 180, kneeL: 178 }, half: { thighL: 225 } },
+  'side-plank-hip-dips': { start: { ...plank }, down: { torso: 15, thigh: 165 }, half: { torso: 7, thigh: 173 } }
 };
 const H: Record<string, { good: P; bad: P; fix: string }> = {
   planks: { good: { ...plank, torso: 2, thigh: 181 }, bad: { torso: 20, thigh: 160 }, fix: 'hips_level' },
@@ -81,7 +100,10 @@ const H: Record<string, { good: P; bad: P; fix: string }> = {
   'l-sit': { good: { torso: 92, thigh: 0, arm: -90 }, bad: { torso: 92, thigh: 300 }, fix: 'lift_legs' },
   'cobra-stretch': { good: { torso: 28, thigh: 180, arm: -90 }, bad: { torso: 4, thigh: 180 }, fix: 'lift_chest' },
   'couch-stretch': { good: { torso: 90, thigh: 300, kneeL: 60, kneeR: 95 }, bad: { torso: 90, thigh: 300, kneeL: 120, kneeR: 100 }, fix: 'sink_deeper' },
-  'seated-hamstring-stretch': { good: { torso: 75, thigh: 0 }, bad: { torso: 125, thigh: 0 }, fix: 'reach_forward' }
+  'seated-hamstring-stretch': { good: { torso: 75, thigh: 0 }, bad: { torso: 125, thigh: 0 }, fix: 'reach_forward' },
+  'knee-side-planks': { good: { torso: 20, thigh: 200, knee: 90 }, bad: { torso: 20, thigh: 230, knee: 90 }, fix: 'hips_level' },
+  'childs-pose': { good: { torso: 15, thigh: 300, knee: 40 }, bad: { torso: 70, thigh: 300, knee: 40 }, fix: 'sink_deeper' },
+  'pigeon-stretch': { good: { torso: 80, thigh: 0, kneeL: 80, kneeR: 178 }, bad: { torso: 80, thigh: 0, kneeL: 150, kneeR: 178 }, fix: 'sink_deeper' }
 };
 
 // ---- Run ----

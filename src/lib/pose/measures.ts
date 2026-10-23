@@ -66,6 +66,25 @@ export const kneeMax = (lm: Point[]) => {
 export const hipKnee = (lm: Point[]) => avg(anglesOf(lm, HIPS_KNEE));
 /** Shoulder–hip–ankle angle: body line / hip flexion with straight legs. */
 export const hipAnkle = (lm: Point[]) => avg(anglesOf(lm, HIPS_ANKLE));
+const max = (xs: number[]) => (xs.length ? Math.max(...xs) : null);
+/** The more extended hip (straight leg): dead bugs, where one leg reaches out at a time. */
+export const hipAnkleMax = (lm: Point[]) => max(anglesOf(lm, HIPS_ANKLE));
+/** The more extended hip (bent leg): bird dogs, where one leg reaches back at a time. */
+export const hipKneeMax = (lm: Point[]) => max(anglesOf(lm, HIPS_KNEE));
+
+/** How high the hands are lifted above the shoulders, as a share of arm length (Y-T-W raises). */
+export function armLift(lm: Point[]): number | null {
+  const vals: number[] = [];
+  for (const [sh, el, wr] of [
+    [LM.L_SHOULDER, LM.L_ELBOW, LM.L_WRIST],
+    [LM.R_SHOULDER, LM.R_ELBOW, LM.R_WRIST]
+  ]) {
+    if (![sh, el, wr].every((i) => isVisible(lm[i]))) continue;
+    const arm = Math.hypot(lm[el].x - lm[sh].x, lm[el].y - lm[sh].y) + Math.hypot(lm[wr].x - lm[el].x, lm[wr].y - lm[el].y);
+    if (arm > 0) vals.push((lm[sh].y - lm[wr].y) / arm);
+  }
+  return avg(vals);
+}
 
 function mid(lm: Point[], a: number, b: number): Point | null {
   const pa = isVisible(lm[a]) ? lm[a] : null;

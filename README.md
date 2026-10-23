@@ -179,6 +179,19 @@ Tap **Cancel workout** to return to the home screen without logging a set. No co
 
 ---
 
+### The exercise catalog
+
+59 exercises (54 for training days plus 5 rest-day stretches), organised into the plan's slots. Every slot is a ladder that runs easiest → hardest (BASE → PRO → ELITE), so **Harder** always means harder.
+
+| Day | Slots |
+|---|---|
+| Push | chest · shoulders · triceps · abs · core |
+| Pull | back · mid back · upper back · abs · core |
+| Legs | quads · single leg · **hamstrings (hip hinge)** · calves · obliques |
+| Full body | push · pull · legs · glutes · core |
+
+Highlights: a real **hip hinge** (single-leg RDLs → backpack/dumbbell RDLs → barbell deadlifts → nordic curls), a full **shoulder** ladder (incline pike → pike → dumbbell/barbell press → elevated pike → wall handstand pushups), **anti-rotation core** work (dead bugs, bird dogs), and gear that matters: dumbbells unlock 4 exercises, a barbell 5, a pull-up bar 7.
+
 ### AI camera tracking (every exercise)
 
 Every exercise can use the camera. MediaPipe's pose model runs **on your phone** (frames never leave the device) and reads 33 body points.
@@ -187,19 +200,20 @@ Every exercise can use the camera. MediaPipe's pose model runs **on your phone**
 
   | Family | What's measured | Exercises |
   |---|---|---|
-  | Push | elbow angle | all pushup variants, dips, bench press (archer pushups watch the bending arm) |
-  | Pull | elbow angle | pull-ups, chin-ups, negatives, backpack pull-ups, all rows, superman pulls |
-  | Squat | knee angle | squats, jump/backpack/goblet squats; lunges, split squats, pistols and step-ups watch the working leg |
-  | Hip | hip angle | glute and single-leg bridges, leg raises, hanging knee and leg raises; crunches watch the torso curl |
-  | Whole body | hip height | burpees |
-  | Feet | heel lift | calf raises |
+  | Push | elbow angle | all pushup and pike variants, handstand pushups, dips, bench press, shoulder presses (archer pushups watch the bending arm) |
+  | Pull | elbow angle | pull-ups, chin-ups, negatives, backpack pull-ups, all rows (bodyweight, dumbbell, barbell), superman pulls |
+  | Arms lift | hand height | prone Y-T-W raises |
+  | Squat | knee angle | squats, jump/backpack/goblet/barbell squats; lunges, split squats, pistols and step-ups watch the working leg |
+  | Hinge | torso angle | single-leg, backpack and dumbbell RDLs, barbell deadlifts; nordic curls watch the knee open |
+  | Hip | hip angle | glute and single-leg bridges, leg raises, hanging knee and leg raises, dead bugs, bird dogs, side plank hip dips; crunches watch the torso curl |
+  | Feet | heel lift | calf raises, single-leg calf raises |
 
-* **Holds** (planks, side planks, hollow body, L-sit and the stretches) get a **form check** instead of a rep count: only the seconds you spend in good form count, and a live chip says *Good form: hold it!* or what to fix (*Keep your hips level*, *Lift your legs*…).
+* **Holds** (planks, side planks, knee side planks, hollow body, L-sit and the stretches) get a **form check** instead of a rep count: only the seconds you spend in good form count, and a live chip says *Good form: hold it!* or what to fix (*Keep your hips level*, *Lift your legs*…).
 * Before a set starts, the camera waits until you're in the starting position (top of a pushup, standing, hanging, lying for bridges…) and tells you if you're not.
 * Each exercise shows a camera-placement hint for its view (side-on at floor level, side-on standing, facing the bar, or seated).
 * Camera-counted reps are logged as **verified** (they count toward verified trophies). Weighted moves open the weight prompt with the camera's reps filled in. **Use timer only** is always available.
 
-AI tracking is on by default; set `VITE_ENABLE_POSE_AI=false` to turn it off. Developers: `npm run test:pose` runs a synthetic test of every exercise (full reps, half reps, jitter, dropouts, starting positions and holds).
+AI tracking is on by default; set `VITE_ENABLE_POSE_AI=false` to turn it off. Developers: `npm run test:pose` runs a synthetic test of every exercise (full reps, half reps, jitter, dropouts, starting positions and holds), and `npm run test:plan` checks the plan (every ladder goes easiest → hardest, no dead ends, every exercise reachable).
 
 ## 7. Log reps and weight
 

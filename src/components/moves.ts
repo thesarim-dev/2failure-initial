@@ -96,7 +96,58 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       tier: 'PRO',
       pattern: 'push',
       repCeiling: 15,
-      levelUp: ['archer-pushups']
+      levelUp: ['elevated-pike-pushups']
+    },
+    {
+      id: 'incline-pike-pushups',
+      name: "Incline Pike Pushups",
+      description: "Hands on a chair, hips high, lower your head toward the seat. The easy way into pike pushups.",
+      price: 0,
+      tier: 'BASE',
+      pattern: 'push',
+      equipment: ['bench'],
+      repCeiling: 15,
+      levelUp: ['pike-pushups']
+    },
+    {
+      id: 'elevated-pike-pushups',
+      name: "Elevated Pike Pushups",
+      description: "Feet up on a chair, hips high: more of your weight goes through your shoulders.",
+      price: 300,
+      tier: 'ELITE',
+      pattern: 'push',
+      equipment: ['bench'],
+      repCeiling: 12,
+      levelUp: ['wall-handstand-pushups']
+    },
+    {
+      id: 'wall-handstand-pushups',
+      name: "Wall Handstand Pushups",
+      description: "Kick up to a handstand against a wall and lower your head toward the floor with control. Only once elevated pike pushups feel solid.",
+      price: 300,
+      tier: 'ELITE',
+      pattern: 'push',
+      repCeiling: 10
+    },
+    {
+      id: 'dumbbell-shoulder-press',
+      name: "Dumbbell Shoulder Press",
+      description: "Stand tall and press the dumbbells from your shoulders to straight overhead.",
+      price: 150,
+      tier: 'PRO',
+      pattern: 'push',
+      equipment: ['dumbbell'],
+      repCeiling: 12
+    },
+    {
+      id: 'barbell-overhead-press',
+      name: "Barbell Overhead Press",
+      description: "Squeeze your glutes and press the bar from your collarbones to straight overhead.",
+      price: 150,
+      tier: 'PRO',
+      pattern: 'push',
+      equipment: ['barbell'],
+      repCeiling: 10
     },
     {
       id: 'diamond-pushups',
@@ -160,6 +211,15 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       levelUp: ['doorway-rows', 'inverted-rows']
     },
     {
+      id: 'prone-ytw-raises',
+      name: "Prone Y-T-W Raises",
+      description: "Lie face down and lift your arms in Y, T and W shapes, squeezing your shoulder blades. Great for posture.",
+      price: 0,
+      tier: 'BASE',
+      pattern: 'pull',
+      repCeiling: 15
+    },
+    {
       id: 'doorway-rows',
       name: 'Doorway Rows',
       description: 'Grip a sturdy door frame, lean back, and pull your chest to it.',
@@ -189,6 +249,26 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
       equipment: ['bar'],
       repCeiling: 15,
       levelUp: ['negative-pull-ups', 'chin-ups']
+    },
+    {
+      id: 'dumbbell-rows',
+      name: "Dumbbell Rows",
+      description: "One hand on a chair, back flat: row the dumbbell to your hip, then lower it all the way.",
+      price: 150,
+      tier: 'PRO',
+      pattern: 'pull',
+      equipment: ['dumbbell'],
+      repCeiling: 12
+    },
+    {
+      id: 'barbell-rows',
+      name: "Barbell Rows",
+      description: "Hinge forward with a flat back and row the bar to your belly.",
+      price: 150,
+      tier: 'PRO',
+      pattern: 'pull',
+      equipment: ['barbell'],
+      repCeiling: 12
     },
     {
       id: 'negative-pull-ups',
@@ -273,12 +353,64 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
       levelUp: ['single-leg-bridges']
     },
     {
+      id: 'single-leg-rdls',
+      name: "Single-Leg RDLs",
+      description: "Balance on one leg and hinge forward with a flat back, reaching toward the floor, then stand tall. Trains hamstrings and balance.",
+      price: 0,
+      tier: 'BASE',
+      repCeiling: 15,
+      levelUp: ['backpack-rdls', 'dumbbell-rdls']
+    },
+    {
+      id: 'backpack-rdls',
+      name: "Backpack RDLs",
+      description: "Hold a loaded backpack, soft knees, and hinge at the hips until you feel your hamstrings stretch.",
+      price: 150,
+      tier: 'PRO',
+      equipment: ['backpack'],
+      repCeiling: 15
+    },
+    {
+      id: 'dumbbell-rdls',
+      name: "Dumbbell RDLs",
+      description: "Dumbbells in front of your thighs, hinge back with a flat back, then drive your hips forward to stand.",
+      price: 150,
+      tier: 'PRO',
+      equipment: ['dumbbell'],
+      repCeiling: 12
+    },
+    {
+      id: 'barbell-deadlifts',
+      name: "Barbell Deadlifts",
+      description: "Bar over your midfoot, flat back, and stand up by driving through the floor. The king of the hinge.",
+      price: 150,
+      tier: 'PRO',
+      equipment: ['barbell'],
+      repCeiling: 8
+    },
+    {
+      id: 'nordic-curls',
+      name: "Nordic Curls",
+      description: "Kneel with your feet anchored under a couch and lower your body forward as slowly as you can. Hard, and great for strong hamstrings.",
+      price: 300,
+      tier: 'ELITE',
+      repCeiling: 8
+    },
+    {
       id: 'calf-raises',
       name: 'Calf Raises',
       description: 'Rise onto the balls of your feet as high as you can, pause, and lower slowly. Use one leg when it gets easy.',
       price: 0,
       tier: 'BASE',
       repCeiling: 30
+    },
+    {
+      id: 'single-leg-calf-raises',
+      name: "Single-Leg Calf Raises",
+      description: "Rise onto the ball of one foot as high as you can, then lower slowly. Hold a wall for balance.",
+      price: 150,
+      tier: 'PRO',
+      repCeiling: 20
     },
     {
       id: 'step-ups',
@@ -307,14 +439,7 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
       repCeiling: 20,
       levelUp: ['bulgarian-splits']
     },
-    {
-      id: 'burpees',
-      name: 'Burpees',
-      description: 'Drop to the floor, kick back, and hop up in one crisp motion.',
-      price: 150,
-      tier: 'PRO',
-      repCeiling: 25
-    },
+
     {
       id: 'bulgarian-splits',
       name: 'Bulgarian Splits',
@@ -341,6 +466,15 @@ export const LOWER_STORE_CATEGORY: MoveCategory = {
       tier: 'PRO',
       equipment: ['dumbbell'],
       repCeiling: 15
+    },
+    {
+      id: 'barbell-back-squats',
+      name: "Barbell Back Squats",
+      description: "Bar across your upper back, brace, and squat until your thighs are at least parallel.",
+      price: 150,
+      tier: 'PRO',
+      equipment: ['barbell'],
+      repCeiling: 10
     },
     {
       id: 'pistol-squats',
@@ -373,6 +507,22 @@ export const CORE_STORE_CATEGORY: MoveCategory = {
       levelUp: ['hollow-body', 'side-planks']
     },
     {
+      id: 'dead-bugs',
+      name: "Dead Bugs",
+      description: "On your back, arms up and knees over hips: lower the opposite arm and leg toward the floor while your lower back stays down.",
+      price: 0,
+      tier: 'BASE',
+      repCeiling: 20
+    },
+    {
+      id: 'bird-dogs',
+      name: "Bird Dogs",
+      description: "On all fours, reach the opposite arm and leg out long without twisting, then return.",
+      price: 0,
+      tier: 'BASE',
+      repCeiling: 20
+    },
+    {
       id: 'crunches',
       name: 'Crunches',
       description: 'Curl up like a little sit-up.',
@@ -388,6 +538,22 @@ export const CORE_STORE_CATEGORY: MoveCategory = {
       price: 100,
       tier: 'PRO',
       holdCeilingSeconds: 60
+    },
+    {
+      id: 'knee-side-planks',
+      name: "Knee Side Planks",
+      description: "A side plank from your knees: the easy way into full side planks. Both sides count as one set.",
+      price: 0,
+      tier: 'BASE',
+      holdCeilingSeconds: 45
+    },
+    {
+      id: 'side-plank-hip-dips',
+      name: "Side Plank Hip Dips",
+      description: "In a side plank, lower your hips toward the floor and lift them back up. Both sides count as one set.",
+      price: 150,
+      tier: 'PRO',
+      repCeiling: 20
     },
     {
       id: 'leg-raises',
@@ -475,6 +641,13 @@ export const RECOVERY_STORE_CATEGORY: MoveCategory = {
       description: 'Hold 45 seconds per leg for hamstring length and squat depth.',
       price: 0,
       tier: 'BASE'
+    },
+    {
+      id: 'pigeon-stretch',
+      name: "Pigeon Stretch",
+      description: "Hold 45 seconds on each side, front shin across your body, to open the hips.",
+      price: 0,
+      tier: 'BASE',
     }
   ]
 };
@@ -597,13 +770,30 @@ export const REP_LOGGED_CATEGORY_IDS = new Set([
   'step-ups',
   'single-leg-bridges',
   'jump-squats',
-  'burpees',
   'bulgarian-splits',
   'pistol-squats',
   'crunches',
   'leg-raises',
   'hanging-knee-raises',
-  'hanging-leg-raises'
+  'hanging-leg-raises',
+  'incline-pike-pushups',
+  'elevated-pike-pushups',
+  'wall-handstand-pushups',
+  'dumbbell-shoulder-press',
+  'barbell-overhead-press',
+  'dumbbell-rows',
+  'barbell-rows',
+  'prone-ytw-raises',
+  'barbell-back-squats',
+  'single-leg-rdls',
+  'backpack-rdls',
+  'dumbbell-rdls',
+  'barbell-deadlifts',
+  'nordic-curls',
+  'single-leg-calf-raises',
+  'dead-bugs',
+  'bird-dogs',
+  'side-plank-hip-dips'
 ]);
 
 export function isRepLoggedCategory(categoryId: string): boolean {

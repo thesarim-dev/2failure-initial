@@ -23,7 +23,7 @@ const ALL_VARIANT_IDS = new Set(PROGRAM_VARIANT_IDS);
  * These were free before the anywhere-training catalogue and now cost coins.
  * Players who joined before the change keep them.
  */
-const LEGACY_FREE_IDS = ['dips', 'pull-ups', 'burpees', 'l-sit', 'leg-raises'];
+const LEGACY_FREE_IDS = ['dips', 'pull-ups', 'l-sit', 'leg-raises'];
 const CATALOG_MIGRATION_KEY = 'catalog-v2';
 
 function migrateOwnedForCatalogV2(userId?: string | null): void {
