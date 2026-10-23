@@ -7390,4 +7390,82 @@
   .workout-form-chip.is-fix {
     background: rgba(214, 110, 20, 0.94);
   }
+
+  /* Paint tools: Box / Fill / Brush */
+  .base-paint-tools {
+    display: flex;
+    gap: 0.3rem;
+    padding: 0.25rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.8rem;
+    background: rgba(0, 0, 0, 0.06);
+  }
+  .dark .base-paint-tools {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .base-paint-tool {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.4rem;
+    border-radius: 0.6rem;
+    font-weight: 800;
+    font-size: 0.82rem;
+    opacity: 0.7;
+  }
+  .base-paint-tool.is-active {
+    opacity: 1;
+    background: #c8f032;
+    color: #0c0f02;
+    box-shadow: 0 2px 0 #6a9e00;
+  }
+
+  /* Previews on the map: what a paint will cover, a building's footprint, a box corner */
+  .base-preview-tile {
+    fill: rgba(255, 255, 255, 0.32);
+    stroke: rgba(255, 255, 255, 0.85);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+  }
+  .base-tile-preview.is-place .base-preview-tile {
+    fill: rgba(200, 240, 50, 0.35);
+    stroke: #c8f032;
+    stroke-width: 2;
+  }
+  .base-preview-anchor {
+    fill: rgba(200, 240, 50, 0.4);
+    stroke: #c8f032;
+    stroke-width: 3;
+    vector-effect: non-scaling-stroke;
+    animation: base-anchor-pulse 1.1s ease-in-out infinite;
+  }
+  @keyframes base-anchor-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+  /* The building being placed: see-through with a soft glow until confirmed */
+  .base-ghost {
+    opacity: 0.62;
+    filter: drop-shadow(0 0 6px rgba(200, 240, 50, 0.9));
+  }
+
+  /* Placement bar: Cancel + Place here */
+  .base-mode-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+  .base-confirm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .base-preview-anchor {
+      animation: none;
+    }
+  }
 }

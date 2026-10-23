@@ -138,7 +138,9 @@ export function QuestOnboarding({
           : stage === 'choose'
             ? { target: '[data-quest="choose-spot"]', text: q.choose }
             : stage === 'place'
-              ? { target: '.base-board-wrap', text: q.place }
+              ? document.querySelector('[data-quest="confirm-place"]')
+                ? { target: '[data-quest="confirm-place"]', text: q.confirm }
+                : { target: '.base-board-wrap', text: q.place }
               : stage === 'train'
                 ? { target: '[data-tour="train-tab"]', text: q.train }
                 : stage === 'pushups'

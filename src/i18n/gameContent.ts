@@ -24,6 +24,10 @@ export type GameCopy = {
   buildTabs: { structures: string; decor: string; trophies: string };
   placeHint: (name: string) => string;
   moveHint: (name: string) => string;
+  placeConfirm: string;
+  placeHere: string;
+  moveHere: string;
+  tools: { brush: string; box: string; fill: string; brushHint: string; boxHint: string; boxSecond: string; fillHint: string };
   cancel: string;
   close: string;
   items: Record<string, NameDesc>;
@@ -204,6 +208,18 @@ const en: GameCopy = {
   buildTabs: { structures: 'Buildings', decor: 'Decor', trophies: 'Trophies' },
   placeHint: (name) => `Tap a highlighted tile to place ${name}.`,
   moveHint: (name) => `Tap a highlighted tile to move ${name}.`,
+  placeConfirm: 'Happy with the spot? Tap another tile to try it there.',
+  placeHere: 'Place here',
+  moveHere: 'Move here',
+  tools: {
+    brush: 'Brush',
+    box: 'Box',
+    fill: 'Fill',
+    brushHint: 'Drag across tiles to paint. Painting is free.',
+    boxHint: 'Tap one corner, then the opposite corner: everything between fills. Same row = a straight line.',
+    boxSecond: 'Now tap the opposite corner.',
+    fillHint: 'Tap a patch of ground to repaint all of it at once.'
+  },
   cancel: 'Cancel',
   close: 'Close',
   items: {
@@ -514,6 +530,18 @@ const he: GameCopy = {
   buildTabs: { structures: 'מבנים', decor: 'קישוטים', trophies: 'גביעים' },
   placeHint: (name) => `הקש על משבצת מודגשת כדי למקם ${name}.`,
   moveHint: (name) => `הקש על משבצת מודגשת כדי להזיז ${name}.`,
+  placeConfirm: 'מרוצים מהמקום? הקישו על משבצת אחרת כדי לנסות שם.',
+  placeHere: 'מקמו כאן',
+  moveHere: 'הזיזו לכאן',
+  tools: {
+    brush: 'מכחול',
+    box: 'מלבן',
+    fill: 'מילוי',
+    brushHint: 'גררו על המשבצות כדי לצבוע. הצביעה בחינם.',
+    boxHint: 'הקישו על פינה אחת ואז על הפינה הנגדית: כל מה שביניהן נצבע. אותה שורה = קו ישר.',
+    boxSecond: 'עכשיו הקישו על הפינה הנגדית.',
+    fillHint: 'הקישו על אזור קרקע כדי לצבוע את כולו בבת אחת.'
+  },
   cancel: 'ביטול',
   close: 'סגירה',
   items: {
@@ -821,6 +849,18 @@ const ar: GameCopy = {
   buildTabs: { structures: 'مبانٍ', decor: 'زينة', trophies: 'كؤوس' },
   placeHint: (name) => `اضغط على مربع مضيء لوضع ${name}.`,
   moveHint: (name) => `اضغط على مربع مضيء لنقل ${name}.`,
+  placeConfirm: 'راضٍ عن المكان؟ اضغط على مربع آخر لتجربته هناك.',
+  placeHere: 'ضعه هنا',
+  moveHere: 'انقله إلى هنا',
+  tools: {
+    brush: 'فرشاة',
+    box: 'مستطيل',
+    fill: 'تعبئة',
+    brushHint: 'اسحب على المربعات للتلوين. التلوين مجاني.',
+    boxHint: 'اضغط على زاوية ثم على الزاوية المقابلة: كل ما بينهما يُلوَّن. الصف نفسه = خط مستقيم.',
+    boxSecond: 'الآن اضغط على الزاوية المقابلة.',
+    fillHint: 'اضغط على مساحة من الأرض لتلوينها كلها دفعة واحدة.'
+  },
   cancel: 'إلغاء',
   close: 'إغلاق',
   items: {

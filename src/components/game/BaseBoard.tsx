@@ -1,3 +1,4 @@
+import type { Customization } from '../../game/catalog';
 import { fx } from '../../lib/feedback';
 import type { KeyboardEvent, ReactNode } from 'react';
 import {
@@ -91,6 +92,19 @@ type BoardProps = {
   /** A drawing stroke: 'add' if it started on an empty edge, 'remove' if on a filled one. */
   onEdge?: (edgeKey: string, mode: 'add' | 'remove') => void;
   painting?: boolean;
+  /** Paint tool: brush (drag), box (two corners) or fill (connected patch). */
+  paintTool?: 'brush' | 'box' | 'fill';
+  /** Box / fill: a tap on a tile (taps only; drags pan the map). */
+  onPaintTap?: (tile: [number, number]) => void;
+  /** Box / fill: the tile under the pointer, for a live preview. */
+  onPaintHover?: (tile: [number, number] | null) => void;
+  /** Tiles to highlight as a preview (what a paint will cover, or a building's footprint). */
+  previewTiles?: Set<string> | null;
+  previewTone?: 'paint' | 'place' | 'blocked';
+  /** The first corner of a box, marked until the second tap. */
+  anchorTile?: string | null;
+  /** A see-through building previewed at a spot before it's confirmed. */
+  ghost?: { itemId: string; x: number; y: number; level?: number; custom?: Customization; replaceUid?: string } | null;
   onPaint?: (tile: [number, number]) => void;
   svgId?: string;
 };
@@ -130,6 +144,13 @@ export function BaseBoard({
   fencing = false,
   onEdge,
   painting = false,
+  paintTool = 'brush',
+  onPaintTap,
+  onPaintHover,
+  previewTiles = null,
+  previewTone = 'paint',
+  anchorTile = null,
+  ghost = null,
   onPaint,
   svgId
 }: BoardProps) {
@@ -226,7 +247,21 @@ export function BaseBoard({
 
   const sprites: Sprite[] = [];
   const groundItems: ReactNode[] = [];
-  for (const item of state.placed) {
+  const placedForRender = ghost
+    ? [
+        ...state.placed.filter((p) => p.uid !== ghost.replaceUid),
+        // Moving: the same building (same look) at the new spot. Placing: the chosen style and colour.
+        ({
+          ...(state.placed.find((p) => p.uid === ghost.replaceUid) ?? { itemId: ghost.itemId, level: Math.max(1, ghost.level ?? 1) }),
+          ...(ghost.custom?.style ? { style: ghost.custom.style } : {}),
+          ...(ghost.custom?.color ? { color: ghost.custom.color } : {}),
+          uid: '__ghost',
+          x: ghost.x,
+          y: ghost.y
+        }) as (typeof state.placed)[number]
+      ]
+    : state.placed;
+  for (const item of placedForRender) {
     const size = itemSize(item.itemId);
     // Paths are paving: laid flat into the ground layer.
     if (item.itemId === 'path') {
@@ -414,6 +449,12 @@ export function BaseBoard({
       )
     });
   }
+  // The previewed building is see-through and can't be tapped.
+  for (let i = 0; i < sprites.length; i++) {
+    if (sprites[i].key.startsWith('__ghost')) {
+      sprites[i] = { ...sprites[i], node: <g key={sprites[i].key} className="base-ghost" pointerEvents="none">{sprites[i].node}</g> };
+    }
+  }
   sprites.sort((p, q) => p.depth - q.depth);
 
   const selected = state.placed.find((p) => p.uid === selectedUid);
@@ -532,7 +573,7 @@ export function BaseBoard({
       }
       return;
     }
-    if (pointers.current.size === 1 && painting) {
+    if (pointers.current.size === 1 && painting && paintTool === 'brush') {
       event.currentTarget.setPointerCapture?.(event.pointerId);
       lastPainted.current = null;
       paintAt(event.clientX, event.clientY);
@@ -553,6 +594,8 @@ export function BaseBoard({
       if (pointers.current.has(event.pointerId)) pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
       return;
     }
+    // Box / fill: live preview of what a tap would paint (mouse hover or a finger resting).
+    if (painting && paintTool !== 'brush' && pointers.current.size <= 1) onPaintHover?.(tileAt(event.clientX, event.clientY));
     if (!pointers.current.has(event.pointerId)) return;
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     const g = gesture.current;
@@ -578,7 +621,7 @@ export function BaseBoard({
       );
       return;
     }
-    if (painting) {
+    if (painting && paintTool === 'brush') {
       if (event.buttons) paintAt(event.clientX, event.clientY);
       return;
     }
@@ -594,6 +637,11 @@ export function BaseBoard({
   };
 
   const onPointerEnd = (event: React.PointerEvent<SVGSVGElement>) => {
+    // Box / fill act on a tap (a press that didn't turn into a pan or pinch).
+    if (painting && paintTool !== 'brush' && pointers.current.size === 1 && !moved.current && event.type === 'pointerup') {
+      const tile = tileAt(event.clientX, event.clientY);
+      if (tile) onPaintTap?.(tile);
+    }
     pointers.current.delete(event.pointerId);
     lastPainted.current = null;
     fenceStroke.current = null;
@@ -886,6 +934,21 @@ export function BaseBoard({
       </g>
       {/* In fence mode taps pass through buildings to the edge beneath them. */}
       <g pointerEvents={fencing ? 'none' : 'visiblePainted'}>{sprites.map((sprite) => sprite.node)}</g>
+      {(previewTiles?.size || anchorTile) && (
+        <g pointerEvents="none" className={`base-tile-preview is-${previewTone}`}>
+          {[...(previewTiles ?? [])].map((key) => {
+            const [px, py] = key.split(',').map(Number);
+            const pts = [project([px * T, py * T]), project([(px + 1) * T, py * T]), project([(px + 1) * T, (py + 1) * T]), project([px * T, (py + 1) * T])];
+            return <polygon key={key} points={pts.map((q) => q.join(',')).join(' ')} className="base-preview-tile" />;
+          })}
+          {anchorTile &&
+            (() => {
+              const [ax, ay] = anchorTile.split(',').map(Number);
+              const pts = [project([ax * T, ay * T]), project([(ax + 1) * T, ay * T]), project([(ax + 1) * T, (ay + 1) * T]), project([ax * T, (ay + 1) * T])];
+              return <polygon points={pts.map((q) => q.join(',')).join(' ')} className="base-preview-anchor" />;
+            })()}
+        </g>
+      )}
       {fencing && hoverEdge && (() => {
         const m = /^([nw]):(-?\d+),(-?\d+)$/.exec(hoverEdge);
         if (!m) return null;

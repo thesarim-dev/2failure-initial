@@ -1,3 +1,4 @@
+import { itemSize } from '../../game/engine';
 import { startAmbient, stopAmbient } from '../../lib/ambient';
 import { createPortal } from 'react-dom';
 import { CoinsBadge } from '../CoinsBadge';
@@ -5,7 +6,7 @@ import stoneIcon from '../../assets/resources/stone.png';
 import timberIcon from '../../assets/resources/timber.png';
 import crystalIcon from '../../assets/resources/crystal.png';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, HardHat, Lock, Move as MoveIcon, Palette, ShieldCheck, X } from 'lucide-react';
+import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, HardHat, Lock, Move as MoveIcon, Palette, ShieldCheck, X, BoxSelect, PaintBucket, Paintbrush } from 'lucide-react';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
 import { useLanguage } from '../../context/LanguageContext';
@@ -76,9 +77,11 @@ type Draft = { kind: 'item'; itemId: string } | { kind: 'trophy'; trophyId: stri
 
 type Mode =
   | { kind: 'idle' }
-  | { kind: 'place'; itemId: string; custom: Customization }
-  | { kind: 'placeTrophy'; trophyId: string; custom: Customization }
-  | { kind: 'move'; uid: string };
+  | { kind: 'place'; itemId: string; custom: Customization; spot?: Spot }
+  | { kind: 'placeTrophy'; trophyId: string; custom: Customization; spot?: Spot }
+  | { kind: 'move'; uid: string; spot?: Spot };
+/** A picked (not yet confirmed) spot for the building being placed or moved. */
+type Spot = { x: number; y: number };
 
 type SheetState = null | 'build' | 'land' | { uid: string } | { draft: Draft };
 
@@ -369,6 +372,9 @@ export function BaseScreen({
   const [notice, setNotice] = useState<string | null>(null);
   const [paintWith, setPaintWith] = useState<TerrainId | null>(null);
   const [fenceKind, setFenceKind] = useState<EdgeKind | null>(null);
+  const [paintTool, setPaintTool] = useState<'brush' | 'box' | 'fill'>('box');
+  const [boxAnchor, setBoxAnchor] = useState<[number, number] | null>(null);
+  const [paintHover, setPaintHover] = useState<[number, number] | null>(null);
   const lastPaintSound = useRef(0);
   const [decorGroup, setDecorGroup] = useState<DecorGroup | 'all'>('all');
   const levelInfo = baseLevel(state);
@@ -428,6 +434,28 @@ export function BaseScreen({
           ? state.placed.find((p) => p.uid === mode.uid)?.itemId ?? null
           : null;
 
+  // ---- Placement preview: the picked spot's footprint and a see-through building ----
+  const spot = mode.kind !== 'idle' ? mode.spot ?? null : null;
+  const footprint = useMemo(() => {
+    if (!spot || !modeItemId) return null;
+    const n = itemSize(modeItemId);
+    const set = new Set<string>();
+    for (let dy = 0; dy < n; dy++) for (let dx = 0; dx < n; dx++) set.add(`${spot.x + dx},${spot.y + dy}`);
+    return set;
+  }, [spot, modeItemId]);
+  const movingItem = mode.kind === 'move' ? state.placed.find((p) => p.uid === mode.uid) : undefined;
+  const ghost =
+    spot && modeItemId
+      ? {
+          itemId: modeItemId,
+          x: spot.x,
+          y: spot.y,
+          custom: mode.kind === 'place' || mode.kind === 'placeTrophy' ? mode.custom : undefined,
+          level: movingItem?.level ?? 1,
+          replaceUid: movingItem?.uid
+        }
+      : null;
+
   const validTiles = useMemo(() => {
     if (fenceKind) {
       // Show every tile so the edges between them are easy to see.
@@ -451,6 +479,18 @@ export function BaseScreen({
       setSheet(null);
       return;
     }
+    // Tapping a tile picks a spot and shows a see-through preview there; nothing
+    // is built (or paid) until Place here is tapped. Tap another tile to try it there.
+    if (validTiles && !validTiles.has(`${x},${y}`)) {
+      fx.error();
+      return;
+    }
+    fx.tick();
+    setMode({ ...mode, spot: { x, y } });
+  };
+  const confirmSpot = () => {
+    if (mode.kind === 'idle' || !mode.spot) return;
+    const { x, y } = mode.spot;
     const result =
       mode.kind === 'place'
         ? game.place(mode.itemId, x, y, mode.custom)
@@ -505,6 +545,54 @@ export function BaseScreen({
   const landSide = LAND_SIDES[state.landLevel];
   const landCost = nextLandCost(state);
   const goals = useMemo(() => computeGoals(state, coins), [state, coins]);
+
+  // ---- Paint tools: box (two corners) and fill (a connected patch) ----
+  const terrainAt = (x: number, y: number) => state.terrain?.[`${x},${y}`] ?? 'grass';
+  const boxTiles = (a: [number, number], b: [number, number]) => {
+    const out: Array<[number, number]> = [];
+    for (let y = Math.min(a[1], b[1]); y <= Math.max(a[1], b[1]); y++)
+      for (let x = Math.min(a[0], b[0]); x <= Math.max(a[0], b[0]); x++) if (isTileBuildable(x, y, state.landLevel)) out.push([x, y]);
+    return out;
+  };
+  const fillTiles = (start: [number, number]) => {
+    const target = terrainAt(start[0], start[1]);
+    const seen = new Set([`${start[0]},${start[1]}`]);
+    const out: Array<[number, number]> = [];
+    const queue: Array<[number, number]> = [start];
+    while (queue.length && out.length < 600) {
+      const [x, y] = queue.shift()!;
+      out.push([x, y]);
+      for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as Array<[number, number]>) {
+        const k = `${nx},${ny}`;
+        if (seen.has(k) || !isTileBuildable(nx, ny, state.landLevel) || terrainAt(nx, ny) !== target) continue;
+        seen.add(k);
+        queue.push([nx, ny]);
+      }
+    }
+    return out;
+  };
+  const paintPreview = useMemo(() => {
+    if (!paintWith || paintTool === 'brush') return null;
+    const tiles = paintTool === 'box' ? (boxAnchor ? boxTiles(boxAnchor, paintHover ?? boxAnchor) : []) : paintHover ? fillTiles(paintHover) : [];
+    return new Set(tiles.map(([x, y]) => `${x},${y}`));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paintWith, paintTool, boxAnchor, paintHover, state.terrain, state.landLevel]);
+  const onPaintTap = (tile: [number, number]) => {
+    if (!paintWith) return;
+    if (paintTool === 'box' && !boxAnchor) {
+      setBoxAnchor(tile);
+      fx.tick();
+      return;
+    }
+    const tiles = paintTool === 'box' ? boxTiles(boxAnchor!, tile) : fillTiles(tile);
+    setBoxAnchor(null);
+    const result = game.paint(tiles, paintWith);
+    if (result.ok) fx.place();
+  };
+  useEffect(() => {
+    setBoxAnchor(null);
+    setPaintHover(null);
+  }, [paintWith, paintTool]);
 
   // Ambient soundscape while the Base is open: a breeze and birdsong, plus
   // water and fire when the base has them. Paused in the background.
@@ -583,18 +671,37 @@ export function BaseScreen({
       {mode.kind !== 'idle' && modeItemId && (
         <div className="base-mode-bar" role="status">
           <span>
-            {mode.kind === 'move' ? g.moveHint(nameOf(modeItemId)) : g.placeHint(nameOf(modeItemId))}
+            {spot ? g.placeConfirm : mode.kind === 'move' ? g.moveHint(nameOf(modeItemId)) : g.placeHint(nameOf(modeItemId))}
           </span>
-          <button type="button" className="base-ghost-btn" onClick={() => setMode({ kind: 'idle' })}>
-            {g.cancel}
-          </button>
+          <div className="base-mode-actions">
+            <button type="button" className="base-ghost-btn" onClick={() => setMode({ kind: 'idle' })}>
+              {g.cancel}
+            </button>
+            {spot && (
+              <button type="button" className="base-primary-btn base-confirm-btn" data-quest="confirm-place" onClick={confirmSpot}>
+                <Check size={16} strokeWidth={3} aria-hidden="true" />
+                {mode.kind === 'move' ? g.moveHere : g.placeHere}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
       {paintWith && (
         <div className="base-paint-bar" role="toolbar" aria-label={g.paint.title}>
+          <div className="base-paint-tools" role="radiogroup" aria-label={g.paint.title}>
+            {(['box', 'fill', 'brush'] as const).map((tool) => {
+              const Icon = tool === 'box' ? BoxSelect : tool === 'fill' ? PaintBucket : Paintbrush;
+              return (
+                <button key={tool} type="button" role="radio" aria-checked={paintTool === tool} className={`base-paint-tool ${paintTool === tool ? 'is-active' : ''}`} onClick={() => setPaintTool(tool)}>
+                  <Icon size={16} strokeWidth={2.4} aria-hidden="true" />
+                  {g.tools[tool]}
+                </button>
+              );
+            })}
+          </div>
           <div className="base-paint-head">
-            <span>{g.paint.hint}</span>
+            <span>{paintTool === 'box' ? (boxAnchor ? g.tools.boxSecond : g.tools.boxHint) : paintTool === 'fill' ? g.tools.fillHint : g.tools.brushHint}</span>
             <button type="button" className="base-ghost-btn" onClick={() => setPaintWith(null)}>
               {g.paint.done}
             </button>
@@ -660,6 +767,13 @@ export function BaseScreen({
           onTile={handleTile}
           onItem={(uid) => setSheet({ uid })}
           painting={paintWith !== null}
+          paintTool={paintTool}
+          onPaintTap={onPaintTap}
+          onPaintHover={setPaintHover}
+          previewTiles={paintPreview ?? footprint}
+          previewTone={paintPreview ? 'paint' : 'place'}
+          anchorTile={boxAnchor ? `${boxAnchor[0]},${boxAnchor[1]}` : null}
+          ghost={ghost}
           fencing={fenceKind !== null}
           onEdge={(edgeKey, strokeMode) => {
             if (!fenceKind) return;

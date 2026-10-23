@@ -479,6 +479,13 @@ All sounds are synthesized live (no audio files), through a small sound engine (
 
 ### Paths, fences and walls
 
+**Placing buildings: preview, then confirm.** After choosing something to build (or tapping Move on a building), tap any highlighted tile: a see-through preview of the building appears there on a lime footprint, and nothing is built or paid yet. Tap other tiles to try different spots, then tap **Place here** (or **Move here**) to confirm, or **Cancel**.
+
+**Painting the ground: three tools.** In **Paint**, pick a ground and a tool:
+* **Box** (default): tap one corner, then the opposite corner, and everything between fills. A live preview shows exactly what will be painted, and two corners on the same row make a straight line (handy for paths). Dragging still pans the map.
+* **Fill**: tap a patch of ground to repaint the whole connected patch of that same ground at once.
+* **Brush**: drag across tiles to paint them one by one.
+
 **Paths are painted like terrain.** Choose **Path** in the build menu (or pick it in **Paint**) and drag across the ground to lay cobblestones. Paths no longer take up a square of their own, and older path pieces are converted automatically.
 
 **Fences, walls and hedges run between tiles.** Choose **Wall** in the build menu to open the fence tool and pick **Wooden fence** (2 timber per piece), **Stone wall** (3 stone) or **Hedge** (1 timber, 1 crystal). Then **drag along the lines between tiles** to draw: a glowing line shows exactly where the next piece will go, and you can turn corners in the same stroke. Start a stroke on an existing piece to **erase** instead. A single tap adds or removes one piece. Pieces join seamlessly: walls flow as one continuous run with piers only where they turn or end, and fence pieces share their posts.

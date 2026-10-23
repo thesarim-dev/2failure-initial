@@ -46,6 +46,7 @@ export type HubCopy = {
     pick: string;
     choose: string;
     place: string;
+    confirm: string;
     train: string;
     pushups: (name: string) => string;
     receipt: string;
@@ -169,6 +170,7 @@ const en: HubCopy = {
     pick: 'Your first building is free! Pick the Lodge: it gives you an extra builder.',
     choose: 'Looks good. Tap the button to choose where it goes.',
     place: 'Tap any glowing tile to place your Lodge.',
+    confirm: 'Looks good? Tap Place here to build it.',
     train: 'Your Lodge needs one set to finish. Let\'s build it with a workout. Tap Train.',
     pushups: (name) => `Start ${name}. Do as many good reps as you can, until you can't do one more. That's training to failure.`,
     receipt: 'Your set just finished your Lodge! Tap here to go see it.',
@@ -311,6 +313,7 @@ const he: HubCopy = {
     pick: 'הבניין הראשון בחינם! בחרו בבקתה: היא נותנת בנאי נוסף.',
     choose: 'נראה טוב. הקישו על הכפתור כדי לבחור מקום.',
     place: 'הקישו על משבצת זוהרת כדי להציב את הבקתה.',
+    confirm: 'נראה טוב? הקישו על „מקמו כאן” כדי לבנות.',
     train: 'הבקתה צריכה סט אחד כדי להיגמר. בואו נבנה אותה באימון. הקישו על אימון.',
     pushups: (name) => `התחילו ${name}. עשו כמה שיותר חזרות טובות, עד שאי אפשר עוד אחת. זה אימון עד כשל.`,
     receipt: 'הסט שלכם סיים את הבקתה! הקישו כאן כדי לראות אותה.',
@@ -448,6 +451,7 @@ const ar: HubCopy = {
     pick: 'أول مبنى مجاناً! اختر النُّزُل: يمنحك بنّاءً إضافياً.',
     choose: 'يبدو جيداً. اضغط الزر لتختار مكانه.',
     place: 'اضغط على أي مربع مضيء لتضع النُّزُل.',
+    confirm: 'يبدو جيداً؟ اضغط «ضعه هنا» للبناء.',
     train: 'النُّزُل يحتاج مجموعة واحدة ليكتمل. لنبنِه بتمرين. اضغط تدريب.',
     pushups: (name) => `ابدأ ${name}. أدِّ أكبر عدد من التكرارات الجيدة حتى لا تستطيع واحدة أخرى. هذا هو التدريب حتى الإرهاق.`,
     receipt: 'مجموعتك أكملت النُّزُل! اضغط هنا لتراه.',
