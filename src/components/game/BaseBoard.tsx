@@ -1,4 +1,4 @@
-import type { Customization } from '../../game/catalog';
+import type { Customization, TerrainId } from '../../game/catalog';
 import { fx } from '../../lib/feedback';
 import type { KeyboardEvent, ReactNode } from 'react';
 import {
@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BaseCritters } from './Critters';
 import { GroundDetail, GroundEdges } from './GroundDetail';
 import { SlabSides } from './SlabSides';
-import { bakeGround } from './groundBake';
+import { bakeGround, bakePatch, bakeSize } from './groundBake';
 import { IsoEdge, IsoEdgePost, IsoItemArt, IsoScaffold, P as isoP, isIsoItem } from './IsoArt';
 
 export { ItemArt, TrophyArt } from './BaseArt';
@@ -461,6 +461,7 @@ export function BaseBoard({
 
   const groundRef = useRef<SVGGElement>(null);
   const lastPainted = useRef<string | null>(null);
+  const lastHover = useRef('');
 
   /** Screen point → SVG units (the current, zoomed view). */
   const toSvg = (clientX: number, clientY: number): [number, number] | null => {
@@ -595,7 +596,15 @@ export function BaseBoard({
       return;
     }
     // Box / fill: live preview of what a tap would paint (mouse hover or a finger resting).
-    if (painting && paintTool !== 'brush' && pointers.current.size <= 1) onPaintHover?.(tileAt(event.clientX, event.clientY));
+    if (painting && paintTool !== 'brush' && pointers.current.size <= 1) {
+      // Only when the pointer reaches a different tile (not on every pixel of movement).
+      const tile = tileAt(event.clientX, event.clientY);
+      const key = tile ? `${tile[0]},${tile[1]}` : '';
+      if (key !== lastHover.current) {
+        lastHover.current = key;
+        onPaintHover?.(tile);
+      }
+    }
     if (!pointers.current.has(event.pointerId)) return;
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     const g = gesture.current;
@@ -779,19 +788,28 @@ export function BaseBoard({
     [state.placed]
   );
   const bakeKey = `${land}|${JSON.stringify(state.terrain ?? {})}|${occupancyKey}`;
-  const [baked, setBaked] = useState<{ url: string; rect: typeof bakeRect } | null>(null);
+  // The baked image remembers which terrain it captured: tiles painted since
+  // then are drawn live on top of it (a handful), instead of switching the whole
+  // ground back to ~5,000 live shapes while painting.
+  const [baked, setBaked] = useState<{ url: string; rect: typeof bakeRect; terrain: Record<string, string>; w: number; h: number } | null>(null);
   const [bakeFailed, setBakeFailed] = useState(false);
+  const terrainRef = useRef(state.terrain ?? {});
+  terrainRef.current = state.terrain ?? {};
+  // Full bake: whenever the ground changes outside paint mode, and once when
+  // you finish painting (restoring perfectly blended edges).
   useEffect(() => {
-    if (painting || bakeFailed) return;
+    if (bakeFailed || painting) return;
     let cancelled = false;
     const timer = window.setTimeout(() => {
       const cssW = svgRef.current?.clientWidth || 400;
       const dpr = Math.min(3, window.devicePixelRatio || 1);
       const px = (bakeRect.w / viewW) * cssW * dpr * 2.5;
+      const terrain = { ...terrainRef.current };
+      const { w, h } = bakeSize(bakeRect, px);
       bakeGround(staticRef.current, bakeRect, px)
         .then((url) => {
           if (cancelled) return;
-          setBaked({ url, rect: bakeRect });
+          setBaked({ url, rect: bakeRect, terrain, w, h });
         })
         .catch(() => {
           if (!cancelled) setBakeFailed(true);
@@ -802,8 +820,41 @@ export function BaseBoard({
       window.clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bakeKey, painting, bakeFailed, bakeRect]);
-  const showLiveGround = painting || bakeFailed;
+  }, [bakeKey, bakeFailed, bakeRect, painting]);
+  const showLiveGround = bakeFailed;
+  // Tiles whose ground differs from what the current bake shows.
+  const paintedSinceBake = useMemo(() => {
+    if (!baked) return [];
+    const now = state.terrain ?? {};
+    const keys = new Set([...Object.keys(now), ...Object.keys(baked.terrain)]);
+    return [...keys].filter((k) => (now[k] ?? 'grass') !== (baked.terrain[k] ?? 'grass'));
+  }, [baked, state.terrain]);
+  useEffect(() => {
+    if (!painting || !baked || bakeFailed || !paintedSinceBake.length) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      const terrain = { ...terrainRef.current };
+      const keys = paintedSinceBake;
+      const layer = (
+        <g transform={ISO}>
+          {keys.map((k) => {
+            const [x, y] = k.split(',').map(Number);
+            return <TerrainTile key={k} x={x} y={y} terrain={(terrain[k] ?? 'grass') as TerrainId} />;
+          })}
+        </g>
+      );
+      bakePatch(baked.url, layer, baked.rect, baked.w, baked.h)
+        .then((url) => {
+          if (!cancelled) setBaked({ ...baked, url, terrain });
+        })
+        .catch(() => undefined);
+    }, 450);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [painting, paintedSinceBake]);
   const groundView = showLiveGround ? (
     staticLayers
   ) : baked && baked.rect === bakeRect ? (
@@ -827,6 +878,15 @@ export function BaseBoard({
       </g>
     </g>
   );
+  const freshTiles =
+    !showLiveGround && paintedSinceBake.length ? (
+      <g transform={ISO} pointerEvents="none">
+        {paintedSinceBake.map((k) => {
+          const [x, y] = k.split(',').map(Number);
+          return <TerrainTile key={`fresh${k}`} x={x} y={y} terrain={(state.terrain?.[k] ?? 'grass') as TerrainId} />;
+        })}
+      </g>
+    ) : null;
 
   return (
     <svg
@@ -857,6 +917,7 @@ export function BaseBoard({
       <ArtDefs />
 
       {groundView}
+      {freshTiles}
 
       {/* The ground, in world units, tilted into diamonds. */}
       <g ref={groundRef} transform={ISO} pointerEvents="visiblePainted">
