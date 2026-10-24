@@ -35,7 +35,9 @@ function LevelPips({ level, color, cx = 50, y = 97 }: { level: number; color: st
 }
 
 /** Low models get a tighter preview frame so they don't look tiny. */
-const LOW_ITEMS = new Set(['garden', 'wall']);
+const LOW_ITEMS = new Set(['garden', 'wall', 'flowers', 'bridge', 'lilypad']);
+/** Isometric decorations: a tighter frame than buildings so they fill their thumbnail. */
+const TALL_DECOR = new Set(['arch', 'banner', 'windmill', 'pullupbar', 'dipbars']);
 
 /** Standalone preview used in the build menu and info sheet. */
 export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, style, color }: {
@@ -53,7 +55,7 @@ export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, 
     const s2 = itemSize(id) === 2;
     return (
       <svg
-        viewBox={s2 ? '-112 -84 224 190' : LOW_ITEMS.has(id) ? '-54 -24 108 84' : id.startsWith(TROPHY_ITEM_PREFIX) ? '-54 -80 108 124' : '-56 -84 112 140'}
+        viewBox={s2 ? '-112 -84 224 190' : LOW_ITEMS.has(id) ? '-54 -24 108 84' : id === 'windmill' ? '-50 -84 100 128' : TALL_DECOR.has(id) ? '-46 -64 92 112' : id.startsWith(TROPHY_ITEM_PREFIX) ? '-54 -80 108 124' : '-56 -84 112 140'}
         width={size}
         height={size}
         aria-hidden="true"

@@ -4,8 +4,10 @@ import type { PlacedItem, TodayPlan } from '../../game/engine';
 import {
   FIRE,
   GRASS,
+  LEAF,
   METAL,
   STONE,
+  WOOD,
   WINDOW_DARK,
   WINDOW_LIT,
   materialsFor,
@@ -1211,7 +1213,281 @@ function IsoGarden({ ox, oy, style, color }: { ox: number; oy: number; style?: s
 }
 
 /** Which items are drawn as true isometric models. */
-export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden']);
+// ---------------------------------------------------------------------------
+// Decorations in true isometric: same projection, light (lit left face,
+// shaded right face), materials and textures as the buildings.
+// ---------------------------------------------------------------------------
+const decorAt = (ox: number, oy: number) => (x: number, y: number, z = 0) => P(ox + x, oy + y, z);
+const circleAt = (Q: (x: number, y: number, z?: number) => [number, number], cx: number, cy: number, r: number, z: number, n = 20) =>
+  pts(Array.from({ length: n }, (_, i) => Q(cx + Math.cos((i / n) * Math.PI * 2) * r, cy + Math.sin((i / n) * Math.PI * 2) * r, z)));
+
+/** One five-petal flower head in screen space. */
+function Bloom({ x, y, r, petal, light }: { x: number; y: number; r: number; petal: string; light: string }) {
+  return (
+    <g>
+      {[0, 1, 2, 3, 4].map((i) => {
+        const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+        return <ellipse key={i} cx={x + Math.cos(a) * r} cy={y + Math.sin(a) * r * 0.8} rx={r * 0.85} ry={r * 0.7} fill={i % 2 ? light : petal} />;
+      })}
+      <circle cx={x} cy={y} r={r * 0.55} fill="#ffd76a" />
+      <circle cx={x - r * 0.2} cy={y - r * 0.2} r={r * 0.2} fill="#fff4c4" />
+    </g>
+  );
+}
+
+function IsoArch({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const bloom = themeFor('arch', color);
+  const arc = (y: number) =>
+    Array.from({ length: 17 }, (_, i) => {
+      const t = Math.PI * (i / 16);
+      return Q(50 - 38 * Math.cos(t), y, 74 + 30 * Math.sin(t));
+    });
+  const back = arc(42);
+  const front = arc(58);
+  const line = (list: Array<[number, number]>) => list.map((p) => p.join(',')).join(' ');
+  const lantern = Q(50, 50, 86);
+  return (
+    <g pointerEvents="none">
+      {/* stepping stones under the arch */}
+      {[30, 50, 70].map((y, i) => (
+        <polygon key={y} points={circleAt(Q, 50 + (i - 1) * 3, y, 8.5, 0.6, 12)} fill={STONE.base} stroke={STONE.dark} strokeOpacity={0.5} strokeWidth={0.6} />
+      ))}
+      {/* the back half of the trellis, slats, then posts, then the front arch */}
+      <polyline points={line(back)} fill="none" stroke={WOOD.dark} strokeWidth={5.4} strokeLinecap="round" />
+      <polyline points={line(back)} fill="none" stroke={WOOD.base} strokeWidth={3.4} strokeLinecap="round" />
+      {back.map((b, i) => (i % 2 === 0 ? <line key={i} x1={b[0]} y1={b[1]} x2={front[i][0]} y2={front[i][1]} stroke={WOOD.dark} strokeWidth={1.6} /> : null))}
+      <IsoBox b={{ x0: ox + 8, x1: ox + 16, y0: oy + 40, y1: oy + 60, z0: 0, z1: 75 }} s={WOOD} mat="plank" />
+      <IsoBox b={{ x0: ox + 84, x1: ox + 92, y0: oy + 40, y1: oy + 60, z0: 0, z1: 75 }} s={WOOD} mat="plank" />
+      <polyline points={line(front)} fill="none" stroke={WOOD.dark} strokeWidth={6} strokeLinecap="round" />
+      <polyline points={line(front)} fill="none" stroke={WOOD.light} strokeWidth={3.6} strokeLinecap="round" />
+      {/* vines climbing the posts and over the arch */}
+      {[...front, ...[10, 22, 34, 46, 58, 70].map((z) => Q(12, 61, z)), ...[14, 28, 42, 56, 68].map((z) => Q(88, 61, z))].map(([x, y], i) => (
+        <g key={`v${i}`}>
+          <ellipse cx={x - 2.2} cy={y + 0.5} rx={3} ry={1.9} fill={LEAF.dark} transform={`rotate(-28 ${x - 2.2} ${y + 0.5})`} />
+          <ellipse cx={x + 2.2} cy={y - 0.6} rx={2.8} ry={1.8} fill={i % 3 ? LEAF.base : LEAF.light} transform={`rotate(24 ${x + 2.2} ${y - 0.6})`} />
+        </g>
+      ))}
+      {/* clusters of flowers in the chosen colour */}
+      {[1, 3, 5, 7, 9, 11, 13, 15].map((i) => {
+        const [x, y] = front[i];
+        return <Bloom key={`b${i}`} x={x} y={y - 1.5} r={2.9} petal={bloom.base} light={bloom.light} />;
+      })}
+      {[Q(12, 61, 26), Q(88, 61, 20), Q(12, 61, 52), Q(88, 61, 46)].map(([x, y], i) => (
+        <Bloom key={`p${i}`} x={x + 2} y={y} r={2.5} petal={bloom.base} light={bloom.light} />
+      ))}
+      {/* a lantern hanging from the top */}
+      <line x1={lantern[0]} y1={Q(50, 50, 104)[1]} x2={lantern[0]} y2={lantern[1] - 4} stroke="#3c3326" strokeWidth={0.8} />
+      <rect x={lantern[0] - 3} y={lantern[1] - 4} width={6} height={7} rx={1.2} fill="#3c3326" />
+      <rect x={lantern[0] - 2} y={lantern[1] - 3} width={4} height={5} rx={0.8} fill={WINDOW_LIT} className="base-window is-warm is-candle" />
+    </g>
+  );
+}
+
+function IsoFlowers({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const bloom = themeFor('flowers', color);
+  const spots: Array<[number, number, number]> = [
+    [34, 30, 15], [52, 26, 18], [68, 34, 14], [28, 46, 17], [46, 44, 21], [64, 50, 16],
+    [74, 64, 18], [36, 62, 15], [54, 64, 19], [44, 76, 14], [62, 76, 16]
+  ];
+  spots.sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
+  return (
+    <g pointerEvents="none">
+      {/* a soft mound of dark soil with a lighter rim */}
+      <polygon points={circleAt(Q, 50, 52, 38, 0, 24)} fill="#5e4128" />
+      <polygon points={circleAt(Q, 50, 52, 34, 2.5, 24)} fill="#7a5636" />
+      <polygon points={circleAt(Q, 48, 50, 26, 3.5, 24)} fill="#6b4a2e" />
+      {spots.map(([x, y, h], i) => {
+        const base = Q(x, y, 3);
+        const head = Q(x, y, h);
+        return (
+          <g key={i}>
+            <line x1={base[0]} y1={base[1]} x2={head[0]} y2={head[1]} stroke="#2f7a3f" strokeWidth={1.2} />
+            <ellipse cx={base[0] - 2.4} cy={(base[1] + head[1]) / 2 + 2} rx={2.8} ry={1.3} fill={LEAF.dark} transform={`rotate(-25 ${base[0] - 2.4} ${(base[1] + head[1]) / 2 + 2})`} />
+            <ellipse cx={base[0] + 2.4} cy={(base[1] + head[1]) / 2 + 3} rx={2.6} ry={1.2} fill={LEAF.base} transform={`rotate(25 ${base[0] + 2.4} ${(base[1] + head[1]) / 2 + 3})`} />
+            <Bloom x={head[0]} y={head[1]} r={i % 3 === 0 ? 3 : 2.5} petal={i % 4 === 1 ? bloom.light : bloom.base} light={i % 4 === 1 ? '#ffffff' : bloom.light} />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+function IsoBanner({ ox, oy, style, color }: { ox: number; oy: number; style?: string; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const cloth = themeFor('banner', color);
+  const y = 53;
+  const top = 98;
+  const bottom = 34;
+  const quad = (a: [number, number, number][]) => pts(a.map(([x, yy, z]) => Q(x, yy, z)));
+  const outline = quad([[24, y, top], [76, y, top], [76, y, bottom], [50, y, bottom + 14], [24, y, bottom]]);
+  const top2 = Q(50, 50, 114);
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={{ x0: ox + 40, x1: ox + 60, y0: oy + 40, y1: oy + 60, z0: 0, z1: 7 }} s={STONE} />
+      <IsoBox b={{ x0: ox + 47, x1: ox + 53, y0: oy + 47, y1: oy + 53, z0: 7, z1: 110 }} s={WOOD} courses={false} />
+      <IsoBox b={{ x0: ox + 20, x1: ox + 80, y0: oy + 49, y1: oy + 52, z0: top, z1: top + 4 }} s={WOOD} courses={false} />
+      <circle cx={top2[0]} cy={top2[1]} r={3.4} fill={GOLD.base} />
+      <circle cx={top2[0] - 1} cy={top2[1] - 1} r={1.3} fill={GOLD.light} />
+      <g className="base-flag">
+        <polygon points={outline} fill={cloth.base} />
+        {/* folds: soft shade bands */}
+        <polygon points={quad([[37, y, top], [42, y, top], [42, y, bottom + 6], [37, y, bottom + 3]])} fill={cloth.dark} opacity={0.35} />
+        <polygon points={quad([[58, y, top], [63, y, top], [63, y, bottom + 6], [58, y, bottom + 9]])} fill={cloth.dark} opacity={0.3} />
+        {style === 'stripe' && <polygon points={quad([[24, y, 74], [76, y, 74], [76, y, 64], [24, y, 64]])} fill={cloth.light} />}
+        {style === 'chevron' && (
+          <polyline points={quad([[24, y, 82], [50, y, 64], [76, y, 82]])} fill="none" stroke={cloth.light} strokeWidth={5} strokeLinejoin="round" />
+        )}
+        <polygon points={outline} fill="none" stroke={cloth.dark} strokeWidth={1} />
+        <polyline points={quad([[24, y, top - 1], [76, y, top - 1]])} stroke="#fff" strokeOpacity={0.35} strokeWidth={1} />
+      </g>
+    </g>
+  );
+}
+
+function IsoWindmill({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const cap = themeFor('windmill', color);
+  const apex = Q(50, 50, 108);
+  const base = [Q(33, 33, 80), Q(67, 33, 80), Q(67, 67, 80), Q(33, 67, 80)];
+  const hub = Q(50, 69, 70);
+  // Sails turn in the plane of the front-left face (x–z at y = 69).
+  const blade = (a: number) => {
+    const d = (r: number, w: number) => Q(50 + Math.cos(a) * r - Math.sin(a) * w, 69, 70 + Math.sin(a) * r + Math.cos(a) * w);
+    return { frame: pts([d(6, -5), d(38, -5), d(38, 5), d(6, 5)]), spar: [d(0, 0), d(40, 0)] as const, lattice: [10, 18, 26, 34].map((r) => [d(r, -5), d(r, 5)] as const) };
+  };
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={{ x0: ox + 26, x1: ox + 74, y0: oy + 26, y1: oy + 74, z0: 0, z1: 32 }} s={STONE} />
+      <IsoBox b={{ x0: ox + 30, x1: ox + 70, y0: oy + 30, y1: oy + 70, z0: 32, z1: 58 }} s={STONE} />
+      <IsoBox b={{ x0: ox + 33, x1: ox + 67, y0: oy + 33, y1: oy + 67, z0: 58, z1: 80 }} s={STONE} />
+      {/* door and window on the lit face */}
+      <polygon points={pts([Q(44, 74, 0), Q(56, 74, 0), Q(56, 74, 18), Q(44, 74, 18)])} fill={WOOD.dark} />
+      <polygon points={pts([Q(46, 70, 40), Q(54, 70, 40), Q(54, 70, 50), Q(46, 70, 50)])} fill={WINDOW_LIT} className="base-window is-warm" />
+      {/* cap */}
+      <polygon points={pts([base[3], base[2], apex])} fill={cap.base} />
+      <polygon points={pts([base[2], base[1], apex])} fill={cap.dark} />
+      <polyline points={pts([base[3], apex, base[1]])} fill="none" stroke="#fff" strokeOpacity={0.3} strokeWidth={1} />
+      {/* sails */}
+      {[Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4].map((a) => {
+        const b = blade(a);
+        return (
+          <g key={a}>
+            <polygon points={b.frame} fill="#f3ead8" fillOpacity={0.92} stroke={WOOD.dark} strokeWidth={0.9} />
+            {b.lattice.map(([p, q], i) => (
+              <line key={i} x1={p[0]} y1={p[1]} x2={q[0]} y2={q[1]} stroke={WOOD.dark} strokeWidth={0.6} />
+            ))}
+            <line x1={b.spar[0][0]} y1={b.spar[0][1]} x2={b.spar[1][0]} y2={b.spar[1][1]} stroke={WOOD.dark} strokeWidth={1.6} />
+          </g>
+        );
+      })}
+      <circle cx={hub[0]} cy={hub[1]} r={3.2} fill={WOOD.dark} />
+      <circle cx={hub[0] - 0.8} cy={hub[1] - 0.8} r={1.2} fill={WOOD.light} />
+    </g>
+  );
+}
+
+function IsoBridge({ ox, oy }: { ox: number; oy: number }) {
+  const Q = decorAt(ox, oy);
+  const posts = (y: number) => [8, 30, 52, 74, 92].map((x) => <IsoBox key={`${y}-${x}`} b={{ x0: ox + x - 1.8, x1: ox + x + 1.8, y0: oy + y - 1.8, y1: oy + y + 1.8, z0: 15, z1: 32 }} s={WOOD} courses={false} />);
+  const rail = (y: number) => <IsoBox b={{ x0: ox + 6, x1: ox + 94, y0: oy + y - 1.2, y1: oy + y + 1.2, z0: 28, z1: 31 }} s={WOOD} courses={false} />;
+  return (
+    <g pointerEvents="none">
+      {[[12, 34], [88, 34], [12, 66], [88, 66]].map(([x, y]) => (
+        <IsoBox key={`s${x}${y}`} b={{ x0: ox + x - 3, x1: ox + x + 3, y0: oy + y - 3, y1: oy + y + 3, z0: -8, z1: 10 }} s={WOOD} courses={false} />
+      ))}
+      {posts(31)}
+      {rail(31)}
+      <IsoBox b={{ x0: ox + 2, x1: ox + 98, y0: oy + 30, y1: oy + 70, z0: 10, z1: 15 }} s={WOOD} mat="plank" />
+      {[12, 22, 32, 42, 52, 62, 72, 82, 92].map((x) => {
+        const a = Q(x, 30, 15);
+        const b = Q(x, 70, 15);
+        return <line key={x} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={WOOD.dark} strokeOpacity={0.45} strokeWidth={0.7} />;
+      })}
+      {posts(69)}
+      {rail(69)}
+    </g>
+  );
+}
+
+function IsoLilypad({ ox, oy }: { ox: number; oy: number }) {
+  const Q = decorAt(ox, oy);
+  const pad = (cx: number, cy: number, r: number, notch: number) => {
+    const n = 22;
+    const list: Array<[number, number]> = [Q(cx, cy, 0.5)];
+    for (let i = 0; i <= n; i++) {
+      const a = notch + 0.35 + (i / n) * (Math.PI * 2 - 0.7);
+      list.push(Q(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 0.5));
+    }
+    return pts(list);
+  };
+  const pads: Array<[number, number, number, number]> = [[38, 40, 16, 0.4], [66, 58, 12, 2.4], [40, 70, 9, 4.2]];
+  const lotus = Q(38, 40, 4);
+  return (
+    <g pointerEvents="none">
+      <polygon points={circleAt(Q, 50, 55, 40, 0.2, 24)} fill="none" stroke="#ffffff" strokeOpacity={0.25} strokeWidth={1} />
+      {pads.map(([x, y, r, notch], i) => (
+        <g key={i}>
+          <polygon points={pad(x, y + 1.5, r, notch)} fill="#1d5e3a" opacity={0.5} />
+          <polygon points={pad(x, y, r, notch)} fill={i === 1 ? '#3fa862' : '#36a05a'} stroke="#226b3e" strokeWidth={0.8} />
+          {[0.9, 1.9, 3.0, 4.1, 5.2].map((a) => {
+            const c = Q(x, y, 0.5);
+            const e = Q(x + Math.cos(a + notch) * r * 0.8, y + Math.sin(a + notch) * r * 0.8, 0.5);
+            return <line key={a} x1={c[0]} y1={c[1]} x2={e[0]} y2={e[1]} stroke="#7fd39a" strokeOpacity={0.6} strokeWidth={0.6} />;
+          })}
+        </g>
+      ))}
+      {/* a lotus on the big pad */}
+      {[-2, -1, 0, 1, 2].map((k) => (
+        <ellipse key={k} cx={lotus[0] + k * 2.6} cy={lotus[1] - 2 + Math.abs(k) * 0.8} rx={2.2} ry={4.2} fill={k % 2 ? '#f7a8c8' : '#fbc8de'} transform={`rotate(${k * 22} ${lotus[0] + k * 2.6} ${lotus[1] - 2})`} />
+      ))}
+      <circle cx={lotus[0]} cy={lotus[1] - 2.5} r={1.8} fill="#ffd76a" />
+    </g>
+  );
+}
+
+function IsoTrainingBars({ ox, oy, kind, color }: { ox: number; oy: number; kind: 'pullupbar' | 'dipbars'; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const metal = color ? themeFor(kind, color) : METAL;
+  const post = (x: number, y: number, h: number) => (
+    <g key={`${x}-${y}`}>
+      <IsoBox b={{ x0: ox + x - 6, x1: ox + x + 6, y0: oy + y - 6, y1: oy + y + 6, z0: 0, z1: 2.5 }} s={DARK_STONE} courses={false} />
+      <IsoBox b={{ x0: ox + x - 2.2, x1: ox + x + 2.2, y0: oy + y - 2.2, y1: oy + y + 2.2, z0: 2.5, z1: h }} s={metal} courses={false} />
+    </g>
+  );
+  if (kind === 'pullupbar') {
+    const t0 = Q(32, 51, 80);
+    return (
+      <g pointerEvents="none">
+        {post(22, 50, 84)}
+        <IsoBox b={{ x0: ox + 20, x1: ox + 80, y0: oy + 48.8, y1: oy + 51.2, z0: 80, z1: 82.4 }} s={METAL} courses={false} />
+        {post(78, 50, 84)}
+        {/* a towel hanging over the bar */}
+        <polygon points={pts([Q(30, 51.5, 80.5), Q(38, 51.5, 80.5), Q(38, 51.5, 60), Q(30, 51.5, 63)])} fill="#f4f1ea" stroke="#c9c2b5" strokeWidth={0.6} />
+        <polygon points={pts([Q(30, 51.5, 70), Q(38, 51.5, 70), Q(38, 51.5, 67), Q(30, 51.5, 67)])} fill={metal.base} />
+        <circle cx={t0[0]} cy={t0[1]} r={0.1} fill="none" />
+      </g>
+    );
+  }
+  const bucket = Q(80, 78, 0);
+  return (
+    <g pointerEvents="none">
+      {post(34, 26, 50)}
+      {post(66, 26, 50)}
+      <IsoBox b={{ x0: ox + 32.6, x1: ox + 35.4, y0: oy + 22, y1: oy + 78, z0: 48, z1: 51 }} s={METAL} courses={false} />
+      <IsoBox b={{ x0: ox + 64.6, x1: ox + 67.4, y0: oy + 22, y1: oy + 78, z0: 48, z1: 51 }} s={METAL} courses={false} />
+      {post(34, 74, 50)}
+      {post(66, 74, 50)}
+      {/* a chalk bucket */}
+      <ellipse cx={bucket[0]} cy={bucket[1]} rx={6} ry={3} fill="#9aa3ad" />
+      <rect x={bucket[0] - 6} y={bucket[1] - 9} width={12} height={9} fill="#c8cfd6" />
+      <ellipse cx={bucket[0]} cy={bucket[1] - 9} rx={6} ry={3} fill="#f4f6f8" />
+    </g>
+  );
+}
+
+export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden', 'arch', 'flowers', 'banner', 'windmill', 'bridge', 'lilypad', 'pullupbar', 'dipbars']);
 /** True for anything drawn as an isometric model (buildings, walls, gardens, trophies). */
 export function isIsoItem(itemId: string): boolean {
   return ISO_ITEMS.has(itemId) || itemId.startsWith('trophy:');
@@ -1401,6 +1677,21 @@ export function IsoItemArt({
         return <IsoWall ox={ox} oy={oy} style={item.style} />;
       case 'garden':
         return <IsoGarden ox={ox} oy={oy} style={item.style} color={item.color} />;
+      case 'arch':
+        return <IsoArch ox={ox} oy={oy} color={item.color} />;
+      case 'flowers':
+        return <IsoFlowers ox={ox} oy={oy} color={item.color} />;
+      case 'banner':
+        return <IsoBanner ox={ox} oy={oy} style={item.style} color={item.color} />;
+      case 'windmill':
+        return <IsoWindmill ox={ox} oy={oy} color={item.color} />;
+      case 'bridge':
+        return <IsoBridge ox={ox} oy={oy} />;
+      case 'lilypad':
+        return <IsoLilypad ox={ox} oy={oy} />;
+      case 'pullupbar':
+      case 'dipbars':
+        return <IsoTrainingBars ox={ox} oy={oy} kind={item.itemId} color={item.color} />;
       default:
         return null;
     }

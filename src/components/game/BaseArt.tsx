@@ -30,7 +30,14 @@ const DEFAULT_THEME: Record<string, PaletteId> = {
   lodge: 'amber',
   forge: 'magenta',
   spring: 'cyan',
-  yard: 'lime'
+  yard: 'lime',
+  // Decorations: natural defaults (players can still pick any colour).
+  arch: 'magenta',
+  flowers: 'magenta',
+  banner: 'red',
+  windmill: 'red',
+  pullupbar: 'cyan',
+  dipbars: 'cyan'
 };
 
 export function themeFor(itemId: string, color?: string): Shades {
