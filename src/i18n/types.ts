@@ -33,6 +33,9 @@ export interface MovesTranslations {
     fullBody: string;
   };
   buttonLabels: string[];
+  /** The finish button: one clear label (reps vs holds). */
+  finishReps: string;
+  finishHold: string;
   poseAiHints: Record<'pushups' | 'squats' | 'lunges', string>;
   /** Camera placement by view, for every other exercise. */
   poseAiViewHints: Record<'floor_side' | 'standing_side' | 'bar_front' | 'seated_side', string>;
@@ -255,7 +258,7 @@ export interface AppTranslations {
     repPromptQuestion: string;
     repPromptPlaceholder: string;
     repPromptError: string;
-    repPromptSubmit: string;
+    repPromptSubmit: (reps: number) => string;
     repPromptAria: string;
     saving: string;
     weightPrompt: {
@@ -286,6 +289,8 @@ export interface AppTranslations {
   };
   summary: {
     title: string;
+    /** "in 11s" next to the coins: how long the set took. */
+    inTime: (time: string) => string;
     receiptTitle: string;
     receiptTagline: string;
     item: string;

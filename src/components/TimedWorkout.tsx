@@ -1,3 +1,4 @@
+import { isRepLoggedCategory } from './moves';
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { motion } from 'framer-motion';
 import { Move } from './moves';
@@ -29,12 +30,8 @@ export function TimedWorkout({
 }: TimedWorkoutProps) {
   const { t } = useLanguage();
   const [internalSeconds, setInternalSeconds] = useState(0);
-  const [buttonLabel] = useState(
-    () =>
-      t.moves.buttonLabels[
-        Math.floor(Math.random() * t.moves.buttonLabels.length)
-      ]
-  );
+  // One clear label: the moment to tap is your last rep (or the end of a hold).
+  const buttonLabel = isRepLoggedCategory(move.categoryId) ? t.moves.finishReps : t.moves.finishHold;
   const seconds = externalSeconds ?? internalSeconds;
   const [ended, setEnded] = useState(false);
 

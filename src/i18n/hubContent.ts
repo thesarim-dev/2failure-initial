@@ -184,7 +184,7 @@ const en: HubCopy = {
     ],
     done: "Let's go"
   },
-  settingsLink: { title: 'Your plan', description: 'Days per week, your equipment and exercise levels.', open: 'Open' },
+  settingsLink: { title: 'Your plan', description: 'Days per week, your equipment and exercise levels.', open: 'Edit plan' },
   plan: {
     title: 'Your plan',
     days: 'Days per week',
@@ -322,7 +322,7 @@ const he: HubCopy = {
     tips: ['עשו 2 סטים ביום כדי לשמור על הלהבה.', 'הבא בתור בלשונית הבסיס מראה מה לבנות.', 'מטבעות מכל סט פותחים בניינים גדולים ועוד שטח.', 'הקישו על עריכת תוכנית במסך הבית כדי לבחור ימים וציוד.'],
     done: 'יאללה'
   },
-  settingsLink: { title: 'התוכנית שלך', description: 'ימים בשבוע, הציוד שלך ורמות התרגילים.', open: 'פתח' },
+  settingsLink: { title: 'התוכנית שלך', description: 'ימים בשבוע, הציוד שלך ורמות התרגילים.', open: 'עריכת תוכנית' },
   plan: {
     title: 'התוכנית שלך',
     days: 'ימים בשבוע',
@@ -460,7 +460,7 @@ const ar: HubCopy = {
     tips: ['أدِّ مجموعتين يومياً لتبقى شعلتك مشتعلة.', '«التالي» في تبويب القاعدة يريك ما تبنيه بعد ذلك.', 'العملات من كل مجموعة تفتح مباني أكبر وأرضاً أوسع.', 'اضغط «تعديل الخطة» في الشاشة الرئيسية لتختار الأيام والمعدات.'],
     done: 'هيا بنا'
   },
-  settingsLink: { title: 'خطتك', description: 'أيام الأسبوع ومعداتك ومستوى التمارين.', open: 'فتح' },
+  settingsLink: { title: 'خطتك', description: 'أيام الأسبوع ومعداتك ومستوى التمارين.', open: 'تعديل الخطة' },
   plan: {
     title: 'خطتك',
     days: 'أيام في الأسبوع',

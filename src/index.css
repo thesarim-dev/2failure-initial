@@ -7468,4 +7468,15 @@
       animation: none;
     }
   }
+
+  /* One capitalisation rule: buttons use sentence case ("Log 12 reps", "Back to plan").
+     ALL CAPS stays for big display titles only. */
+  .workout-finish-btn,
+  .summary-home-btn,
+  .workout-submit-btn,
+  .login-btn,
+  .settings-theme-toggle,
+  .settings-action-btn {
+    text-transform: none;
+  }
 }

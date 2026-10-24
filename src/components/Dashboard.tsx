@@ -265,7 +265,6 @@ export function Dashboard({
             </span>
           </span>
           <span className="act-title">{t.hub.trio.planTitle}</span>
-          <span className="act-chip">{todayChip}</span>
         </button>
       </section>
 

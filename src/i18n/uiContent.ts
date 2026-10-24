@@ -81,7 +81,7 @@ const en: UiContent = {
       loading: 'Restoring…'
     },
     restDay: {
-      button: 'Rest day',
+      button: 'Take a rest day',
       remaining: (count) => `(${count} left this week)`,
       active: 'Rest day — today\'s workouts moved to tomorrow. Stretch it out.',
       activeFree: 'Rest day. Recovery counts and your streak is safe. Stretch it out.'
@@ -132,19 +132,19 @@ const en: UiContent = {
   login: {
     switchToDay: 'switch to day mode',
     switchToNight: 'switch to night mode',
-    title: 'LOG IN',
+    title: 'Sign in',
     subtitle: 'Sign in with your email to track your progress.',
     email: 'Email',
     password: 'Password',
-    signIn: 'Sign In',
+    signIn: 'Sign in',
     signingIn: 'Signing in…',
-    signInGmail: 'Sign in through Gmail',
-    redirectingGmail: 'Redirecting to Gmail…',
-    signUp: 'Sign Up',
+    signInGmail: 'Continue with Google',
+    redirectingGmail: 'Opening Google…',
+    signUp: 'Create account',
     signingUp: 'Signing up…',
     errors: {
       signIn: 'Could not sign in.',
-      signInGmail: 'Could not sign in with Gmail.',
+      signInGmail: 'Couldn\'t sign in with Google. Check your connection and try again.',
       signUp: 'Could not sign up.',
       googleOAuth:
         'Google sign-in is misconfigured. In Supabase → Authentication → Providers → Google, re-enter the Client ID and Client Secret from Google Cloud Console (Web application OAuth client). Google redirect URI must be: https://jfceueuzwzznbyjazhuu.supabase.co/auth/v1/callback',
@@ -157,7 +157,7 @@ const en: UiContent = {
   },
   workout: {
     cancel: 'Cancel workout',
-    failingInProgress: 'workout in progress',
+    failingInProgress: 'Set in progress',
     hero: {
       coins: (n) => `+${n} coins`,
       startsAt: 'Coins start at 0:10',
@@ -211,7 +211,7 @@ const en: UiContent = {
     repPromptQuestion: 'How many reps did you hit this set?',
     repPromptPlaceholder: '0',
     repPromptError: 'Enter at least 1 rep.',
-    repPromptSubmit: 'log it',
+    repPromptSubmit: (reps) => (reps > 0 ? (reps === 1 ? 'Log 1 rep' : `Log ${reps} reps`) : 'Log reps'),
     repPromptAria: 'Reps completed',
     saving: 'Saving...',
     weightPrompt: {
@@ -241,7 +241,8 @@ const en: UiContent = {
     }
   },
   summary: {
-    title: 'WORKOUT DONE!',
+    title: 'Set logged!',
+    inTime: (time) => `in ${time}`,
     receiptTitle: 'Official Receipt',
     receiptTagline: '2failure — practice makes progress',
     item: 'item',
@@ -284,7 +285,7 @@ const en: UiContent = {
     status: 'status',
     statusCooked: 'done',
     emptyValue: '—',
-    backHome: 'back home',
+    backHome: 'Back to plan',
     compact: {
       coins: 'Coins',
       reps: 'Reps',
@@ -374,7 +375,7 @@ const he: UiContent = {
       loading: 'שוחזר…'
     },
     restDay: {
-      button: 'יום מנוחה',
+      button: 'קחו יום מנוחה',
       remaining: (count) => `(נותרו ${count} השבוע)`,
       active: 'יום מנוחה — האימונים של היום הועברו למחר. זמן למתיחות.',
       activeFree: 'יום מנוחה. גם התאוששות נחשבת, והרצף שלך מוגן. זמן למתיחות.'
@@ -429,15 +430,15 @@ const he: UiContent = {
     subtitle: 'התחבר עם האימייל שלך כדי לעקוב אחר ההתקדמות שלך.',
     email: 'אימייל',
     password: 'סיסמה',
-    signIn: 'התחבר',
+    signIn: 'התחברות',
     signingIn: 'מתחבר…',
-    signInGmail: 'התחבר דרך Gmail',
-    redirectingGmail: 'מפנה ל-Gmail…',
-    signUp: 'הירשם',
+    signInGmail: 'המשך עם Google',
+    redirectingGmail: 'פותחים את Google…',
+    signUp: 'יצירת חשבון',
     signingUp: 'נרשם…',
     errors: {
       signIn: 'לא ניתן להתחבר.',
-      signInGmail: 'לא ניתן להתחבר דרך Gmail.',
+      signInGmail: 'לא הצלחנו להתחבר עם Google. בדקו את החיבור ונסו שוב.',
       signUp: 'לא ניתן להירשם.',
       googleOAuth:
         'התחברות Google לא מוגדרת כראוי. ב-Supabase → Authentication → Providers → Google, הזן מחדש את Client ID ו-Client Secret מ-Google Cloud Console. כתובת ההפניה של Google חייבת להיות: https://jfceueuzwzznbyjazhuu.supabase.co/auth/v1/callback',
@@ -450,7 +451,7 @@ const he: UiContent = {
   },
   workout: {
     cancel: 'בטל אימון',
-    failingInProgress: 'אימון בתהליך',
+    failingInProgress: 'סט בתהליך',
     hero: {
       coins: (n) => `+${n} מטבעות`,
       startsAt: 'המטבעות מתחילים ב-0:10',
@@ -504,7 +505,7 @@ const he: UiContent = {
     repPromptQuestion: 'כמה חזרות עשית בסט הזה?',
     repPromptPlaceholder: '0',
     repPromptError: 'הזן לפחות חזרה אחת.',
-    repPromptSubmit: 'רשום',
+    repPromptSubmit: (reps) => (reps > 0 ? (reps === 1 ? 'רשמו חזרה אחת' : `רשמו ${reps} חזרות`) : 'רשמו חזרות'),
     repPromptAria: 'חזרות שהושלמו',
     saving: 'שומר...',
     weightPrompt: {
@@ -534,7 +535,8 @@ const he: UiContent = {
     }
   },
   summary: {
-    title: 'האימון הושלם!',
+    title: 'הסט נרשם!',
+    inTime: (time) => `תוך ${time}`,
     receiptTitle: 'קבלה רשמית',
     receiptTagline: '2failure — תרגול מביא להתקדמות',
     item: 'פריט',
@@ -577,7 +579,7 @@ const he: UiContent = {
     status: 'סטטוס',
     statusCooked: 'סיימת',
     emptyValue: '—',
-    backHome: 'חזרה הביתה',
+    backHome: 'חזרה לתוכנית',
     compact: {
       coins: 'מטבעות',
       reps: 'חזרות',
@@ -667,7 +669,7 @@ const ar: UiContent = {
       loading: 'جارٍ الاستعادة…'
     },
     restDay: {
-      button: 'يوم راحة',
+      button: 'خذ يوم راحة',
       remaining: (count) => `(متبقٍ ${count} هذا الأسبوع)`,
       active: 'يوم راحة — تم نقل تمارين اليوم إلى الغد. وقت التمدد.',
       activeFree: 'يوم راحة. التعافي يُحتسب وسلسلتك في أمان. وقت التمدد.'
@@ -724,13 +726,13 @@ const ar: UiContent = {
     password: 'كلمة المرور',
     signIn: 'تسجيل الدخول',
     signingIn: 'جارٍ تسجيل الدخول…',
-    signInGmail: 'تسجيل الدخول عبر Gmail',
-    redirectingGmail: 'جارٍ التوجيه إلى Gmail…',
+    signInGmail: 'المتابعة باستخدام Google',
+    redirectingGmail: 'جارٍ فتح Google…',
     signUp: 'إنشاء حساب',
     signingUp: 'جارٍ إنشاء الحساب…',
     errors: {
       signIn: 'تعذّر تسجيل الدخول.',
-      signInGmail: 'تعذّر تسجيل الدخول عبر Gmail.',
+      signInGmail: 'تعذّر تسجيل الدخول عبر Google. تحقق من الاتصال وحاول مجدداً.',
       signUp: 'تعذّر إنشاء الحساب.',
       googleOAuth:
         'تسجيل دخول Google غير مُعدّ بشكل صحيح. في Supabase → Authentication → Providers → Google، أعد إدخال Client ID وClient Secret من Google Cloud Console. يجب أن يكون رابط إعادة التوجيه: https://jfceueuzwzznbyjazhuu.supabase.co/auth/v1/callback',
@@ -743,7 +745,7 @@ const ar: UiContent = {
   },
   workout: {
     cancel: 'إلغاء التمرين',
-    failingInProgress: 'التمرين جارٍ',
+    failingInProgress: 'المجموعة جارية',
     hero: {
       coins: (n) => `+${n} عملة`,
       startsAt: 'العملات تبدأ عند 0:10',
@@ -797,7 +799,7 @@ const ar: UiContent = {
     repPromptQuestion: 'كم تكراراً أنجزت في هذه المجموعة؟',
     repPromptPlaceholder: '0',
     repPromptError: 'أدخل تكراراً واحداً على الأقل.',
-    repPromptSubmit: 'سجّل',
+    repPromptSubmit: (reps) => (reps <= 0 ? 'سجّل التكرارات' : reps === 1 ? 'سجّل تكراراً واحداً' : reps === 2 ? 'سجّل تكرارين' : reps <= 10 ? `سجّل ${reps} تكرارات` : `سجّل ${reps} تكراراً`),
     repPromptAria: 'التكرارات المكتملة',
     saving: 'جارٍ الحفظ...',
     weightPrompt: {
@@ -828,7 +830,8 @@ const ar: UiContent = {
     }
   },
   summary: {
-    title: 'اكتمل التمرين!',
+    title: 'تم تسجيل المجموعة!',
+    inTime: (time) => `خلال ${time}`,
     receiptTitle: 'إيصال رسمي',
     receiptTagline: '2failure — الممارسة تُحسّن',
     item: 'البند',
@@ -871,7 +874,7 @@ const ar: UiContent = {
     status: 'الحالة',
     statusCooked: 'انتهيت',
     emptyValue: '—',
-    backHome: 'العودة للرئيسية',
+    backHome: 'العودة إلى الخطة',
     compact: {
       coins: 'العملات',
       reps: 'التكرارات',

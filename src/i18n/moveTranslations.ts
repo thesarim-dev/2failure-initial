@@ -30,7 +30,7 @@ const en: MovesTranslations = {
     },
     pushups: {
       name: 'Pushups',
-      description: 'Work up to 100 total reps across sets on push day.'
+      description: 'Body in one straight line, chest to just above the floor, then press all the way up.'
     },
     'pike-pushups': {
       name: 'Pike Pushups',
@@ -271,6 +271,8 @@ const en: MovesTranslations = {
   muscleGroups: {
     fullBody: 'full body'
   },
+  finishReps: 'That\'s my last rep',
+  finishHold: 'Can\'t hold any longer',
   buttonLabels: [
     "I'M DONE",
     "CAN'T DO MORE",
@@ -321,7 +323,7 @@ const he: MovesTranslations = {
     },
     pushups: {
       name: 'שכיבות סמיכה',
-      description: 'השלם עד 100 חזרות סה״כ בכל הסטים ביום דחיפה.'
+      description: 'גוף בקו ישר אחד, חזה עד מעט מעל הרצפה, ואז דחפו עד הסוף למעלה.'
     },
     'pike-pushups': {
       name: 'שכיבות סמיכה פייק',
@@ -562,6 +564,8 @@ const he: MovesTranslations = {
   muscleGroups: {
     fullBody: 'גוף מלא'
   },
+  finishReps: 'זו החזרה האחרונה שלי',
+  finishHold: 'אי אפשר להחזיק יותר',
   buttonLabels: [
     'סיימתי',
     'לא יכול עוד',
@@ -613,7 +617,7 @@ const ar: MovesTranslations = {
     },
     pushups: {
       name: 'تمارين الضغط',
-      description: 'اجمع حتى 100 تكراراً إجمالياً عبر المجموعات في يوم الدفع.'
+      description: 'الجسم في خط مستقيم واحد، الصدر حتى فوق الأرض بقليل، ثم ادفع للأعلى بالكامل.'
     },
     'pike-pushups': {
       name: 'ضغط الرمح',
@@ -854,6 +858,8 @@ const ar: MovesTranslations = {
   muscleGroups: {
     fullBody: 'الجسم كاملاً'
   },
+  finishReps: 'هذا آخر تكرار لي',
+  finishHold: 'لا أستطيع الصمود أكثر',
   buttonLabels: [
     'انتهيت',
     'لا أستطيع المزيد',

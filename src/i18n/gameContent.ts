@@ -41,6 +41,8 @@ export type GameCopy = {
   refund: string;
   putAway: string;
   errors: Record<ActionError, string> & { unlockAt: (hq: number) => string };
+  /** Not enough materials: what's missing and roughly how many sets earn it. */
+  needMore: (amount: number, resource: string, sets: number, from: 'stone' | 'timber' | 'crystal') => string;
   trophyShelf: {
     title: string;
     intro: string;
@@ -280,19 +282,21 @@ const en: GameCopy = {
   remove: 'Remove',
   refund: 'Full refund',
   putAway: 'Put back on shelf',
+  needMore: (amount, resource, sets, from) =>
+    `You need ${amount} more ${resource.toLowerCase()}, about ${sets} ${{ stone: 'upper-body', timber: 'leg', crystal: 'core' }[from]} set${sets === 1 ? '' : 's'}.`,
   errors: {
-    locked: 'Locked',
+    locked: 'Not unlocked yet. Upgrade your HQ to unlock it.',
     unlockAt: (hq) => `Unlocks at HQ level ${hq}`,
     maxCount: 'Upgrade HQ to build more of these',
     builderBusy: 'Your builder is busy. Finish the current build first.',
-    cantAfford: 'Not enough materials yet',
-    blocked: "That tile isn't free",
+    cantAfford: 'Not enough materials yet. Finish a few sets to earn more.',
+    blocked: 'Something\'s already there. Pick a highlighted tile.',
     maxLevel: 'Max level',
     needsHq: 'Upgrade HQ first',
     notEarned: 'Not earned yet',
     alreadyPlaced: 'Already on your base',
     notRemovable: "Buildings can be moved but not removed",
-    needsWeeks: 'Needs more weeks on target',
+    needsWeeks: 'Hit your weekly target a few more weeks to unlock this.',
     noForge: 'Build a Forge first',
     noShield: 'No shields left',
     sameResource: 'Pick two different materials',
@@ -442,7 +446,7 @@ const en: GameCopy = {
     cyan: 'Cyan', lime: 'Lime', magenta: 'Magenta', amber: 'Amber', violet: 'Violet', red: 'Red', white: 'White'
   },
   builders: {
-    status: (busy, total) => `Builders: ${busy} of ${total} busy`,
+    status: (busy, total) => (busy >= total ? 'All builders busy' : total === 1 ? '1 builder free' : `${total - busy} of ${total} builders free`),
     chip: (free, total) => `Builders: ${free} of ${total} free`,
     needs: (builders) => (builders === 1 ? 'needs 1 builder' : `needs ${builders} builders`),
     jobs: 'In progress'
@@ -487,8 +491,8 @@ const en: GameCopy = {
   },
   terrainNames: { grass: 'Grass', meadow: 'Meadow', dirt: 'Dirt', path: 'Path', sand: 'Sand', plaza: 'Plaza', water: 'Water', snow: 'Snow' },
   decorGroups: { nature: 'Nature', farm: 'Farm', fun: 'Fun', comfort: 'Comfort', lights: 'Lights', training: 'Training', paths: 'Paths & walls', water: 'Water' },
-  sound: { title: 'Sounds', description: 'Soft chimes and light vibrations for taps and wins.', on: 'sounds on', off: 'sounds off' },
-  ambient: { title: 'Ambient sounds', description: 'Birdsong, a breeze, water and crackling fires on your base.', on: 'ambient on', off: 'ambient off' },
+  sound: { title: 'Sounds', description: 'Soft chimes and light vibrations for taps and wins.', on: 'On', off: 'Off' },
+  ambient: { title: 'Ambient sounds', description: 'Birdsong, a breeze, water and crackling fires on your base.', on: 'On', off: 'Off' },
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
 
@@ -500,7 +504,7 @@ const en: GameCopy = {
   },
   intro: {
     title: 'Welcome to your base',
-    body: 'Every set you finish earns materials: upper-body sets earn stone, lower-body sets timber, and core sets crystal. Bigger sets earn more. Spend them on buildings, which finish as you train, and on decorations.',
+    body: 'Every set earns materials: upper body → stone, legs → timber, core → crystal. Spend them on buildings that finish while you train.',
     rule: "Trophies can't be bought. You earn them by training, then show them off here.",
     ok: "Let's build"
   }
@@ -599,19 +603,21 @@ const he: GameCopy = {
   remove: 'הסרה',
   refund: 'החזר מלא',
   putAway: 'החזר למדף',
+  needMore: (amount, resource, sets, from) =>
+    `חסרים ${amount} ${resource}, בערך ${sets === 1 ? 'סט אחד' : `${sets} סטים`} של ${{ stone: 'פלג גוף עליון', timber: 'רגליים', crystal: 'ליבה' }[from]}.`,
   errors: {
-    locked: 'נעול',
+    locked: 'עוד לא נפתח. שדרגו את המפקדה כדי לפתוח.',
     unlockAt: (hq) => `נפתח במפקדה שלב ${hq}`,
     maxCount: 'שדרג את המפקדה כדי לבנות עוד מאלה',
     builderBusy: 'הבנאי עסוק. סיים קודם את הבנייה הנוכחית.',
-    cantAfford: 'עדיין אין מספיק חומרים',
-    blocked: 'המשבצת הזו תפוסה',
+    cantAfford: 'אין עדיין מספיק חומרים. סיימו עוד כמה סטים כדי להרוויח.',
+    blocked: 'כבר יש כאן משהו. בחרו משבצת מוארת.',
     maxLevel: 'שלב מקסימלי',
     needsHq: 'שדרג קודם את המפקדה',
     notEarned: 'עדיין לא הושג',
     alreadyPlaced: 'כבר נמצא בבסיס שלך',
     notRemovable: 'אפשר להזיז מבנים אבל לא להסיר אותם',
-    needsWeeks: 'נדרשים עוד שבועות ביעד',
+    needsWeeks: 'עמדו ביעד השבועי עוד כמה שבועות כדי לפתוח את זה.',
     noForge: 'בנה קודם נפחייה',
     noShield: 'לא נשארו מגינים',
     sameResource: 'בחר שני חומרים שונים',
@@ -761,7 +767,7 @@ const he: GameCopy = {
     cyan: 'טורקיז', lime: 'ליים', magenta: 'מג׳נטה', amber: 'ענבר', violet: 'סגול', red: 'אדום', white: 'לבן'
   },
   builders: {
-    status: (busy, total) => `בנאים: ${busy} מתוך ${total} עסוקים`,
+    status: (busy, total) => (busy >= total ? 'כל הבנאים עסוקים' : total === 1 ? 'בנאי אחד פנוי' : `${total - busy} מתוך ${total} בנאים פנויים`),
     chip: (free, total) => `בנאים: ${free} מתוך ${total} פנויים`,
     needs: (builders) => (builders === 1 ? 'דורש בנאי אחד' : `דורש ${builders} בנאים`),
     jobs: 'בתהליך'
@@ -806,8 +812,8 @@ const he: GameCopy = {
   },
   terrainNames: { grass: 'דשא', meadow: 'אחו', dirt: 'עפר', path: 'שביל', sand: 'חול', plaza: 'רחבה', water: 'מים', snow: 'שלג' },
   decorGroups: { nature: 'טבע', farm: 'חווה', fun: 'כיף', comfort: 'נוחות', lights: 'תאורה', training: 'אימון', paths: 'שבילים וחומות', water: 'מים' },
-  sound: { title: 'צלילים', description: 'צלצולים רכים ורטט קל להקשות ולהצלחות.', on: 'צלילים פועלים', off: 'צלילים כבויים' },
-  ambient: { title: 'צלילי אווירה', description: 'ציוץ ציפורים, רוח, מים ואש מתפצפצת בבסיס שלכם.', on: 'אווירה פועלת', off: 'אווירה כבויה' },
+  sound: { title: 'צלילים', description: 'צלצולים רכים ורטט קל להקשות ולהצלחות.', on: 'פועל', off: 'כבוי' },
+  ambient: { title: 'צלילי אווירה', description: 'ציוץ ציפורים, רוח, מים ואש מתפצפצת בבסיס שלכם.', on: 'פועל', off: 'כבוי' },
   zoomIn: 'הגדלה',
   zoomOut: 'הקטנה',
 
@@ -819,7 +825,7 @@ const he: GameCopy = {
   },
   intro: {
     title: 'ברוך הבא לבסיס שלך',
-    body: 'כל סט שאתה מסיים מזכה בחומרים: פלג גוף עליון נותן אבן, פלג גוף תחתון עץ, וליבה קריסטל. סטים גדולים יותר מזכים ביותר. השתמש בהם כדי לבנות מבנים, שנגמרים ככל שאתה מתאמן, ולקנות קישוטים.',
+    body: 'כל סט מרוויח חומרים: פלג גוף עליון ← אבן, רגליים ← עץ, ליבה ← קריסטל. הוציאו אותם על מבנים שנבנים בזמן שאתם מתאמנים.',
     rule: 'אי אפשר לקנות גביעים. משיגים אותם באימונים, ומציגים אותם כאן.',
     ok: 'בוא נבנה'
   }
@@ -918,19 +924,21 @@ const ar: GameCopy = {
   remove: 'إزالة',
   refund: 'استرداد كامل',
   putAway: 'أعده إلى الرف',
+  needMore: (amount, resource, sets, from) =>
+    `تحتاج إلى ${amount} وحدة إضافية من ${resource}، أي نحو ${sets === 1 ? 'مجموعة واحدة' : `${sets} مجموعات`} ${{ stone: 'للجزء العلوي', timber: 'للساقين', crystal: 'للجذع' }[from]}.`,
   errors: {
-    locked: 'مقفل',
+    locked: 'لم يُفتح بعد. طوّر المقر لفتحه.',
     unlockAt: (hq) => `يُفتح عند المقر مستوى ${hq}`,
     maxCount: 'طوّر المقر لتبني المزيد من هذا',
     builderBusy: 'البنّاء مشغول. أنهِ البناء الحالي أولاً.',
-    cantAfford: 'لا توجد مواد كافية بعد',
-    blocked: 'هذا المربع ليس فارغاً',
+    cantAfford: 'لا تكفي المواد بعد. أنهِ بضع مجموعات لتكسب المزيد.',
+    blocked: 'يوجد شيء هنا بالفعل. اختر مربعاً مضيئاً.',
     maxLevel: 'أعلى مستوى',
     needsHq: 'طوّر المقر أولاً',
     notEarned: 'لم تحصل عليه بعد',
     alreadyPlaced: 'موجود في قاعدتك بالفعل',
     notRemovable: 'يمكن نقل المباني لكن لا يمكن إزالتها',
-    needsWeeks: 'تحتاج إلى أسابيع أكثر على الهدف',
+    needsWeeks: 'حقق هدفك الأسبوعي بضعة أسابيع أخرى لفتح هذا.',
     noForge: 'ابنِ ورشة حدادة أولاً',
     noShield: 'لم يتبقَّ أي درع',
     sameResource: 'اختر مادتين مختلفتين',
@@ -1080,7 +1088,7 @@ const ar: GameCopy = {
     cyan: 'سماوي', lime: 'ليموني', magenta: 'أرجواني', amber: 'كهرماني', violet: 'بنفسجي', red: 'أحمر', white: 'أبيض'
   },
   builders: {
-    status: (busy, total) => `البنّاؤون: ${busy} من ${total} مشغولون`,
+    status: (busy, total) => (busy >= total ? 'كل البنّائين مشغولون' : total === 1 ? 'بنّاء واحد متاح' : `${total - busy} من ${total} بنّائين متاحون`),
     chip: (free, total) => `البنّاؤون: ${free} من ${total} متاحون`,
     needs: (builders) => (builders === 1 ? 'يحتاج بنّاءً واحداً' : `يحتاج ${builders} بنّائين`),
     jobs: 'قيد التنفيذ'
@@ -1125,8 +1133,8 @@ const ar: GameCopy = {
   },
   terrainNames: { grass: 'عشب', meadow: 'مرج', dirt: 'تراب', path: 'ممر', sand: 'رمل', plaza: 'ساحة', water: 'ماء', snow: 'ثلج' },
   decorGroups: { nature: 'طبيعة', farm: 'مزرعة', fun: 'مرح', comfort: 'راحة', lights: 'إضاءة', training: 'تدريب', paths: 'ممرات وأسوار', water: 'ماء' },
-  sound: { title: 'الأصوات', description: 'نغمات ناعمة واهتزاز خفيف للنقرات والإنجازات.', on: 'الأصوات مفعّلة', off: 'الأصوات متوقفة' },
-  ambient: { title: 'أصوات الأجواء', description: 'زقزقة العصافير ونسيم ومياه ونار تطقطق في قاعدتك.', on: 'الأجواء مفعّلة', off: 'الأجواء متوقفة' },
+  sound: { title: 'الأصوات', description: 'نغمات ناعمة واهتزاز خفيف للنقرات والإنجازات.', on: 'مفعّل', off: 'متوقف' },
+  ambient: { title: 'أصوات الأجواء', description: 'زقزقة العصافير ونسيم ومياه ونار تطقطق في قاعدتك.', on: 'مفعّل', off: 'متوقف' },
   zoomIn: 'تكبير',
   zoomOut: 'تصغير',
 
@@ -1138,7 +1146,7 @@ const ar: GameCopy = {
   },
   intro: {
     title: 'مرحباً بك في قاعدتك',
-    body: 'كل مجموعة تنهيها تمنحك مواد: الجزء العلوي يمنح حجراً، والجزء السفلي خشباً، والجذع كريستالاً. المجموعات الأكبر تمنح أكثر. استخدمها لبناء مبانٍ تكتمل كلما تدربت، ولشراء الزينة.',
+    body: 'كل مجموعة تكسب مواد: الجزء العلوي ← حجر، الساقان ← خشب، الجذع ← كريستال. أنفقها على مبانٍ تكتمل بينما تتدرب.',
     rule: 'لا يمكن شراء الكؤوس. تحصل عليها بالتدريب، ثم تعرضها هنا.',
     ok: 'لنبدأ البناء'
   }

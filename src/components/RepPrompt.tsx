@@ -75,7 +75,7 @@ export function RepPrompt({ move, submitting = false, onSubmit }: RepPromptProps
             type="submit"
             disabled={submitting}
             className={`${WORKOUT_FINISH_BTN} flex items-center justify-center gap-2 normal-case`}>
-            <span>{submitting ? t.workout.saving : t.workout.repPromptSubmit}</span>
+            <span>{submitting ? t.workout.saving : t.workout.repPromptSubmit(Math.max(0, parseInt(value, 10) || 0))}</span>
             <ArrowRight size={24} strokeWidth={2.5} />
           </button>
         </motion.form>

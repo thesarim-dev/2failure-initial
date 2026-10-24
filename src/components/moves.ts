@@ -81,7 +81,7 @@ export const UPPER_STORE_CATEGORY: MoveCategory = {
     {
       id: 'pushups',
       name: 'Pushups',
-      description: 'Work up to 100 total reps across your sets on push day.',
+      description: 'Body in one straight line, chest to just above the floor, then press all the way up.',
       price: 0,
       tier: 'BASE',
       pattern: 'push',

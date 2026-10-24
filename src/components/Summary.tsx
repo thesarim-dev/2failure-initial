@@ -296,7 +296,7 @@ export function Summary({
             transition={{ ...POP, delay: 0.2 }}>
             <span className="summary-tile-label">{t.summary.compact.coins}</span>
             <span className={`summary-tile-value tabular-nums ${SUMMARY_ACCENT_TEXT[slot]}`}>+{coinsShown}</span>
-            <span className="summary-tile-sub tabular-nums">{formatTime(duration)}</span>
+            <span className="summary-tile-sub tabular-nums">{t.summary.inTime(formatTime(duration))}</span>
           </motion.div>
           <motion.div
             className={`summary-tile ${isNewRecord ? 'is-record' : ''}`}

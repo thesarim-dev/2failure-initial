@@ -79,13 +79,13 @@ const en: SettingsContent = {
     }
   },
   appearance: {
-    title: 'appearance',
-    nightOn: 'night mode on',
-    dayOn: 'day mode on',
+    title: 'Dark mode',
+    nightOn: 'Easier on the eyes at night.',
+    dayOn: 'Easier on the eyes at night.',
     switchToDay: 'switch to day mode',
     switchToNight: 'switch to night mode',
-    switchToDayButton: 'day mode',
-    switchToNightButton: 'night mode'
+    switchToDayButton: 'On',
+    switchToNightButton: 'Off'
   },
   language: {
     title: 'language',
@@ -247,13 +247,13 @@ const he: SettingsContent = {
     }
   },
   appearance: {
-    title: 'מראה',
-    nightOn: 'מצב לילה פעיל',
-    dayOn: 'מצב יום פעיל',
+    title: 'מצב כהה',
+    nightOn: 'נוח יותר לעיניים בלילה.',
+    dayOn: 'נוח יותר לעיניים בלילה.',
     switchToDay: 'עבור למצב יום',
     switchToNight: 'עבור למצב לילה',
-    switchToDayButton: 'מצב יום',
-    switchToNightButton: 'מצב לילה'
+    switchToDayButton: 'פועל',
+    switchToNightButton: 'כבוי'
   },
   language: {
     title: 'שפה',
@@ -414,13 +414,13 @@ const ar: SettingsContent = {
     }
   },
   appearance: {
-    title: 'المظهر',
-    nightOn: 'الوضع الليلي مفعّل',
-    dayOn: 'الوضع النهاري مفعّل',
+    title: 'الوضع الداكن',
+    nightOn: 'أريح للعينين ليلاً.',
+    dayOn: 'أريح للعينين ليلاً.',
     switchToDay: 'التبديل إلى الوضع النهاري',
     switchToNight: 'التبديل إلى الوضع الليلي',
-    switchToDayButton: 'نهار',
-    switchToNightButton: 'ليل'
+    switchToDayButton: 'مفعّل',
+    switchToNightButton: 'متوقف'
   },
   language: {
     title: 'اللغة',

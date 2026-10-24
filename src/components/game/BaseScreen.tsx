@@ -1,3 +1,4 @@
+import { MATERIAL_PER_SET } from '../../game/goals';
 import { itemSize } from '../../game/engine';
 import { startAmbient, stopAmbient } from '../../lib/ambient';
 import { createPortal } from 'react-dom';
@@ -422,6 +423,16 @@ export function BaseScreen({
       return `${g.baseLevel.level(def.unlockBase)} · ${g.baseLevel.titles[BASE_LEVEL_TITLES[def.unlockBase - 1]]}`;
     }
     if (error === 'blocked' && def?.kind === 'decor' && def.onWater) return g.errors.water;
+    // Not enough materials: name the biggest shortfall and how many sets earn it.
+    if (error === 'cantAfford' && def) {
+      const cost = ('levels' in def ? def.levels[0]?.cost : (def as { cost?: Cost }).cost) ?? {};
+      let worst: { id: ResourceId; missing: number } | null = null;
+      for (const id of RESOURCE_IDS) {
+        const missing = (cost[id] ?? 0) - (state.resources[id] ?? 0);
+        if (missing > 0 && (!worst || missing > worst.missing)) worst = { id, missing };
+      }
+      if (worst) return g.needMore(worst.missing, g.resources[worst.id], Math.ceil(worst.missing / MATERIAL_PER_SET), worst.id);
+    }
     return g.errors[error];
   };
 
