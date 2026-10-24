@@ -207,3 +207,40 @@ export const TEMPLATE_FOR_DAYS: Record<3 | 4 | 5, 'ppl3' | 'balanced4' | 'classi
   5: 'classic5'
 };
 export const DAYS_FOR_TEMPLATE: Record<string, 3 | 4 | 5> = { ppl3: 3, balanced4: 4, classic5: 5 };
+
+/**
+ * Today's completed sets per slot, so progress belongs to the slot, not the
+ * exercise: do 1 set of pushups, switch the chest slot to backpack pushups,
+ * and the slot still shows 1 of 3.
+ *
+ * Sets are attributed once each, never beyond a slot's target, in this order:
+ *  1. hints: which slot a set was logged for (recorded on this device),
+ *  2. the slot's current exercise,
+ *  3. any other exercise on the slot's ladder (what it was before a switch).
+ */
+export function slotProgress(
+  planned: PlannedExercise[],
+  counts: Record<string, number>,
+  hints: Record<string, Record<string, number>> = {}
+): Record<string, number> {
+  const left: Record<string, number> = { ...counts };
+  const done: Record<string, number> = {};
+  const target: Record<string, number> = {};
+  for (const p of planned) {
+    done[p.slot.key] = 0;
+    target[p.slot.key] = p.slot.sets;
+  }
+  const give = (slotKey: string, exerciseId: string, max: number) => {
+    if (!(slotKey in done)) return;
+    const take = Math.min(max, left[exerciseId] ?? 0, target[slotKey] - done[slotKey]);
+    if (take <= 0) return;
+    done[slotKey] += take;
+    left[exerciseId] -= take;
+  };
+  for (const [exerciseId, bySlot] of Object.entries(hints)) {
+    for (const [slotKey, n] of Object.entries(bySlot)) give(slotKey, exerciseId, n);
+  }
+  for (const p of planned) give(p.slot.key, p.exerciseId, Infinity);
+  for (const p of planned) for (const id of p.slot.ladder) if (id !== p.exerciseId) give(p.slot.key, id, Infinity);
+  return done;
+}

@@ -44,6 +44,8 @@ interface DashboardProps {
   equippedCore: string[];
   equippedRecovery: string[];
   setsCompleted: Record<string, number>;
+  /** Today's completed sets by plan slot, keyed by the slot's current exercise. */
+  slotDone?: Record<string, number> | null;
   dailySetGoal: DailySetGoal;
   programSetsToFailure: Record<string, number>;
   rotatingProgramEnabled: boolean;
@@ -87,6 +89,7 @@ export function Dashboard({
   equippedCore,
   equippedRecovery,
   setsCompleted,
+  slotDone,
   dailySetGoal,
   programSetsToFailure,
   rotatingProgramEnabled,
@@ -318,7 +321,8 @@ export function Dashboard({
 
         <div className="flex flex-col gap-4">
           {activeMoves.map((move, i) => {
-            const completed = setsCompleted[move.categoryId] ?? 0;
+            // Progress belongs to the plan slot: switching exercises keeps it.
+            const completed = slotDone?.[move.categoryId] ?? setsCompleted[move.categoryId] ?? 0;
             const programGoal = programSetsToFailure[move.categoryId];
             const isProgramMode =
               rotatingProgramEnabled && programGoal !== undefined;

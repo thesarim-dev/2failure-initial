@@ -61,6 +61,8 @@ interface SummaryProps {
   setNumber?: number;
   totalSets?: number;
   setsRemaining?: number;
+  /** This set finished today's whole plan. */
+  workoutDone?: boolean;
   /** What this set earned for the base game. */
   baseReward?: SetReward | null;
   onSeeBase?: () => void;
@@ -75,6 +77,7 @@ export function Summary({
   setNumber,
   totalSets,
   setsRemaining = 0,
+  workoutDone = false,
   baseReward,
   onSeeBase,
   onHome,
@@ -173,8 +176,10 @@ export function Summary({
     return t.summary.progression[kind](weightLabel);
   }, [setResult, t.summary.progression, weightUnit]);
 
-  const headline =
-    isMidExercise && setNumber && totalSets
+  // The last set of today's whole plan gets "Workout done!".
+  const headline = workoutDone
+    ? t.summary.workoutDone
+    : isMidExercise && setNumber && totalSets
       ? t.summary.setLogged(setNumber, totalSets)
       : t.summary.title;
 

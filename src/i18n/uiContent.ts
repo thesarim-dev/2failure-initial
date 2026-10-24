@@ -243,6 +243,7 @@ const en: UiContent = {
   summary: {
     title: 'Set logged!',
     inTime: (time) => `in ${time}`,
+    workoutDone: 'Workout done!',
     receiptTitle: 'Official Receipt',
     receiptTagline: '2failure — practice makes progress',
     item: 'item',
@@ -537,6 +538,7 @@ const he: UiContent = {
   summary: {
     title: 'הסט נרשם!',
     inTime: (time) => `תוך ${time}`,
+    workoutDone: 'האימון הושלם!',
     receiptTitle: 'קבלה רשמית',
     receiptTagline: '2failure — תרגול מביא להתקדמות',
     item: 'פריט',
@@ -832,6 +834,7 @@ const ar: UiContent = {
   summary: {
     title: 'تم تسجيل المجموعة!',
     inTime: (time) => `خلال ${time}`,
+    workoutDone: 'اكتمل التمرين!',
     receiptTitle: 'إيصال رسمي',
     receiptTagline: '2failure — الممارسة تُحسّن',
     item: 'البند',

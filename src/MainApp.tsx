@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useScreenInit } from './useScreenInit';
 import { useLanguage } from './context/LanguageContext';
@@ -24,7 +24,8 @@ import { usePushupDailyReps } from './hooks/usePushupDailyReps';
 import { useRotatingProgram } from './hooks/useRotatingProgram';
 import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { localizeVariant } from './i18n/localize';
-import { DAYS_FOR_TEMPLATE, TEMPLATE_FOR_DAYS, lineupFromPlan, planForPhase } from './lib/plan';
+import { DAYS_FOR_TEMPLATE, TEMPLATE_FOR_DAYS, lineupFromPlan, planForPhase, slotProgress } from './lib/plan';
+import { addSlotHint, readSlotHints } from './lib/slotHints';
 import { usePlan } from './hooks/usePlan';
 import { PlanScreen } from './components/PlanScreen';
 import { calculateCoinsEarned } from './lib/coinRewards';
@@ -200,6 +201,24 @@ export function MainApp() {
     equippedCore
   ]);
 
+  // Today's slots (when following the plan), and each slot's completed sets:
+  // progress belongs to the slot, so switching an exercise keeps it.
+  const plannedToday = useMemo(
+    () =>
+      rotatingProgramEnabled && rotatingProgramPhase && rotatingProgramPhase !== 'recovery'
+        ? planForPhase(rotatingProgramPhase, plan.gear, plan.levels)
+        : null,
+    [rotatingProgramEnabled, rotatingProgramPhase, plan.gear, plan.levels]
+  );
+  const [slotHintsVersion, setSlotHintsVersion] = useState(0);
+  const slotDone = useMemo(() => {
+    if (!plannedToday) return null;
+    const bySlot = slotProgress(plannedToday, setsCompleted, readSlotHints(user?.id));
+    return Object.fromEntries(plannedToday.map((p) => [p.exerciseId, bySlot[p.slot.key] ?? 0])) as Record<string, number>;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plannedToday, setsCompleted, user?.id, slotHintsVersion]);
+  const doneToday = useCallback((id: string) => slotDone?.[id] ?? setsCompleted[id] ?? 0, [slotDone, setsCompleted]);
+
   // Today's Plan: the exercises and set targets the Train tab shows right now,
   // from the program day or the equipped lineup. The base game reads only this.
   const todayPlan = useMemo<TodayPlan | null>(() => {
@@ -230,7 +249,7 @@ export function MainApp() {
             id,
             pattern: patternForMove(move),
             target: totalSets,
-            done: setsCompleted[id] ?? 0,
+            done: doneToday(id),
             repCeiling: isRepLoggedCategory(id) ? variant?.repCeiling : undefined
           }
         ];
@@ -243,7 +262,7 @@ export function MainApp() {
     weeklyTarget,
     dailySetGoal,
     rotatingProgramEnabled,
-    setsCompleted
+    doneToday
   ]);
 
   // The base game: every finished set earns materials for it.
@@ -266,6 +285,7 @@ export function MainApp() {
     setsRemaining: number;
   } | null>(null);
   const [weightSaveError, setWeightSaveError] = useState<string | null>(null);
+  const [workoutDone, setWorkoutDone] = useState(false);
   const finishingRef = useRef(false);
   const [isFinishing, setIsFinishing] = useState(false);
 
@@ -283,7 +303,7 @@ export function MainApp() {
     setAppState('WORKOUT');
   };
   const getWeightedSetContext = (categoryId: string) => {
-    const completed = setsCompleted[categoryId] ?? 0;
+    const completed = doneToday(categoryId);
     const setNumber = completed + 1;
     const { totalSets, rirKey } = resolveSetTargets(
       categoryId,
@@ -317,6 +337,19 @@ export function MainApp() {
     if (categoryId === 'pushups' && repsLogged && repsLogged > 0) {
       addPushupReps(repsLogged);
     }
+    // Remember which slot this set was for (keeps progress through exercise switches).
+    const slotForSet = plannedToday?.find((p) => p.exerciseId === categoryId)?.slot.key;
+    if (slotForSet) {
+      addSlotHint(user?.id, categoryId, slotForSet);
+      setSlotHintsVersion((v) => v + 1);
+    }
+    // Was this the last set of today's whole plan? Then the receipt says "Workout done!".
+    setWorkoutDone(
+      !!todayPlan &&
+        !todayPlan.isRestDay &&
+        todayPlan.exercises.length > 0 &&
+        todayPlan.exercises.every((e) => (e.id === categoryId ? e.done + 1 : e.done) >= e.target)
+    );
     void (async () => {
       const totalSetsToday = await incrementSet(categoryId);
       if (
@@ -603,6 +636,7 @@ export function MainApp() {
         equippedCore={lineupForToday.core}
         equippedRecovery={lineupForToday.recovery}
         setsCompleted={setsCompleted}
+        slotDone={slotDone}
         dailySetGoal={dailySetGoal}
         programSetsToFailure={lineupForToday.setsToFailure}
         rotatingProgramEnabled={rotatingProgramEnabled}
@@ -698,6 +732,7 @@ export function MainApp() {
         setNumber={summarySetContext?.setNumber}
         totalSets={summarySetContext?.totalSets}
         setsRemaining={summarySetContext?.setsRemaining ?? 0}
+        workoutDone={workoutDone}
         baseReward={baseGame.lastReward}
         harder={harderForCurrentMove}
         onSeeBase={handleSeeBase}

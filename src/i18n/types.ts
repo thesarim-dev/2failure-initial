@@ -291,6 +291,8 @@ export interface AppTranslations {
     title: string;
     /** "in 11s" next to the coins: how long the set took. */
     inTime: (time: string) => string;
+    /** After the last set of today's plan. */
+    workoutDone: string;
     receiptTitle: string;
     receiptTagline: string;
     item: string;
