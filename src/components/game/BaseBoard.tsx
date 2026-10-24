@@ -128,20 +128,6 @@ export function project([x, y]: [number, number]): [number, number] {
 }
 
 
-type Baked = {
-  url: string;
-  rect: { x: number; y: number; w: number; h: number };
-  terrain: Record<string, string>;
-  w: number;
-  h: number;
-  /** The ground state this image shows (terrain, land, building footprints). */
-  key: string;
-  /** The full-resolution (zoom-ready) bake, not the quick first pass. */
-  sharp: boolean;
-};
-/** The last bake per board, kept across visits so returning to the Base is instant. */
-const bakeCache = new Map<string, Baked>();
-
 /** What the map last showed (module-level, so it survives leaving the Base tab). */
 const lastSeen: { uids: Set<string> | null; levels: Map<string, number> } = { uids: null, levels: new Map() };
 
@@ -805,17 +791,7 @@ export function BaseBoard({
   // The baked image remembers which terrain it captured: tiles painted since
   // then are drawn live on top of it (a handful), instead of switching the whole
   // ground back to ~5,000 live shapes while painting.
-  // Start from the cached bake if nothing changed since the last visit: instant textures.
-  const [baked, setBakedState] = useState<Baked | null>(() => {
-    const hit = bakeCache.get(svgId ?? 'board');
-    return hit && hit.key === bakeKey && hit.rect.w === bakeRect.w && hit.rect.h === bakeRect.h ? { ...hit, rect: bakeRect } : null;
-  });
-  const setBaked = (next: Baked) => {
-    setBakedState(next);
-    const prev = bakeCache.get(svgId ?? 'board');
-    if (prev && prev.url !== next.url && prev.url.startsWith('blob:')) window.setTimeout(() => URL.revokeObjectURL(prev.url), 2000);
-    bakeCache.set(svgId ?? 'board', next);
-  };
+  const [baked, setBaked] = useState<{ url: string; rect: typeof bakeRect; terrain: Record<string, string>; w: number; h: number } | null>(null);
   const [bakeFailed, setBakeFailed] = useState(false);
   const terrainRef = useRef(state.terrain ?? {});
   terrainRef.current = state.terrain ?? {};
@@ -823,40 +799,25 @@ export function BaseBoard({
   // you finish painting (restoring perfectly blended edges).
   useEffect(() => {
     if (bakeFailed || painting) return;
-    // Already showing an up-to-date bake (e.g. from the cache): nothing to do.
-    if (baked && baked.key === bakeKey && baked.rect === bakeRect && baked.sharp) return;
     let cancelled = false;
-    const cssW = svgRef.current?.clientWidth || 400;
-    const dpr = Math.min(3, window.devicePixelRatio || 1);
-    const sharpPx = (bakeRect.w / viewW) * cssW * dpr * 2.5;
-    const run = (px: number, sharp: boolean) => {
+    const timer = window.setTimeout(() => {
+      const cssW = svgRef.current?.clientWidth || 400;
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      const px = (bakeRect.w / viewW) * cssW * dpr * 2.5;
       const terrain = { ...terrainRef.current };
-      const key = bakeKey;
       const { w, h } = bakeSize(bakeRect, px);
-      return bakeGround(staticRef.current, bakeRect, px).then((url) => {
-        if (!cancelled) setBaked({ url, rect: bakeRect, terrain, w, h, key, sharp });
-      });
-    };
-    // Two passes: a quick screen-sized bake so textures appear fast, then the
-    // sharp zoom-ready one once the screen is idle.
-    const needQuick = !baked || baked.rect !== bakeRect;
-    let sharpTimer = 0;
-    const quickTimer = window.setTimeout(() => {
-      (needQuick ? run(Math.min(sharpPx, cssW * Math.min(dpr, 2)), false) : Promise.resolve())
-        .then(() => {
+      bakeGround(staticRef.current, bakeRect, px)
+        .then((url) => {
           if (cancelled) return;
-          sharpTimer = window.setTimeout(() => {
-            run(sharpPx, true).catch(() => undefined);
-          }, needQuick ? 700 : 0);
+          setBaked({ url, rect: bakeRect, terrain, w, h });
         })
         .catch(() => {
           if (!cancelled) setBakeFailed(true);
         });
-    }, 30);
+    }, 60);
     return () => {
       cancelled = true;
-      window.clearTimeout(quickTimer);
-      window.clearTimeout(sharpTimer);
+      window.clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bakeKey, bakeFailed, bakeRect, painting]);
@@ -884,8 +845,7 @@ export function BaseBoard({
       );
       bakePatch(baked.url, layer, baked.rect, baked.w, baked.h)
         .then((url) => {
-          // Not 'sharp': edges between grounds get re-blended by a full bake on Done.
-          if (!cancelled) setBaked({ ...baked, url, terrain, key: bakeKey, sharp: false });
+          if (!cancelled) setBaked({ ...baked, url, terrain });
         })
         .catch(() => undefined);
     }, 450);

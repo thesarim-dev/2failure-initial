@@ -68,40 +68,9 @@ export async function bakeGround(node: ReactNode, rect: BakeRect, pxW: number): 
  * PNG-encode off the main thread (toBlob is asynchronous), then read it back
  * as a data: URL (blob: URLs are blocked by some hosts' content policies).
  */
-/**
- * Blob URLs avoid a slow base64 round trip, but some hosts' content policies
- * block them. Probed once: if a blob image can't load, use data: URLs.
- */
-let blobUrlsWork: Promise<boolean> | null = null;
-function canUseBlobUrls(): Promise<boolean> {
-  if (!blobUrlsWork) {
-    blobUrlsWork = new Promise((resolve) => {
-      try {
-        const c = document.createElement('canvas');
-        c.width = c.height = 1;
-        c.toBlob((blob) => {
-          if (!blob) return resolve(false);
-          const url = URL.createObjectURL(blob);
-          const img = new Image();
-          img.onload = () => resolve(true);
-          img.onerror = () => resolve(false);
-          img.src = url;
-        });
-      } catch {
-        resolve(false);
-      }
-    });
-  }
-  return blobUrlsWork;
-}
-
 function toDataUrlAsync(canvas: HTMLCanvasElement): Promise<string> {
   return new Promise((resolve, reject) => {
-    canvas.toBlob(async (blob) => {
-      if (blob && (await canUseBlobUrls())) {
-        resolve(URL.createObjectURL(blob));
-        return;
-      }
+    canvas.toBlob((blob) => {
       if (!blob) {
         try {
           resolve(canvas.toDataURL('image/png'));
