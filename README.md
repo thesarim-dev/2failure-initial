@@ -179,6 +179,14 @@ Tap **Cancel workout** to return to the home screen without logging a set. No co
 
 ---
 
+### Today's progress follows the plan slot
+
+Each training day is a set of slots (chest, shoulders, triceps…), each with a ladder of exercises from easiest to hardest. Progress belongs to the **slot**, not the exercise: do 1 set of pushups, go to **Edit plan** and tap **Harder**, and the chest slot shows **Backpack Pushups 1 / 3** (not 0 / 3), and your next set is "Set 2 of 3".
+
+How it's counted (`slotProgress` in `src/lib/plan.ts`): sets are still stored per exercise in Supabase (no schema change). A set counts toward a slot if it was logged for that slot (remembered on the device), or it's the slot's current exercise, or it's anywhere on that slot's ladder. Each set counts once and never beyond the slot's target.
+
+The receipt after a set says **Set logged!** (or **Set 2 of 3 logged**); the receipt for the **last set of today's whole plan** says **Workout done!**
+
 ### The exercise catalog
 
 59 exercises (54 for training days plus 5 rest-day stretches), organised into the plan's slots. Every slot is a ladder that runs easiest → hardest (BASE → PRO → ELITE), so **Harder** always means harder.
@@ -476,6 +484,10 @@ If the home screen shows a red error banner:
 All sounds are synthesized live (no audio files), through a small sound engine (`src/lib/feedback.ts`): a soft room reverb, a gentle compressor and a safety limiter, with slight pitch and stereo variation on every play so repeats never feel robotic. The voices are themed to the village: wooden knocks for taps, bells for rewards, a hammer thud when placing, a sparkle chime when a build finishes (it plays when you next open the Base), a little fanfare for levelling up, and a soft wooden "bonk" (never a harsh beep) for errors.
 
 **Ambient sounds** (`src/lib/ambient.ts`): while the Base is open you hear a quiet soundscape: a breeze and birdsong, plus babbling water if your base has water and crackling if it has a campfire, torch or forge. It sits well below the effects, fades in and out, pauses when the app is in the background, and can be switched off in **Settings → Ambient sounds** (it also follows the main **Sounds** switch).
+
+### Decorations
+
+Buildings and most decorations are drawn in **true isometric** with one shared light (lit left face, shaded right face) and shared materials (stone, wood, thatch, metal, marble), so everything on the map looks like it belongs to the same world. Decorations drawn this way: wall, garden bed, flower arch, flowers, banner, windmill, bridge, lily pads, pull-up bar, dip bars, punching bag, lanterns, parasol, signpost, statue (Flex and Runner) and well. Their colour and style options all still apply.
 
 ### Paths, fences and walls
 
