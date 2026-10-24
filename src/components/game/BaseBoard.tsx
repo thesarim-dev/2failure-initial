@@ -37,7 +37,7 @@ function LevelPips({ level, color, cx = 50, y = 97 }: { level: number; color: st
 /** Low models get a tighter preview frame so they don't look tiny. */
 const LOW_ITEMS = new Set(['garden', 'wall', 'flowers', 'bridge', 'lilypad']);
 /** Isometric decorations: a tighter frame than buildings so they fill their thumbnail. */
-const TALL_DECOR = new Set(['arch', 'banner', 'windmill', 'pullupbar', 'dipbars']);
+const TALL_DECOR = new Set(['arch', 'banner', 'windmill', 'pullupbar', 'dipbars', 'punchbag', 'lanterns', 'parasol', 'signpost', 'statue', 'well']);
 
 /** Standalone preview used in the build menu and info sheet. */
 export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, style, color }: {

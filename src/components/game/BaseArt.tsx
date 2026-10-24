@@ -37,7 +37,10 @@ const DEFAULT_THEME: Record<string, PaletteId> = {
   banner: 'red',
   windmill: 'red',
   pullupbar: 'cyan',
-  dipbars: 'cyan'
+  dipbars: 'cyan',
+  punchbag: 'red',
+  lanterns: 'amber',
+  parasol: 'cyan'
 };
 
 export function themeFor(itemId: string, color?: string): Shades {

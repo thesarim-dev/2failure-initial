@@ -1487,7 +1487,241 @@ function IsoTrainingBars({ ox, oy, kind, color }: { ox: number; oy: number; kind
   );
 }
 
-export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden', 'arch', 'flowers', 'banner', 'windmill', 'bridge', 'lilypad', 'pullupbar', 'dipbars']);
+/**
+ * A vertical cylinder in the iso projection: lit left half, shaded right half,
+ * a top cap and optional horizontal bands (stone courses, bag seams).
+ */
+function DecorCylinder({ x, y, r, z0, z1, s, bands = [], top = true, ox, oy }: { x: number; y: number; r: number; z0: number; z1: number; s: Shades; bands?: number[]; top?: boolean; ox: number; oy: number }) {
+  const Q = decorAt(ox, oy);
+  const ring = (z: number, from: number, to: number, n = 16) =>
+    Array.from({ length: n + 1 }, (_, i) => {
+      const a = from + ((to - from) * i) / n;
+      return Q(x + Math.cos(a) * r, y + Math.sin(a) * r, z);
+    });
+  // The visible front half runs from the back-left silhouette to the back-right one.
+  const front = (z: number) => ring(z, -Math.PI * 0.25, Math.PI * 0.75, 18);
+  const left = (z: number) => ring(z, Math.PI * 0.25, Math.PI * 0.75, 10);
+  const right = (z: number) => ring(z, -Math.PI * 0.25, Math.PI * 0.25, 10);
+  const side = (f: (z: number) => Array<[number, number]>) => pts([...f(z0), ...f(z1).reverse()]);
+  return (
+    <g>
+      <polygon points={side(left)} fill={s.base} />
+      <polygon points={side(right)} fill={s.dark} />
+      {bands.map((z) => (
+        <polyline key={z} points={pts(front(z))} fill="none" stroke="#000" strokeOpacity={0.18} strokeWidth={0.8} />
+      ))}
+      {top && <polygon points={pts(ring(z1, 0, Math.PI * 2, 24))} fill={s.light} />}
+      <polyline points={pts(left(z1))} fill="none" stroke="#fff" strokeOpacity={0.35} strokeWidth={0.8} />
+    </g>
+  );
+}
+
+function IsoPunchbag({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const bag = themeFor('punchbag', color);
+  const hook = Q(62, 50, 86);
+  const bagTop = Q(62, 50, 74);
+  const gloves = [Q(70, 74, 0), Q(78, 68, 0)];
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={{ x0: ox + 14, x1: ox + 30, y0: oy + 40, y1: oy + 56, z0: 0, z1: 3 }} s={DARK_STONE} courses={false} />
+      <IsoBox b={{ x0: ox + 19, x1: ox + 25, y0: oy + 45, y1: oy + 51, z0: 3, z1: 94 }} s={WOOD} mat="plank" />
+      <IsoBox b={{ x0: ox + 19, x1: ox + 66, y0: oy + 46.5, y1: oy + 49.5, z0: 88, z1: 92 }} s={WOOD} courses={false} />
+      <line x1={hook[0]} y1={hook[1]} x2={bagTop[0]} y2={bagTop[1]} stroke="#5b6678" strokeWidth={1.4} strokeDasharray="2 1.2" />
+      <DecorCylinder ox={ox} oy={oy} x={62} y={50} r={10} z0={30} z1={74} s={bag} bands={[38, 66]} />
+      {gloves.map(([x, y], i) => (
+        <g key={i}>
+          <ellipse cx={x} cy={y + 1} rx={5} ry={2} fill="#000" opacity={0.18} />
+          <path d={`M${x - 4} ${y} q0 -6 4 -6 q4 0 4 5 q0 3 -3 3 h-3 q-2 0 -2 -2 Z`} fill={bag.base} stroke={bag.dark} strokeWidth={0.7} />
+          <path d={`M${x - 2} ${y - 4} q2 -2 4 0`} fill="none" stroke={bag.light} strokeWidth={0.9} />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+function IsoLanterns({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const paper = themeFor('lanterns', color);
+  const sag = (t: number) => 72 - Math.sin(t * Math.PI) * 12;
+  const string = Array.from({ length: 21 }, (_, i) => Q(12 + (76 * i) / 20, 50, sag(i / 20)));
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={{ x0: ox + 9, x1: ox + 15, y0: oy + 47, y1: oy + 53, z0: 0, z1: 76 }} s={WOOD} mat="plank" />
+      <IsoBox b={{ x0: ox + 85, x1: ox + 91, y0: oy + 47, y1: oy + 53, z0: 0, z1: 76 }} s={WOOD} mat="plank" />
+      <polyline points={pts(string)} fill="none" stroke="#3c3326" strokeWidth={0.9} />
+      {[0.18, 0.34, 0.5, 0.66, 0.82].map((t, i) => {
+        const [x, y] = Q(12 + 76 * t, 50, sag(t) - 2);
+        return (
+          <g key={t}>
+            <circle cx={x} cy={y + 6} r={8} fill={WINDOW_LIT} opacity={0.16} />
+            <line x1={x} y1={y - 2} x2={x} y2={y + 1} stroke="#3c3326" strokeWidth={0.8} />
+            <rect x={x - 4} y={y + 1} width={8} height={10} rx={3.5} fill={i % 2 ? paper.light : paper.base} className="base-window is-warm is-candle" />
+            <rect x={x - 4} y={y + 1} width={8} height={10} rx={3.5} fill="none" stroke={paper.dark} strokeWidth={0.6} />
+            <line x1={x - 3.4} y1={y + 6} x2={x + 3.4} y2={y + 6} stroke={paper.dark} strokeOpacity={0.4} strokeWidth={0.5} />
+            <rect x={x - 2.5} y={y + 0.4} width={5} height={1.4} fill="#3c3326" />
+            <rect x={x - 2.5} y={y + 10.2} width={5} height={1.4} fill="#3c3326" />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+function IsoParasol({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const cloth = themeFor('parasol', color);
+  const n = 8;
+  const rim = Array.from({ length: n }, (_, i) => Q(50 + Math.cos((i / n) * Math.PI * 2) * 32, 50 + Math.sin((i / n) * Math.PI * 2) * 32, 70));
+  const apex = Q(50, 50, 86);
+  const pole0 = Q(50, 50, 0);
+  const ball = Q(78, 76, 5);
+  // Draw the canopy panels back to front.
+  const order = Array.from({ length: n }, (_, i) => i).sort((a, b) => rim[a][1] + rim[(a + 1) % n][1] - (rim[b][1] + rim[(b + 1) % n][1]));
+  return (
+    <g pointerEvents="none">
+      <ellipse cx={Q(50, 50, 0)[0]} cy={Q(50, 50, 0)[1]} rx={30} ry={15} fill="#000" opacity={0.14} />
+      {/* a striped towel */}
+      <polygon points={pts([Q(24, 56, 0.5), Q(46, 56, 0.5), Q(46, 86, 0.5), Q(24, 86, 0.5)])} fill="#ffffff" />
+      {[62, 70, 78].map((y) => (
+        <polygon key={y} points={pts([Q(24, y, 0.6), Q(46, y, 0.6), Q(46, y + 4, 0.6), Q(24, y + 4, 0.6)])} fill={cloth.base} />
+      ))}
+      <line x1={pole0[0]} y1={pole0[1]} x2={apex[0]} y2={apex[1]} stroke="#f4f1ea" strokeWidth={2.4} />
+      <line x1={pole0[0] + 0.8} y1={pole0[1]} x2={apex[0] + 0.8} y2={apex[1]} stroke="#b9b2a6" strokeWidth={0.8} />
+      {order.map((i) => {
+        const a = rim[i];
+        const b = rim[(i + 1) % n];
+        const front = (a[1] + b[1]) / 2 > apex[1] + 10;
+        return <polygon key={i} points={pts([apex, a, b])} fill={i % 2 ? '#ffffff' : cloth.base} stroke={i % 2 ? '#d9d4ca' : cloth.dark} strokeWidth={0.6} opacity={front ? 1 : 0.95} />;
+      })}
+      <circle cx={apex[0]} cy={apex[1] - 1} r={1.8} fill={cloth.dark} />
+      {/* a beach ball */}
+      <circle cx={ball[0]} cy={ball[1]} r={5.5} fill="#ffffff" />
+      <path d={`M${ball[0] - 5.5} ${ball[1]} A5.5 5.5 0 0 1 ${ball[0]} ${ball[1] - 5.5} L${ball[0]} ${ball[1]} Z`} fill={cloth.base} />
+      <path d={`M${ball[0] + 5.5} ${ball[1]} A5.5 5.5 0 0 1 ${ball[0]} ${ball[1] + 5.5} L${ball[0]} ${ball[1]} Z`} fill="#f7c948" />
+      <circle cx={ball[0] - 1.8} cy={ball[1] - 1.8} r={1.4} fill="#fff" opacity={0.7} />
+    </g>
+  );
+}
+
+function IsoSignpost({ ox, oy }: { ox: number; oy: number }) {
+  const Q = decorAt(ox, oy);
+  // Arrow boards in the x–z plane (pointing along x) or the y–z plane (along y).
+  const board = (axis: 'x' | 'y', dir: 1 | -1, z: number, len: number) => {
+    const at = (u: number, v: number) => (axis === 'x' ? Q(50 + dir * u, 53, z + v) : Q(53, 50 + dir * u, z + v));
+    return pts([at(-2, 4), at(len - 6, 4), at(len, 0), at(len - 6, -4), at(-2, -4)]);
+  };
+  const grain = (axis: 'x' | 'y', dir: 1 | -1, z: number, len: number) => {
+    const at = (u: number, v: number) => (axis === 'x' ? Q(50 + dir * u, 53, z + v) : Q(53, 50 + dir * u, z + v));
+    return [at(2, 1.2), at(len - 8, 1.2), at(2, -1.2), at(len - 9, -1.2)];
+  };
+  const boards: Array<['x' | 'y', 1 | -1, number, number]> = [['x', 1, 70, 30], ['x', -1, 56, 28], ['y', 1, 42, 26]];
+  const note = Q(50, 53, 24);
+  return (
+    <g pointerEvents="none">
+      <polygon points={circleAt(Q, 50, 50, 7, 0.5, 12)} fill={DARK_STONE.base} opacity={0.5} />
+      <IsoBox b={{ x0: ox + 47.5, x1: ox + 52.5, y0: oy + 47.5, y1: oy + 52.5, z0: 0, z1: 82 }} s={WOOD} mat="plank" />
+      {boards.map(([axis, dir, z, len]) => {
+        const g = grain(axis, dir, z, len);
+        return (
+          <g key={`${axis}${dir}${z}`}>
+            <polygon points={board(axis, dir, z, len)} fill={axis === 'x' ? WOOD.light : WOOD.base} stroke={WOOD.dark} strokeWidth={0.9} strokeLinejoin="round" />
+            <line x1={g[0][0]} y1={g[0][1]} x2={g[1][0]} y2={g[1][1]} stroke={WOOD.dark} strokeOpacity={0.45} strokeWidth={0.6} />
+            <line x1={g[2][0]} y1={g[2][1]} x2={g[3][0]} y2={g[3][1]} stroke={WOOD.dark} strokeOpacity={0.45} strokeWidth={0.6} />
+          </g>
+        );
+      })}
+      <rect x={note[0] - 3.5} y={note[1] - 5} width={7} height={8} fill="#f8f4e8" stroke="#c9c2b5" strokeWidth={0.5} transform={`rotate(-6 ${note[0]} ${note[1]})`} />
+      <line x1={note[0] - 2} y1={note[1] - 2} x2={note[0] + 2} y2={note[1] - 2.4} stroke="#8a8478" strokeWidth={0.5} />
+      <line x1={note[0] - 2} y1={note[1]} x2={note[0] + 2} y2={note[1] - 0.4} stroke="#8a8478" strokeWidth={0.5} />
+      <circle cx={note[0]} cy={note[1] - 4.4} r={0.9} fill="#e5484d" />
+    </g>
+  );
+}
+
+const MARBLE: Shades = { light: '#f6f4ef', base: '#dcd6cb', dark: '#a8a193' };
+
+function IsoStatue({ ox, oy, style }: { ox: number; oy: number; style?: string }) {
+  const Q = decorAt(ox, oy);
+  const plaque = [Q(42, 70.5, 12), Q(58, 70.5, 12), Q(58, 70.5, 22), Q(42, 70.5, 22)];
+  const [fx, fy] = Q(50, 50, 30);
+  const runner = style === 'runner';
+  // The athlete: marble, lit from the left like the buildings.
+  const limb = (x1: number, y1: number, x2: number, y2: number, w: number, shade = MARBLE.base) => (
+    <line x1={fx + x1} y1={fy + y1} x2={fx + x2} y2={fy + y2} stroke={shade} strokeWidth={w} strokeLinecap="round" />
+  );
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={{ x0: ox + 26, x1: ox + 74, y0: oy + 26, y1: oy + 74, z0: 0, z1: 8 }} s={STONE} />
+      <IsoBox b={{ x0: ox + 32, x1: ox + 68, y0: oy + 32, y1: oy + 68, z0: 8, z1: 30 }} s={MARBLE} />
+      <polygon points={pts(plaque)} fill={GOLD.base} stroke={GOLD.dark} strokeWidth={0.6} />
+      <line x1={plaque[0][0] + 3} y1={(plaque[0][1] + plaque[3][1]) / 2} x2={plaque[1][0] - 3} y2={(plaque[1][1] + plaque[2][1]) / 2} stroke={GOLD.dark} strokeWidth={0.7} />
+      <g>
+        {runner ? (
+          <>
+            {limb(1, -20, 9, -10, 5.9, MARBLE.dark)}
+            {limb(9, -10, 13, 0, 5.4, MARBLE.dark)}
+            {limb(-1, -20, -9, -12, 6.2)}
+            {limb(-9, -12, -12, -3, 5.7)}
+            <path d={`M${fx - 6.5} ${fy - 38} L${fx + 7.5} ${fy - 38} L${fx + 5} ${fy - 20} L${fx - 4} ${fy - 20} Z`} fill={MARBLE.base} />
+            <path d={`M${fx + 1} ${fy - 38} L${fx + 6} ${fy - 38} L${fx + 4} ${fy - 20} L${fx + 1} ${fy - 20} Z`} fill={MARBLE.dark} opacity={0.6} />
+            {limb(5, -35, 13, -28, 4.6, MARBLE.dark)}
+            {limb(13, -28, 16, -36, 4.1, MARBLE.dark)}
+            {limb(-4, -35, -12, -30, 4.9)}
+            {limb(-12, -30, -16, -22, 4.3)}
+            <circle cx={fx + 1} cy={fy - 44} r={5.8} fill={MARBLE.light} />
+          </>
+        ) : (
+          <>
+            {limb(-3, -20, -7, -1, 6.2)}
+            {limb(3, -20, 7, -1, 5.9, MARBLE.dark)}
+            <path d={`M${fx - 8.5} ${fy - 40} L${fx + 8.5} ${fy - 40} L${fx + 5} ${fy - 20} L${fx - 5} ${fy - 20} Z`} fill={MARBLE.base} />
+            <path d={`M${fx} ${fy - 40} L${fx + 8.5} ${fy - 40} L${fx + 5} ${fy - 20} L${fx} ${fy - 20} Z`} fill={MARBLE.dark} opacity={0.55} />
+            {limb(-6, -38, -15, -38, 5.1)}
+            {limb(-15, -38, -15, -48, 4.6)}
+            <circle cx={fx - 15} cy={fy - 41} r={3} fill={MARBLE.light} />
+            {limb(6, -38, 15, -38, 4.9, MARBLE.dark)}
+            {limb(15, -38, 15, -48, 4.3, MARBLE.dark)}
+            <circle cx={fx + 15} cy={fy - 41} r={2.8} fill={MARBLE.base} />
+            <circle cx={fx} cy={fy - 46} r={5.8} fill={MARBLE.light} />
+          </>
+        )}
+        {/* the pigeon that always finds it */}
+        <ellipse cx={fx + (runner ? 3 : 2)} cy={fy - (runner ? 51 : 53)} rx={3.6} ry={2.2} fill="#8a93a3" />
+        <circle cx={fx + (runner ? 5.4 : 4.4)} cy={fy - (runner ? 52.6 : 54.6)} r={1.5} fill="#6b7383" />
+      </g>
+    </g>
+  );
+}
+
+function IsoWell({ ox, oy }: { ox: number; oy: number }) {
+  const Q = decorAt(ox, oy);
+  const water = Q(50, 50, 16);
+  const axleL = Q(30, 50, 46);
+  const axleR = Q(70, 50, 46);
+  const rope = Q(50, 50, 46);
+  const bucket = Q(50, 50, 30);
+  const roof = (y: number) => [Q(26, y, 54), Q(74, y, 54), Q(74, 50, 66), Q(26, 50, 66)];
+  return (
+    <g pointerEvents="none">
+      <DecorCylinder ox={ox} oy={oy} x={50} y={50} r={21} z0={0} z1={18} s={STONE} bands={[6, 12]} top={false} />
+      <polygon points={circleAt(Q, 50, 50, 21, 18, 24)} fill={STONE.light} />
+      <polygon points={circleAt(Q, 50, 50, 16, 18, 24)} fill="#203448" />
+      <ellipse cx={water[0] - 3} cy={water[1] - 1} rx={5} ry={1.6} fill="#5aa9d6" opacity={0.6} />
+      <IsoBox b={{ x0: ox + 26, x1: ox + 31, y0: oy + 47.5, y1: oy + 52.5, z0: 14, z1: 56 }} s={WOOD} courses={false} />
+      <IsoBox b={{ x0: ox + 69, x1: ox + 74, y0: oy + 47.5, y1: oy + 52.5, z0: 14, z1: 56 }} s={WOOD} courses={false} />
+      <line x1={axleL[0]} y1={axleL[1]} x2={axleR[0]} y2={axleR[1]} stroke={WOOD.dark} strokeWidth={2.4} />
+      <line x1={rope[0]} y1={rope[1]} x2={bucket[0]} y2={bucket[1]} stroke="#cdb48a" strokeWidth={0.9} />
+      <path d={`M${bucket[0] - 4} ${bucket[1]} L${bucket[0] + 4} ${bucket[1]} L${bucket[0] + 3} ${bucket[1] + 6} L${bucket[0] - 3} ${bucket[1] + 6} Z`} fill={WOOD.base} stroke={WOOD.dark} strokeWidth={0.6} />
+      {/* a small gable roof */}
+      <polygon points={pts(roof(30))} fill="#c45a3c" />
+      <polygon points={pts(roof(70))} fill="#e07a55" />
+      <line x1={Q(26, 50, 66)[0]} y1={Q(26, 50, 66)[1]} x2={Q(74, 50, 66)[0]} y2={Q(74, 50, 66)[1]} stroke="#8a3a26" strokeWidth={1.2} />
+    </g>
+  );
+}
+
+export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden', 'arch', 'flowers', 'banner', 'windmill', 'bridge', 'lilypad', 'pullupbar', 'dipbars', 'punchbag', 'lanterns', 'parasol', 'signpost', 'statue', 'well']);
 /** True for anything drawn as an isometric model (buildings, walls, gardens, trophies). */
 export function isIsoItem(itemId: string): boolean {
   return ISO_ITEMS.has(itemId) || itemId.startsWith('trophy:');
@@ -1689,6 +1923,18 @@ export function IsoItemArt({
         return <IsoBridge ox={ox} oy={oy} />;
       case 'lilypad':
         return <IsoLilypad ox={ox} oy={oy} />;
+      case 'punchbag':
+        return <IsoPunchbag ox={ox} oy={oy} color={item.color} />;
+      case 'lanterns':
+        return <IsoLanterns ox={ox} oy={oy} color={item.color} />;
+      case 'parasol':
+        return <IsoParasol ox={ox} oy={oy} color={item.color} />;
+      case 'signpost':
+        return <IsoSignpost ox={ox} oy={oy} />;
+      case 'statue':
+        return <IsoStatue ox={ox} oy={oy} style={item.style} />;
+      case 'well':
+        return <IsoWell ox={ox} oy={oy} />;
       case 'pullupbar':
       case 'dipbars':
         return <IsoTrainingBars ox={ox} oy={oy} kind={item.itemId} color={item.color} />;
