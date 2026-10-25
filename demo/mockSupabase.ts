@@ -270,6 +270,59 @@ const auth = {
   }
 };
 
+/**
+ * Server functions (same rules as supabase/migrations/20261026120000_server_coin_rewards.sql):
+ * coins are earned for plausible sets and spent only with enough balance.
+ */
+function coinsForSet(seconds: number, tier: string): number {
+  if (seconds < 10) return 0;
+  return 20 + Math.round(10 * Math.min(1, seconds / 60)) + (tier === 'PRO' ? 5 : tier === 'ELITE' ? 10 : 0);
+}
+async function rpc(name: string, args: Record<string, any>) {
+  const latency = Number(localStorage.getItem('2failure-demo-latency') || 60);
+  await new Promise((r) => setTimeout(r, latency));
+  const uid = currentSession?.user?.id;
+  if (!uid) return { data: null, error: { code: '28000', message: 'not signed in' } };
+  const db = loadDb();
+  const profiles = db.profiles ?? [];
+  const me = profiles.find((r) => r.id === uid);
+  if (!me) return { data: null, error: { message: 'no profile' } };
+  const ledger = (db.coin_ledger = db.coin_ledger ?? []);
+  const now = Date.now();
+  if (name === 'log_set_reward') {
+    const seconds = Math.min(3600, Math.max(0, Math.round(args.p_seconds ?? 0)));
+    const sets = ledger.filter((r) => r.user_id === uid && r.reason === 'set');
+    const last = sets.length ? Math.max(...sets.map((r) => Date.parse(r.created_at))) : null;
+    const today = sets.filter((r) => now - Date.parse(r.created_at) < 86400000).length;
+    let earned = coinsForSet(seconds, args.p_tier);
+    let reason = 'set';
+    if (last !== null && now - last < Math.max(seconds, 5) * 1000) {
+      earned = 0;
+      reason = 'set_too_soon';
+    } else if (today >= 80) {
+      earned = 0;
+      reason = 'set_daily_cap';
+    }
+    ledger.push({ id: now, user_id: uid, delta: earned, reason, meta: { category: args.p_category_id, seconds }, created_at: new Date(now).toISOString() });
+    me.coins = (me.coins ?? 0) + earned;
+    saveDb(db);
+    return { data: [{ earned, balance: me.coins }], error: null };
+  }
+  if (name === 'spend_coins') {
+    const amount = Math.round(args.p_amount ?? 0);
+    if (amount <= 0) return { data: null, error: { message: 'invalid amount' } };
+    if ((me.coins ?? 0) < amount) return { data: null, error: { code: 'P0001', message: 'not enough coins' } };
+    me.coins -= amount;
+    ledger.push({ id: now, user_id: uid, delta: -amount, reason: args.p_reason ?? 'spend', meta: {}, created_at: new Date(now).toISOString() });
+    saveDb(db);
+    return { data: me.coins, error: null };
+  }
+  return { data: null, error: { code: 'PGRST202', message: `Could not find the function ${name}` } };
+}
+
 export function createClient() {
-  return { from: (name: string) => new Query(name), auth };
+  const client = { from: (name: string) => new Query(name), auth, rpc };
+  // Demo only: lets tests call the same server functions a cheater could call.
+  (window as unknown as { __supabaseForTests?: unknown }).__supabaseForTests = client;
+  return client;
 }

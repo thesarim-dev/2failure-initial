@@ -92,7 +92,9 @@ export function MainApp() {
     coins,
     loading: profileLoading,
     error: profileError,
-    setCoins
+    setCoins,
+    earnForSet,
+    spend
   } = useProfile();
   const {
     currentStreak,
@@ -402,7 +404,8 @@ export function MainApp() {
         await recordWorkoutComplete(restAllowance);
       }
     })();
-    void setCoins((c) => c + calculateCoinsEarned(duration, currentMove.tier ?? 'BASE'));
+    // The server decides the reward (and checks the set is plausible).
+    void earnForSet(currentMove.id, duration, currentMove.tier ?? 'BASE', calculateCoinsEarned(duration, currentMove.tier ?? 'BASE'));
     setSummarySetContext(options?.setContext ?? null);
     finishingRef.current = false;
     setIsFinishing(false);
@@ -534,7 +537,7 @@ export function MainApp() {
     const result = await restoreUserStreak();
     if (result) fx.success();
     if (result?.cost) {
-      void setCoins((current) => Math.max(0, current - result.cost));
+      void spend(result.cost, 'streak_restore');
     }
   };
 
@@ -798,7 +801,7 @@ export function MainApp() {
         <BaseScreen
           game={baseGame}
           coins={coins}
-          onSpendCoins={(amount) => void setCoins((current) => Math.max(0, current - amount))}
+          onSpendCoins={(amount) => void spend(amount, 'base')}
         />
       )}
       </motion.div>

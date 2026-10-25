@@ -1,3 +1,4 @@
+import { earnSetCoins, spendServerCoins } from '../lib/coins';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -87,6 +88,36 @@ export function useProfile() {
     [user, profile?.coins, fetchProfile]
   );
 
+  // Server-authoritative coins: the server pays for sets and checks spending.
+  // Falls back to the old client path until the migration is applied.
+  const applyBalance = useCallback((balance: number) => {
+    setProfile((prev) => (prev ? { ...prev, coins: balance } : prev));
+  }, []);
+  const earnForSet = useCallback(
+    async (categoryId: string, seconds: number, tier: string, estimate: number) => {
+      if (!user) return;
+      const before = profile?.coins ?? 0;
+      setProfile((prev) => (prev ? { ...prev, coins: before + estimate } : prev)); // instant feedback
+      const result = await earnSetCoins(categoryId, seconds, tier);
+      if (result.ok) applyBalance(result.balance);
+      else if (result.missing) await setCoins(before + estimate); // old path until the migration is applied
+      else await fetchProfile();
+    },
+    [user, profile?.coins, applyBalance, setCoins, fetchProfile]
+  );
+  const spend = useCallback(
+    async (amount: number, reason: string) => {
+      if (!user || amount <= 0) return;
+      const before = profile?.coins ?? 0;
+      setProfile((prev) => (prev ? { ...prev, coins: Math.max(0, before - amount) } : prev));
+      const result = await spendServerCoins(amount, reason);
+      if (result.ok) applyBalance(result.balance);
+      else if (result.missing) await setCoins(Math.max(0, before - amount));
+      else await fetchProfile(); // e.g. "not enough coins": show the true balance
+    },
+    [user, profile?.coins, applyBalance, setCoins, fetchProfile]
+  );
+
   return {
     profile,
     coins: profile?.coins ?? 0,
@@ -94,6 +125,8 @@ export function useProfile() {
     loading,
     error,
     refetch: fetchProfile,
-    setCoins
+    setCoins,
+    earnForSet,
+    spend
   };
 }

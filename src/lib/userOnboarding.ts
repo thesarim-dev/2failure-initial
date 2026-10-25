@@ -167,9 +167,7 @@ export async function ensureUserProfileAndWorkouts(
     .upsert(
       {
         id: userId,
-        display_name: safeDisplayName,
-        coins: 0,
-        current_streak: 0
+        display_name: safeDisplayName
       },
       { onConflict: 'id' }
     );

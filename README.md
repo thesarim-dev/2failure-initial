@@ -179,6 +179,20 @@ Tap **Cancel workout** to return to the home screen without logging a set. No co
 
 ---
 
+### Rest timer
+
+After every set a banner drops down from the top of the screen and stays while you move around the app (the page shifts down so it never covers anything). Its colour slides smoothly from green through yellow to red as the rest runs out; at zero it chimes, buzzes and offers **Start set**. Adjust with −15 s / +15 s, or skip with ✕. Rest length follows the evidence (`src/lib/restTimes.ts`): barbell lifts 3:00, hard and loaded moves 2:00, standard bodyweight 1:30, core / calves / holds 1:00, moving on to the next exercise 1:00, and no timer after the day's last set.
+
+### Progress tab
+
+Sets this week, streak, all sets in the last 6 months and new records this month; a 12-week training calendar (rest days in violet); sets per week split into upper body / legs / core; every exercise with its best set, improvement since the first session and a trend chart; and a list of personal records.
+
+### Coins are server-authoritative (anti-cheat)
+
+Coins are earned and spent on the server (`supabase/migrations/20261026120000_server_coin_rewards.sql`). The app reports a finished set (exercise, duration, tier) to `log_set_reward`, which checks it's plausible (a set can't end sooner after the previous one than it lasted; at most 80 rewarded sets a day; durations are clamped) and pays with the same formula as `src/lib/coinRewards.ts`. Spending goes through `spend_coins`, which checks the balance. Every change is recorded in a `coin_ledger` table, and apps can no longer write the coins column directly. Until the migration is applied the app falls back to the old behaviour, so nothing breaks in between.
+
+Still client-side (next steps): base materials and buildings, the per-set log and streaks.
+
 ### Today's progress follows the plan slot
 
 Each training day is a set of slots (chest, shoulders, triceps…), each with a ladder of exercises from easiest to hardest. Progress belongs to the **slot**, not the exercise: do 1 set of pushups, go to **Edit plan** and tap **Harder**, and the chest slot shows **Backpack Pushups 1 / 3** (not 0 / 3), and your next set is "Set 2 of 3".
@@ -600,3 +614,7 @@ The base is saved to your account in Supabase (table `base_games`), so it follow
 │  Icons:  👜 Store   ⚙ Settings   🔥 Streak   🪙 Coins     │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+### Supabase step for the coin anti-cheat
+
+In the Supabase dashboard, open **SQL Editor**, paste the contents of `supabase/migrations/20261026120000_server_coin_rewards.sql` and run it once. Existing balances are kept.
