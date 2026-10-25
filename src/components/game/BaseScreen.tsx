@@ -41,6 +41,7 @@ import {
   EDGE_COST,
   EDGE_KINDS,
   isTileBuildable,
+  seasonState,
   type EdgeKind
 } from '../../game/catalog';
 import {
@@ -418,6 +419,7 @@ export function BaseScreen({
 
   const errorText = (error: ActionError, itemId?: string) => {
     const def = itemId ? getItemDef(itemId) : undefined;
+    if (error === 'outOfSeason' && def?.kind === 'decor' && def.season) return g.season.back(def.season, seasonState(def.season).days);
     if (error === 'locked' && def) return g.errors.unlockAt(def.unlockHq);
     if (error === 'needsBaseLevel' && def?.kind === 'decor' && def.unlockBase) {
       return `${g.baseLevel.level(def.unlockBase)} · ${g.baseLevel.titles[BASE_LEVEL_TITLES[def.unlockBase - 1]]}`;
@@ -916,7 +918,7 @@ export function BaseScreen({
                         <span className="base-catalog-name">{g.items[def.id]?.name}</span>
                         <span className="base-catalog-desc">{g.items[def.id]?.description}</span>
                         <span className="base-catalog-meta">
-                          {state.firstBuildFree && blocker === null ? (
+                          {state.firstBuildFree && def.kind === 'structure' && blocker === null ? (
                             <span className="base-free-badge">{t.hub.quest.free}</span>
                           ) : (
                             <CostList cost={cost} resources={state.resources} />
@@ -925,6 +927,9 @@ export function BaseScreen({
                             {g.setsToBuild(sets)} · {g.builders.needs(1)}
                           </span>
                         </span>
+                        {!blocker && def.kind === 'decor' && def.season && (
+                          <span className="base-catalog-season">{g.season.left(def.season, seasonState(def.season).days)}</span>
+                        )}
                         {blocker && <span className="base-catalog-blocker">{errorText(blocker, def.id)}</span>}
                       </span>
                     </button>

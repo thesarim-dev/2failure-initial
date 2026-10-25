@@ -503,6 +503,21 @@ All sounds are synthesized live (no audio files), through a small sound engine (
 
 **Ambient sounds** (`src/lib/ambient.ts`): while the Base is open you hear a quiet soundscape: a breeze and birdsong, plus babbling water if your base has water and crackling if it has a campfire, torch or forge. It sits well below the effects, fades in and out, pauses when the app is in the background, and can be switched off in **Settings → Ambient sounds** (it also follows the main **Sounds** switch).
 
+### Life on the base
+
+Decorations bring the base to life:
+
+* **Training equipment:** by day, a villager trains on each piece: pull-ups on the bar, dips on the dip bars, punches on the bag, box jumps on the plyo box.
+* **Campfire:** at night (7 pm to 6 am, local time) villagers gather on logs around it, in its warm glow; the equipment stands empty.
+* **Beehive:** bees buzz around it (like butterflies over flowers and garden beds).
+* **Lily pads:** ducks come and paddle around them.
+* **Coop and barn:** more chickens, cows, sheep and pigs.
+* **Paths:** villagers stroll along the paths you paint, there and back, instead of cutting across the grass.
+
+### Seasonal decorations
+
+**Pumpkins** can only be built in autumn (September to November) and the **snowman** in winter (December to February), open to every base level while in season. The build menu shows the days left ("Autumn only · 36 days left"), or when an item is back ("Back in winter"). Once placed, seasonal items stay all year as keepsakes.
+
 ### Decorations
 
 Buildings and most decorations are drawn in **true isometric** with one shared light (lit left face, shaded right face) and shared materials (stone, wood, thatch, metal, marble), so everything on the map looks like it belongs to the same world. Decorations drawn this way: wall, garden bed, flower arch, flowers, banner, windmill, bridge, lily pads, pull-up bar, dip bars, punching bag, lanterns, parasol, signpost, statue (Flex and Runner) and well. Their colour and style options all still apply.

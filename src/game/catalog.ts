@@ -172,7 +172,8 @@ export type StructureDef = {
   levels: StructureLevel[];
 };
 
-export type DecorGroup = 'nature' | 'farm' | 'comfort' | 'fun' | 'lights' | 'training' | 'paths' | 'water';
+export type DecorGroup = 'nature' | 'farm' | 'comfort' | 'fun' | 'lights' | 'training' | 'paths' | 'water' | 'seasonal';
+export type Season = 'autumn' | 'winter';
 export const DECOR_GROUPS: DecorGroup[] = ['nature', 'farm', 'comfort', 'fun', 'lights', 'training', 'paths', 'water'];
 
 export type DecorDef = {
@@ -186,6 +187,8 @@ export type DecorDef = {
   /** Water decor (lily pads, bridges) goes on water; everything else on land. */
   onWater?: boolean;
   cost: Cost;
+  /** Only buildable in this season (placed ones stay as keepsakes). */
+  season?: Season;
 };
 
 export type ItemDef = StructureDef | DecorDef;
@@ -292,7 +295,7 @@ export const DECOR: DecorDef[] = [
   { kind: 'decor', id: 'dipbars', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { stone: 6 } },
   { kind: 'decor', id: 'punchbag', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { stone: 4, timber: 2 } },
   // Farm (barns and coops bring animals that wander around the base)
-  { kind: 'decor', id: 'pumpkins', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 1, crystal: 1 } },
+  { kind: 'decor', id: 'pumpkins', size: 1, unlockHq: 1, group: 'seasonal', season: 'autumn', cost: { timber: 1, crystal: 1 } },
   { kind: 'decor', id: 'birdhouse', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 2 } },
   { kind: 'decor', id: 'coop', size: 1, unlockHq: 1, unlockBase: 2, group: 'farm', cost: { timber: 6, stone: 2 } },
   { kind: 'decor', id: 'beehive', size: 1, unlockHq: 1, unlockBase: 2, group: 'farm', cost: { timber: 3, crystal: 2 } },
@@ -302,7 +305,7 @@ export const DECOR: DecorDef[] = [
   // Fun
   { kind: 'decor', id: 'tent', size: 1, unlockHq: 1, unlockBase: 2, group: 'fun', cost: { timber: 4, crystal: 2 } },
   { kind: 'decor', id: 'parasol', size: 1, unlockHq: 1, unlockBase: 2, group: 'fun', cost: { timber: 2, crystal: 2 } },
-  { kind: 'decor', id: 'snowman', size: 1, unlockHq: 1, unlockBase: 6, group: 'fun', cost: { crystal: 3 } },
+  { kind: 'decor', id: 'snowman', size: 1, unlockHq: 1, group: 'seasonal', season: 'winter', cost: { crystal: 3 } },
   // Water
   { kind: 'decor', id: 'lilypad', size: 1, unlockHq: 1, unlockBase: 3, group: 'water', onWater: true, cost: { crystal: 2 } },
   { kind: 'decor', id: 'bridge', size: 1, unlockHq: 1, unlockBase: 3, group: 'water', onWater: true, cost: { timber: 6 } }
@@ -440,3 +443,26 @@ export const RETIRED_DECOR: Record<string, Cost> = {
   signpost: { timber: 2 },
   sandcastle: { stone: 3 }
 };
+
+/**
+ * Seasonal decorations: autumn is September–November, winter is
+ * December–February. Returns whether it's open now and how many days are left
+ * (or how long until it comes back).
+ */
+const SEASON_MONTHS: Record<Season, number[]> = { autumn: [8, 9, 10], winter: [11, 0, 1] };
+export function seasonState(season: Season, now: Date = new Date()): { open: boolean; days: number } {
+  const months = SEASON_MONTHS[season];
+  const day = 86400000;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (months.includes(now.getMonth())) {
+    // Days until the first day after the season's last month.
+    const last = months[months.length - 1];
+    const endYear = last < now.getMonth() ? now.getFullYear() + 1 : now.getFullYear();
+    const end = new Date(endYear, last + 1, 1);
+    return { open: true, days: Math.round((end.getTime() - today.getTime()) / day) };
+  }
+  const first = months[0];
+  const startYear = first < now.getMonth() ? now.getFullYear() + 1 : now.getFullYear();
+  const start = new Date(startYear, first, 1);
+  return { open: false, days: Math.round((start.getTime() - today.getTime()) / day) };
+}

@@ -35,6 +35,7 @@ import {
   type TrainingPattern,
   EDGE_COST,
   RETIRED_DECOR,
+  seasonState,
   type EdgeKind
 } from './catalog';
 
@@ -809,6 +810,7 @@ export function countPlaced(state: GameState, itemId: string): number {
 
 export type ActionError =
   | 'locked'
+  | 'outOfSeason'
   | 'maxCount'
   | 'builderBusy'
   | 'cantAfford'
@@ -867,6 +869,7 @@ function pay(state: GameState, cost: Cost) {
 export function placeBlocker(state: GameState, itemId: string): ActionError | null {
   const def = getItemDef(itemId);
   if (!def) return 'locked';
+  if (def.kind === 'decor' && def.season && !seasonState(def.season).open) return 'outOfSeason';
   const level = hqLevel(state);
   if (level < def.unlockHq) return 'locked';
   if (def.kind === 'decor' && def.unlockBase && baseLevel(state).level < def.unlockBase) return 'needsBaseLevel';

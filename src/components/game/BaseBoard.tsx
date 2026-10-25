@@ -10,7 +10,7 @@ import {
 import { itemSize, type GameState, type PlacedItem, type TodayPlan } from '../../game/engine';
 import { ArtDefs, ItemArt, TerrainTile, THEME_SHADES, themeFor } from './BaseArt';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BaseCritters } from './Critters';
+import { BaseCritters, BaseLife } from './Critters';
 import { GroundDetail, GroundEdges } from './GroundDetail';
 import { SlabSides } from './SlabSides';
 import { bakeGround } from './groundBake';
@@ -936,6 +936,7 @@ export function BaseBoard({
       </g>
       {/* In fence mode taps pass through buildings to the edge beneath them. */}
       <g pointerEvents={fencing ? 'none' : 'visiblePainted'}>{sprites.map((sprite) => sprite.node)}</g>
+      <BaseLife state={state} animate={animate} />
       {(previewTiles?.size || anchorTile) && (
         <g pointerEvents="none" className={`base-tile-preview is-${previewTone}`}>
           {[...(previewTiles ?? [])].map((key) => {

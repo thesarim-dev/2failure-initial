@@ -41,6 +41,8 @@ export type GameCopy = {
   refund: string;
   putAway: string;
   errors: Record<ActionError, string> & { unlockAt: (hq: number) => string };
+  /** Seasonal decorations: days left in season, or when they come back. */
+  season: { left: (season: 'autumn' | 'winter', days: number) => string; back: (season: 'autumn' | 'winter', days: number) => string };
   /** Not enough materials: what's missing and roughly how many sets earn it. */
   needMore: (amount: number, resource: string, sets: number, from: 'stone' | 'timber' | 'crystal') => string;
   trophyShelf: {
@@ -284,7 +286,12 @@ const en: GameCopy = {
   putAway: 'Put back on shelf',
   needMore: (amount, resource, sets, from) =>
     `You need ${amount} more ${resource.toLowerCase()}, about ${sets} ${{ stone: 'upper-body', timber: 'leg', crystal: 'core' }[from]} set${sets === 1 ? '' : 's'}.`,
+  season: {
+    left: (season, days) => `${season === 'autumn' ? 'Autumn' : 'Winter'} only · ${days === 1 ? '1 day' : `${days} days`} left`,
+    back: (season, days) => `Back in ${season === 'autumn' ? 'autumn' : 'winter'} (${days === 1 ? '1 day' : `${days} days`})`
+  },
   errors: {
+    outOfSeason: 'Out of season',
     locked: 'Not unlocked yet. Upgrade your HQ to unlock it.',
     unlockAt: (hq) => `Unlocks at HQ level ${hq}`,
     maxCount: 'Upgrade HQ to build more of these',
@@ -490,7 +497,7 @@ const en: GameCopy = {
     kinds: { fence: 'Wooden fence', wall: 'Stone wall', hedge: 'Hedge' }
   },
   terrainNames: { grass: 'Grass', meadow: 'Meadow', dirt: 'Dirt', path: 'Path', sand: 'Sand', plaza: 'Plaza', water: 'Water', snow: 'Snow' },
-  decorGroups: { nature: 'Nature', farm: 'Farm', fun: 'Fun', comfort: 'Comfort', lights: 'Lights', training: 'Training', paths: 'Paths & walls', water: 'Water' },
+  decorGroups: { nature: 'Nature', farm: 'Farm', fun: 'Fun', comfort: 'Comfort', lights: 'Lights', training: 'Training', paths: 'Paths & walls', water: 'Water', seasonal: 'Seasonal' },
   sound: { title: 'Sounds', description: 'Soft chimes and light vibrations for taps and wins.', on: 'On', off: 'Off' },
   ambient: { title: 'Ambient sounds', description: 'Birdsong, a breeze, water and crackling fires on your base.', on: 'On', off: 'Off' },
   zoomIn: 'Zoom in',
@@ -605,7 +612,12 @@ const he: GameCopy = {
   putAway: 'החזר למדף',
   needMore: (amount, resource, sets, from) =>
     `חסרים ${amount} ${resource}, בערך ${sets === 1 ? 'סט אחד' : `${sets} סטים`} של ${{ stone: 'פלג גוף עליון', timber: 'רגליים', crystal: 'ליבה' }[from]}.`,
+  season: {
+    left: (season, days) => `רק ב${season === 'autumn' ? 'סתיו' : 'חורף'} · נשארו ${days === 1 ? 'יום אחד' : `${days} ימים`}`,
+    back: (season, days) => `חוזר ב${season === 'autumn' ? 'סתיו' : 'חורף'} (בעוד ${days === 1 ? 'יום אחד' : `${days} ימים`})`
+  },
   errors: {
+    outOfSeason: 'לא בעונה',
     locked: 'עוד לא נפתח. שדרגו את המפקדה כדי לפתוח.',
     unlockAt: (hq) => `נפתח במפקדה שלב ${hq}`,
     maxCount: 'שדרג את המפקדה כדי לבנות עוד מאלה',
@@ -811,7 +823,7 @@ const he: GameCopy = {
     kinds: { fence: 'גדר עץ', wall: 'חומת אבן', hedge: 'גדר חיה' }
   },
   terrainNames: { grass: 'דשא', meadow: 'אחו', dirt: 'עפר', path: 'שביל', sand: 'חול', plaza: 'רחבה', water: 'מים', snow: 'שלג' },
-  decorGroups: { nature: 'טבע', farm: 'חווה', fun: 'כיף', comfort: 'נוחות', lights: 'תאורה', training: 'אימון', paths: 'שבילים וחומות', water: 'מים' },
+  decorGroups: { nature: 'טבע', farm: 'חווה', fun: 'כיף', comfort: 'נוחות', lights: 'תאורה', training: 'אימון', paths: 'שבילים וחומות', water: 'מים', seasonal: 'עונתי' },
   sound: { title: 'צלילים', description: 'צלצולים רכים ורטט קל להקשות ולהצלחות.', on: 'פועל', off: 'כבוי' },
   ambient: { title: 'צלילי אווירה', description: 'ציוץ ציפורים, רוח, מים ואש מתפצפצת בבסיס שלכם.', on: 'פועל', off: 'כבוי' },
   zoomIn: 'הגדלה',
@@ -926,7 +938,12 @@ const ar: GameCopy = {
   putAway: 'أعده إلى الرف',
   needMore: (amount, resource, sets, from) =>
     `تحتاج إلى ${amount} وحدة إضافية من ${resource}، أي نحو ${sets === 1 ? 'مجموعة واحدة' : `${sets} مجموعات`} ${{ stone: 'للجزء العلوي', timber: 'للساقين', crystal: 'للجذع' }[from]}.`,
+  season: {
+    left: (season, days) => `${season === 'autumn' ? 'في الخريف' : 'في الشتاء'} فقط · ${days === 1 ? 'بقي يوم واحد' : `بقي ${days} يوماً`}`,
+    back: (season, days) => `يعود ${season === 'autumn' ? 'في الخريف' : 'في الشتاء'} (بعد ${days === 1 ? 'يوم واحد' : `${days} يوماً`})`
+  },
   errors: {
+    outOfSeason: 'خارج الموسم',
     locked: 'لم يُفتح بعد. طوّر المقر لفتحه.',
     unlockAt: (hq) => `يُفتح عند المقر مستوى ${hq}`,
     maxCount: 'طوّر المقر لتبني المزيد من هذا',
@@ -1132,7 +1149,7 @@ const ar: GameCopy = {
     kinds: { fence: 'سياج خشبي', wall: 'جدار حجري', hedge: 'سياج نباتي' }
   },
   terrainNames: { grass: 'عشب', meadow: 'مرج', dirt: 'تراب', path: 'ممر', sand: 'رمل', plaza: 'ساحة', water: 'ماء', snow: 'ثلج' },
-  decorGroups: { nature: 'طبيعة', farm: 'مزرعة', fun: 'مرح', comfort: 'راحة', lights: 'إضاءة', training: 'تدريب', paths: 'ممرات وأسوار', water: 'ماء' },
+  decorGroups: { nature: 'طبيعة', farm: 'مزرعة', fun: 'مرح', comfort: 'راحة', lights: 'إضاءة', training: 'تدريب', paths: 'ممرات وأسوار', water: 'ماء', seasonal: 'موسمي' },
   sound: { title: 'الأصوات', description: 'نغمات ناعمة واهتزاز خفيف للنقرات والإنجازات.', on: 'مفعّل', off: 'متوقف' },
   ambient: { title: 'أصوات الأجواء', description: 'زقزقة العصافير ونسيم ومياه ونار تطقطق في قاعدتك.', on: 'مفعّل', off: 'متوقف' },
   zoomIn: 'تكبير',

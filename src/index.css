@@ -7846,4 +7846,77 @@
     padding-top: calc(env(safe-area-inset-top, 0px) + 5rem);
     transition: padding-top 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
+
+  /* Seasonal decorations: a limited-time badge */
+  .base-catalog-season {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    color: #3a1d00;
+    background: linear-gradient(90deg, #f7c948, #f2a541);
+  }
+
+  /* Base life: villagers training on equipment, gathering at the campfire; bees */
+  .ex-pullup { animation: ex-pullup 2.6s ease-in-out infinite; }
+  @keyframes ex-pullup {
+    0%, 100% { transform: translateY(0); }
+    45%, 55% { transform: translateY(-9px); }
+  }
+  .ex-dip { animation: ex-dip 2.2s ease-in-out infinite; }
+  @keyframes ex-dip {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(7px); }
+  }
+  .ex-box { animation: ex-box 0.9s ease-in-out infinite; }
+  @keyframes ex-box {
+    0%, 100% { transform: translateX(0); }
+    40% { transform: translateX(1.5px); }
+  }
+  .ex-punch {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: ex-punch 0.9s ease-in-out infinite;
+  }
+  @keyframes ex-punch {
+    0%, 100% { transform: scaleX(0.45); }
+    35%, 45% { transform: scaleX(1); }
+  }
+  .ex-jump { animation: ex-jump 2.4s cubic-bezier(0.3, 0, 0.3, 1) infinite; }
+  @keyframes ex-jump {
+    0%, 15% { transform: translateY(0); }
+    35% { transform: translateY(-30px); }
+    50%, 62% { transform: translateY(-20px); }
+    82%, 100% { transform: translateY(0); }
+  }
+  .ex-sit { animation: ex-sit 4s ease-in-out infinite; }
+  @keyframes ex-sit {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(2deg); }
+  }
+  .base-bee-wing {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: base-bee-wing 0.12s linear infinite alternate;
+  }
+  @keyframes base-bee-wing {
+    from { transform: scaleY(1); }
+    to { transform: scaleY(0.35); }
+  }
+  .base-fireglow {
+    fill: rgba(255, 170, 80, 0.32);
+    filter: blur(6px);
+  }
+  .base-fireglow.is-live { animation: base-fireglow 1.6s ease-in-out infinite alternate; }
+  @keyframes base-fireglow {
+    from { opacity: 0.75; }
+    to { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ex-pullup, .ex-dip, .ex-box, .ex-punch, .ex-jump, .ex-sit, .base-bee-wing, .base-fireglow.is-live {
+      animation: none;
+    }
+  }
 }

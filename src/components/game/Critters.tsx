@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { P } from './IsoArt';
 import { buildableBounds } from '../../game/catalog';
 import { occupancy, type GameState } from '../../game/engine';
 
@@ -303,6 +304,118 @@ function Villager({ shirt, pants, skin, hair, carry }: { shirt: string; pants: s
   );
 }
 
+type Look = { shirt: string; pants: string; skin: string; hair: string };
+const LOOKS: Look[] = [
+  { shirt: '#e5484d', pants: '#3b3f58', skin: '#f1c27d', hair: '#5a3825' },
+  { shirt: '#3b82f6', pants: '#4b3a2a', skin: '#c68642', hair: '#1f1a17' },
+  { shirt: '#f2a541', pants: '#3f4a3a', skin: '#8d5524', hair: '#141010' },
+  { shirt: '#8b5cf6', pants: '#2f3542', skin: '#ffdbac', hair: '#c58b3a' }
+];
+type Pose = 'hang' | 'dip' | 'punch' | 'jump' | 'sit';
+
+/** A villager mid-exercise (or sitting by the fire). Feet at y ≈ 11, hands where the pose needs them. */
+function Athlete({ look, pose }: { look: Look; pose: Pose }) {
+  const { shirt, pants, skin, hair } = look;
+  const arm = (x1: number, y1: number, x2: number, y2: number) => (
+    <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={shirt} strokeWidth={2.6} strokeLinecap="round" />
+  );
+  const leg = (x1: number, y1: number, x2: number, y2: number) => (
+    <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={pants} strokeWidth={2.6} strokeLinecap="round" />
+  );
+  const hand = (x: number, y: number) => <circle cx={x} cy={y} r={1.4} fill={skin} />;
+  const head = (
+    <g>
+      <circle cx={0.6} cy={-13.6} r={4.4} fill={skin} />
+      <path d="M-3.8 -13.8 Q -3.6 -18.8 0.8 -18.4 Q 5 -18.2 5 -14.4 Q 2.4 -16.2 -0.4 -15.6 Q -2.6 -15 -3.8 -13.8 Z" fill={hair} />
+      <circle cx={3} cy={-13.6} r={0.75} fill="#1a1a1a" />
+    </g>
+  );
+  const torso = (
+    <g>
+      <rect x={-4.6} y={-9.5} width={9.2} height={12.5} rx={3.6} fill={shirt} />
+      <rect x={-4.6} y={-9.5} width={9.2} height={12.5} rx={3.6} fill="url(#hf-body)" />
+    </g>
+  );
+  if (pose === 'sit') {
+    return (
+      <g>
+        <rect x={-7} y={6} width={14} height={4.5} rx={2.2} fill="#8a5a2b" stroke="#5a3a1c" strokeWidth={0.6} />
+        {leg(-1, 4, 6, 4.5)}
+        {leg(6, 4.5, 6.5, 10)}
+        <g transform="translate(0 6)">
+          {torso}
+          {arm(1.5, -6, 5.5, -1)}
+          {head}
+        </g>
+      </g>
+    );
+  }
+  const legs =
+    pose === 'jump' ? (
+      <g>
+        {leg(-1.6, 2.5, -3, 7)}
+        {leg(-3, 7, -1.4, 10.5)}
+        {leg(1.8, 2.5, 3.4, 7)}
+        {leg(3.4, 7, 2, 10.5)}
+      </g>
+    ) : (
+      <g>
+        {leg(-1.6, 2.5, -1.8, 10.5)}
+        {leg(1.8, 2.5, pose === 'punch' ? 4.5 : 1.8, 10.5)}
+      </g>
+    );
+  return (
+    <g>
+      {pose !== 'hang' && pose !== 'dip' && <ellipse cx={0} cy={11} rx={6.5} ry={2} fill="#000" opacity={0.25} />}
+      {legs}
+      {torso}
+      {pose === 'hang' && (
+        <>
+          {arm(-3.6, -8, -5, -23)}
+          {arm(3.6, -8, 5, -23)}
+          {hand(-5, -23.5)}
+          {hand(5, -23.5)}
+        </>
+      )}
+      {pose === 'dip' && (
+        <>
+          {arm(-4, -8, -7, 0)}
+          {arm(4, -8, 7, 0)}
+          {hand(-7, 0.5)}
+          {hand(7, 0.5)}
+        </>
+      )}
+      {pose === 'punch' && (
+        <>
+          {arm(-2, -7, 2, -3)}
+          <g className="ex-punch">
+            {arm(2, -7, 12, -7)}
+            {hand(12.5, -7)}
+          </g>
+        </>
+      )}
+      {pose === 'jump' && (
+        <>
+          {arm(-3.6, -8, -7, -12)}
+          {arm(3.6, -8, 7, -12)}
+        </>
+      )}
+      {head}
+    </g>
+  );
+}
+
+function Bee() {
+  return (
+    <g>
+      <ellipse cx={0} cy={-2} rx={2.2} ry={1.4} fill="#ffffff" opacity={0.85} className="base-bee-wing" />
+      <ellipse cx={0} cy={0} rx={2.6} ry={1.8} fill="#f7c948" />
+      <rect x={-0.6} y={-1.8} width={0.9} height={3.6} fill="#2a2a2a" />
+      <rect x={1.1} y={-1.6} width={0.8} height={3.2} fill="#2a2a2a" />
+    </g>
+  );
+}
+
 const ART: Record<Kind, () => JSX.Element> = {
   villager1: () => <Villager shirt="#e5484d" pants="#3b3f58" skin="#f1c27d" hair="#5a3825" carry="basket" />,
   villager2: () => <Villager shirt="#3b82f6" pants="#4b3a2a" skin="#c68642" hair="#1f1a17" />,
@@ -343,11 +456,11 @@ type Route = {
  * A wandering route through random waypoints, looping back to the start,
  * with a pause at each stop. Facing flips when walking left.
  */
-function buildRoute(kind: Kind, points: Point[], rnd: () => number): Route {
+function buildRoute(kind: Kind, points: Point[], rnd: () => number, pauseScale = 1): Route {
   const loop = [...points, points[0]];
   const lengths = loop.slice(1).map((p, i) => Math.hypot(p[0] - loop[i][0], p[1] - loop[i][1]));
   const total = lengths.reduce((a, b) => a + b, 0) || 1;
-  const pauses = points.map(() => 0.8 + rnd() * 2.2);
+  const pauses = points.map(() => (0.8 + rnd() * 2.2) * pauseScale);
   const dur = total / SPEED[kind] + pauses.reduce((a, b) => a + b, 0);
   const times: number[] = [0];
   const keys: number[] = [0];
@@ -391,7 +504,7 @@ function buildRoute(kind: Kind, points: Point[], rnd: () => number): Route {
 
 type Project = (p: [number, number]) => [number, number];
 
-function planRoutes(state: GameState, seed: number, project: Project): Route[] {
+function planRoutes(state: GameState, seed: number, project: Project, wanderingVillagers = 4): Route[] {
   const rnd = mulberry32(seed);
   const { min, max } = buildableBounds(state.landLevel);
   const occupied = occupancy(state);
@@ -440,18 +553,123 @@ function planRoutes(state: GameState, seed: number, project: Project): Route[] {
     structures.some((st) => Math.abs(pt[0] - (st.x * 100 + 50)) < 320 && Math.abs(pt[1] - (st.y * 100 + 50)) < 320)
   );
   const villageKinds: Kind[] = ['villager1', 'villager2', 'villager3', 'villager4'];
-  for (let i = 0; i < villagers && nearHome.length >= 2; i++) {
+  // Painted paths: villagers stroll along them (there and back), not across the grass.
+  const pathTiles = Object.entries(state.terrain ?? {})
+    .filter(([key, t]) => t === 'path' && !occupied.has(key))
+    .map(([key]) => key.split(',').map(Number) as Point);
+  const onPath = new Set(pathTiles.map(([x, y]) => `${x},${y}`));
+  const pathWalk = (): Point[] => {
+    let [x, y] = pathTiles[Math.floor(rnd() * pathTiles.length)];
+    const walk: Point[] = [[x, y]];
+    let prev: Point | null = null;
+    for (let step = 0; step < 9; step++) {
+      const from: Point | null = prev;
+      const next = ([[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as Point[]).filter(
+        ([nx, ny]) => onPath.has(`${nx},${ny}`) && !(from && from[0] === nx && from[1] === ny)
+      );
+      if (!next.length) break;
+      prev = [x, y];
+      [x, y] = next[Math.floor(rnd() * next.length)];
+      walk.push([x, y]);
+    }
+    const centres = walk.map(([tx, ty]) => [tx * 100 + 40 + rnd() * 20, ty * 100 + 45 + rnd() * 20] as Point);
+    return centres.length > 1 ? [...centres, ...centres.slice(1, -1).reverse()] : centres;
+  };
+  for (let i = 0; i < Math.min(villagers, wanderingVillagers); i++) {
+    if (pathTiles.length >= 3) {
+      routes.push(buildRoute(villageKinds[i], pathWalk().map(project), rnd, 0.3));
+      continue;
+    }
+    if (nearHome.length < 2) break;
     const stops = 3 + Math.floor(rnd() * 2);
     const points: Point[] = Array.from({ length: stops }, () => pick(nearHome));
     routes.push(buildRoute(villageKinds[i], points.map(project), rnd));
   }
+
 
   const ducks = Math.min(4, Math.ceil(water.length / 4));
   for (let i = 0; i < ducks && water.length; i++) {
     const points: Point[] = [pick(water), pick(water), pick(water)];
     routes.push(buildRoute('duck', points.map(project), rnd));
   }
+  // Ducks come to visit lily pads: two paddle slow circles around each pad.
+  for (const pad of state.placed.filter((p) => p.itemId === 'lilypad' && p.level > 0)) {
+    for (let d = 0; d < 2; d++) {
+      const cx = pad.x * 100 + 50;
+      const cy = pad.y * 100 + 50;
+      const r = 26 + d * 10;
+      const ring: Point[] = [0, 1, 2, 3].map((k) => [cx + Math.cos((k + d * 0.5) * (Math.PI / 2)) * r, cy + Math.sin((k + d * 0.5) * (Math.PI / 2)) * r * 0.8]);
+      routes.push(buildRoute('duck', ring.map(project), rnd, 0.4));
+    }
+  }
   return routes;
+}
+
+/** Whether it's night on the base (real local time; tests can set window.__baseHour). */
+function isNight(): boolean {
+  const forced = (window as unknown as { __baseHour?: number }).__baseHour;
+  const hour = typeof forced === 'number' ? forced : new Date().getHours();
+  return hour >= 19 || hour < 6;
+}
+
+type Placed = { x: number; y: number; flip: boolean; pose: Pose; look: Look; cls: string };
+
+/**
+ * Life that comes from decorations: by day an athlete on each piece of
+ * training equipment; at night villagers gather round the campfire; bees by
+ * every beehive.
+ */
+function planLife(state: GameState, night: boolean, villagers: number) {
+  const built = (id: string) => state.placed.filter((p) => p.itemId === id && p.level > 0);
+  const athletes: Placed[] = [];
+  const sitters: Placed[] = [];
+  let glow: [number, number] | null = null;
+  const S = CRITTER_SCALE;
+  if (!night) {
+    let n = 0;
+    const add = (pose: Pose, at: [number, number], cls: string, flip = false) => {
+      if (athletes.length >= 4) return;
+      athletes.push({ x: at[0], y: at[1], flip, pose, look: LOOKS[n++ % LOOKS.length], cls });
+    };
+    for (const b of built('pullupbar')) {
+      const [hx, hy] = P(b.x * 100 + 50, b.y * 100 + 51, 81);
+      add('hang', [hx, hy + 23.5 * S], 'ex-pullup');
+    }
+    for (const b of built('dipbars')) {
+      const [hx, hy] = P(b.x * 100 + 50, b.y * 100 + 50, 50);
+      add('dip', [hx, hy - 0.5 * S], 'ex-dip');
+    }
+    for (const b of built('punchbag')) {
+      const at = P(b.x * 100 + 38, b.y * 100 + 64, 0);
+      const bag = P(b.x * 100 + 62, b.y * 100 + 50, 0);
+      add('punch', [at[0], at[1] - 11 * S], 'ex-box', bag[0] < at[0]);
+    }
+    for (const b of built('plyobox')) {
+      // In front of the box (not behind it), so the whole jump is visible.
+      const at = P(b.x * 100 + 56, b.y * 100 + 100, 0);
+      add('jump', [at[0], at[1] - 11 * S], 'ex-jump');
+    }
+  } else {
+    const fire = built('campfire')[0];
+    if (fire) {
+      const cx = fire.x * 100 + 50;
+      const cy = fire.y * 100 + 50;
+      const centre = P(cx, cy, 0);
+      glow = centre;
+      const seats = [200, 290, 20].slice(0, Math.max(1, Math.min(3, villagers)));
+      seats.forEach((deg, i) => {
+        const [sx, sy] = P(cx + Math.cos((deg * Math.PI) / 180) * 34, cy + Math.sin((deg * Math.PI) / 180) * 34, 0);
+        sitters.push({ x: sx, y: sy - 11 * S, flip: sx > centre[0], pose: 'sit', look: LOOKS[i % LOOKS.length], cls: 'ex-sit' });
+      });
+    }
+  }
+  const bees = built('beehive').flatMap((h) =>
+    [0, 1, 2, 3].map((i) => {
+      const [bx, by] = P(h.x * 100 + 50, h.y * 100 + 50, 44);
+      return { x: bx + (i - 1.5) * 6, y: by - (i % 2) * 6, delay: i * 0.9, size: i % 2 ? 12 : 16 };
+    })
+  );
+  return { athletes, sitters, glow, bees };
 }
 
 /** Butterflies flutter over flower patches, gardens and meadows. */
@@ -473,10 +691,15 @@ const identity: Project = (p) => p;
 export function BaseCritters({ state, animate, project = identity }: { state: GameState; animate: boolean; project?: Project }) {
   // New spots and routes each time the base opens; steady while you're on it.
   const seed = useMemo(() => Math.floor(Math.random() * 1e9), []);
-  const routes = useMemo(() => planRoutes(state, seed, project), [state, seed, project]);
+  const night = isNight();
+  const villagerCount = Math.min(4, 1 + (state.placed.find((p) => p.itemId === 'lodge')?.level ?? 0) + 1);
+  const life = useMemo(() => planLife(state, night, villagerCount), [state, night, villagerCount]);
+  // Villagers sitting by the fire aren't also wandering.
+  const routes = useMemo(() => planRoutes(state, seed, project, 4 - life.sitters.length), [state, seed, project, life.sitters.length]);
   const butterflies = planButterflies(state, project);
   return (
     <g className="base-critters" pointerEvents="none">
+
       {routes.map((r, i) => {
         const Art = ART[r.kind];
         if (!animate) {
@@ -527,6 +750,19 @@ export function BaseCritters({ state, animate, project = identity }: { state: Ga
           </g>
         );
       })}
+      {life.bees.map((b, i) => (
+        <g key={`bee${i}`} transform={`translate(${b.x.toFixed(1)} ${b.y.toFixed(1)})`}>
+          {animate && (
+            <animateMotion
+              dur={`${2.2 + (i % 3) * 0.5}s`}
+              begin={`-${b.delay}s`}
+              repeatCount="indefinite"
+              path={`M0,0 C${b.size},-${b.size} ${b.size * 2},${b.size / 2} 0,${b.size / 3} C-${b.size * 2},${b.size / 2} -${b.size},-${b.size} 0,0`}
+            />
+          )}
+          <Bee />
+        </g>
+      ))}
       {butterflies.map((b, i) => (
         <g key={`b${i}`} transform={`translate(${b.x} ${b.y})`}>
           {animate && (
@@ -536,6 +772,30 @@ export function BaseCritters({ state, animate, project = identity }: { state: Ga
             <ellipse cx={-3} cy={0} rx={3.5} ry={2.5} fill={b.color} />
             <ellipse cx={3} cy={0} rx={3.5} ry={2.5} fill={b.color} />
             <rect x={-0.6} y={-2} width={1.2} height={4} fill="#2a2a2a" />
+          </g>
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/**
+ * Villagers using decorations (training on equipment by day, sitting round the
+ * campfire at night). Drawn after the decorations so they appear on them.
+ */
+export function BaseLife({ state, animate }: { state: GameState; animate: boolean }) {
+  const night = isNight();
+  const villagerCount = Math.min(4, 1 + (state.placed.find((p) => p.itemId === 'lodge')?.level ?? 0) + 1);
+  const life = useMemo(() => planLife(state, night, villagerCount), [state, night, villagerCount]);
+  return (
+    <g className="base-life" pointerEvents="none">
+      {life.glow && <ellipse cx={life.glow[0]} cy={life.glow[1]} rx={46} ry={24} className={animate ? 'base-fireglow is-live' : 'base-fireglow'} />}
+      {[...life.athletes, ...life.sitters].map((a, i) => (
+        <g key={`a${i}`} transform={`translate(${a.x.toFixed(1)} ${a.y.toFixed(1)})`}>
+          <g className={animate ? a.cls : undefined}>
+            <g transform={`scale(${a.flip ? -CRITTER_SCALE : CRITTER_SCALE} ${CRITTER_SCALE})`}>
+              <Athlete look={a.look} pose={a.pose} />
+            </g>
           </g>
         </g>
       ))}
