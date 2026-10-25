@@ -1,7 +1,7 @@
-import { Activity, Castle, Settings as SettingsIcon } from 'lucide-react';
+import { Activity, Castle, Settings as SettingsIcon, TrendingUp } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export type AppTab = 'train' | 'base' | 'settings';
+export type AppTab = 'train' | 'progress' | 'base' | 'settings';
 
 interface AppTabBarProps {
   active: AppTab;
@@ -14,6 +14,7 @@ export function AppTabBar({ active, onChange, baseHasNews }: AppTabBarProps) {
   const { t } = useLanguage();
   const tabs: Array<{ id: AppTab; label: string; icon: typeof Activity }> = [
     { id: 'train', label: t.game.tabs.train, icon: Activity },
+    { id: 'progress', label: t.game.tabs.progress, icon: TrendingUp },
     { id: 'base', label: t.game.tabs.base, icon: Castle },
     { id: 'settings', label: t.hub.settingsTab, icon: SettingsIcon }
   ];
@@ -28,7 +29,7 @@ export function AppTabBar({ active, onChange, baseHasNews }: AppTabBarProps) {
             type="button"
             className={`app-tab ${isActive ? 'is-active' : ''}`}
             aria-current={isActive ? 'page' : undefined}
-            data-tour={id === 'base' ? 'base-tab' : id === 'settings' ? 'settings' : 'train-tab'}
+            data-tour={id === 'base' ? 'base-tab' : id === 'settings' ? 'settings' : id === 'progress' ? 'progress-tab' : 'train-tab'}
             onClick={() => onChange(id)}>
             <span className="app-tab-icon">
               <Icon size={22} strokeWidth={2.4} aria-hidden="true" />

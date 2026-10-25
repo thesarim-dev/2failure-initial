@@ -287,6 +287,40 @@ export interface AppTranslations {
       saveError: string;
     };
   };
+  progress: {
+    title: string;
+    thisWeek: string;
+    streak: string;
+    allTime: string;
+    newRecords: string;
+    calendar: string;
+    less: string;
+    more: string;
+    restDay: string;
+    sets: (n: number) => string;
+    weekly: string;
+    upper: string;
+    legs: string;
+    core: string;
+    exercises: string;
+    bestReps: (n: number) => string;
+    bestWeight: (kg: number, reps: number) => string;
+    kgMore: (kg: number) => string;
+    sessions: (n: number) => string;
+    oneSession: string;
+    records: string;
+    empty: string;
+  };
+  rest: {
+    resting: string;
+    nextExercise: string;
+    over: string;
+    next: (name: string) => string;
+    start: string;
+    less: string;
+    more: string;
+    skip: string;
+  };
   summary: {
     title: string;
     /** "in 11s" next to the coins: how long the set took. */

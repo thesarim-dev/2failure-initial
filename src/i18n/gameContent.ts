@@ -6,7 +6,7 @@ type NameDesc = { name: string; description: string };
 type TrophyCopy = { name: string; how: string; proof: (value: number) => string };
 
 export type GameCopy = {
-  tabs: { train: string; base: string };
+  tabs: { train: string; base: string; progress: string };
   title: string;
   hqLevel: (level: number) => string;
   resources: Record<ResourceId, string>;
@@ -187,7 +187,7 @@ export type GameCopy = {
 };
 
 const en: GameCopy = {
-  tabs: { train: 'Train', base: 'Base' },
+  tabs: { train: 'Train', base: 'Base', progress: 'Progress' },
   title: 'Your base',
   hqLevel: (level) => `HQ level ${level}`,
   resources: { stone: 'Stone', timber: 'Timber', crystal: 'Crystal' },
@@ -511,7 +511,7 @@ const en: GameCopy = {
 };
 
 const he: GameCopy = {
-  tabs: { train: 'אימון', base: 'בסיס' },
+  tabs: { train: 'אימון', base: 'בסיס', progress: 'התקדמות' },
   title: 'הבסיס שלך',
   hqLevel: (level) => `מפקדה שלב ${level}`,
   resources: { stone: 'אבן', timber: 'עץ', crystal: 'קריסטל' },
@@ -832,7 +832,7 @@ const he: GameCopy = {
 };
 
 const ar: GameCopy = {
-  tabs: { train: 'تدريب', base: 'القاعدة' },
+  tabs: { train: 'تدريب', base: 'القاعدة', progress: 'التقدّم' },
   title: 'قاعدتك',
   hqLevel: (level) => `المقر مستوى ${level}`,
   resources: { stone: 'حجر', timber: 'خشب', crystal: 'كريستال' },

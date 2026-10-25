@@ -50,6 +50,8 @@ type UiContent = {
   login: import('./types').AppTranslations['login'];
   workout: import('./types').AppTranslations['workout'];
   summary: import('./types').AppTranslations['summary'];
+  rest: import('./types').AppTranslations['rest'];
+  progress: import('./types').AppTranslations['progress'];
   auth: import('./types').AppTranslations['auth'];
   coins: import('./types').AppTranslations['coins'];
   errors: import('./types').AppTranslations['errors'];
@@ -239,6 +241,40 @@ const en: UiContent = {
       todaysSets: (summary) => `Today so far: ${summary}`,
       saveError: 'Could not save this set. Check your connection and try again.'
     }
+  },
+  progress: {
+    title: 'Your progress',
+    thisWeek: 'sets this week',
+    streak: 'day streak',
+    allTime: 'sets, last 6 months',
+    newRecords: 'new records this month',
+    calendar: 'Last 12 weeks',
+    less: 'Less',
+    more: 'More',
+    restDay: 'Rest day',
+    sets: (n) => (n === 1 ? '1 set' : `${n} sets`),
+    weekly: 'Sets per week',
+    upper: 'Upper body',
+    legs: 'Legs',
+    core: 'Core',
+    exercises: 'Your exercises',
+    bestReps: (n) => `Best: ${n} reps`,
+    bestWeight: (kg, reps) => `Best: ${kg} kg × ${reps}`,
+    kgMore: (kg) => `+${kg} kg`,
+    sessions: (n) => (n === 1 ? '1 session' : `${n} sessions`),
+    oneSession: 'Train this again to see your trend.',
+    records: 'Personal records',
+    empty: 'Log your first set and your progress will show up here: your best sets, your weekly volume and every personal record.'
+  },
+  rest: {
+    resting: 'Rest',
+    nextExercise: 'Rest, then next exercise',
+    over: "Rest's over",
+    next: (name) => `Next: ${name}`,
+    start: 'Start set',
+    less: '15 seconds less',
+    more: '15 seconds more',
+    skip: 'Skip rest'
   },
   summary: {
     title: 'Set logged!',
@@ -535,6 +571,40 @@ const he: UiContent = {
       saveError: 'לא ניתן לשמור את הסט. בדוק את החיבור ונסה שוב.'
     }
   },
+  progress: {
+    title: 'ההתקדמות שלכם',
+    thisWeek: 'סטים השבוע',
+    streak: 'ימי רצף',
+    allTime: 'סטים, 6 חודשים',
+    newRecords: 'שיאים חדשים החודש',
+    calendar: '12 השבועות האחרונים',
+    less: 'פחות',
+    more: 'יותר',
+    restDay: 'יום מנוחה',
+    sets: (n) => (n === 1 ? 'סט אחד' : `${n} סטים`),
+    weekly: 'סטים בשבוע',
+    upper: 'פלג גוף עליון',
+    legs: 'רגליים',
+    core: 'ליבה',
+    exercises: 'התרגילים שלכם',
+    bestReps: (n) => `שיא: ${n} חזרות`,
+    bestWeight: (kg, reps) => `שיא: ${kg} ק״ג × ${reps}`,
+    kgMore: (kg) => `+${kg} ק״ג`,
+    sessions: (n) => (n === 1 ? 'אימון אחד' : `${n} אימונים`),
+    oneSession: 'התאמנו בזה שוב כדי לראות את המגמה.',
+    records: 'שיאים אישיים',
+    empty: 'רשמו את הסט הראשון וההתקדמות תופיע כאן: הסטים הטובים ביותר, הנפח השבועי וכל שיא אישי.'
+  },
+  rest: {
+    resting: 'מנוחה',
+    nextExercise: 'מנוחה, ואז התרגיל הבא',
+    over: 'המנוחה נגמרה',
+    next: (name) => `הבא: ${name}`,
+    start: 'התחילו סט',
+    less: '15 שניות פחות',
+    more: '15 שניות יותר',
+    skip: 'דלגו על המנוחה'
+  },
   summary: {
     title: 'הסט נרשם!',
     inTime: (time) => `תוך ${time}`,
@@ -830,6 +900,40 @@ const ar: UiContent = {
       todaysSets: (summary) => `اليوم حتى الآن: ${summary}`,
       saveError: 'تعذّر حفظ المجموعة. تحقق من الاتصال وحاول مرة أخرى.'
     }
+  },
+  progress: {
+    title: 'تقدّمك',
+    thisWeek: 'مجموعات هذا الأسبوع',
+    streak: 'أيام متتالية',
+    allTime: 'مجموعات، آخر 6 أشهر',
+    newRecords: 'أرقام قياسية جديدة هذا الشهر',
+    calendar: 'آخر 12 أسبوعاً',
+    less: 'أقل',
+    more: 'أكثر',
+    restDay: 'يوم راحة',
+    sets: (n) => (n === 1 ? 'مجموعة واحدة' : n === 2 ? 'مجموعتان' : n <= 10 ? `${n} مجموعات` : `${n} مجموعة`),
+    weekly: 'المجموعات في الأسبوع',
+    upper: 'الجزء العلوي',
+    legs: 'الساقان',
+    core: 'الجذع',
+    exercises: 'تمارينك',
+    bestReps: (n) => `الأفضل: ${n} تكرار`,
+    bestWeight: (kg, reps) => `الأفضل: ${kg} كغ × ${reps}`,
+    kgMore: (kg) => `+${kg} كغ`,
+    sessions: (n) => (n === 1 ? 'جلسة واحدة' : n === 2 ? 'جلستان' : n <= 10 ? `${n} جلسات` : `${n} جلسة`),
+    oneSession: 'تمرّن عليه مجدداً لترى منحنى تقدّمك.',
+    records: 'الأرقام القياسية الشخصية',
+    empty: 'سجّل مجموعتك الأولى وسيظهر تقدّمك هنا: أفضل مجموعاتك وحجمك الأسبوعي وكل رقم قياسي شخصي.'
+  },
+  rest: {
+    resting: 'راحة',
+    nextExercise: 'راحة، ثم التمرين التالي',
+    over: 'انتهت الراحة',
+    next: (name) => `التالي: ${name}`,
+    start: 'ابدأ المجموعة',
+    less: '15 ثانية أقل',
+    more: '15 ثانية أكثر',
+    skip: 'تخطَّ الراحة'
   },
   summary: {
     title: 'تم تسجيل المجموعة!',

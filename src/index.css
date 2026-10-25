@@ -7479,4 +7479,371 @@
   .settings-action-btn {
     text-transform: none;
   }
+
+  /* Rest timer: a banner from the top that stays; green → yellow → red */
+  .rest-banner {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+    left: 50%;
+    z-index: 110;
+    width: min(94vw, 30rem);
+    transform: translateX(-50%);
+    border-radius: 1.1rem;
+    overflow: hidden;
+    color: #fff;
+    background: var(--rest);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transition: background-color 0.25s linear;
+    animation: rest-drop 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes rest-drop {
+    from { transform: translate(-50%, -140%); }
+    to { transform: translate(-50%, 0); }
+  }
+  .rest-banner-bar {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.75);
+    transform-origin: left center;
+    transition: transform 0.25s linear;
+  }
+  [dir='rtl'] .rest-banner-bar {
+    transform-origin: right center;
+  }
+  .rest-banner-main {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 0.6rem 0.75rem 0.9rem;
+  }
+  .rest-banner-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .rest-banner-kicker {
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+  .rest-banner-next {
+    font-size: 0.92rem;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .rest-banner-clock {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .rest-banner-time {
+    min-width: 3.4rem;
+    text-align: center;
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+  .rest-banner-adjust,
+  .rest-banner-close {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.18);
+    color: #fff;
+  }
+  .rest-banner-start {
+    padding: 0.5rem 0.95rem;
+    border-radius: 999px;
+    font-weight: 900;
+    color: #b42318;
+    background: #fff;
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+  }
+  .rest-banner.is-done {
+    animation: rest-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes rest-pulse {
+    0%, 100% { box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(255, 80, 60, 0.6); }
+    50% { box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 0 8px rgba(255, 80, 60, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rest-banner,
+    .rest-banner.is-done {
+      animation: none;
+    }
+  }
+
+  /* =========================== Progress screen =========================== */
+  .progress-screen {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 1rem 1rem 6.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+  .progress-title {
+    font-size: 1.6rem;
+    margin: 0.4rem 0 0;
+  }
+  .progress-loading {
+    opacity: 0.6;
+    text-align: center;
+  }
+  .progress-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+  .progress-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.7rem 0.3rem;
+    border-radius: 0.9rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  html:not(.dark) .progress-tile {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+  .progress-tile-n {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: #c8f032;
+  }
+  html:not(.dark) .progress-tile-n {
+    color: #4f7a00;
+  }
+  .progress-tile-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    opacity: 0.7;
+    line-height: 1.15;
+  }
+  .progress-card {
+    padding: 1rem;
+  }
+  .progress-h2 {
+    font-size: 1rem;
+    margin: 0 0 0.7rem;
+  }
+  .progress-heat {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .heat-cell {
+    fill: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.07);
+  }
+  html:not(.dark) .heat-cell {
+    fill: rgba(0, 0, 0, 0.07);
+    background: rgba(0, 0, 0, 0.07);
+  }
+  .heat-cell.heat-1 { fill: rgba(200, 240, 50, 0.35); background: rgba(200, 240, 50, 0.35); }
+  .heat-cell.heat-2 { fill: rgba(200, 240, 50, 0.65); background: rgba(200, 240, 50, 0.65); }
+  .heat-cell.heat-3 { fill: #c8f032; background: #c8f032; }
+  .heat-cell.heat-future { fill: transparent; }
+  .heat-cell.is-rest { fill: #7c83ff; background: #7c83ff; }
+  .heat-cell.is-today { stroke: #fff; stroke-width: 1.5; }
+  html:not(.dark) .heat-cell.is-today { stroke: #1a1a1a; }
+  .progress-legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    opacity: 0.8;
+  }
+  .progress-legend i {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 3px;
+  }
+  .progress-legend span + i {
+    margin-inline-start: 0.4rem;
+  }
+  .progress-weeks {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.4rem;
+    align-items: end;
+  }
+  .progress-week {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .progress-week-n {
+    font-size: 0.7rem;
+    font-weight: 900;
+    min-height: 0.9rem;
+  }
+  .progress-week-bar {
+    width: 100%;
+    max-width: 2rem;
+    display: flex;
+    flex-direction: column-reverse;
+    border-radius: 0.4rem;
+    overflow: hidden;
+    background: rgba(127, 127, 127, 0.1);
+  }
+  .progress-week-bar i {
+    display: block;
+    transition: height 0.4s ease;
+  }
+  .week-upper { background: #b9c0cc; }
+  .week-lower { background: #c48a4c; }
+  .week-core { background: #a98bff; }
+  .progress-week-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    opacity: 0.6;
+  }
+  .progress-list,
+  .progress-records {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .progress-ex + .progress-ex {
+    border-top: 1px solid rgba(127, 127, 127, 0.15);
+  }
+  .progress-ex-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.1rem;
+    text-align: start;
+  }
+  .progress-ex-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .progress-ex-name {
+    font-weight: 800;
+    font-size: 0.92rem;
+  }
+  .progress-ex-best {
+    font-size: 0.76rem;
+    font-weight: 700;
+    opacity: 0.7;
+  }
+  .progress-ex-delta {
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    color: #0c0f02;
+    background: #c8f032;
+  }
+  .progress-ex-chev {
+    opacity: 0.5;
+    transition: transform 0.2s ease;
+  }
+  .progress-ex.is-open .progress-ex-chev {
+    transform: rotate(180deg);
+  }
+  .progress-ex-chart {
+    padding: 0.2rem 0 0.8rem;
+  }
+  .progress-ex-axis {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.6;
+  }
+  .progress-ex-note {
+    font-size: 0.82rem;
+    opacity: 0.7;
+  }
+  [dir='rtl'] .progress-spark {
+    transform: scaleX(-1);
+  }
+  .progress-spark-line {
+    fill: none;
+    stroke: #c8f032;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  html:not(.dark) .progress-spark-line {
+    stroke: #5e8f00;
+  }
+  .progress-spark-fill {
+    fill: rgba(200, 240, 50, 0.14);
+  }
+  .progress-spark-dot {
+    fill: #c8f032;
+    opacity: 0.6;
+  }
+  .progress-spark-end {
+    fill: #c8f032;
+    stroke: #0c0f02;
+    stroke-width: 1;
+  }
+  .progress-records li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0;
+    font-size: 0.86rem;
+  }
+  .progress-records li svg {
+    color: #f7c948;
+    flex-shrink: 0;
+  }
+  .progress-rec-name {
+    flex: 1;
+    font-weight: 800;
+  }
+  .progress-rec-value {
+    font-weight: 700;
+  }
+  .progress-rec-day {
+    font-size: 0.74rem;
+    opacity: 0.6;
+    min-width: 3.4rem;
+    text-align: end;
+  }
+  .progress-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 2rem 1.2rem;
+    text-align: center;
+    color: inherit;
+  }
+  .progress-empty svg {
+    color: #c8f032;
+  }
+
+  /* While the rest banner is showing, push the page down so nothing is covered. */
+  .has-rest-banner {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 5rem);
+    transition: padding-top 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
 }

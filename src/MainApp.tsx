@@ -26,6 +26,9 @@ import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { localizeVariant } from './i18n/localize';
 import { DAYS_FOR_TEMPLATE, TEMPLATE_FOR_DAYS, lineupFromPlan, planForPhase, slotProgress } from './lib/plan';
 import { addSlotHint, readSlotHints } from './lib/slotHints';
+import { REST, restSecondsFor } from './lib/restTimes';
+import { RestTimerBanner, type RestTimer } from './components/RestTimerBanner';
+import { ProgressScreen } from './components/ProgressScreen';
 import { usePlan } from './hooks/usePlan';
 import { PlanScreen } from './components/PlanScreen';
 import { calculateCoinsEarned } from './lib/coinRewards';
@@ -63,6 +66,7 @@ type AppState =
   | 'SUMMARY'
   | 'STORE'
   | 'SETTINGS'
+  | 'PROGRESS'
   | 'BASE';
 
 export function MainApp() {
@@ -286,6 +290,30 @@ export function MainApp() {
   } | null>(null);
   const [weightSaveError, setWeightSaveError] = useState<string | null>(null);
   const [workoutDone, setWorkoutDone] = useState(false);
+
+  // Rest timer between sets (remembered across screens and reloads).
+  const restKey = user?.id ? `2failure-user-${user.id}-rest-timer` : null;
+  const [restTimer, setRestTimerState] = useState<RestTimer | null>(() => {
+    try {
+      const saved = restKey ? (JSON.parse(window.localStorage.getItem(restKey) ?? 'null') as RestTimer | null) : null;
+      return saved && saved.endsAt > Date.now() - 10 * 60 * 1000 ? saved : null;
+    } catch {
+      return null;
+    }
+  });
+  const setRestTimer = useCallback(
+    (next: RestTimer | null) => {
+      setRestTimerState(next);
+      try {
+        if (!restKey) return;
+        if (next) window.localStorage.setItem(restKey, JSON.stringify(next));
+        else window.localStorage.removeItem(restKey);
+      } catch {
+        // Storage blocked: the timer still runs for this session.
+      }
+    },
+    [restKey]
+  );
   const finishingRef = useRef(false);
   const [isFinishing, setIsFinishing] = useState(false);
 
@@ -295,6 +323,7 @@ export function MainApp() {
   );
 
   const handleSelectMove = (move: Move) => {
+    setRestTimer(null);
     fx.start();
     finishingRef.current = false;
     setIsFinishing(false);
@@ -344,12 +373,26 @@ export function MainApp() {
       setSlotHintsVersion((v) => v + 1);
     }
     // Was this the last set of today's whole plan? Then the receipt says "Workout done!".
-    setWorkoutDone(
+    const dayDone =
       !!todayPlan &&
-        !todayPlan.isRestDay &&
-        todayPlan.exercises.length > 0 &&
-        todayPlan.exercises.every((e) => (e.id === categoryId ? e.done + 1 : e.done) >= e.target)
-    );
+      !todayPlan.isRestDay &&
+      todayPlan.exercises.length > 0 &&
+      todayPlan.exercises.every((e) => (e.id === categoryId ? e.done + 1 : e.done) >= e.target);
+    setWorkoutDone(dayDone);
+    // Rest before the next set: this exercise's rest if more sets remain,
+    // a short transition if the next set is a different exercise.
+    {
+      const here = todayPlan?.exercises.find((e) => e.id === categoryId);
+      const moreHere = !here || here.done + 1 < here.target;
+      const nextUp = moreHere ? categoryId : todayPlan?.exercises.find((e) => e.id !== categoryId && e.done < e.target)?.id;
+      const seconds = dayDone || !nextUp ? 0 : moreHere ? restSecondsFor(categoryId) : REST.nextExercise;
+      const nextMove = nextUp ? resolveMoveById(nextUp) : null;
+      setRestTimer(
+        seconds > 0 && nextUp && nextMove
+          ? { endsAt: Date.now() + seconds * 1000, total: seconds, nextId: nextUp, nextName: nextMove.name, nextExercise: !moreHere }
+          : null
+      );
+    }
     void (async () => {
       const totalSetsToday = await incrementSet(categoryId);
       if (
@@ -527,11 +570,11 @@ export function MainApp() {
     setAppState('STORE');
   };
   const handleCloseStore = () => setAppState('HOME');
-  const handleTab = (tab: 'train' | 'base' | 'settings') => {
+  const handleTab = (tab: 'train' | 'progress' | 'base' | 'settings') => {
     if (tab === 'base') fx.baseTab();
-    else if (tab === 'settings') fx.tick();
+    else if (tab === 'settings' || tab === 'progress') fx.tick();
     else fx.trainTab();
-    setAppState(tab === 'base' ? 'BASE' : tab === 'settings' ? 'SETTINGS' : 'HOME');
+    setAppState(tab === 'base' ? 'BASE' : tab === 'settings' ? 'SETTINGS' : tab === 'progress' ? 'PROGRESS' : 'HOME');
     window.scrollTo({ top: 0 });
   };
   const handleSeeBase = () => {
@@ -596,14 +639,17 @@ export function MainApp() {
       ? getWeightedSetContext(currentMove.categoryId)
       : null;
 
-  const showTabBar = appState === 'HOME' || appState === 'BASE' || appState === 'SETTINGS';
+  const showTabBar = appState === 'HOME' || appState === 'BASE' || appState === 'SETTINGS' || appState === 'PROGRESS';
 
+
+  // While resting, the page moves down so the banner never covers anything.
+  const showRestBanner = !!restTimer && appState !== 'WORKOUT' && appState !== 'REP_PROMPT' && appState !== 'WEIGHT_REP_PROMPT';
 
   return (
     <div
       className={`min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#BEF028] selection:text-black ${
         showTabBar ? 'has-tab-bar' : ''
-      }`}>
+      } ${showRestBanner ? 'has-rest-banner' : ''}`}>
       {/* Screens fade in. Opacity only: a transform would break fixed-position screens. */}
       <motion.div
         key={appState}
@@ -675,6 +721,14 @@ export function MainApp() {
         />
       )}
 
+      {appState === 'PROGRESS' && user && (
+        <ProgressScreen
+          userId={user.id}
+          streak={currentStreak}
+          restDays={recentRestDays}
+          refreshKey={Object.values(setsCompleted).reduce((a, b) => a + b, 0)}
+        />
+      )}
       {appState === 'SETTINGS' &&
       <Settings
         coins={coins}
@@ -749,9 +803,24 @@ export function MainApp() {
       )}
       </motion.div>
 
+      {showRestBanner && restTimer && (
+        <RestTimerBanner
+          timer={restTimer}
+          onAdjust={(sec) =>
+            setRestTimer({ ...restTimer, endsAt: Math.max(Date.now(), restTimer.endsAt + sec * 1000), total: Math.max(15, restTimer.total + sec) })
+          }
+          onDismiss={() => setRestTimer(null)}
+          onStart={() => {
+            const move = resolveMoveById(restTimer.nextId);
+            if (move) handleSelectMove(move);
+            else setRestTimer(null);
+          }}
+        />
+      )}
+
       {showTabBar && (
         <AppTabBar
-          active={appState === 'BASE' ? 'base' : appState === 'SETTINGS' ? 'settings' : 'train'}
+          active={appState === 'BASE' ? 'base' : appState === 'SETTINGS' ? 'settings' : appState === 'PROGRESS' ? 'progress' : 'train'}
           onChange={handleTab}
           baseHasNews={baseGame.hasNews}
         />
