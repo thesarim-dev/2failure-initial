@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, Medal, TrendingUp } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Medal, TrendingUp } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchSetHistory, type SetLogRow } from '../lib/setHistory';
 import { toLocalDateString } from '../lib/userStats';
@@ -64,13 +64,15 @@ export function ProgressScreen({
   userId,
   streak,
   restDays,
-  refreshKey
+  refreshKey,
+  onBack
 }: {
   userId: string;
   streak: number;
   restDays: string[];
   /** Changes when a set is logged, so the screen refreshes. */
   refreshKey: number;
+  onBack: () => void;
 }) {
   const { t, language } = useLanguage();
   const p = t.progress;
@@ -129,7 +131,12 @@ export function ProgressScreen({
   if (!rows?.length) {
     return (
       <div className="progress-screen">
-        <h1 className="progress-title">{p.title}</h1>
+        <header className="progress-header">
+          <button type="button" className="cyber-icon-btn cyber-icon-btn--back" onClick={onBack} aria-label={p.back}>
+            <ArrowLeft size={20} strokeWidth={2.6} />
+          </button>
+          <h1 className="progress-title">{p.title}</h1>
+        </header>
         <section className="cyber-panel progress-empty">
           <TrendingUp size={36} strokeWidth={2.2} aria-hidden="true" />
           <p>{p.empty}</p>
@@ -140,7 +147,12 @@ export function ProgressScreen({
 
   return (
     <div className="progress-screen">
-      <h1 className="progress-title">{p.title}</h1>
+      <header className="progress-header">
+          <button type="button" className="cyber-icon-btn cyber-icon-btn--back" onClick={onBack} aria-label={p.back}>
+            <ArrowLeft size={20} strokeWidth={2.6} />
+          </button>
+          <h1 className="progress-title">{p.title}</h1>
+        </header>
       <div className="progress-tiles">
         {[
           [setsThisWeek, p.thisWeek],

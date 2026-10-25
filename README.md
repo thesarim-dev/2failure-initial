@@ -183,9 +183,9 @@ Tap **Cancel workout** to return to the home screen without logging a set. No co
 
 After every set a banner drops down from the top of the screen and stays while you move around the app (the page shifts down so it never covers anything). Its colour slides smoothly from green through yellow to red as the rest runs out; at zero it chimes, buzzes and offers **Start set**. Adjust with −15 s / +15 s, or skip with ✕. Rest length follows the evidence (`src/lib/restTimes.ts`): barbell lifts 3:00, hard and loaded moves 2:00, standard bodyweight 1:30, core / calves / holds 1:00, moving on to the next exercise 1:00, and no timer after the day's last set.
 
-### Progress tab
+### Progress (in Settings)
 
-Sets this week, streak, all sets in the last 6 months and new records this month; a 12-week training calendar (rest days in violet); sets per week split into upper body / legs / core; every exercise with its best set, improvement since the first session and a trend chart; and a list of personal records.
+Open it from **Settings → Your progress → View**. Sets this week, streak, all sets in the last 6 months and new records this month; a 12-week training calendar (rest days in violet); sets per week split into upper body / legs / core; every exercise with its best set, improvement since the first session and a trend chart; and a list of personal records.
 
 ### Coins are server-authoritative (anti-cheat)
 

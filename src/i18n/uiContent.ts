@@ -264,7 +264,10 @@ const en: UiContent = {
     sessions: (n) => (n === 1 ? '1 session' : `${n} sessions`),
     oneSession: 'Train this again to see your trend.',
     records: 'Personal records',
-    empty: 'Log your first set and your progress will show up here: your best sets, your weekly volume and every personal record.'
+    empty: 'Log your first set and your progress will show up here: your best sets, your weekly volume and every personal record.',
+    settingsDescription: 'Your training calendar, weekly sets, best sets and personal records.',
+    view: 'View',
+    back: 'Back to settings'
   },
   rest: {
     resting: 'Rest',
@@ -593,7 +596,10 @@ const he: UiContent = {
     sessions: (n) => (n === 1 ? 'אימון אחד' : `${n} אימונים`),
     oneSession: 'התאמנו בזה שוב כדי לראות את המגמה.',
     records: 'שיאים אישיים',
-    empty: 'רשמו את הסט הראשון וההתקדמות תופיע כאן: הסטים הטובים ביותר, הנפח השבועי וכל שיא אישי.'
+    empty: 'רשמו את הסט הראשון וההתקדמות תופיע כאן: הסטים הטובים ביותר, הנפח השבועי וכל שיא אישי.',
+    settingsDescription: 'לוח האימונים, הסטים בשבוע, הסטים הטובים ביותר והשיאים האישיים.',
+    view: 'הצגה',
+    back: 'חזרה להגדרות'
   },
   rest: {
     resting: 'מנוחה',
@@ -923,7 +929,10 @@ const ar: UiContent = {
     sessions: (n) => (n === 1 ? 'جلسة واحدة' : n === 2 ? 'جلستان' : n <= 10 ? `${n} جلسات` : `${n} جلسة`),
     oneSession: 'تمرّن عليه مجدداً لترى منحنى تقدّمك.',
     records: 'الأرقام القياسية الشخصية',
-    empty: 'سجّل مجموعتك الأولى وسيظهر تقدّمك هنا: أفضل مجموعاتك وحجمك الأسبوعي وكل رقم قياسي شخصي.'
+    empty: 'سجّل مجموعتك الأولى وسيظهر تقدّمك هنا: أفضل مجموعاتك وحجمك الأسبوعي وكل رقم قياسي شخصي.',
+    settingsDescription: 'تقويم تدريبك ومجموعاتك الأسبوعية وأفضل مجموعاتك وأرقامك القياسية.',
+    view: 'عرض',
+    back: 'العودة إلى الإعدادات'
   },
   rest: {
     resting: 'راحة',

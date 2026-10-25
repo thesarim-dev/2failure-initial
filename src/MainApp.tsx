@@ -736,6 +736,10 @@ export function MainApp() {
           streak={currentStreak}
           restDays={recentRestDays}
           refreshKey={Object.values(setsCompleted).reduce((a, b) => a + b, 0)}
+          onBack={() => {
+            setAppState('SETTINGS');
+            window.scrollTo({ top: 0 });
+          }}
         />
       )}
       {appState === 'SETTINGS' &&
@@ -749,6 +753,11 @@ export function MainApp() {
         soundOn={soundOn}
         onToggleSound={toggleSound}
         onOpenPlan={handleOpenPlan}
+        onOpenProgress={() => {
+          fx.tick();
+          setAppState('PROGRESS');
+          window.scrollTo({ top: 0 });
+        }}
         demoTools={DEMO_TOOLS ? demoTools : undefined} />
 
       }
@@ -829,7 +838,7 @@ export function MainApp() {
 
       {showTabBar && (
         <AppTabBar
-          active={appState === 'BASE' ? 'base' : appState === 'SETTINGS' ? 'settings' : appState === 'PROGRESS' ? 'progress' : 'train'}
+          active={appState === 'BASE' ? 'base' : appState === 'SETTINGS' || appState === 'PROGRESS' ? 'settings' : 'train'}
           onChange={handleTab}
           baseHasNews={baseGame.hasNews}
         />

@@ -1,4 +1,4 @@
-import { Activity, Castle, Settings as SettingsIcon, TrendingUp } from 'lucide-react';
+import { Activity, Castle, Settings as SettingsIcon } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 export type AppTab = 'train' | 'progress' | 'base' | 'settings';
@@ -14,7 +14,6 @@ export function AppTabBar({ active, onChange, baseHasNews }: AppTabBarProps) {
   const { t } = useLanguage();
   const tabs: Array<{ id: AppTab; label: string; icon: typeof Activity }> = [
     { id: 'train', label: t.game.tabs.train, icon: Activity },
-    { id: 'progress', label: t.game.tabs.progress, icon: TrendingUp },
     { id: 'base', label: t.game.tabs.base, icon: Castle },
     { id: 'settings', label: t.hub.settingsTab, icon: SettingsIcon }
   ];

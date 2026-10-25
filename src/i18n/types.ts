@@ -310,6 +310,9 @@ export interface AppTranslations {
     oneSession: string;
     records: string;
     empty: string;
+    settingsDescription: string;
+    view: string;
+    back: string;
   };
   rest: {
     resting: string;

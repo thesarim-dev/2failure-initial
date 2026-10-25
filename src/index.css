@@ -7919,4 +7919,15 @@
       animation: none;
     }
   }
+
+  /* Progress (opened from Settings): back button beside the title, like Your plan */
+  .progress-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: 0.4rem;
+  }
+  .progress-header .progress-title {
+    margin: 0;
+  }
 }

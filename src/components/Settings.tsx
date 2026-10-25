@@ -1,5 +1,5 @@
 import { useAmbientSetting } from '../lib/ambient';
-import { CalendarDays, Compass, LogOut, Moon, Sun, Volume2, VolumeX, Trees } from 'lucide-react';
+import { CalendarDays, Compass, LogOut, Moon, Sun, Volume2, VolumeX, Trees, TrendingUp } from 'lucide-react';
 import { CoinsBadge } from './CoinsBadge';
 import { SettingsFaq } from './SettingsFaq';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +18,7 @@ interface SettingsProps {
   onToggleSound: () => void;
   /** Opens the Training screen on its Plan tab. */
   onOpenPlan: () => void;
+  onOpenProgress: () => void;
   /** Demo build only: testing cheats. Undefined in the real app. */
   demoTools?: { addCoins: () => void; addMaterials: () => void; finishBuilds: () => void; unlockAll: () => void };
 }
@@ -32,6 +33,7 @@ export function Settings({
   soundOn,
   onToggleSound,
   onOpenPlan,
+  onOpenProgress,
   demoTools
 }: SettingsProps) {
   const { signOut } = useAuth();
@@ -58,6 +60,19 @@ export function Settings({
             <button type="button" onClick={onOpenPlan} className="settings-theme-toggle">
               <CalendarDays size={18} strokeWidth={2.35} />
               <span className="settings-theme-toggle__label">{t.hub.settingsLink.open}</span>
+            </button>
+          </div>
+        </section>
+
+        <section className="cyber-panel p-5 normal-case">
+          <div className="settings-appearance-row">
+            <div className="settings-appearance-copy">
+              <h2 className="settings-section-title">{t.progress.title}</h2>
+              <p className="text-sm font-medium opacity-70">{t.progress.settingsDescription}</p>
+            </div>
+            <button type="button" onClick={onOpenProgress} className="settings-theme-toggle">
+              <TrendingUp size={18} strokeWidth={2.35} />
+              <span className="settings-theme-toggle__label">{t.progress.view}</span>
             </button>
           </div>
         </section>
