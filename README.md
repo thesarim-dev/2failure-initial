@@ -191,7 +191,11 @@ Sets this week, streak, all sets in the last 6 months and new records this month
 
 Coins are earned and spent on the server (`supabase/migrations/20261026120000_server_coin_rewards.sql`). The app reports a finished set (exercise, duration, tier) to `log_set_reward`, which checks it's plausible (a set can't end sooner after the previous one than it lasted; at most 80 rewarded sets a day; durations are clamped) and pays with the same formula as `src/lib/coinRewards.ts`. Spending goes through `spend_coins`, which checks the balance. Every change is recorded in a `coin_ledger` table, and apps can no longer write the coins column directly. Until the migration is applied the app falls back to the old behaviour, so nothing breaks in between.
 
-Still client-side (next steps): base materials and buildings, the per-set log and streaks.
+**The base economy is enforced too** (`supabase/migrations/20261027120000_server_economy.sql`):
+
+* **Materials and buildings:** every player has an earned material budget, raised by each server-checked set (+25 per set, +60 on the first set of a day for quests and the session bonus, +40 on the first set of a week for the weekly bonus). Whenever the base is saved, the server totals its value: the materials it holds plus everything built from them, priced from the game's own catalog (`src/game/economy.ts`, exported into the SQL by `scripts/economy-sql.ts`). A base worth more than the budget is refused, and the app restores the real saved base. Existing players start with a budget covering their current base, so nobody loses anything.
+* **The set log** (behind Progress and future leaderboards) is written only through `log_set_entry`, which rejects implausible numbers (over 1,000 reps or 500 kg), entries faster than one every 3 seconds, and more than 300 a day.
+* **Streaks** can only grow by one day with real training in the last 48 hours, restores can't exceed the longest streak ever reached, and total workouts count up one at a time.
 
 ### Today's progress follows the plan slot
 
@@ -615,6 +619,11 @@ The base is saved to your account in Supabase (table `base_games`), so it follow
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Supabase step for the coin anti-cheat
+### Supabase steps for the anti-cheat (run once, in this order)
 
-In the Supabase dashboard, open **SQL Editor**, paste the contents of `supabase/migrations/20261026120000_server_coin_rewards.sql` and run it once. Existing balances are kept.
+In the Supabase dashboard, open **SQL Editor** and run each file's full contents, one at a time:
+
+1. `supabase/migrations/20261026120000_server_coin_rewards.sql` (coins)
+2. `supabase/migrations/20261027120000_server_economy.sql` (materials, buildings, set log, streaks)
+
+Both keep existing balances and bases, and are safe to run again. Until they're run, the app falls back to its old behaviour.

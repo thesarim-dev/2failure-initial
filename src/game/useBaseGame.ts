@@ -193,7 +193,18 @@ export function useBaseGame(
       const savedAt = await saveRemoteBase(userId, stateRef.current);
       pendingRemote.current = false;
       saveLocal(userId, stateRef.current, savedAt);
-    } catch {
+    } catch (error) {
+      // The server refuses a base worth more than its owner has earned
+      // (e.g. edited data): replace it with the real, saved base.
+      if (/base_over_budget/.test(String((error as { message?: string })?.message ?? error))) {
+        pendingRemote.current = false;
+        const remote = await fetchRemoteBase(userId).catch(() => null);
+        const real = remote ? parseSave(remote.state) : createInitialState();
+        stateRef.current = real;
+        setState(real);
+        saveLocal(userId, real, remote?.updatedAt ?? Date.now());
+        return;
+      }
       // Offline or Supabase unavailable: keep the local copy and retry later.
     }
   }, [userId]);

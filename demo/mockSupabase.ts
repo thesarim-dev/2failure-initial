@@ -1,3 +1,4 @@
+import { baseValue, BUDGET_FIRST_OF_DAY, BUDGET_FIRST_OF_WEEK, BUDGET_PER_SET, STARTING_BUDGET } from '../src/game/economy';
 /* Demo-only stand-in for @supabase/supabase-js: an in-browser database in
    localStorage, so the demo works with no server. Not part of the real app. */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -151,6 +152,10 @@ class Query implements PromiseLike<{ data: any; error: any }> {
       rows = rows.map((r) => (this.matches(r) ? ((result.push({ ...r, ...this.payload }), { ...r, ...this.payload })) : r));
       writeTable(this.name, rows);
     } else if (this.op === 'upsert') {
+      if (this.name === 'base_games') {
+        const refused = guardBaseSave(Array.isArray(this.payload) ? this.payload[0] : this.payload, rows);
+        if (refused) return { data: null, error: refused };
+      }
       const keys = ((this.opts.onConflict as string | undefined)?.split(',').map((s) => s.trim()) ?? UNIQUE[this.name] ?? ['id']);
       for (const item of Array.isArray(this.payload) ? this.payload : [this.payload]) {
         const i = rows.findIndex((r) => keys.every((k) => r[k] === item[k]));
@@ -274,6 +279,26 @@ const auth = {
  * Server functions (same rules as supabase/migrations/20261026120000_server_coin_rewards.sql):
  * coins are earned for plausible sets and spent only with enough balance.
  */
+/** The server's economy rules (20261027120000_server_economy.sql), same shared value logic. */
+function budgetRow(db: Record<string, Row[]>, uid: string, existingBase?: Row) {
+  const eco = (db.economy = db.economy ?? []);
+  let row = eco.find((r) => r.user_id === uid);
+  if (!row) {
+    // Like the migration's backfill: an existing base starts with a budget covering it.
+    row = { user_id: uid, material_budget: Math.max(STARTING_BUDGET, existingBase ? baseValue(existingBase.state ?? {}) : 0) };
+    eco.push(row);
+  }
+  return row;
+}
+function guardBaseSave(item: Row, rows: Row[]): { code: string; message: string } | null {
+  const db = loadDb();
+  const existing = rows.find((r) => r.user_id === item.user_id);
+  const row = budgetRow(db, item.user_id, existing);
+  saveDb(db);
+  const value = baseValue(item.state ?? {});
+  return value > row.material_budget ? { code: 'P0001', message: `base_over_budget: base value ${value} exceeds earned budget ${row.material_budget}` } : null;
+}
+
 function coinsForSet(seconds: number, tier: string): number {
   if (seconds < 10) return 0;
   return 20 + Math.round(10 * Math.min(1, seconds / 60)) + (tier === 'PRO' ? 5 : tier === 'ELITE' ? 10 : 0);
@@ -305,8 +330,31 @@ async function rpc(name: string, args: Record<string, any>) {
     }
     ledger.push({ id: now, user_id: uid, delta: earned, reason, meta: { category: args.p_category_id, seconds }, created_at: new Date(now).toISOString() });
     me.coins = (me.coins ?? 0) + earned;
+    if (reason === 'set' && seconds >= 10) {
+      const lastDay = last === null ? null : new Date(last).toISOString().slice(0, 10);
+      const weekOf = (t: number) => Math.floor((t / 86400000 + 3) / 7); // Monday-based weeks
+      const bonus = BUDGET_PER_SET + (lastDay !== new Date(now).toISOString().slice(0, 10) ? BUDGET_FIRST_OF_DAY : 0) + (last === null || weekOf(last) !== weekOf(now) ? BUDGET_FIRST_OF_WEEK : 0);
+      budgetRow(db, uid, (db.base_games ?? []).find((r) => r.user_id === uid)).material_budget += bonus;
+    }
     saveDb(db);
     return { data: [{ earned, balance: me.coins }], error: null };
+  }
+  if (name === 'log_set_entry') {
+    const reps = Math.round(args.p_reps ?? 0);
+    const kg = args.p_weight_kg;
+    if (reps < 1 || reps > 1000) return { data: null, error: { message: 'implausible reps' } };
+    if (kg != null && (kg <= 0 || kg > 500)) return { data: null, error: { message: 'implausible weight' } };
+    const logs = (db.workout_set_logs = db.workout_set_logs ?? []);
+    if (logs.some((r) => r.user_id === uid && now - Date.parse(r.completed_at) < 3000)) return { data: null, error: { message: 'too fast' } };
+    const id = `log-${now}`;
+    logs.push({ id, user_id: uid, category_id: args.p_category_id, reps, weight_kg: kg ?? null, set_number: args.p_set_number ?? null, completed_at: new Date(now).toISOString() });
+    saveDb(db);
+    return { data: id, error: null };
+  }
+  if (name === 'demo_add_budget') {
+    budgetRow(db, uid, (db.base_games ?? []).find((r) => r.user_id === uid)).material_budget += Math.round(args.p_amount ?? 0);
+    saveDb(db);
+    return { data: null, error: null };
   }
   if (name === 'spend_coins') {
     const amount = Math.round(args.p_amount ?? 0);

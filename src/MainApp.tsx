@@ -26,6 +26,7 @@ import { resolveRotatingProgramLineup } from './lib/rotatingProgram';
 import { localizeVariant } from './i18n/localize';
 import { DAYS_FOR_TEMPLATE, TEMPLATE_FOR_DAYS, lineupFromPlan, planForPhase, slotProgress } from './lib/plan';
 import { addSlotHint, readSlotHints } from './lib/slotHints';
+import { supabase } from './lib/supabase';
 import { REST, restSecondsFor } from './lib/restTimes';
 import { RestTimerBanner, type RestTimer } from './components/RestTimerBanner';
 import { ProgressScreen } from './components/ProgressScreen';
@@ -395,17 +396,19 @@ export function MainApp() {
           : null
       );
     }
+    // The server decides the reward (and checks the set is plausible). It also
+    // records the set, which the streak guard looks for, so the streak waits for it.
+    const reward = earnForSet(currentMove.id, duration, currentMove.tier ?? 'BASE', calculateCoinsEarned(duration, currentMove.tier ?? 'BASE'));
     void (async () => {
       const totalSetsToday = await incrementSet(categoryId);
       if (
         totalSetsToday !== null &&
         shouldCountStreakForDay(totalSetsToday, lastWorkoutDate)
       ) {
+        await reward.catch(() => undefined);
         await recordWorkoutComplete(restAllowance);
       }
     })();
-    // The server decides the reward (and checks the set is plausible).
-    void earnForSet(currentMove.id, duration, currentMove.tier ?? 'BASE', calculateCoinsEarned(duration, currentMove.tier ?? 'BASE'));
     setSummarySetContext(options?.setContext ?? null);
     finishingRef.current = false;
     setIsFinishing(false);
@@ -544,11 +547,14 @@ export function MainApp() {
   // Demo build only: one-tap cheats for testing the base and the shop.
   const demoTools = {
     addCoins: () => void setCoins((c) => c + 10000),
-    addMaterials: () =>
+    // (demo only) the demo server also enforces the material budget, so raise it with the materials
+    addMaterials: () => {
+      void supabase.rpc('demo_add_budget', { p_amount: 20000 });
       baseGame.devPatch((st) => ({
         ...st,
         resources: { stone: st.resources.stone + 5000, timber: st.resources.timber + 5000, crystal: st.resources.crystal + 5000 }
-      })),
+      }));
+    },
     finishBuilds: () =>
       baseGame.devPatch((st) => ({
         ...st,
