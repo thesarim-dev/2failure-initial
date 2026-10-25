@@ -12,6 +12,7 @@ import {
   toggleEdge,
   setEdge,
   liftPathsToTerrain,
+  retireDecor,
   setBaseName,
   createInitialState,
   createInitialStats,
@@ -112,7 +113,7 @@ function parseSave(input: unknown): GameState {
       delete resources.iron;
     }
     // Fill in fields added after the save was made.
-    return liftPathsToTerrain({
+    return retireDecor(liftPathsToTerrain({
       ...createInitialState(),
       ...state,
       resources: { stone: resources.stone ?? 0, timber: resources.timber ?? 0, crystal: resources.crystal ?? 0 },
@@ -123,7 +124,7 @@ function parseSave(input: unknown): GameState {
       shields: state.shields ?? 0,
       terrain: state.terrain ?? {},
       edges: state.edges ?? {}
-    });
+    }));
   } catch {
     return createInitialState();
   }

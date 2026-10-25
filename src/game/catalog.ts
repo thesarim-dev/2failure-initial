@@ -107,14 +107,10 @@ export const CUSTOMIZE: Record<string, { styles?: string[]; colors?: boolean }> 
   path: { styles: ['stone', 'wood', 'tiles'] },
   wall: { styles: ['stone', 'hedge', 'fence'] },
   pine: { styles: ['pine', 'oak', 'palm', 'cherry'] },
-  lamp: { styles: ['classic', 'lantern', 'neon'], colors: true },
   banner: { styles: ['plain', 'stripe', 'chevron'], colors: true },
   garden: { styles: ['wildflowers', 'tulips', 'roses', 'lavender'], colors: true },
   fountain: { styles: ['classic', 'tiered', 'jet'] },
-  bush: { styles: ['round', 'flowering'] },
-  rock: { styles: ['boulder', 'mossy'] },
   flowers: { colors: true },
-  bench: { colors: true },
   campfire: {},
   picnic: { colors: true },
   gazebo: { colors: true },
@@ -128,8 +124,6 @@ export const CUSTOMIZE: Record<string, { styles?: string[]; colors?: boolean }> 
   punchbag: { colors: true },
   lilypad: {},
   bridge: {},
-  hay: {},
-  barrels: {},
   pumpkins: {},
   birdhouse: { colors: true },
   coop: { colors: true },
@@ -137,10 +131,8 @@ export const CUSTOMIZE: Record<string, { styles?: string[]; colors?: boolean }> 
   well: {},
   barn: { colors: true },
   windmill: { colors: true },
-  signpost: {},
   tent: { colors: true },
   parasol: { colors: true },
-  sandcastle: {},
   snowman: { colors: true },
   trophy: { styles: ['stone', 'marble', 'neon'], colors: true }
 };
@@ -282,20 +274,16 @@ export const DECOR: DecorDef[] = [
   { kind: 'decor', id: 'arch', size: 1, unlockHq: 1, unlockBase: 4, group: 'paths', cost: { timber: 6, crystal: 4 } },
   // Nature
   { kind: 'decor', id: 'pine', size: 1, unlockHq: 1, group: 'nature', cost: { timber: 3, crystal: 1 } },
-  { kind: 'decor', id: 'bush', size: 1, unlockHq: 1, group: 'nature', cost: { timber: 2, crystal: 1 } },
-  { kind: 'decor', id: 'rock', size: 1, unlockHq: 1, group: 'nature', cost: { stone: 2 } },
   { kind: 'decor', id: 'flowers', size: 1, unlockHq: 1, group: 'nature', cost: { crystal: 2 } },
   { kind: 'decor', id: 'garden', size: 1, unlockHq: 1, group: 'nature', cost: { crystal: 4 } },
   { kind: 'decor', id: 'statue', size: 1, unlockHq: 1, unlockBase: 5, group: 'nature', cost: { stone: 14, crystal: 6 } },
   // Comfort
-  { kind: 'decor', id: 'bench', size: 1, unlockHq: 1, group: 'comfort', cost: { timber: 4, stone: 1 } },
   { kind: 'decor', id: 'banner', size: 1, unlockHq: 1, group: 'comfort', cost: { timber: 3, stone: 2 } },
   { kind: 'decor', id: 'campfire', size: 1, unlockHq: 1, unlockBase: 2, group: 'comfort', cost: { timber: 4, stone: 2 } },
   { kind: 'decor', id: 'picnic', size: 1, unlockHq: 1, unlockBase: 2, group: 'comfort', cost: { timber: 6 } },
   { kind: 'decor', id: 'fountain', size: 1, unlockHq: 1, unlockBase: 3, group: 'comfort', cost: { stone: 12, crystal: 10 } },
   { kind: 'decor', id: 'gazebo', size: 1, unlockHq: 1, unlockBase: 4, group: 'comfort', cost: { timber: 10, stone: 6, crystal: 4 } },
   // Lights
-  { kind: 'decor', id: 'lamp', size: 1, unlockHq: 1, group: 'lights', cost: { stone: 3, crystal: 2 } },
   { kind: 'decor', id: 'torch', size: 1, unlockHq: 1, group: 'lights', cost: { timber: 2, stone: 1 } },
   { kind: 'decor', id: 'lanterns', size: 1, unlockHq: 1, unlockBase: 2, group: 'lights', cost: { stone: 3, crystal: 3 } },
   // Training park
@@ -304,8 +292,6 @@ export const DECOR: DecorDef[] = [
   { kind: 'decor', id: 'dipbars', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { stone: 6 } },
   { kind: 'decor', id: 'punchbag', size: 1, unlockHq: 1, unlockBase: 3, group: 'training', cost: { stone: 4, timber: 2 } },
   // Farm (barns and coops bring animals that wander around the base)
-  { kind: 'decor', id: 'hay', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 2 } },
-  { kind: 'decor', id: 'barrels', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 3 } },
   { kind: 'decor', id: 'pumpkins', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 1, crystal: 1 } },
   { kind: 'decor', id: 'birdhouse', size: 1, unlockHq: 1, group: 'farm', cost: { timber: 2 } },
   { kind: 'decor', id: 'coop', size: 1, unlockHq: 1, unlockBase: 2, group: 'farm', cost: { timber: 6, stone: 2 } },
@@ -314,10 +300,8 @@ export const DECOR: DecorDef[] = [
   { kind: 'decor', id: 'barn', size: 1, unlockHq: 1, unlockBase: 3, group: 'farm', cost: { timber: 12, stone: 4 } },
   { kind: 'decor', id: 'windmill', size: 1, unlockHq: 1, unlockBase: 4, group: 'farm', cost: { timber: 10, stone: 6 } },
   // Fun
-  { kind: 'decor', id: 'signpost', size: 1, unlockHq: 1, group: 'fun', cost: { timber: 2 } },
   { kind: 'decor', id: 'tent', size: 1, unlockHq: 1, unlockBase: 2, group: 'fun', cost: { timber: 4, crystal: 2 } },
   { kind: 'decor', id: 'parasol', size: 1, unlockHq: 1, unlockBase: 2, group: 'fun', cost: { timber: 2, crystal: 2 } },
-  { kind: 'decor', id: 'sandcastle', size: 1, unlockHq: 1, unlockBase: 3, group: 'fun', cost: { stone: 3 } },
   { kind: 'decor', id: 'snowman', size: 1, unlockHq: 1, unlockBase: 6, group: 'fun', cost: { crystal: 3 } },
   // Water
   { kind: 'decor', id: 'lilypad', size: 1, unlockHq: 1, unlockBase: 3, group: 'water', onWater: true, cost: { crystal: 2 } },
@@ -440,4 +424,19 @@ export const EDGE_COST: Record<EdgeKind, Cost> = {
   fence: { timber: 2 },
   wall: { stone: 3 },
   hedge: { timber: 1, crystal: 1 }
+};
+
+/**
+ * Decorations retired from the catalog (they added little: plain filler or
+ * duplicates). Bases that still have them get them removed with a full refund.
+ */
+export const RETIRED_DECOR: Record<string, Cost> = {
+  rock: { stone: 2 },
+  bush: { timber: 2, crystal: 1 },
+  bench: { timber: 4, stone: 1 },
+  lamp: { stone: 3, crystal: 2 },
+  hay: { timber: 2 },
+  barrels: { timber: 3 },
+  signpost: { timber: 2 },
+  sandcastle: { stone: 3 }
 };

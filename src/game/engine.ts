@@ -34,6 +34,7 @@ import {
   type StructureDef,
   type TrainingPattern,
   EDGE_COST,
+  RETIRED_DECOR,
   type EdgeKind
 } from './catalog';
 
@@ -1201,6 +1202,24 @@ export function setEdge(prev: GameState, key: string, kind: EdgeKind | null): Ac
   pay(state, cost);
   edges[key] = kind;
   return { ok: true, state };
+}
+
+/** Old saves: retired decorations are removed and their materials refunded. */
+export function retireDecor(prev: GameState): GameState {
+  const gone = prev.placed.filter((p) => p.itemId in RETIRED_DECOR);
+  if (!gone.length) return prev;
+  const resources = { ...prev.resources };
+  for (const item of gone) {
+    const cost = RETIRED_DECOR[item.itemId];
+    for (const id of RESOURCE_IDS) resources[id] += cost[id] ?? 0;
+  }
+  const uids = new Set(gone.map((p) => p.uid));
+  return {
+    ...prev,
+    resources,
+    placed: prev.placed.filter((p) => !uids.has(p.uid)),
+    constructions: prev.constructions.filter((c) => !uids.has(c.uid))
+  };
 }
 
 /** Old saves: path items become painted path terrain (they no longer take a square). */

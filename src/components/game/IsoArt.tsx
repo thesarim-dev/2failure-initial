@@ -1604,41 +1604,6 @@ function IsoParasol({ ox, oy, color }: { ox: number; oy: number; color?: string 
   );
 }
 
-function IsoSignpost({ ox, oy }: { ox: number; oy: number }) {
-  const Q = decorAt(ox, oy);
-  // Arrow boards in the x–z plane (pointing along x) or the y–z plane (along y).
-  const board = (axis: 'x' | 'y', dir: 1 | -1, z: number, len: number) => {
-    const at = (u: number, v: number) => (axis === 'x' ? Q(50 + dir * u, 53, z + v) : Q(53, 50 + dir * u, z + v));
-    return pts([at(-2, 4), at(len - 6, 4), at(len, 0), at(len - 6, -4), at(-2, -4)]);
-  };
-  const grain = (axis: 'x' | 'y', dir: 1 | -1, z: number, len: number) => {
-    const at = (u: number, v: number) => (axis === 'x' ? Q(50 + dir * u, 53, z + v) : Q(53, 50 + dir * u, z + v));
-    return [at(2, 1.2), at(len - 8, 1.2), at(2, -1.2), at(len - 9, -1.2)];
-  };
-  const boards: Array<['x' | 'y', 1 | -1, number, number]> = [['x', 1, 70, 30], ['x', -1, 56, 28], ['y', 1, 42, 26]];
-  const note = Q(50, 53, 24);
-  return (
-    <g pointerEvents="none">
-      <polygon points={circleAt(Q, 50, 50, 7, 0.5, 12)} fill={DARK_STONE.base} opacity={0.5} />
-      <IsoBox b={{ x0: ox + 47.5, x1: ox + 52.5, y0: oy + 47.5, y1: oy + 52.5, z0: 0, z1: 82 }} s={WOOD} mat="plank" />
-      {boards.map(([axis, dir, z, len]) => {
-        const g = grain(axis, dir, z, len);
-        return (
-          <g key={`${axis}${dir}${z}`}>
-            <polygon points={board(axis, dir, z, len)} fill={axis === 'x' ? WOOD.light : WOOD.base} stroke={WOOD.dark} strokeWidth={0.9} strokeLinejoin="round" />
-            <line x1={g[0][0]} y1={g[0][1]} x2={g[1][0]} y2={g[1][1]} stroke={WOOD.dark} strokeOpacity={0.45} strokeWidth={0.6} />
-            <line x1={g[2][0]} y1={g[2][1]} x2={g[3][0]} y2={g[3][1]} stroke={WOOD.dark} strokeOpacity={0.45} strokeWidth={0.6} />
-          </g>
-        );
-      })}
-      <rect x={note[0] - 3.5} y={note[1] - 5} width={7} height={8} fill="#f8f4e8" stroke="#c9c2b5" strokeWidth={0.5} transform={`rotate(-6 ${note[0]} ${note[1]})`} />
-      <line x1={note[0] - 2} y1={note[1] - 2} x2={note[0] + 2} y2={note[1] - 2.4} stroke="#8a8478" strokeWidth={0.5} />
-      <line x1={note[0] - 2} y1={note[1]} x2={note[0] + 2} y2={note[1] - 0.4} stroke="#8a8478" strokeWidth={0.5} />
-      <circle cx={note[0]} cy={note[1] - 4.4} r={0.9} fill="#e5484d" />
-    </g>
-  );
-}
-
 const MARBLE: Shades = { light: '#f6f4ef', base: '#dcd6cb', dark: '#a8a193' };
 
 function IsoStatue({ ox, oy, style }: { ox: number; oy: number; style?: string }) {
@@ -1721,7 +1686,7 @@ function IsoWell({ ox, oy }: { ox: number; oy: number }) {
   );
 }
 
-export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden', 'arch', 'flowers', 'banner', 'windmill', 'bridge', 'lilypad', 'pullupbar', 'dipbars', 'punchbag', 'lanterns', 'parasol', 'signpost', 'statue', 'well']);
+export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden', 'arch', 'flowers', 'banner', 'windmill', 'bridge', 'lilypad', 'pullupbar', 'dipbars', 'punchbag', 'lanterns', 'parasol', 'statue', 'well']);
 /** True for anything drawn as an isometric model (buildings, walls, gardens, trophies). */
 export function isIsoItem(itemId: string): boolean {
   return ISO_ITEMS.has(itemId) || itemId.startsWith('trophy:');
@@ -1929,8 +1894,6 @@ export function IsoItemArt({
         return <IsoLanterns ox={ox} oy={oy} color={item.color} />;
       case 'parasol':
         return <IsoParasol ox={ox} oy={oy} color={item.color} />;
-      case 'signpost':
-        return <IsoSignpost ox={ox} oy={oy} />;
       case 'statue':
         return <IsoStatue ox={ox} oy={oy} style={item.style} />;
       case 'well':

@@ -37,7 +37,7 @@ function LevelPips({ level, color, cx = 50, y = 97 }: { level: number; color: st
 /** Low models get a tighter preview frame so they don't look tiny. */
 const LOW_ITEMS = new Set(['garden', 'wall', 'flowers', 'bridge', 'lilypad']);
 /** Isometric decorations: a tighter frame than buildings so they fill their thumbnail. */
-const TALL_DECOR = new Set(['arch', 'banner', 'windmill', 'pullupbar', 'dipbars', 'punchbag', 'lanterns', 'parasol', 'signpost', 'statue', 'well']);
+const TALL_DECOR = new Set(['arch', 'banner', 'windmill', 'pullupbar', 'dipbars', 'punchbag', 'lanterns', 'parasol', 'statue', 'well']);
 
 /** Standalone preview used in the build menu and info sheet. */
 export function ItemPreview({ itemId, level = 1, trophyId, verified, size = 56, style, color }: {
@@ -671,7 +671,7 @@ export function BaseBoard({
     if (itemId === 'watchtower') return 130 + level * 15;
     if (itemId === 'lodge' || itemId === 'forge') return 70 + level * 12;
     if (itemId.startsWith('trophy:')) return 70;
-    if (['pine', 'windmill', 'barn', 'gazebo', 'arch', 'banner', 'lamp', 'torch'].includes(itemId)) return 70;
+    if (['pine', 'windmill', 'barn', 'gazebo', 'arch', 'banner', 'torch'].includes(itemId)) return 70;
     if (['path', 'garden', 'flowers', 'grass', 'dirt', 'meadow', 'sand', 'plaza', 'water', 'snow', 'lilypad', 'bridge'].includes(itemId)) return 0;
     return 30;
   };
