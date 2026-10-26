@@ -8287,9 +8287,10 @@
   /* The stub after tearing: content sits below the ragged edge. */
   /* What stays: the top half, ragged along the bottom. */
   .home-trio .rest-ticket-wrap .act-tile.rest-ticket.is-stub {
-    justify-content: flex-start;
-    gap: 0.35rem;
-    padding-bottom: 38%;
+    /* Full height like the week card: title at the top, the note at the bottom, a small torn edge below. */
+    justify-content: space-between;
+    padding-bottom: 0.95rem;
+    transition: clip-path 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .stub-title {
     display: inline-flex;
@@ -8556,5 +8557,10 @@
     border-color: rgba(138, 75, 20, 0.45);
     background: rgba(255, 236, 214, 0.7);
     text-shadow: none;
+  }
+
+  /* The rest ticket and the week card share the row's full height, so they line up exactly. */
+  .home-trio .act-tile.week-tile {
+    align-self: stretch;
   }
 }

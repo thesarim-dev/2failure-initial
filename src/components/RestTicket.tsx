@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Moon } from 'lucide-react';
 import { fx } from '../lib/feedback';
 
@@ -41,11 +41,19 @@ export function RestTicket({
   const lastTick = useRef(0);
   const moved = useRef(false);
   const [perfY, setPerfY] = useState(60);
+  // After a tear, the stub settles from the torn line down to full height (same size as its neighbours).
+  const [justTore, setJustTore] = useState(false);
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!resting || !justTore) return;
+    const frame = window.requestAnimationFrame(() => setSettled(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [resting, justTore]);
 
   if (resting) {
     return (
       <span className="rest-ticket-wrap">
-        <div className="act-tile act-rest rest-ticket is-stub" role="status" style={{ clipPath: topHalf(64) }}>
+        <div className="act-tile act-rest rest-ticket is-stub" role="status" style={{ clipPath: topHalf(justTore && !settled ? perfY : 97) }}>
           <span className="stub-title">
             <Moon size={18} strokeWidth={2.5} className="rest-ticket-moon" aria-hidden="true" />
             {copy.restDay}
@@ -87,6 +95,7 @@ export function RestTicket({
     if (tile && zip) setPerfY(((zip.offsetTop + zip.offsetHeight / 2) / tile.offsetHeight) * 100);
     setProgress(1);
     setTearing(true);
+    setJustTore(true);
     fx.confirm();
     navigator.vibrate?.([30, 40, 60]);
     window.setTimeout(onTake, 650);
