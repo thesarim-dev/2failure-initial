@@ -327,13 +327,6 @@ export function Dashboard({
         {/* Today at a glance, and one tap to the next set. */}
         {dayProgress && !isRestDayToday && (
           <section className="today-glance" aria-label={t.upNext.progress(dayProgress.done, dayProgress.total)}>
-            <div className="today-bar" aria-hidden="true">
-              <i style={{ width: `${(dayProgress.done / Math.max(1, dayProgress.total)) * 100}%` }} />
-            </div>
-            <p className="today-meta">
-              <span>{t.upNext.progress(dayProgress.done, dayProgress.total)}</span>
-              {dayProgress.next && <span>{t.upNext.minutes(dayProgress.minutesLeft)}</span>}
-            </p>
             {dayProgress.next ? (
               <button type="button" className="up-next" onClick={() => onSelectMove(dayProgress.next!.move)}>
                 <span className="up-next-text">
@@ -355,6 +348,16 @@ export function Dashboard({
                 <span className="up-next-check" aria-hidden="true">✓</span>
               </div>
             )}
+            {/* The day's progress, separating the next set from the full list. */}
+            <div className="today-progress">
+              <div className="today-bar" aria-hidden="true">
+                <i style={{ width: `${(dayProgress.done / Math.max(1, dayProgress.total)) * 100}%` }} />
+              </div>
+              <p className="today-meta">
+                <span>{t.upNext.progress(dayProgress.done, dayProgress.total)}</span>
+                {dayProgress.next && <span>{t.upNext.minutes(dayProgress.minutesLeft)}</span>}
+              </p>
+            </div>
           </section>
         )}
 

@@ -8601,4 +8601,13 @@
     -webkit-appearance: none;
     margin: 0;
   }
+
+  /* Up next first, then the day's progress as a divider above the exercise list. */
+  .today-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin-top: 0.9rem;
+    padding-top: 0.2rem;
+  }
 }
