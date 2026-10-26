@@ -179,6 +179,13 @@ Tap **Cancel workout** to return to the home screen without logging a set. No co
 
 ---
 
+### Home header
+
+* **Resources:** one HUD strip (stone, timber, crystal and coins) using the same icons as the Base screen.
+* **Rest day ticket:** rest days are a weekly allowance you spend, so the ticket shows tally marks for what's left. To take one, drag the zipper along the perforation (about 60% of the way is enough); the bottom half falls off and the top half stays: "Rest day · Streak safe today". A tap nudges the zipper; keyboards can press Enter on it.
+* **Night falls on a rest day:** a dusk wash sweeps down, the home screen turns to an indigo night (lavender in light mode), stars come out and a crescent moon rises, while the training list hands over to the rest-day stretches. Opening the app on a rest day just shows the night sky.
+* **Your week:** the plan tile shows the week as coloured blocks (push, pull, legs, full body) with today raised.
+
 ### Rest timer
 
 After every set a banner drops down from the top of the screen and stays while you move around the app (the page shifts down so it never covers anything). Its colour slides smoothly from green through yellow to red as the rest runs out; at zero it chimes, buzzes and offers **Start set**. Adjust with −15 s / +15 s, or skip with ✕. Rest length follows the evidence (`src/lib/restTimes.ts`): barbell lifts 3:00, hard and loaded moves 2:00, standard bodyweight 1:30, core / calves / holds 1:00, moving on to the next exercise 1:00, and no timer after the day's last set.
