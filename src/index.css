@@ -7930,4 +7930,204 @@
   .progress-header .progress-title {
     margin: 0;
   }
+
+  /* =====================================================================
+     Home header, less generic: one HUD strip with the base's own icons,
+     a rest-day ticket and a week-at-a-glance tile. Hard offset shadows
+     (like the back buttons) instead of glows.
+     ===================================================================== */
+  .hud-strip {
+    display: inline-flex;
+    align-items: stretch;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #202124;
+    border: 1.5px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+  }
+  html:not(.dark) .hud-strip {
+    background: #ffffff;
+    border-color: #1a1a1a;
+    box-shadow: 3px 3px 0 #1a1a1a;
+  }
+  .hud-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    padding: 0.36rem 0.5rem;
+  }
+  .hud-cell + .hud-cell {
+    border-inline-start: 1.5px solid rgba(255, 255, 255, 0.1);
+  }
+  html:not(.dark) .hud-cell + .hud-cell {
+    border-inline-start-color: rgba(0, 0, 0, 0.12);
+  }
+  .hud-n {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 0.88rem;
+    line-height: 1;
+    color: #f4f4f0;
+  }
+  html:not(.dark) .hud-n {
+    color: #1a1a1a;
+  }
+  .hud-coins {
+    background: rgba(200, 240, 50, 0.12);
+  }
+  .hud-coins .hud-n {
+    color: #c8f032;
+  }
+  html:not(.dark) .hud-coins {
+    background: rgba(200, 240, 50, 0.35);
+  }
+  html:not(.dark) .hud-coins .hud-n {
+    color: #2f4a00;
+  }
+  .hud-icon {
+    flex-shrink: 0;
+  }
+
+  .home-trio .act-tile.rest-ticket,
+  .home-trio .act-tile.week-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.3rem;
+    padding: 0.7rem 0.75rem 0.65rem;
+    border-radius: 12px;
+    text-align: start;
+    text-transform: none;
+    color: var(--tile-ink);
+    background-color: var(--tile-bg);
+    border: 2px solid var(--tile-edge);
+    box-shadow: 4px 4px 0 var(--tile-shadow);
+    filter: none;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .home-trio .act-tile.rest-ticket:not(:disabled):active,
+  .home-trio .act-tile.week-tile:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--tile-shadow);
+  }
+  .rest-ticket {
+    --tile-bg: #25264f;
+    --tile-edge: #6f75f0;
+    --tile-shadow: #10112e;
+    --tile-ink: #e8e9ff;
+    --tile-accent: #b9bdff;
+    --page: #1a1a1a;
+  }
+  html:not(.dark) .rest-ticket {
+    --tile-bg: #ecebff;
+    --tile-edge: #4f55cf;
+    --tile-shadow: #2e3290;
+    --tile-ink: #1f2160;
+    --tile-accent: #4f55cf;
+    --page: #f4f4f0;
+  }
+  .week-tile {
+    --tile-bg: #0f3530;
+    --tile-edge: #2cc7a5;
+    --tile-shadow: #061c18;
+    --tile-ink: #e3fff8;
+    --tile-accent: #6ef0cf;
+  }
+  html:not(.dark) .week-tile {
+    --tile-bg: #e1f6ef;
+    --tile-edge: #158f74;
+    --tile-shadow: #0c5a49;
+    --tile-ink: #0c3a31;
+    --tile-accent: #0f7a63;
+  }
+  /* The ticket: a perforation (with a notch at each end) between the tally and the text. */
+  .ticket-perf {
+    position: relative;
+    align-self: stretch;
+    height: 0;
+    margin: 0.15rem -0.75rem;
+    border-top: 1.5px dashed var(--tile-edge);
+  }
+  .ticket-perf::before,
+  .ticket-perf::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--page);
+    border: 2px solid var(--tile-edge);
+  }
+  .ticket-perf::before {
+    left: -9px;
+    clip-path: inset(0 0 0 50%);
+  }
+  .ticket-perf::after {
+    right: -9px;
+    clip-path: inset(0 50% 0 0);
+  }
+  .home-trio .act-tile.rest-ticket:disabled {
+    opacity: 0.55;
+  }
+  .tile-kicker {
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+  .tile-main {
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+  .tile-cta {
+    min-height: 0.9rem;
+    font-size: 0.74rem;
+    font-weight: 900;
+    color: var(--tile-accent);
+  }
+  .rest-tally {
+    display: flex;
+    gap: 4px;
+    padding-inline-start: 2px;
+  }
+  .rest-tally i {
+    width: 5px;
+    height: 17px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--tile-ink) 18%, transparent);
+    transform: skewX(-12deg);
+  }
+  .rest-tally i.is-on {
+    background: var(--tile-accent);
+  }
+  .rest-ticket-moon {
+    color: var(--tile-accent);
+  }
+  .week-blocks {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 22px;
+  }
+  .wk {
+    width: 11px;
+    height: 13px;
+    border-radius: 3px;
+    background: #8a8f99;
+    opacity: 0.85;
+  }
+  .wk-push { background: #c8f032; }
+  .wk-pull { background: #3fd0e8; }
+  .wk-legs { background: #fa8ce9; }
+  .wk-mixed { background: #f2a541; }
+  .wk-recovery { background: #a98bff; }
+  .wk.is-today {
+    height: 22px;
+    opacity: 1;
+    box-shadow: 0 0 0 2px var(--tile-ink);
+  }
 }

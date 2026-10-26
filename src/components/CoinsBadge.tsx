@@ -1,4 +1,4 @@
-import { Coins } from 'lucide-react';
+import { HudIcon } from './HudStrip';
 import { useLanguage } from '../context/LanguageContext';
 
 interface CoinsBadgeProps {
@@ -10,10 +10,12 @@ export function CoinsBadge({ coins }: CoinsBadgeProps) {
 
   return (
     <div
-      className="coins-badge flex items-center gap-2 px-4 py-2"
+      className="hud-strip hud-single"
       title={t.coins.title}>
-      <Coins size={20} strokeWidth={2.5} aria-hidden="true" />
-      <span className="font-bold tabular-nums">{coins}</span>
+      <span className="hud-cell hud-coins">
+        <HudIcon id="coins" />
+        <span className="hud-n tabular-nums">{coins}</span>
+      </span>
     </div>
   );
 }

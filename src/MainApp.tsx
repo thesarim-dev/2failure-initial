@@ -698,6 +698,7 @@ export function MainApp() {
         rotatingProgramPhase={rotatingProgramPhase}
         rotatingProgramCycleDay={rotatingProgramCycleDay}
         rotationCycleLength={rotationCycle.length}
+        rotationCycle={rotationCycle}
         isRestDayToday={isRestDayToday}
         canTakeRestDay={canTakeRestDay}
         restDaysRemainingThisWeek={restDaysRemainingThisWeek}

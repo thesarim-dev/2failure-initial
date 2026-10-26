@@ -1,12 +1,12 @@
+import { HudStrip } from './HudStrip';
 import { StreakFlame } from './StreakFlame';
 import { ResourceIcon } from './game/BaseScreen';
 import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog';
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Moon, Pencil, SlidersHorizontal } from 'lucide-react';
+import { Loader2, Moon} from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
-import { CoinsBadge } from './CoinsBadge';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeMove } from '../i18n/localize';
 import type { DailySetGoal } from '../hooks/useDailySetGoal';
@@ -52,6 +52,8 @@ interface DashboardProps {
   rotatingProgramPhase: RotatingProgramPhase | null;
   rotatingProgramCycleDay: number | null;
   rotationCycleLength: number;
+  /** The plan's training days in order (for the week tile). */
+  rotationCycle: readonly string[];
   isRestDayToday: boolean;
   canTakeRestDay: boolean;
   restDaysRemainingThisWeek: number;
@@ -63,6 +65,15 @@ interface DashboardProps {
   onOpenPlan: () => void;
   trainingDaysPerWeek: number;
 }
+
+/** Week-tile colours per training day (written out so the CSS build keeps them). */
+const WEEK_BLOCK: Record<string, string> = {
+  push: 'wk-push',
+  pull: 'wk-pull',
+  legs: 'wk-legs',
+  mixed: 'wk-mixed',
+  recovery: 'wk-recovery'
+};
 
 export function Dashboard({
   coins,
@@ -96,6 +107,7 @@ export function Dashboard({
   rotatingProgramPhase,
   rotatingProgramCycleDay,
   rotationCycleLength,
+  rotationCycle,
   isRestDayToday,
   canTakeRestDay,
   restDaysRemainingThisWeek,
@@ -117,6 +129,7 @@ export function Dashboard({
     isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
       ? t.hub.plan.tileSub(rotationCycleLength)
       : t.hub.plan.dayNames[rotatingProgramPhase];
+  const todayIndex = (Math.max(1, rotatingProgramCycleDay ?? 1) - 1) % Math.max(1, rotationCycle.length);
   const restDotsTotal = Math.min(5, Math.max(restDaysRemainingThisWeek, 7 - rotationCycleLength, 1));
 
   // Lit once today's streak is safe: trained today, or a planned rest day.
@@ -163,32 +176,13 @@ export function Dashboard({
         </div>
 
         <div className="relative z-10 flex items-center gap-2 shrink-0">
-          {/* Same look as the coins pill; display only. */}
-          <div
-            className="coins-badge materials-badge flex items-center px-3 py-2"
-            role="img"
-            aria-label={RESOURCE_IDS.map((id) => `${materials[id]} ${t.game.resources[id]}`).join(', ')}>
-            {RESOURCE_IDS.map((id) => (
-              <span key={id} className="materials-badge-item">
-                <ResourceIcon id={id} size={18} />
-                <span className="font-bold tabular-nums">{materials[id]}</span>
-              </span>
-            ))}
-          </div>
-
-          {profileLoading ? (
-            <div
-              data-tour="coins"
-              className="coins-badge flex items-center gap-2 px-4 py-2"
-              aria-busy="true"
-              aria-label={t.dashboard.aria.loadingCoins}>
-              <Loader2 size={20} strokeWidth={2.5} className="animate-spin" />
-            </div>
-          ) : (
-            <span data-tour="coins" className="inline-flex rounded-full">
-              <CoinsBadge coins={coins} />
-            </span>
-          )}
+          {/* One game-style resource bar (materials and coins). */}
+          <HudStrip
+            materials={materials}
+            coins={coins}
+            coinsLoading={profileLoading}
+            label={[...RESOURCE_IDS.map((id) => `${materials[id]} ${t.game.resources[id]}`), `${coins} ${t.coins.title}`].join(', ')}
+          />
         </div>
       </header>
 
@@ -204,44 +198,33 @@ export function Dashboard({
 
       {/* One row: rest day · the streak (centrepiece) · edit your workout. */}
       <section className="home-trio mb-4 normal-case" aria-label={t.dashboard.aria.funFactAndStreak}>
-        {/* Rest day: calm night theme; moon dots show the rest days left this week. */}
+        {/* Rest days are a weekly allowance you spend: a ticket with tally marks. */}
         {isRestDayToday ? (
-          <div className="act-tile act-rest is-resting" role="status">
-            <span className="act-badge" aria-hidden="true">
-              <Moon size={22} strokeWidth={2.5} />
-            </span>
-            <span className="act-title">{t.hub.trio.resting}</span>
-            <span className="act-chip">{t.hub.trio.safe}</span>
+          <div className="act-tile act-rest rest-ticket is-resting" role="status">
+            <span className="tile-kicker">{t.hub.trio.restKicker}</span>
+            <Moon size={22} strokeWidth={2.4} className="rest-ticket-moon" aria-hidden="true" />
+            <span className="ticket-perf" aria-hidden="true" />
+            <span className="tile-main">{t.hub.trio.resting}</span>
+            <span className="tile-cta">{t.hub.trio.safe}</span>
           </div>
         ) : (
           <button
             type="button"
             onClick={onTakeRestDay}
             disabled={!canTakeRestDay}
-            className="act-tile act-rest"
+            className="act-tile act-rest rest-ticket"
             aria-label={`${t.dashboard.restDay.button}: ${canTakeRestDay ? t.hub.trio.left(restDaysRemainingThisWeek) : t.hub.trio.none}`}>
-            <span className="act-badge" aria-hidden="true">
-              <Moon size={22} strokeWidth={2.5} />
-              {canTakeRestDay && (
-                <span className="act-zzz">
-                  <i>z</i>
-                  <i>z</i>
-                </span>
-              )}
+            <span className="tile-kicker">{t.hub.trio.restKicker}</span>
+            <span className="rest-tally" aria-hidden="true">
+              {Array.from({ length: restDotsTotal }, (_, k) => (
+                <i key={k} className={k < restDaysRemainingThisWeek ? 'is-on' : ''} />
+              ))}
             </span>
-            <span className="act-title">{t.dashboard.restDay.button}</span>
-            {canTakeRestDay ? (
-              <span className="act-dots" aria-hidden="true">
-                {Array.from({ length: restDotsTotal }, (_, k) => (
-                  <span key={k} className={`act-dot ${k < restDaysRemainingThisWeek ? 'is-on' : ''}`} />
-                ))}
-              </span>
-            ) : (
-              <span className="act-chip">{t.hub.trio.none}</span>
-            )}
+            <span className="ticket-perf" aria-hidden="true" />
+            <span className="tile-main">{canTakeRestDay ? t.hub.trio.left(restDaysRemainingThisWeek) : t.hub.trio.none}</span>
+            <span className="tile-cta">{canTakeRestDay ? `${t.hub.trio.takeOff} →` : ''}</span>
           </button>
         )}
-
         <div
           data-tour="streak"
           className="trio-streak"
@@ -254,20 +237,21 @@ export function Dashboard({
           )}
         </div>
 
-        {/* Edit plan: lime theme; the chip shows today's day at a glance. */}
+        {/* Your week at a glance: one block per training day, today raised. */}
         <button
           type="button"
-          className="act-tile act-plan"
+          className="act-tile act-plan week-tile"
           data-tour="store"
           onClick={onOpenPlan}
           aria-label={`${t.hub.trio.planTitle}: ${todayChip}`}>
-          <span className="act-badge" aria-hidden="true">
-            <SlidersHorizontal size={21} strokeWidth={2.6} />
-            <span className="act-pencil">
-              <Pencil size={10} strokeWidth={3} />
-            </span>
+          <span className="tile-kicker">{t.hub.trio.yourWeek}</span>
+          <span className="week-blocks" aria-hidden="true">
+            {rotationCycle.map((phase, k) => (
+              <i key={k} className={`wk ${WEEK_BLOCK[phase] ?? ''} ${!isRestDayToday && k === todayIndex ? 'is-today' : ''}`} />
+            ))}
           </span>
-          <span className="act-title">{t.hub.trio.planTitle}</span>
+          <span className="tile-main">{todayChip}</span>
+          <span className="tile-cta">{t.hub.trio.planTitle} →</span>
         </button>
       </section>
 

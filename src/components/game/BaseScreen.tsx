@@ -1,11 +1,9 @@
+import { ResourceIcon } from './ResourceIcon';
 import { MATERIAL_PER_SET } from '../../game/goals';
 import { itemSize } from '../../game/engine';
 import { startAmbient, stopAmbient } from '../../lib/ambient';
 import { createPortal } from 'react-dom';
 import { CoinsBadge } from '../CoinsBadge';
-import stoneIcon from '../../assets/resources/stone.png';
-import timberIcon from '../../assets/resources/timber.png';
-import crystalIcon from '../../assets/resources/crystal.png';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, HardHat, Lock, Move as MoveIcon, Palette, ShieldCheck, X, BoxSelect, PaintBucket, Paintbrush } from 'lucide-react';
 import { getVariantById } from '../moves';
@@ -101,25 +99,8 @@ const TERRAIN_SWATCH: Record<TerrainId, string> = {
 
 /** What reaching a base level unlocks: decorations and ground types. */
 
-const RESOURCE_ICON: Record<ResourceId, string> = {
-  stone: stoneIcon,
-  timber: timberIcon,
-  crystal: crystalIcon
-};
-
-export function ResourceIcon({ id, size = 18 }: { id: ResourceId; size?: number }) {
-  return (
-    <img
-      src={RESOURCE_ICON[id]}
-      width={size}
-      height={size}
-      alt=""
-      aria-hidden="true"
-      draggable={false}
-      className="base-resource-icon"
-    />
-  );
-}
+// The material icons live in ./ResourceIcon (shared with the home HUD).
+export { ResourceIcon } from './ResourceIcon';
 
 function CostList({ cost, resources }: { cost: Cost; resources: Resources }) {
   const { t } = useLanguage();
