@@ -51,6 +51,8 @@ type UiContent = {
   workout: import('./types').AppTranslations['workout'];
   summary: import('./types').AppTranslations['summary'];
   rest: import('./types').AppTranslations['rest'];
+  upNext: import('./types').AppTranslations['upNext'];
+  lastSet: import('./types').AppTranslations['lastSet'];
   progress: import('./types').AppTranslations['progress'];
   auth: import('./types').AppTranslations['auth'];
   coins: import('./types').AppTranslations['coins'];
@@ -268,6 +270,23 @@ const en: UiContent = {
     settingsDescription: 'Your training calendar, weekly sets, best sets and personal records.',
     view: 'View',
     back: 'Back to settings'
+  },
+  upNext: {
+    kicker: 'Up next',
+    start: 'Start',
+    set: (n, of) => `Set ${n} of ${of}`,
+    progress: (done, total) => `${done} of ${total} sets today`,
+    minutes: (m) => (m <= 1 ? 'about a minute left' : `about ${m} min left`),
+    done: 'Workout done!',
+    doneSub: 'Every set for today is logged. Rest up.'
+  },
+  lastSet: {
+    beat: (reps) => `Last time: ${reps} reps · beat it!`,
+    beatWeighted: (kg, reps) => `Last time: ${kg} kg × ${reps} · beat it!`,
+    earlier: (reps) => `Last set: ${reps} reps`,
+    earlierWeighted: (kg, reps) => `Last set: ${kg} kg × ${reps}`,
+    less: 'One rep less',
+    more: 'One rep more'
   },
   rest: {
     resting: 'Rest',
@@ -601,6 +620,23 @@ const he: UiContent = {
     view: 'הצגה',
     back: 'חזרה להגדרות'
   },
+  upNext: {
+    kicker: 'הבא בתור',
+    start: 'התחלה',
+    set: (n, of) => `סט ${n} מתוך ${of}`,
+    progress: (done, total) => `${done} מתוך ${total} סטים היום`,
+    minutes: (m) => (m <= 1 ? 'עוד כדקה' : `עוד כ־${m} דק׳`),
+    done: 'האימון הושלם!',
+    doneSub: 'כל הסטים של היום נרשמו. תנוחו.'
+  },
+  lastSet: {
+    beat: (reps) => `בפעם הקודמת: ${reps} חזרות · שברו את זה!`,
+    beatWeighted: (kg, reps) => `בפעם הקודמת: ${kg} ק״ג × ${reps} · שברו את זה!`,
+    earlier: (reps) => `בסט הקודם: ${reps} חזרות`,
+    earlierWeighted: (kg, reps) => `בסט הקודם: ${kg} ק״ג × ${reps}`,
+    less: 'חזרה אחת פחות',
+    more: 'חזרה אחת יותר'
+  },
   rest: {
     resting: 'מנוחה',
     nextExercise: 'מנוחה, ואז התרגיל הבא',
@@ -933,6 +969,23 @@ const ar: UiContent = {
     settingsDescription: 'تقويم تدريبك ومجموعاتك الأسبوعية وأفضل مجموعاتك وأرقامك القياسية.',
     view: 'عرض',
     back: 'العودة إلى الإعدادات'
+  },
+  upNext: {
+    kicker: 'التالي',
+    start: 'ابدأ',
+    set: (n, of) => `المجموعة ${n} من ${of}`,
+    progress: (done, total) => `${done} من ${total} مجموعات اليوم`,
+    minutes: (m) => (m <= 1 ? 'تبقّى نحو دقيقة' : `تبقّى نحو ${m} دقيقة`),
+    done: 'اكتمل التمرين!',
+    doneSub: 'سُجّلت كل مجموعات اليوم. استرح.'
+  },
+  lastSet: {
+    beat: (reps) => `المرة الماضية: ${reps} تكرار · تفوّق عليها!`,
+    beatWeighted: (kg, reps) => `المرة الماضية: ${kg} كغ × ${reps} · تفوّق عليها!`,
+    earlier: (reps) => `المجموعة السابقة: ${reps} تكرار`,
+    earlierWeighted: (kg, reps) => `المجموعة السابقة: ${kg} كغ × ${reps}`,
+    less: 'تكرار أقل',
+    more: 'تكرار أكثر'
   },
   rest: {
     resting: 'راحة',

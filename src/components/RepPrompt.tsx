@@ -4,16 +4,23 @@ import { Move } from './moves';
 import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { WORKOUT_FINISH_BTN } from './workoutUi';
+import type { LastSet } from '../lib/lastSet';
 
 interface RepPromptProps {
   move: Move;
   submitting?: boolean;
   onSubmit: (reps: number) => void;
+  /** Your last set of this exercise: prefills the box. */
+  lastSet?: LastSet | null;
 }
 
-export function RepPrompt({ move, submitting = false, onSubmit }: RepPromptProps) {
+export function RepPrompt({ move, submitting = false, onSubmit, lastSet = null }: RepPromptProps) {
   const { t } = useLanguage();
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(lastSet ? String(lastSet.reps) : '');
+  const bump = (d: number) => {
+    setValue(String(Math.max(1, (parseInt(value, 10) || 0) + d)));
+    if (error) setError(null);
+  };
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,9 +50,12 @@ export function RepPrompt({ move, submitting = false, onSubmit }: RepPromptProps
           initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="workout-subtitle mb-10 normal-case">
+          className="workout-subtitle mb-2 normal-case">
           {t.workout.repPromptQuestion}
         </motion.p>
+        <p className="workout-last-hint mb-8">
+          {lastSet ? (lastSet.today ? t.lastSet.earlier(lastSet.reps) : t.lastSet.beat(lastSet.reps)) : '\u00a0'}
+        </p>
 
         <motion.form
           initial={{ y: 24, opacity: 0 }}
@@ -53,12 +63,17 @@ export function RepPrompt({ move, submitting = false, onSubmit }: RepPromptProps
           transition={{ delay: 0.2 }}
           onSubmit={handleSubmit}
           className="w-full space-y-4">
+          <div className="rep-stepper">
+          <button type="button" className="rep-step" onClick={() => bump(-1)} aria-label={t.lastSet.less}>
+            −
+          </button>
           <input
             type="number"
             inputMode="numeric"
             min={1}
             step={1}
             autoFocus
+            onFocus={(e) => e.currentTarget.select()}
             value={value}
             onChange={(e) => {
               setValue(e.target.value);
@@ -68,6 +83,10 @@ export function RepPrompt({ move, submitting = false, onSubmit }: RepPromptProps
             className="workout-rep-input"
             aria-label={t.workout.repPromptAria}
           />
+          <button type="button" className="rep-step" onClick={() => bump(1)} aria-label={t.lastSet.more}>
+            +
+          </button>
+          </div>
 
           {error && <p className="workout-error normal-case">{error}</p>}
 

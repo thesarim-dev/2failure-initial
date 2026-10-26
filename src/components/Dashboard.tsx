@@ -6,7 +6,7 @@ import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog'
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2} from 'lucide-react';
+import { Loader2, Play } from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeMove } from '../i18n/localize';
@@ -55,6 +55,13 @@ interface DashboardProps {
   rotationCycleLength: number;
   /** The plan's training days in order (for the week tile). */
   rotationCycle: readonly string[];
+  /** Today at a glance (null on rest days): progress and the next set. */
+  dayProgress?: {
+    done: number;
+    total: number;
+    minutesLeft: number;
+    next: { move: Move; setNumber: number; totalSets: number } | null;
+  } | null;
   isRestDayToday: boolean;
   canTakeRestDay: boolean;
   restDaysRemainingThisWeek: number;
@@ -109,6 +116,7 @@ export function Dashboard({
   rotatingProgramCycleDay,
   rotationCycleLength,
   rotationCycle,
+  dayProgress = null,
   isRestDayToday,
   canTakeRestDay,
   restDaysRemainingThisWeek,
@@ -315,6 +323,40 @@ export function Dashboard({
               : t.hub.plan.focus[rotatingProgramPhase]}
           </p>
         </div>
+
+        {/* Today at a glance, and one tap to the next set. */}
+        {dayProgress && !isRestDayToday && (
+          <section className="today-glance" aria-label={t.upNext.progress(dayProgress.done, dayProgress.total)}>
+            <div className="today-bar" aria-hidden="true">
+              <i style={{ width: `${(dayProgress.done / Math.max(1, dayProgress.total)) * 100}%` }} />
+            </div>
+            <p className="today-meta">
+              <span>{t.upNext.progress(dayProgress.done, dayProgress.total)}</span>
+              {dayProgress.next && <span>{t.upNext.minutes(dayProgress.minutesLeft)}</span>}
+            </p>
+            {dayProgress.next ? (
+              <button type="button" className="up-next" onClick={() => onSelectMove(dayProgress.next!.move)}>
+                <span className="up-next-text">
+                  <span className="up-next-kicker">{t.upNext.kicker}</span>
+                  <span className="up-next-name">{dayProgress.next.move.name}</span>
+                  <span className="up-next-set">{t.upNext.set(dayProgress.next.setNumber, dayProgress.next.totalSets)}</span>
+                </span>
+                <span className="up-next-go">
+                  <Play size={18} strokeWidth={3} fill="currentColor" aria-hidden="true" />
+                  {t.upNext.start}
+                </span>
+              </button>
+            ) : (
+              <div className="up-next is-done" role="status">
+                <span className="up-next-text">
+                  <span className="up-next-name">{t.upNext.done}</span>
+                  <span className="up-next-set">{t.upNext.doneSub}</span>
+                </span>
+                <span className="up-next-check" aria-hidden="true">✓</span>
+              </div>
+            )}
+          </section>
+        )}
 
         <div className="flex flex-col gap-4">
           {activeMoves.map((move, i) => {

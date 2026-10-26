@@ -29,6 +29,7 @@ import { addSlotHint, readSlotHints } from './lib/slotHints';
 import { supabase } from './lib/supabase';
 import { REST, restSecondsFor } from './lib/restTimes';
 import { RestTimerBanner, type RestTimer } from './components/RestTimerBanner';
+import { fetchLastSet, type LastSet } from './lib/lastSet';
 import { ProgressScreen } from './components/ProgressScreen';
 import { usePlan } from './hooks/usePlan';
 import { PlanScreen } from './components/PlanScreen';
@@ -272,6 +273,30 @@ export function MainApp() {
     doneToday
   ]);
 
+  // Today at a glance: sets done vs planned, a rough time left, and the next set to do.
+  const dayProgress = useMemo(() => {
+    if (!todayPlan || todayPlan.isRestDay || !todayPlan.exercises.length) return null;
+    let done = 0;
+    let total = 0;
+    let seconds = 0;
+    let next: (typeof todayPlan.exercises)[number] | null = null;
+    for (const e of todayPlan.exercises) {
+      const d = Math.min(e.done, e.target);
+      total += e.target;
+      done += d;
+      // About 45 s per set plus that exercise's rest.
+      seconds += (e.target - d) * (45 + restSecondsFor(e.id));
+      if (!next && d < e.target) next = e;
+    }
+    const nextMove = next ? resolveMoveById(next.id) : null;
+    return {
+      done,
+      total,
+      minutesLeft: Math.max(1, Math.round(seconds / 60)),
+      next: next && nextMove ? { move: nextMove, setNumber: next.done + 1, totalSets: next.target } : null
+    };
+  }, [todayPlan]);
+
   // The base game: every finished set earns materials for it.
   const baseGame = useBaseGame(user?.id, currentStreak, todayPlan);
 
@@ -293,6 +318,8 @@ export function MainApp() {
   } | null>(null);
   const [weightSaveError, setWeightSaveError] = useState<string | null>(null);
   const [workoutDone, setWorkoutDone] = useState(false);
+  // Your last set of the exercise you're doing: a target, and the rep prompt's default.
+  const [lastSet, setLastSet] = useState<LastSet | null>(null);
 
   // Rest timer between sets (remembered across screens and reloads).
   const restKey = user?.id ? `2failure-user-${user.id}-rest-timer` : null;
@@ -327,6 +354,12 @@ export function MainApp() {
 
   const handleSelectMove = (move: Move) => {
     setRestTimer(null);
+    setLastSet(null);
+    if (user) {
+      void fetchLastSet(user.id, move.id)
+        .then(setLastSet)
+        .catch(() => setLastSet(null));
+    }
     fx.start();
     finishingRef.current = false;
     setIsFinishing(false);
@@ -699,6 +732,7 @@ export function MainApp() {
         rotatingProgramCycleDay={rotatingProgramCycleDay}
         rotationCycleLength={rotationCycle.length}
         rotationCycle={rotationCycle}
+        dayProgress={dayProgress}
         isRestDayToday={isRestDayToday}
         canTakeRestDay={canTakeRestDay}
         restDaysRemainingThisWeek={restDaysRemainingThisWeek}
@@ -766,6 +800,7 @@ export function MainApp() {
       {appState === 'WORKOUT' && displayMove &&
       <Workout
         move={displayMove}
+        lastSet={lastSet}
         finishing={isFinishing}
         onFinish={(duration, trackedReps) =>
           void handleFinishWorkout(duration, trackedReps)
@@ -777,6 +812,7 @@ export function MainApp() {
       {appState === 'REP_PROMPT' && displayMove &&
       <RepPrompt
         move={displayMove}
+        lastSet={lastSet}
         submitting={isFinishing}
         onSubmit={(reps) => void handleRepSubmit(reps)} />
 

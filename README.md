@@ -179,6 +179,12 @@ Tap **Cancel workout** to return to the home screen without logging a set. No co
 
 ---
 
+### Up next and beat last time
+
+* **Today at a glance:** under the day heading, a progress bar ("4 of 11 sets today · about 18 min left") and a big **Up next** button for the next set in plan order ("Pushups · Set 2 of 3 · Start"). When every set is done it turns into **Workout done!**
+* **A target for every set:** the workout screen shows your last result for that exercise: "Last time: 14 reps · beat it!" (or "Last set: 14 reps" when it was earlier today, since beating a set to failure straight away isn't realistic).
+* **Faster logging:** the rep box opens prefilled with that number (selected, so typing replaces it), with big −/+ buttons.
+
 ### Home header
 
 * **Resources:** one HUD strip (stone, timber, crystal and coins) using the same icons as the Base screen.

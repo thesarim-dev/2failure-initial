@@ -314,6 +314,23 @@ export interface AppTranslations {
     view: string;
     back: string;
   };
+  upNext: {
+    kicker: string;
+    start: string;
+    set: (n: number, of: number) => string;
+    progress: (done: number, total: number) => string;
+    minutes: (m: number) => string;
+    done: string;
+    doneSub: string;
+  };
+  lastSet: {
+    beat: (reps: number) => string;
+    beatWeighted: (kg: number, reps: number) => string;
+    earlier: (reps: number) => string;
+    earlierWeighted: (kg: number, reps: number) => string;
+    less: string;
+    more: string;
+  };
   rest: {
     resting: string;
     nextExercise: string;

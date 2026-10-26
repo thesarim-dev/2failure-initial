@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Move } from './moves';
 import { Camera, X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import type { LastSet } from '../lib/lastSet';
 import { WORKOUT_FINISH_BTN, WORKOUT_TIMER_GLOW } from './workoutUi';
 import { EffortRing } from './EffortRing';
 import { fx } from '../lib/feedback';
@@ -17,6 +18,8 @@ interface TimedWorkoutProps {
   seconds?: number;
   setSeconds?: Dispatch<SetStateAction<number>>;
   onEnableAiTracking?: () => void;
+  /** Your last set of this exercise: a target to beat. */
+  lastSet?: LastSet | null;
 }
 
 export function TimedWorkout({
@@ -26,7 +29,8 @@ export function TimedWorkout({
   onCancel,
   seconds: externalSeconds,
   setSeconds,
-  onEnableAiTracking
+  onEnableAiTracking,
+  lastSet = null
 }: TimedWorkoutProps) {
   const { t } = useLanguage();
   const [internalSeconds, setInternalSeconds] = useState(0);
@@ -89,9 +93,24 @@ export function TimedWorkout({
           initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="workout-subtitle mb-8 normal-case">
+          className="workout-subtitle mb-3 normal-case">
           {move.description}
         </motion.p>
+
+        {/* A target to beat: your last set of this exercise. */}
+        <p className="workout-last-chip-row">
+          {lastSet && isRepLoggedCategory(move.categoryId) ? (
+            <span className={`workout-last-chip ${lastSet.today ? '' : 'is-beat'}`}>
+              {lastSet.weightKg
+                ? lastSet.today
+                  ? t.lastSet.earlierWeighted(lastSet.weightKg, lastSet.reps)
+                  : t.lastSet.beatWeighted(lastSet.weightKg, lastSet.reps)
+                : lastSet.today
+                  ? t.lastSet.earlier(lastSet.reps)
+                  : t.lastSet.beat(lastSet.reps)}
+            </span>
+          ) : null}
+        </p>
 
         <div className="workout-timer-stack">
           <motion.div

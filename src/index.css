@@ -8426,4 +8426,179 @@
       display: none;
     }
   }
+
+  /* ============ Today at a glance + Up next ============ */
+  .today-glance {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin: 0.2rem 0 1.1rem;
+  }
+  .today-bar {
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  html:not(.dark) .today-bar {
+    background: rgba(0, 0, 0, 0.08);
+  }
+  .today-bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #c8f032;
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  html:not(.dark) .today-bar i {
+    background: #7fb800;
+  }
+  .today-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    font-weight: 800;
+    opacity: 0.75;
+  }
+  .up-next {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+    padding: 0.85rem 0.9rem 0.85rem 1rem;
+    border-radius: 14px;
+    text-align: start;
+    color: #0c0f02;
+    background: #c8f032;
+    border: 2px solid #0c0f02;
+    box-shadow: 4px 4px 0 #0c0f02;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .dark .up-next {
+    border-color: #c8f032;
+    box-shadow: 4px 4px 0 #4a5c0f;
+  }
+  .up-next:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 #0c0f02;
+  }
+  .up-next-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .up-next-kicker {
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .up-next-name {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+  .up-next-set {
+    font-size: 0.82rem;
+    font-weight: 800;
+    opacity: 0.8;
+  }
+  .up-next-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.6rem 0.95rem;
+    border-radius: 999px;
+    font-weight: 900;
+    color: #c8f032;
+    background: #0c0f02;
+  }
+  [dir='rtl'] .up-next-go svg {
+    transform: scaleX(-1);
+  }
+  .up-next.is-done {
+    background: #1f3a10;
+    color: #e9ffd0;
+    border-color: #c8f032;
+  }
+  html:not(.dark) .up-next.is-done {
+    background: #e7f8c8;
+    color: #1f3a10;
+  }
+  .up-next-check {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #0c0f02;
+    background: #c8f032;
+  }
+
+  /* "Beat last time": the target chip on the workout screen, and the rep stepper. */
+  .workout-last-chip-row {
+    min-height: 2rem;
+    margin-bottom: 1.2rem;
+    text-align: center;
+  }
+  .workout-last-chip {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 900;
+    color: #0c0f02;
+    background: rgba(255, 255, 255, 0.55);
+    border: 2px solid rgba(12, 15, 2, 0.75);
+  }
+  .workout-last-chip.is-beat {
+    color: #c8f032;
+    background: #0c0f02;
+    border-color: #0c0f02;
+  }
+  .workout-last-hint {
+    min-height: 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-align: center;
+    opacity: 0.75;
+  }
+  .rep-stepper {
+    display: flex;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+  .rep-stepper .workout-rep-input {
+    flex: 1;
+    min-width: 0;
+  }
+  .rep-step {
+    flex: 0 0 4rem;
+    border-radius: 14px;
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #c8f032;
+    background: #0c0f02;
+    box-shadow: 3px 3px 0 rgba(12, 15, 2, 0.35);
+  }
+  .rep-step:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 rgba(12, 15, 2, 0.35);
+  }
+
+  /* The −/+ buttons replace the browser's tiny number arrows. */
+  .rep-stepper .workout-rep-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .rep-stepper .workout-rep-input::-webkit-outer-spin-button,
+  .rep-stepper .workout-rep-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
