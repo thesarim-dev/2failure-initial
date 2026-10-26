@@ -315,13 +315,8 @@ export interface AppTranslations {
     back: string;
   };
   upNext: {
-    kicker: string;
-    start: string;
-    set: (n: number, of: number) => string;
     progress: (done: number, total: number) => string;
     minutes: (m: number) => string;
-    done: string;
-    doneSub: string;
   };
   lastSet: {
     beat: (reps: number) => string;

@@ -272,13 +272,8 @@ const en: UiContent = {
     back: 'Back to settings'
   },
   upNext: {
-    kicker: 'Up next',
-    start: 'Start',
-    set: (n, of) => `Set ${n} of ${of}`,
     progress: (done, total) => `${done} of ${total} sets today`,
-    minutes: (m) => (m <= 1 ? 'about a minute left' : `about ${m} min left`),
-    done: 'Workout done!',
-    doneSub: 'Every set for today is logged. Rest up.'
+    minutes: (m) => (m <= 1 ? 'about a minute left' : `about ${m} min left`)
   },
   lastSet: {
     beat: (reps) => `Last time: ${reps} reps · beat it!`,
@@ -621,13 +616,8 @@ const he: UiContent = {
     back: 'חזרה להגדרות'
   },
   upNext: {
-    kicker: 'הבא בתור',
-    start: 'התחלה',
-    set: (n, of) => `סט ${n} מתוך ${of}`,
     progress: (done, total) => `${done} מתוך ${total} סטים היום`,
-    minutes: (m) => (m <= 1 ? 'עוד כדקה' : `עוד כ־${m} דק׳`),
-    done: 'האימון הושלם!',
-    doneSub: 'כל הסטים של היום נרשמו. תנוחו.'
+    minutes: (m) => (m <= 1 ? 'עוד כדקה' : `עוד כ־${m} דק׳`)
   },
   lastSet: {
     beat: (reps) => `בפעם הקודמת: ${reps} חזרות · שברו את זה!`,
@@ -971,13 +961,8 @@ const ar: UiContent = {
     back: 'العودة إلى الإعدادات'
   },
   upNext: {
-    kicker: 'التالي',
-    start: 'ابدأ',
-    set: (n, of) => `المجموعة ${n} من ${of}`,
     progress: (done, total) => `${done} من ${total} مجموعات اليوم`,
-    minutes: (m) => (m <= 1 ? 'تبقّى نحو دقيقة' : `تبقّى نحو ${m} دقيقة`),
-    done: 'اكتمل التمرين!',
-    doneSub: 'سُجّلت كل مجموعات اليوم. استرح.'
+    minutes: (m) => (m <= 1 ? 'تبقّى نحو دقيقة' : `تبقّى نحو ${m} دقيقة`)
   },
   lastSet: {
     beat: (reps) => `المرة الماضية: ${reps} تكرار · تفوّق عليها!`,

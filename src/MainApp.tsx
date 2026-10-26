@@ -273,28 +273,20 @@ export function MainApp() {
     doneToday
   ]);
 
-  // Today at a glance: sets done vs planned, a rough time left, and the next set to do.
+  // Today at a glance: sets done vs planned, and a rough time left.
   const dayProgress = useMemo(() => {
     if (!todayPlan || todayPlan.isRestDay || !todayPlan.exercises.length) return null;
     let done = 0;
     let total = 0;
     let seconds = 0;
-    let next: (typeof todayPlan.exercises)[number] | null = null;
     for (const e of todayPlan.exercises) {
       const d = Math.min(e.done, e.target);
       total += e.target;
       done += d;
       // About 45 s per set plus that exercise's rest.
       seconds += (e.target - d) * (45 + restSecondsFor(e.id));
-      if (!next && d < e.target) next = e;
     }
-    const nextMove = next ? resolveMoveById(next.id) : null;
-    return {
-      done,
-      total,
-      minutesLeft: Math.max(1, Math.round(seconds / 60)),
-      next: next && nextMove ? { move: nextMove, setNumber: next.done + 1, totalSets: next.target } : null
-    };
+    return { done, total, minutesLeft: Math.max(1, Math.round(seconds / 60)) };
   }, [todayPlan]);
 
   // The base game: every finished set earns materials for it.

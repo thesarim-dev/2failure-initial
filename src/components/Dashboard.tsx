@@ -6,7 +6,7 @@ import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog'
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Play } from 'lucide-react';
+import { Loader2} from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeMove } from '../i18n/localize';
@@ -60,7 +60,6 @@ interface DashboardProps {
     done: number;
     total: number;
     minutesLeft: number;
-    next: { move: Move; setNumber: number; totalSets: number } | null;
   } | null;
   isRestDayToday: boolean;
   canTakeRestDay: boolean;
@@ -324,38 +323,17 @@ export function Dashboard({
           </p>
         </div>
 
-        {/* Today at a glance, and one tap to the next set. */}
+        {/* Today at a glance: sets done and roughly how long is left. */}
         {dayProgress && !isRestDayToday && (
           <section className="today-glance" aria-label={t.upNext.progress(dayProgress.done, dayProgress.total)}>
-            {dayProgress.next ? (
-              <button type="button" className="up-next" onClick={() => onSelectMove(dayProgress.next!.move)}>
-                <span className="up-next-text">
-                  <span className="up-next-kicker">{t.upNext.kicker}</span>
-                  <span className="up-next-name">{dayProgress.next.move.name}</span>
-                  <span className="up-next-set">{t.upNext.set(dayProgress.next.setNumber, dayProgress.next.totalSets)}</span>
-                </span>
-                <span className="up-next-go">
-                  <Play size={18} strokeWidth={3} fill="currentColor" aria-hidden="true" />
-                  {t.upNext.start}
-                </span>
-              </button>
-            ) : (
-              <div className="up-next is-done" role="status">
-                <span className="up-next-text">
-                  <span className="up-next-name">{t.upNext.done}</span>
-                  <span className="up-next-set">{t.upNext.doneSub}</span>
-                </span>
-                <span className="up-next-check" aria-hidden="true">✓</span>
-              </div>
-            )}
-            {/* The day's progress, separating the next set from the full list. */}
+            {/* The day's progress, above the exercise list. */}
             <div className="today-progress">
               <div className="today-bar" aria-hidden="true">
                 <i style={{ width: `${(dayProgress.done / Math.max(1, dayProgress.total)) * 100}%` }} />
               </div>
               <p className="today-meta">
                 <span>{t.upNext.progress(dayProgress.done, dayProgress.total)}</span>
-                {dayProgress.next && <span>{t.upNext.minutes(dayProgress.minutesLeft)}</span>}
+                {dayProgress.done < dayProgress.total && <span>{t.upNext.minutes(dayProgress.minutesLeft)}</span>}
               </p>
             </div>
           </section>
