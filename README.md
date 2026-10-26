@@ -179,6 +179,16 @@ Tap **Cancel workout** to return to the home screen without logging a set. No co
 
 ---
 
+### Streak and weekly rhythm
+
+* **Start today:** with no streak yet, the flame's sign reads "Start today" instead of a grey zero.
+* **This week, day by day:** seven dots under the flame: lime for days you trained, violet for rest days, a ring for today, faint for days to come. Missed days stay quiet (no red). The week starts on Monday in English and Sunday in Hebrew and Arabic.
+* **Last week's recap:** on the first two days of a new week, a card shows last week's sets, training days, new records and best set, with "Beat it this week". Dismissing it hides it for that week.
+
+### Accessibility
+
+Tile labels are 12px or larger, the rest banner's buttons are 44px touch targets, and the light-mode tally marks and "Start today" sign have proper contrast.
+
 ### Today's progress and beat last time
 
 * **Today at a glance:** under the day heading, a progress bar ("4 of 11 sets today · about 18 min left") above the exercise list.

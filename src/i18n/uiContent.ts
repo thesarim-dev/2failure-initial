@@ -53,6 +53,7 @@ type UiContent = {
   rest: import('./types').AppTranslations['rest'];
   upNext: import('./types').AppTranslations['upNext'];
   lastSet: import('./types').AppTranslations['lastSet'];
+  rhythm: import('./types').AppTranslations['rhythm'];
   progress: import('./types').AppTranslations['progress'];
   auth: import('./types').AppTranslations['auth'];
   coins: import('./types').AppTranslations['coins'];
@@ -274,6 +275,20 @@ const en: UiContent = {
   upNext: {
     progress: (done, total) => `${done} of ${total} sets today`,
     minutes: (m) => (m <= 1 ? 'about a minute left' : `about ${m} min left`)
+  },
+  rhythm: {
+    start: 'Start today',
+    days: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+    dot: { trained: 'trained', rested: 'rest day', missed: 'missed', today: 'today', todayDone: 'today, trained', todayRest: 'today, rest day', upcoming: 'coming up' },
+    recapTitle: 'Last week',
+    sets: (n) => (n === 1 ? '1 set' : `${n} sets`),
+    trainingDays: (n) => (n === 1 ? '1 training day' : `${n} training days`),
+    records: (n) => (n === 1 ? '1 new record' : `${n} new records`),
+    best: (name, value) => `Best: ${name} · ${value}`,
+    reps: (n) => `${n} reps`,
+    kg: (kg, reps) => `${kg} kg × ${reps}`,
+    cta: 'Beat it this week',
+    dismiss: 'Dismiss'
   },
   lastSet: {
     beat: (reps) => `Last time: ${reps} reps · beat it!`,
@@ -619,6 +634,20 @@ const he: UiContent = {
     progress: (done, total) => `${done} מתוך ${total} סטים היום`,
     minutes: (m) => (m <= 1 ? 'עוד כדקה' : `עוד כ־${m} דק׳`)
   },
+  rhythm: {
+    start: 'מתחילים היום',
+    days: ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'],
+    dot: { trained: 'התאמנתם', rested: 'יום מנוחה', missed: 'פספסתם', today: 'היום', todayDone: 'היום, התאמנתם', todayRest: 'היום, יום מנוחה', upcoming: 'בהמשך' },
+    recapTitle: 'השבוע שעבר',
+    sets: (n) => (n === 1 ? 'סט אחד' : `${n} סטים`),
+    trainingDays: (n) => (n === 1 ? 'יום אימון אחד' : `${n} ימי אימון`),
+    records: (n) => (n === 1 ? 'שיא חדש אחד' : `${n} שיאים חדשים`),
+    best: (name, value) => `הכי טוב: ${name} · ${value}`,
+    reps: (n) => `${n} חזרות`,
+    kg: (kg, reps) => `${kg} ק״ג × ${reps}`,
+    cta: 'שברו את זה השבוע',
+    dismiss: 'סגירה'
+  },
   lastSet: {
     beat: (reps) => `בפעם הקודמת: ${reps} חזרות · שברו את זה!`,
     beatWeighted: (kg, reps) => `בפעם הקודמת: ${kg} ק״ג × ${reps} · שברו את זה!`,
@@ -963,6 +992,20 @@ const ar: UiContent = {
   upNext: {
     progress: (done, total) => `${done} من ${total} مجموعات اليوم`,
     minutes: (m) => (m <= 1 ? 'تبقّى نحو دقيقة' : `تبقّى نحو ${m} دقيقة`)
+  },
+  rhythm: {
+    start: 'ابدأ اليوم',
+    days: ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'],
+    dot: { trained: 'تمرّنت', rested: 'يوم راحة', missed: 'فاتك', today: 'اليوم', todayDone: 'اليوم، تمرّنت', todayRest: 'اليوم، يوم راحة', upcoming: 'قادم' },
+    recapTitle: 'الأسبوع الماضي',
+    sets: (n) => (n === 1 ? 'مجموعة واحدة' : n === 2 ? 'مجموعتان' : n <= 10 ? `${n} مجموعات` : `${n} مجموعة`),
+    trainingDays: (n) => (n === 1 ? 'يوم تدريب واحد' : n === 2 ? 'يوما تدريب' : n <= 10 ? `${n} أيام تدريب` : `${n} يوم تدريب`),
+    records: (n) => (n === 1 ? 'رقم قياسي جديد' : `${n} أرقام قياسية جديدة`),
+    best: (name, value) => `الأفضل: ${name} · ${value}`,
+    reps: (n) => `${n} تكرار`,
+    kg: (kg, reps) => `${kg} كغ × ${reps}`,
+    cta: 'تفوّق عليه هذا الأسبوع',
+    dismiss: 'إغلاق'
   },
   lastSet: {
     beat: (reps) => `المرة الماضية: ${reps} تكرار · تفوّق عليها!`,

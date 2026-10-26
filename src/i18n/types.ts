@@ -318,6 +318,21 @@ export interface AppTranslations {
     progress: (done: number, total: number) => string;
     minutes: (m: number) => string;
   };
+  rhythm: {
+    start: string;
+    /** Day initials in week order (Monday first in English, Sunday first in Hebrew/Arabic). */
+    days: string[];
+    dot: Record<'trained' | 'rested' | 'missed' | 'today' | 'todayDone' | 'todayRest' | 'upcoming', string>;
+    recapTitle: string;
+    sets: (n: number) => string;
+    trainingDays: (n: number) => string;
+    records: (n: number) => string;
+    best: (name: string, value: string) => string;
+    reps: (n: number) => string;
+    kg: (kg: number, reps: number) => string;
+    cta: string;
+    dismiss: string;
+  };
   lastSet: {
     beat: (reps: number) => string;
     beatWeighted: (kg: number, reps: number) => string;
