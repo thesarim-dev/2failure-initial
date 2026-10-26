@@ -4,7 +4,7 @@ import { StreakFlame } from './StreakFlame';
 import { ResourceIcon } from './game/BaseScreen';
 import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog';
 import { patternForMove } from '../game/useBaseGame';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2} from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
@@ -133,6 +133,19 @@ export function Dashboard({
   const todayIndex = (Math.max(1, rotatingProgramCycleDay ?? 1) - 1) % Math.max(1, rotationCycle.length);
   const restDotsTotal = Math.min(5, Math.max(restDaysRemainingThisWeek, 7 - rotationCycleLength, 1));
 
+  // Night falls when a rest day starts during this visit (not when you open the app on one).
+  const [nightFalling, setNightFalling] = useState(false);
+  const wasResting = useRef(isRestDayToday);
+  useEffect(() => {
+    if (!wasResting.current && isRestDayToday) {
+      setNightFalling(true);
+      const timer = window.setTimeout(() => setNightFalling(false), 3200);
+      wasResting.current = true;
+      return () => window.clearTimeout(timer);
+    }
+    wasResting.current = isRestDayToday;
+  }, [isRestDayToday]);
+
   // Lit once today's streak is safe: trained today, or a planned rest day.
   const streakProtectedToday = lastWorkoutDate === toLocalDateString() || isRestDayToday;
 
@@ -167,7 +180,14 @@ export function Dashboard({
   );
 
   return (
-    <div className="flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
+    <div className="home-root flex flex-col w-full min-h-full p-4 md:p-8 max-w-2xl mx-auto pb-24">
+      {/* Rest day: the sky turns to night (dusk sweeps down, stars come out, the moon rises). */}
+      <div className={`rest-sky ${isRestDayToday ? 'is-on' : ''} ${nightFalling ? 'is-falling' : ''}`} aria-hidden="true">
+        <span className="rest-stars" />
+        <span className="rest-stars rest-stars--late" />
+        <span className="rest-moon" />
+        {nightFalling && <span className="rest-dusk" />}
+      </div>
       <header className="relative flex justify-between items-center mb-8 gap-3">
         <div className="flex items-center gap-2 min-w-0 pe-2 pointer-events-none select-none">
           <FailureLogo size={32} className="failure-logo-glow shrink-0" />
@@ -274,7 +294,7 @@ export function Dashboard({
         </section>
       )}
 
-      <div>
+      <div key={isRestDayToday ? 'rest' : 'train'} className={nightFalling ? 'day-handover' : undefined}>
         {/* Today's day from Your plan: e.g. PUSH DAY · Chest, shoulders, triceps */}
         <div className="day-heading" data-tour="program">
           {rotatingProgramCycleDay !== null && !isRestDayToday && (
@@ -283,9 +303,11 @@ export function Dashboard({
             </span>
           )}
           <h2 className="text-2xl normal-case text-start">
-            {isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
-              ? t.dashboard.restDay.button
-              : t.hub.plan.dayNames[rotatingProgramPhase]}
+            {isRestDayToday
+              ? t.hub.trio.restDay
+              : !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
+                ? t.dashboard.restDay.button
+                : t.hub.plan.dayNames[rotatingProgramPhase]}
           </h2>
           <p className="day-heading-sub">
             {isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'

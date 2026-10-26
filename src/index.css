@@ -8304,4 +8304,126 @@
       opacity: 0;
     }
   }
+
+  /* ===================== Rest day: night falls on the home screen ===================== */
+  .home-root {
+    position: relative;
+    isolation: isolate;
+  }
+  .rest-sky {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, #1d1b52 0%, #2b2063 32%, #241c4a 55%, #1a1a1a 88%);
+    transition: opacity 1.8s ease;
+  }
+  html:not(.dark) .rest-sky {
+    background: linear-gradient(180deg, #cfcaff 0%, #e2dcff 35%, #efebff 60%, #f4f4f0 90%);
+  }
+  .rest-sky.is-on {
+    opacity: 1;
+  }
+  /* Stars come out: a first few, then the rest, twinkling gently. */
+  .rest-stars {
+    position: absolute;
+    inset: 0 0 45% 0;
+    opacity: 0;
+    background-repeat: no-repeat;
+    background-image:
+      radial-gradient(1.6px 1.6px at 8% 22%, #fff 60%, transparent 70%),
+      radial-gradient(1.2px 1.2px at 19% 9%, #fff 60%, transparent 70%),
+      radial-gradient(1.8px 1.8px at 33% 27%, #fff 60%, transparent 70%),
+      radial-gradient(1.1px 1.1px at 47% 12%, #fff 60%, transparent 70%),
+      radial-gradient(1.5px 1.5px at 61% 31%, #fff 60%, transparent 70%),
+      radial-gradient(1.3px 1.3px at 74% 7%, #fff 60%, transparent 70%),
+      radial-gradient(1.7px 1.7px at 92% 24%, #fff 60%, transparent 70%);
+    transition: opacity 1.4s ease 0.7s;
+    animation: rest-twinkle 3.8s ease-in-out infinite alternate;
+  }
+  .rest-stars--late {
+    background-image:
+      radial-gradient(1.2px 1.2px at 13% 40%, #fff 60%, transparent 70%),
+      radial-gradient(1.5px 1.5px at 27% 52%, #fff 60%, transparent 70%),
+      radial-gradient(1px 1px at 40% 44%, #fff 60%, transparent 70%),
+      radial-gradient(1.4px 1.4px at 55% 58%, #fff 60%, transparent 70%),
+      radial-gradient(1.1px 1.1px at 68% 47%, #fff 60%, transparent 70%),
+      radial-gradient(1.6px 1.6px at 83% 55%, #fff 60%, transparent 70%),
+      radial-gradient(1.2px 1.2px at 97% 41%, #fff 60%, transparent 70%);
+    transition-delay: 1.5s;
+    animation-delay: -1.9s;
+    animation-duration: 4.6s;
+  }
+  html:not(.dark) .rest-stars {
+    filter: invert(36%) sepia(60%) saturate(900%) hue-rotate(215deg);
+  }
+  .rest-sky.is-on .rest-stars {
+    opacity: 0.85;
+  }
+  @keyframes rest-twinkle {
+    from { filter: brightness(0.75); }
+    to { filter: brightness(1.25); }
+  }
+  /* A crescent moon rises into the corner. */
+  .rest-moon {
+    position: absolute;
+    top: calc(env(safe-area-inset-top, 0px) + 12.6rem);
+    right: 9%;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    box-shadow: inset -0.7rem 0.25rem 0 0 #f6e7a8;
+    filter: drop-shadow(0 0 10px rgba(246, 231, 168, 0.55));
+    opacity: 0;
+    transform: translateY(3.5rem) rotate(-8deg);
+    transition: transform 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.35s, opacity 1.4s ease 0.35s;
+  }
+  [dir='rtl'] .rest-moon {
+    right: auto;
+    left: 9%;
+  }
+  html:not(.dark) .rest-moon {
+    box-shadow: inset -0.7rem 0.25rem 0 0 #8a84e8;
+    filter: drop-shadow(0 0 8px rgba(124, 131, 255, 0.45));
+  }
+  .rest-sky.is-on .rest-moon {
+    opacity: 1;
+    transform: none;
+  }
+  /* Dusk: a soft violet wash sweeps down the screen as night falls. */
+  .rest-dusk {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(140, 120, 255, 0.45) 45%, rgba(70, 50, 160, 0.25) 60%, transparent 100%);
+    animation: rest-dusk 1.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes rest-dusk {
+    from { transform: translateY(-100%); opacity: 1; }
+    to { transform: translateY(100%); opacity: 0.2; }
+  }
+  /* The training list hands over to the rest-day content. */
+  .day-handover {
+    animation: day-handover 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+  }
+  @keyframes day-handover {
+    from { opacity: 0; transform: translateY(14px); filter: blur(2px); }
+    to { opacity: 1; transform: none; filter: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rest-sky,
+    .rest-stars,
+    .rest-moon {
+      transition: none;
+    }
+    .rest-stars,
+    .rest-dusk,
+    .day-handover {
+      animation: none;
+    }
+    .rest-dusk {
+      display: none;
+    }
+  }
 }
