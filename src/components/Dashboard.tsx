@@ -1,3 +1,4 @@
+import { RestTicket } from './RestTicket';
 import { HudStrip } from './HudStrip';
 import { StreakFlame } from './StreakFlame';
 import { ResourceIcon } from './game/BaseScreen';
@@ -5,7 +6,7 @@ import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog'
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Moon} from 'lucide-react';
+import { Loader2} from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeMove } from '../i18n/localize';
@@ -198,33 +199,23 @@ export function Dashboard({
 
       {/* One row: rest day · the streak (centrepiece) · edit your workout. */}
       <section className="home-trio mb-4 normal-case" aria-label={t.dashboard.aria.funFactAndStreak}>
-        {/* Rest days are a weekly allowance you spend: a ticket with tally marks. */}
-        {isRestDayToday ? (
-          <div className="act-tile act-rest rest-ticket is-resting" role="status">
-            <span className="tile-kicker">{t.hub.trio.restKicker}</span>
-            <Moon size={22} strokeWidth={2.4} className="rest-ticket-moon" aria-hidden="true" />
-            <span className="ticket-perf" aria-hidden="true" />
-            <span className="tile-main">{t.hub.trio.resting}</span>
-            <span className="tile-cta">{t.hub.trio.safe}</span>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={onTakeRestDay}
-            disabled={!canTakeRestDay}
-            className="act-tile act-rest rest-ticket"
-            aria-label={`${t.dashboard.restDay.button}: ${canTakeRestDay ? t.hub.trio.left(restDaysRemainingThisWeek) : t.hub.trio.none}`}>
-            <span className="tile-kicker">{t.hub.trio.restKicker}</span>
-            <span className="rest-tally" aria-hidden="true">
-              {Array.from({ length: restDotsTotal }, (_, k) => (
-                <i key={k} className={k < restDaysRemainingThisWeek ? 'is-on' : ''} />
-              ))}
-            </span>
-            <span className="ticket-perf" aria-hidden="true" />
-            <span className="tile-main">{canTakeRestDay ? t.hub.trio.left(restDaysRemainingThisWeek) : t.hub.trio.none}</span>
-            <span className="tile-cta">{canTakeRestDay ? `${t.hub.trio.takeOff} →` : ''}</span>
-          </button>
-        )}
+        {/* Rest days are a weekly allowance you spend: a ticket you tear off. */}
+        <RestTicket
+          canTake={canTakeRestDay}
+          resting={isRestDayToday}
+          left={restDaysRemainingThisWeek}
+          slots={restDotsTotal}
+          onTake={onTakeRestDay}
+          copy={{
+            kicker: t.hub.trio.restKicker,
+            left: t.hub.trio.left(restDaysRemainingThisWeek),
+            none: t.hub.trio.none,
+            slide: `${t.hub.trio.slide} →`,
+            restDay: t.hub.trio.restDay,
+            safe: t.hub.trio.safe,
+            take: t.dashboard.restDay.button
+          }}
+        />
         <div
           data-tour="streak"
           className="trio-streak"

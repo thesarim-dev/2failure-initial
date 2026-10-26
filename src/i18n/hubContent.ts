@@ -103,6 +103,8 @@ export type HubCopy = {
     restKicker: string;
     takeOff: string;
     yourWeek: string;
+    slide: string;
+    restDay: string;
   };
   week: {
     title: string;
@@ -243,7 +245,9 @@ const en: HubCopy = {
     safe: 'Streak safe today',
     restKicker: 'Rest days',
     takeOff: 'Take today off',
-    yourWeek: 'Your week'
+    yourWeek: 'Your week',
+    slide: 'Slide to tear off',
+    restDay: 'Rest day'
   },
   restoreBanner: {
     title: (streak) => `Your ${streak}-day streak broke.`,
@@ -384,7 +388,9 @@ const he: HubCopy = {
     safe: 'הרצף מוגן היום',
     restKicker: 'ימי מנוחה',
     takeOff: 'קחו את היום חופש',
-    yourWeek: 'השבוע שלכם'
+    yourWeek: 'השבוע שלכם',
+    slide: 'החליקו כדי לתלוש',
+    restDay: 'יום מנוחה'
   },
   restoreBanner: {
     title: (streak) => `הרצף שלך של ${streak} ימים נשבר.`,
@@ -525,7 +531,9 @@ const ar: HubCopy = {
     safe: 'سلسلتك آمنة اليوم',
     restKicker: 'أيام الراحة',
     takeOff: 'خذ اليوم إجازة',
-    yourWeek: 'أسبوعك'
+    yourWeek: 'أسبوعك',
+    slide: 'اسحب للتمزيق',
+    restDay: 'يوم راحة'
   },
   restoreBanner: {
     title: (streak) => `انقطعت سلسلتك المكوّنة من ${streak} أيام.`,

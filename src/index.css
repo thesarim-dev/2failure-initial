@@ -8130,4 +8130,178 @@
     opacity: 1;
     box-shadow: 0 0 0 2px var(--tile-ink);
   }
+
+  /* ======================= Tear-off rest ticket ======================= */
+  /* The wrapper casts the hard shadow (so torn, clipped shapes keep it). */
+  .rest-ticket-wrap {
+    position: relative;
+    display: flex;
+    width: 100%;
+    filter: drop-shadow(4px 4px 0 var(--tile-shadow));
+  }
+  .rest-ticket-wrap,
+  .rest-ticket {
+    --tile-bg: #25264f;
+    --tile-edge: #6f75f0;
+    --tile-shadow: #10112e;
+    --tile-ink: #e8e9ff;
+    --tile-accent: #b9bdff;
+    --page: #1a1a1a;
+  }
+  html:not(.dark) .rest-ticket-wrap,
+  html:not(.dark) .rest-ticket {
+    --tile-bg: #ecebff;
+    --tile-edge: #4f55cf;
+    --tile-shadow: #2e3290;
+    --tile-ink: #1f2160;
+    --tile-accent: #4f55cf;
+    --page: #f4f4f0;
+  }
+  .home-trio .rest-ticket-wrap .act-tile.rest-ticket {
+    flex: 1;
+    width: 100%;
+    box-shadow: none;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .home-trio .rest-ticket-wrap .act-tile.rest-ticket.is-spent {
+    opacity: 0.55;
+  }
+  /* The zipper track along the perforation. */
+  .ticket-zip {
+    position: relative;
+    align-self: stretch;
+    height: 16px;
+    margin: 0 -0.75rem;
+    background-image: repeating-linear-gradient(90deg, var(--tile-edge) 0 5px, transparent 5px 10px);
+    background-size: 100% 1.5px;
+    background-position: 0 50%;
+    background-repeat: no-repeat;
+  }
+  .ticket-zip::before,
+  .ticket-zip::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--page);
+    border: 2px solid var(--tile-edge);
+  }
+  .ticket-zip::before {
+    left: -9px;
+    clip-path: inset(0 0 0 50%);
+  }
+  .ticket-zip::after {
+    right: -9px;
+    clip-path: inset(0 50% 0 0);
+  }
+  /* What's been unzipped: an open slit behind the pull. */
+  .zip-torn {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 50%;
+    height: 4px;
+    transform: translateY(-50%);
+    background: var(--page);
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.5);
+    transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .zip-pull {
+    position: absolute;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    margin-top: -11px;
+    border-radius: 999px;
+    background: var(--tile-accent);
+    border: 2px solid var(--tile-edge);
+    box-shadow: 0 2px 0 var(--tile-shadow), inset 0 2px 0 rgba(255, 255, 255, 0.45);
+    cursor: grab;
+    transition: inset-inline-start 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .zip-pull::after {
+    content: '';
+    position: absolute;
+    inset: 5px 8px;
+    border-radius: 2px;
+    border-inline: 1.5px solid var(--tile-edge);
+  }
+  .ticket-zip.is-dragging .zip-torn,
+  .ticket-zip.is-dragging .zip-pull {
+    transition: none;
+  }
+  .ticket-zip.is-dragging .zip-pull {
+    cursor: grabbing;
+    transform: scale(1.1);
+  }
+  /* A tap shows which way to slide. */
+  .rest-ticket.is-nudge .zip-pull {
+    animation: zip-nudge 0.9s ease-in-out;
+  }
+  @keyframes zip-nudge {
+    0%, 100% { translate: 0 0; }
+    30% { translate: 18px 0; }
+    55% { translate: 4px 0; }
+    75% { translate: 12px 0; }
+  }
+  [dir='rtl'] .rest-ticket.is-nudge .zip-pull {
+    animation-name: zip-nudge-rtl;
+  }
+  @keyframes zip-nudge-rtl {
+    0%, 100% { translate: 0 0; }
+    30% { translate: -18px 0; }
+    55% { translate: -4px 0; }
+    75% { translate: -12px 0; }
+  }
+  /* The rip: the top half tumbles away; the stub stays. */
+  .home-trio .rest-ticket-wrap .act-tile.ticket-flyaway,
+  .ticket-flyaway {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    z-index: 2;
+    pointer-events: none;
+    box-shadow: none;
+    transform-origin: 100% 60%;
+    animation: ticket-fall 0.75s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+  }
+  [dir='rtl'] .ticket-flyaway {
+    transform-origin: 0% 60%;
+    animation-name: ticket-fall-rtl;
+  }
+  /* The torn-off bottom half drops away under gravity. */
+  @keyframes ticket-fall {
+    0% { transform: none; opacity: 1; }
+    20% { transform: translate(-1px, 3px) rotate(4deg); opacity: 1; }
+    100% { transform: translate(-12px, 90px) rotate(18deg); opacity: 0; }
+  }
+  @keyframes ticket-fall-rtl {
+    0% { transform: none; opacity: 1; }
+    20% { transform: translate(1px, 3px) rotate(-4deg); opacity: 1; }
+    100% { transform: translate(12px, 90px) rotate(-18deg); opacity: 0; }
+  }
+  /* The stub after tearing: content sits below the ragged edge. */
+  /* What stays: the top half, ragged along the bottom. */
+  .home-trio .rest-ticket-wrap .act-tile.rest-ticket.is-stub {
+    justify-content: flex-start;
+    gap: 0.35rem;
+    padding-bottom: 38%;
+  }
+  .stub-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+    font-weight: 900;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ticket-flyaway,
+    .rest-ticket.is-nudge .zip-pull {
+      animation: none;
+      opacity: 0;
+    }
+  }
 }
