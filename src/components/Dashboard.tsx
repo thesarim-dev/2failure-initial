@@ -1,5 +1,3 @@
-import { lastWeekRecap, recapDue, weekDots, weekStartsSunday, type DotState } from '../lib/weekRhythm';
-import type { SetLogRow } from '../lib/setHistory';
 import { RestTicket } from './RestTicket';
 import { HudStrip } from './HudStrip';
 import { StreakFlame } from './StreakFlame';
@@ -8,7 +6,7 @@ import { PATTERN_RESOURCE, RESOURCE_IDS, type Resources } from '../game/catalog'
 import { patternForMove } from '../game/useBaseGame';
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, X } from 'lucide-react';
+import { Loader2} from 'lucide-react';
 import { FailureLogo } from './FailureLogo';
 import { useLanguage } from '../context/LanguageContext';
 import { localizeMove } from '../i18n/localize';
@@ -57,9 +55,6 @@ interface DashboardProps {
   rotationCycleLength: number;
   /** The plan's training days in order (for the week tile). */
   rotationCycle: readonly string[];
-  /** Recent set logs (for the week dots and last week's recap). */
-  weekHistory?: SetLogRow[];
-  userId?: string;
   /** Today at a glance (null on rest days): progress and the next set. */
   dayProgress?: {
     done: number;
@@ -77,17 +72,6 @@ interface DashboardProps {
   onOpenPlan: () => void;
   trainingDaysPerWeek: number;
 }
-
-/** Week-dot classes (written out so the CSS build keeps them). */
-const DOT_CLASS: Record<DotState, string> = {
-  trained: 'is-trained',
-  rested: 'is-rested',
-  missed: 'is-missed',
-  today: 'is-today',
-  todayDone: 'is-today is-trained',
-  todayRest: 'is-today is-rested',
-  upcoming: 'is-upcoming'
-};
 
 /** Week-tile colours per training day (written out so the CSS build keeps them). */
 const WEEK_BLOCK: Record<string, string> = {
@@ -131,8 +115,6 @@ export function Dashboard({
   rotatingProgramCycleDay,
   rotationCycleLength,
   rotationCycle,
-  weekHistory = [],
-  userId,
   dayProgress = null,
   isRestDayToday,
   canTakeRestDay,
@@ -156,27 +138,6 @@ export function Dashboard({
       ? t.hub.plan.tileSub(rotationCycleLength)
       : t.hub.plan.dayNames[rotatingProgramPhase];
   const todayIndex = (Math.max(1, rotatingProgramCycleDay ?? 1) - 1) % Math.max(1, rotationCycle.length);
-  // The week's rhythm and last week's recap.
-  const sundayFirst = weekStartsSunday(language);
-  const dots = useMemo(() => weekDots(weekHistory, recentRestDays, new Date(), sundayFirst), [weekHistory, recentRestDays, sundayFirst]);
-  const recap = useMemo(() => (recapDue(new Date(), sundayFirst) ? lastWeekRecap(weekHistory, new Date(), sundayFirst) : null), [weekHistory, sundayFirst]);
-  const recapKey = recap && userId ? `2failure-user-${userId}-recap-${recap.weekKey}` : null;
-  const [recapDismissed, setRecapDismissed] = useState(false);
-  useEffect(() => {
-    try {
-      setRecapDismissed(!!recapKey && window.localStorage.getItem(recapKey) === '1');
-    } catch {
-      setRecapDismissed(false);
-    }
-  }, [recapKey]);
-  const dismissRecap = () => {
-    setRecapDismissed(true);
-    try {
-      if (recapKey) window.localStorage.setItem(recapKey, '1');
-    } catch {
-      // Storage blocked: it stays dismissed for this visit.
-    }
-  };
   const restDotsTotal = Math.min(5, Math.max(restDaysRemainingThisWeek, 7 - rotationCycleLength, 1));
 
   // Night falls when a rest day starts during this visit (not when you open the app on one).
@@ -297,15 +258,6 @@ export function Dashboard({
               size="lg"
             />
           )}
-          {/* This week, day by day: trained, rested, today, missed, coming up. */}
-          <span className="week-dots" role="img" aria-label={dots.map((d, k) => `${t.rhythm.days[k]}: ${t.rhythm.dot[d.state]}`).join(', ')}>
-            {dots.map((d, k) => (
-              <span key={d.key} className={`week-dot ${DOT_CLASS[d.state]}`}>
-                <i />
-                <b>{t.rhythm.days[k]}</b>
-              </span>
-            ))}
-          </span>
         </div>
 
         {/* Your week at a glance: one block per training day, today raised. */}
@@ -325,32 +277,6 @@ export function Dashboard({
           <span className="tile-cta">{t.hub.trio.planTitle} →</span>
         </button>
       </section>
-
-      {/* Last week's recap (first two days of a new week, until dismissed). */}
-      {recap && !recapDismissed && (
-        <section className="week-recap" aria-label={t.rhythm.recapTitle}>
-          <div className="week-recap-head">
-            <span className="week-recap-title">{t.rhythm.recapTitle}</span>
-            <button type="button" className="week-recap-close" onClick={dismissRecap} aria-label={t.rhythm.dismiss}>
-              <X size={18} strokeWidth={2.6} />
-            </button>
-          </div>
-          <p className="week-recap-stats">
-            <span className="is-big">{t.rhythm.sets(recap.sets)}</span>
-            <span>{t.rhythm.trainingDays(recap.days)}</span>
-            {recap.records > 0 && <span className="is-record">{t.rhythm.records(recap.records)}</span>}
-          </p>
-          {recap.best && (
-            <p className="week-recap-best">
-              {t.rhythm.best(
-                t.moves.variants[recap.best.id]?.name ?? recap.best.id,
-                recap.best.kg ? t.rhythm.kg(recap.best.kg, recap.best.reps) : t.rhythm.reps(recap.best.reps)
-              )}
-            </p>
-          )}
-          <p className="week-recap-cta">{t.rhythm.cta} →</p>
-        </section>
-      )}
 
       {/* Streak broke: a clear banner to bring it back (before the 2nd set today). */}
       {canRestoreStreak && (

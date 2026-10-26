@@ -30,7 +30,6 @@ import { supabase } from './lib/supabase';
 import { REST, restSecondsFor } from './lib/restTimes';
 import { RestTimerBanner, type RestTimer } from './components/RestTimerBanner';
 import { fetchLastSet, type LastSet } from './lib/lastSet';
-import { fetchSetHistory, type SetLogRow } from './lib/setHistory';
 import { ProgressScreen } from './components/ProgressScreen';
 import { usePlan } from './hooks/usePlan';
 import { PlanScreen } from './components/PlanScreen';
@@ -273,20 +272,6 @@ export function MainApp() {
     rotatingProgramEnabled,
     doneToday
   ]);
-
-  // Recent set logs (5 weeks): this week's dots and last week's recap. Refreshed after each set.
-  const [weekHistory, setWeekHistory] = useState<SetLogRow[]>([]);
-  const setsTodayTotal = Object.values(setsCompleted).reduce((a, b) => a + b, 0);
-  useEffect(() => {
-    if (!user) return;
-    let alive = true;
-    fetchSetHistory(user.id, 120)
-      .then((rows) => alive && setWeekHistory(rows))
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, [user, setsTodayTotal]);
 
   // Today at a glance: sets done vs planned, and a rough time left.
   const dayProgress = useMemo(() => {
@@ -739,8 +724,6 @@ export function MainApp() {
         rotatingProgramCycleDay={rotatingProgramCycleDay}
         rotationCycleLength={rotationCycle.length}
         rotationCycle={rotationCycle}
-        weekHistory={weekHistory}
-        userId={user?.id}
         dayProgress={dayProgress}
         isRestDayToday={isRestDayToday}
         canTakeRestDay={canTakeRestDay}
