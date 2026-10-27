@@ -685,7 +685,14 @@ export function MainApp() {
         showTabBar ? 'has-tab-bar' : ''
       } ${showRestBanner ? 'has-rest-banner' : ''}`}>
       {/* Screens fade in. Opacity only: a transform would break fixed-position screens. */}
+      {/* Ambient light behind every screen (dark mode): slow lime/teal/cyan aurora. */}
+      <div className="app-ambient" aria-hidden="true">
+        <i className="amb amb-a" />
+        <i className="amb amb-b" />
+        <i className="amb amb-c" />
+      </div>
       <motion.div
+        className="relative z-[1]"
         key={appState}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

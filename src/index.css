@@ -8631,124 +8631,103 @@
     white-space: nowrap;
   }
 
-  /* ============ The plan card as a split-flap departure board ============ */
-  .flap-row {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-  }
-  .flap {
-    position: relative;
-    display: inline-block;
-    width: 2.7rem;
-    height: 3.3rem;
-    perspective: 220px;
-    border-radius: 7px;
-    box-shadow: 0 3px 0 var(--tile-shadow), inset 0 0 0 1.5px rgba(0, 0, 0, 0.45);
-    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
-    font-size: 2.2rem;
-    line-height: 3.3rem;
-    color: #f4fff9;
-  }
-  html:not(.dark) .flap {
-    color: #f4fff9;
-  }
-  .flap-half {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 50%;
-    overflow: hidden;
-    background: linear-gradient(180deg, #17473f, #0f342e);
-    backface-visibility: hidden;
-  }
-  .flap-half b {
-    display: block;
-    height: 3.3rem;
-    text-align: center;
-    font-weight: inherit;
-  }
-  .flap-top {
-    top: 0;
-    border-radius: 7px 7px 0 0;
-    transform-origin: 50% 100%;
-  }
-  .flap-bottom {
-    bottom: 0;
-    border-radius: 0 0 7px 7px;
-    background: linear-gradient(180deg, #0d2f29, #0a2722);
-    transform-origin: 50% 0%;
-  }
-  .flap-bottom b {
-    margin-top: -1.65rem;
-  }
-  /* The hinge: a thin dark line with a pin at each side. */
-  .flap::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: calc(50% - 1px);
-    height: 2px;
-    background: rgba(0, 0, 0, 0.55);
-    z-index: 3;
-  }
-  .flap::before {
-    content: '';
-    position: absolute;
-    left: -2px;
-    right: -2px;
-    top: calc(50% - 3px);
-    height: 6px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, #2cc7a5 0 4px, transparent 4px calc(100% - 4px), #2cc7a5 calc(100% - 4px));
-    z-index: 4;
-  }
-  .flap-fall {
-    z-index: 2;
-    animation: flap-fall 0.14s ease-in forwards;
-  }
-  .flap-land {
-    z-index: 2;
-    transform: rotateX(90deg);
-    animation: flap-land 0.14s ease-out 0.14s forwards;
-  }
-  @keyframes flap-fall {
-    from { transform: rotateX(0deg); }
-    to { transform: rotateX(-90deg); filter: brightness(0.6); }
-  }
-  @keyframes flap-land {
-    from { transform: rotateX(90deg); filter: brightness(1.4); }
-    to { transform: rotateX(0deg); }
-  }
-  .flap-label {
-    display: flex;
-    flex-direction: column;
-    text-align: start;
-    font-size: 0.82rem;
-    font-weight: 900;
-    line-height: 1.15;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .home-trio .act-tile.week-tile.is-flap {
+  /* ============ The plan card as a dial ============ */
+  .home-trio .act-tile.week-tile.is-dial {
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.2rem;
+    text-align: center;
   }
-  @media (prefers-reduced-motion: reduce) {
-    .flap-fall,
-    .flap-land {
-      animation-duration: 0.01s;
-      animation-delay: 0s;
-    }
+  .plan-dial {
+    width: 3.6rem;
+    height: 3.6rem;
+    overflow: visible;
   }
-
-  /* Chunky board numerals; the label stays on two lines. */
-  .flap {
+  .plan-dial-ring {
+    transform-origin: 32px 32px;
+  }
+  .plan-dial-ring.is-spin {
+    animation: dial-spin 0.55s cubic-bezier(0.3, 0, 0.2, 1);
+  }
+  @keyframes dial-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .dial-seg {
+    fill: none;
+    stroke: color-mix(in srgb, var(--tile-ink) 18%, transparent);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke 0.3s ease;
+  }
+  .dial-seg.is-on {
+    stroke: var(--tile-accent);
+  }
+  .plan-dial-n {
+    fill: var(--tile-ink);
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 22px;
     font-weight: 900;
   }
-  .flap-label span {
+  .dial-label {
+    font-size: 0.8rem;
+    font-weight: 900;
     white-space: nowrap;
+  }
+
+  /* ============ Ambient background (dark mode): a slow, calm aurora ============ */
+  .app-ambient {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .dark .app-ambient {
+    display: block;
+  }
+  .amb {
+    position: absolute;
+    width: 80vmax;
+    height: 80vmax;
+    border-radius: 50%;
+    will-change: transform;
+  }
+  .amb-a {
+    top: -38vmax;
+    left: -30vmax;
+    background: radial-gradient(circle, rgba(200, 240, 50, 0.11) 0%, rgba(200, 240, 50, 0) 62%);
+    animation: amb-a 64s ease-in-out infinite alternate;
+  }
+  .amb-b {
+    top: 18vmax;
+    right: -42vmax;
+    background: radial-gradient(circle, rgba(44, 199, 165, 0.12) 0%, rgba(44, 199, 165, 0) 62%);
+    animation: amb-b 78s ease-in-out infinite alternate;
+  }
+  .amb-c {
+    bottom: -48vmax;
+    left: -10vmax;
+    background: radial-gradient(circle, rgba(63, 208, 232, 0.08) 0%, rgba(63, 208, 232, 0) 62%);
+    animation: amb-c 92s ease-in-out infinite alternate;
+  }
+  @keyframes amb-a {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(18vmax, 10vmax) scale(1.12); }
+  }
+  @keyframes amb-b {
+    from { transform: translate(0, 0) scale(1.05); }
+    to { transform: translate(-16vmax, 14vmax) scale(0.95); }
+  }
+  @keyframes amb-c {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(14vmax, -16vmax) scale(1.1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .amb,
+    .plan-dial-ring.is-spin {
+      animation: none;
+    }
   }
 }
