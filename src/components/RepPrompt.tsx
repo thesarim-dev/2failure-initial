@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Move } from './moves';
@@ -16,6 +17,7 @@ interface RepPromptProps {
 
 export function RepPrompt({ move, submitting = false, onSubmit, lastSet = null }: RepPromptProps) {
   const { t } = useLanguage();
+  const submittedRef = useRef(false);
   const [value, setValue] = useState(lastSet ? String(lastSet.reps) : '');
   const bump = (d: number) => {
     setValue(String(Math.max(1, (parseInt(value, 10) || 0) + d)));
@@ -25,6 +27,8 @@ export function RepPrompt({ move, submitting = false, onSubmit, lastSet = null }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // One set, one submit: ignore repeat taps.
+    if (submittedRef.current) return;
     if (submitting) return;
     const reps = parseInt(value, 10);
     if (!Number.isFinite(reps) || reps < 1) {
@@ -32,6 +36,7 @@ export function RepPrompt({ move, submitting = false, onSubmit, lastSet = null }
       return;
     }
     setError(null);
+    submittedRef.current = true;
     onSubmit(reps);
   };
 

@@ -11,7 +11,7 @@ import type { SetRepResult } from '../types/repProgress';
  * connection is too weak it is kept on this device and saved next launch.
  */
 
-export type SetSaveJob =
+export type SetSaveJob = (
   | { kind: 'reps'; categoryId: string; reps: number }
   | {
       kind: 'weighted';
@@ -21,7 +21,25 @@ export type SetSaveJob =
       setNumber: number;
       totalSets: number;
       unit: WeightUnit;
-    };
+    }
+) & {
+  /** The set's log is saved (so a retry only finishes the personal bests). */
+  logged?: boolean;
+  /** Made on the phone when the set is finished: the server logs each id once. */
+  clientId?: string;
+};
+
+function newSetId(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    // Older browsers: a random v4-shaped id.
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
+  }
+}
 
 type BestCache = Record<string, { reps: number | null; at: string | null; weightKg?: number | null; weightReps?: number | null }>;
 
@@ -81,22 +99,26 @@ export function provisionalResult(userId: string, job: SetSaveJob): SetRepResult
 
 function runJob(userId: string, job: SetSaveJob): Promise<SetRepResult> {
   return job.kind === 'weighted'
-    ? recordWeightedSetReps(userId, job.categoryId, job.weightKg, job.reps, job.setNumber, job.totalSets, job.unit)
-    : recordSetReps(userId, job.categoryId, job.reps);
+    ? recordWeightedSetReps(userId, job.categoryId, job.weightKg, job.reps, job.setNumber, job.totalSets, job.unit, job)
+    : recordSetReps(userId, job.categoryId, job.reps, undefined, undefined, job);
 }
+/** The server refuses set logs closer than 3 seconds apart. */
+const tooFast = (err: unknown) => /too fast/i.test(String((err as { message?: string })?.message ?? err));
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Save with a few quick retries; if it still fails, keep it for next launch. */
 export async function saveSetInBackground(userId: string, job: SetSaveJob): Promise<SetRepResult | null> {
+  job.clientId ??= newSetId();
   for (const delay of [0, 1500, 4000]) {
     if (delay) await wait(delay);
     try {
       const result = await runJob(userId, job);
       rememberBest(userId, job.categoryId, result);
       return result;
-    } catch {
-      // Try again.
+    } catch (err) {
+      // Try again (after the server's 3-second spacing if that was the reason).
+      if (tooFast(err)) await wait(3200);
     }
   }
   writeJSON(userId, 'pending-sets', [...readJSON<SetSaveJob[]>(userId, 'pending-sets', []), job]);
@@ -108,7 +130,10 @@ export async function savePendingSets(userId: string): Promise<void> {
   const pending = readJSON<SetSaveJob[]>(userId, 'pending-sets', []);
   if (!pending.length) return;
   const remaining: SetSaveJob[] = [];
-  for (const job of pending) {
+  for (const [i, job] of pending.entries()) {
+    // The server takes one set log every 3 seconds.
+    if (i > 0) await wait(3200);
+    job.clientId ??= newSetId();
     try {
       const result = await runJob(userId, job);
       rememberBest(userId, job.categoryId, result);

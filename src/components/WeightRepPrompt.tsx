@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowBigDown, ArrowBigUp, ArrowRight } from 'lucide-react';
 import { Move } from './moves';
@@ -116,6 +116,7 @@ export function WeightRepPrompt({
 }: WeightRepPromptProps) {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const submittedRef = useRef(false);
   const copy = t.workout.weightPrompt;
   const [weightValue, setWeightValue] = useState('');
   const [repsValue, setRepsValue] = useState(
@@ -187,6 +188,8 @@ export function WeightRepPrompt({
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
+    // One set, one submit: ignore repeat taps.
+    if (submittedRef.current) return;
     if (submitting) return;
 
     const display = parseFloat(weightValue);
@@ -205,6 +208,7 @@ export function WeightRepPrompt({
     const weightKg = displayToKg(displayRounded, weightUnit);
 
     setError(null);
+    submittedRef.current = true;
     onSubmit(weightKg, reps);
   };
 

@@ -72,8 +72,7 @@ export function RestTimerBanner({
       <div className="rest-banner-bar" style={{ transform: `scaleX(${1 - used})` }} aria-hidden="true" />
       <div className="rest-banner-main">
         <div className="rest-banner-text">
-          <span className="rest-banner-kicker">{done ? r.over : timer.nextExercise ? r.nextExercise : r.resting}</span>
-          <span className="rest-banner-next">{r.next(timer.nextName)}</span>
+          <span className="rest-banner-kicker">{done ? r.over : r.resting}</span>
         </div>
         {done ? (
           <button type="button" className="rest-banner-start" onClick={onStart}>

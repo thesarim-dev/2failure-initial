@@ -8710,4 +8710,24 @@
   .today-glance {
     margin-top: 0;
   }
+
+  /* The rest banner: just REST and the clock. */
+  .rest-banner-kicker {
+    font-size: 0.95rem;
+  }
+
+  /* Finishing before 0:10: a gentle note, the set keeps going. */
+  .workout-too-short {
+    margin-top: 0.7rem;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #0c0f02;
+    animation: too-short 0.4s ease;
+  }
+  @keyframes too-short {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
 }

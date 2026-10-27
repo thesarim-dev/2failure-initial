@@ -450,7 +450,8 @@ export function MainApp() {
       }
     })();
     setSummarySetContext(options?.setContext ?? null);
-    finishingRef.current = false;
+    // Keep the guard closed: this set is recorded. It reopens when the next set
+    // starts (or you leave), so a quick double tap can't count it twice.
     setIsFinishing(false);
     setAppState('SUMMARY');
   };

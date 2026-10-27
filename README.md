@@ -129,6 +129,10 @@ The home screen is your command center. Everything you need for today's session 
 * Tuned with a simulator that plays real weeks through the game engine: `npm run sim:progress -- 12 5` (weeks, training days a week). It also checks that an honest player always fits the server's material budget.
 * **Paths** are painted with the paint tool (no longer a decoration).
 
+### What counts as a set
+
+A set counts once you've been going for at least **10 seconds**. Tapping finish earlier shows "Too short to count. Keep going until 0:10." and the set carries on (an accidental tap can't end it, and two 3-second taps can't keep a streak). Each finished set counts exactly once, however quickly "Log reps" is tapped: on the home card, the day's progress, the plan, the streak (2 sets a day), the set log, coins and base materials. Quitting a set counts nothing.
+
 ### Rest days and the week
 
 Rest days are counted per **calendar week** (starting Monday; Sunday in Hebrew and Arabic). A plan of P training days gives **7 − P rest days** a week. One set of rules drives the rest ticket, the plan and the streak (`src/lib/restWeek.ts`, tested by `npm run test:rest`):

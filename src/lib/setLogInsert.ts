@@ -15,16 +15,23 @@ function isMissingColumnError(error: { message?: string } | null, column: string
   return message.includes(column.toLowerCase()) || message.includes('schema cache');
 }
 
-export async function insertWorkoutSetLog(logRow: SetLogInsert): Promise<void> {
-  // The server checks the numbers are plausible (see 20261027120000_server_economy.sql).
-  const { error: rpcError } = await supabase.rpc('log_set_entry', {
+export async function insertWorkoutSetLog(logRow: SetLogInsert, clientId?: string): Promise<void> {
+  // The server checks the numbers are plausible (see 20261027120000_server_economy.sql),
+  // and the set's id means a retry after a lost reply isn't logged twice
+  // (20261030120000_set_log_idempotency.sql).
+  const args = {
     p_category_id: logRow.category_id,
     p_reps: logRow.reps,
     p_weight_kg: logRow.weight_kg ?? null,
     p_set_number: logRow.set_number ?? null
-  });
+  };
+  let { error: rpcError } = await supabase.rpc('log_set_entry', clientId ? { ...args, p_client_id: clientId } : args);
+  const missingFn = (e: { code?: string; message?: string } | null) =>
+    !!e && (e.code === 'PGRST202' || /could not find the function|does not exist/i.test(e.message ?? ''));
+  // Server without set ids yet: log it the previous way.
+  if (rpcError && clientId && missingFn(rpcError)) ({ error: rpcError } = await supabase.rpc('log_set_entry', args));
   if (!rpcError) return;
-  const missing = rpcError.code === 'PGRST202' || /could not find the function|does not exist/i.test(rpcError.message ?? '');
+  const missing = missingFn(rpcError);
   if (!missing) throw rpcError;
   // Until the migration is applied: the old direct insert.
   const { error } = await supabase.from('workout_set_logs').insert(logRow);

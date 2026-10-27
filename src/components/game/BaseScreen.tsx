@@ -72,8 +72,6 @@ import {
 } from '../../game/engine';
 import type { BaseGame } from '../../game/useBaseGame';
 import { BaseBoard, ItemPreview } from './BaseBoard';
-import { GoalsCard } from './GoalsCard';
-import { computeGoals, type Goal } from '../../game/goals';
 
 type Draft = { kind: 'item'; itemId: string } | { kind: 'trophy'; trophyId: string };
 
@@ -545,7 +543,6 @@ export function BaseScreen({
     .join(' · ');
   const landSide = LAND_SIDES[state.landLevel];
   const landCost = nextLandCost(state);
-  const goals = useMemo(() => computeGoals(state, coins), [state, coins]);
 
   // ---- Paint tools: box (two corners) and fill (a connected patch) ----
   const terrainAt = (x: number, y: number) => state.terrain?.[`${x},${y}`] ?? 'grass';
@@ -610,27 +607,6 @@ export function BaseScreen({
   }, [hasWater, hasFire]);
   const levelProgress =
     levelInfo.next === null ? 1 : Math.min(1, (levelInfo.score - levelInfo.floor) / Math.max(1, levelInfo.next - levelInfo.floor));
-
-  /** One tap from a goal to the thing that completes it. */
-  const handleGoal = (goal: Goal) => {
-    fx.tap();
-    if (goal.kind === 'upgrade') {
-      setSheet({ uid: goal.uid });
-    } else if (goal.kind === 'build') {
-      if (goal.ready) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        choose({ kind: 'item', itemId: goal.itemId });
-      } else {
-        setBuildTab('structures');
-        setSheet('build');
-      }
-    } else if (goal.kind === 'level') {
-      setBuildTab('decor');
-      setSheet('build');
-    } else if (goal.kind === 'land') {
-      setSheet('land');
-    }
-  };
 
   const labelForItem = (item: PlacedItem) => {
     const def = getItemDef(item.itemId);
@@ -838,17 +814,6 @@ export function BaseScreen({
           </div>
         )}
       </div>
-
-      {mode.kind === 'idle' && !paintWith && !fenceKind && (
-        <GoalsCard
-          goals={goals}
-          coins={coins}
-          totalBuilders={total}
-          nameOf={nameOf}
-          titleOf={(title) => g.baseLevel.titles[title as keyof typeof g.baseLevel.titles] ?? title}
-          onAction={handleGoal}
-        />
-      )}
 
       <TodayPanel game={game} plan={game.plan} />
 

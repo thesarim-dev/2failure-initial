@@ -152,7 +152,8 @@ export async function recordWeightedSetReps(
   reps: number,
   setNumber: number,
   totalSets: number,
-  unit: WeightUnit
+  unit: WeightUnit,
+  progress?: { logged?: boolean; clientId?: string }
 ): Promise<SetRepResult> {
   // Both reads are independent: one round trip instead of two.
   const [todaysBefore, lastSession] = await Promise.all([
@@ -177,7 +178,8 @@ export async function recordWeightedSetReps(
     reps,
     weightKg,
     setNumber
-  );
+  ,
+    progress);
 
   return {
     ...result,

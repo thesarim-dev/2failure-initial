@@ -32,7 +32,8 @@ import {
 
 /** Rough earnings per set, for "≈ N sets" hints. */
 export const COINS_PER_SET = 26;
-export const MATERIAL_PER_SET = 4;
+/** About what a typical set earns of its material (for "about N sets" hints). */
+export const MATERIAL_PER_SET = 5;
 
 export type GoalReq =
   | { kind: 'resource'; id: ResourceId; have: number; need: number }

@@ -1,3 +1,5 @@
+import { MIN_SET_SECONDS } from '../lib/coinRewards';
+import { fx } from '../lib/feedback';
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Move } from './moves';
@@ -39,6 +41,7 @@ function AiRepTrackingView({
   setSeconds,
   onUseTimerOnly
 }: AiRepTrackingViewProps) {
+  const [tooShort, setTooShort] = useState(false);
   const { t } = useLanguage();
   const [buttonLabel] = useState(
     () =>
@@ -238,12 +241,20 @@ function AiRepTrackingView({
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', bounce: 0.35 }}
         disabled={finishing}
-        onClick={() =>
-          isHold
-            ? // Holds log the seconds actually held in good form (timer if the camera was off).
-              onFinish(cameraEnabled && reps > 0 ? reps : seconds, undefined)
-            : onFinish(seconds, cameraEnabled && reps > 0 ? reps : undefined)
-        }
+        onClick={() => {
+          // Under 10 seconds isn't a set: say so and keep going.
+          if (seconds < MIN_SET_SECONDS) {
+            setTooShort(true);
+            fx.error();
+            return;
+          }
+          if (isHold) {
+            // Holds log the seconds actually held in good form (timer if the camera was off).
+            onFinish(cameraEnabled && reps > 0 ? reps : seconds, undefined);
+          } else {
+            onFinish(seconds, cameraEnabled && reps > 0 ? reps : undefined);
+          }
+        }}
         className={`${WORKOUT_FINISH_BTN} mt-3 mb-3 !py-3 normal-case`}>
         <span>{finishing ? t.workout.saving : buttonLabel}</span>
         {reps > 0 && (
@@ -252,6 +263,11 @@ function AiRepTrackingView({
           </span>
         )}
       </motion.button>
+      {tooShort && seconds < MIN_SET_SECONDS && (
+        <p className="workout-too-short" role="status">
+          {t.workout.tooShort}
+        </p>
+      )}
     </div>
   );
 }

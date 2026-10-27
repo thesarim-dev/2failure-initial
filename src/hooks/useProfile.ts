@@ -98,7 +98,14 @@ export function useProfile() {
       if (!user) return;
       const before = profile?.coins ?? 0;
       setProfile((prev) => (prev ? { ...prev, coins: before + estimate } : prev)); // instant feedback
-      const result = await earnSetCoins(categoryId, seconds, tier);
+      // A dropped connection gets two more tries; a repeat the server already
+      // counted pays 0 ("too soon"), so a retry can't pay twice.
+      let result = await earnSetCoins(categoryId, seconds, tier);
+      for (const delay of [1500, 4000]) {
+        if (result.ok || result.missing) break;
+        await new Promise((r) => setTimeout(r, delay));
+        result = await earnSetCoins(categoryId, seconds, tier);
+      }
       if (result.ok) applyBalance(result.balance);
       else if (result.missing) await setCoins(before + estimate); // old path until the migration is applied
       else await fetchProfile();

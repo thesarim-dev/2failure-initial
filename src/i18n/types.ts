@@ -204,6 +204,8 @@ export interface AppTranslations {
     };
   };
   workout: {
+    /** Finishing before 0:10: not a set yet. */
+    tooShort: string;
     cancel: string;
     failingInProgress: string;
     hero: {

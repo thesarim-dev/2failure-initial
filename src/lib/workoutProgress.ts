@@ -134,12 +134,14 @@ export async function fetchSetsProgress(
 
 export async function incrementSetProgress(
   userId: string,
-  categoryId: string
+  categoryId: string,
+  /** Set the count to at least this (repeatable: a retry can't count a set twice). */
+  atLeast?: number
 ): Promise<Record<string, number>> {
   const today = toLocalDateString();
   const current = await fetchSetsProgress(userId);
   const prev = current[categoryId] ?? 0;
-  const next = prev + 1;
+  const next = atLeast !== undefined ? Math.max(prev, atLeast) : prev + 1;
 
   await ensureUserWorkoutRow(userId, categoryId);
 

@@ -189,7 +189,14 @@ class Query implements PromiseLike<{ data: any; error: any }> {
 
   then<A = { data: any; error: any }, B = never>(ok?: ((v: { data: any; error: any }) => A | PromiseLike<A>) | null, bad?: ((e: any) => B | PromiseLike<B>) | null): Promise<A | B> {
     const latency = Number(localStorage.getItem('2failure-demo-latency') || 60);
-    return new Promise<{ data: any; error: any }>((res) => setTimeout(() => res(this.run()), latency)).then(ok, bad);
+    const fail = this.op === 'select' ? null : flaky();
+    return new Promise<{ data: any; error: any }>((res) =>
+      setTimeout(() => {
+        if (fail === 'before') return res(NETWORK_ERROR);
+        const result = this.run();
+        res(fail === 'after' ? NETWORK_ERROR : result);
+      }, latency)
+    ).then(ok, bad);
   }
 }
 
@@ -299,11 +306,29 @@ function guardBaseSave(item: Row, rows: Row[]): { code: string; message: string 
   return value > row.material_budget ? { code: 'P0001', message: `base_over_budget: base value ${value} exceeds earned budget ${row.material_budget}` } : null;
 }
 
+/**
+ * Tests only: `localStorage['2failure-demo-flaky'] = '0.3'` makes 30% of writes
+ * and server calls fail like a dropped connection, half before the server acts
+ * and half after (the change is saved but the reply is lost).
+ */
+const NETWORK_ERROR = { data: null, error: { message: 'TypeError: Failed to fetch' } };
+function flaky(): 'before' | 'after' | null {
+  const p = Number(localStorage.getItem('2failure-demo-flaky') || 0);
+  if (!p || Math.random() >= p) return null;
+  return Math.random() < 0.5 ? 'before' : 'after';
+}
+
 function coinsForSet(seconds: number, tier: string): number {
   if (seconds < 10) return 0;
   return 20 + Math.round(10 * Math.min(1, seconds / 60)) + (tier === 'PRO' ? 5 : tier === 'ELITE' ? 10 : 0);
 }
 async function rpc(name: string, args: Record<string, any>) {
+  const fail = flaky();
+  if (fail === 'before') return NETWORK_ERROR;
+  const result = await rpcInner(name, args);
+  return fail === 'after' ? NETWORK_ERROR : result;
+}
+async function rpcInner(name: string, args: Record<string, any>) {
   const latency = Number(localStorage.getItem('2failure-demo-latency') || 60);
   await new Promise((r) => setTimeout(r, latency));
   const uid = currentSession?.user?.id;
@@ -345,9 +370,12 @@ async function rpc(name: string, args: Record<string, any>) {
     if (reps < 1 || reps > 1000) return { data: null, error: { message: 'implausible reps' } };
     if (kg != null && (kg <= 0 || kg > 500)) return { data: null, error: { message: 'implausible weight' } };
     const logs = (db.workout_set_logs = db.workout_set_logs ?? []);
+    // The same set sent again (a retry after a lost reply): it's already saved.
+    const again = args.p_client_id && logs.find((r) => r.user_id === uid && r.client_id === args.p_client_id);
+    if (again) return { data: again.id, error: null };
     if (logs.some((r) => r.user_id === uid && now - Date.parse(r.completed_at) < 3000)) return { data: null, error: { message: 'too fast' } };
     const id = `log-${now}`;
-    logs.push({ id, user_id: uid, category_id: args.p_category_id, reps, weight_kg: kg ?? null, set_number: args.p_set_number ?? null, completed_at: new Date(now).toISOString() });
+    logs.push({ id, user_id: uid, category_id: args.p_category_id, reps, weight_kg: kg ?? null, set_number: args.p_set_number ?? null, client_id: args.p_client_id ?? null, completed_at: new Date(now).toISOString() });
     saveDb(db);
     return { data: id, error: null };
   }

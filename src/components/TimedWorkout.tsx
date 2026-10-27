@@ -1,3 +1,4 @@
+import { MIN_SET_SECONDS } from '../lib/coinRewards';
 import { isRepLoggedCategory } from './moves';
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { motion } from 'framer-motion';
@@ -34,6 +35,7 @@ export function TimedWorkout({
 }: TimedWorkoutProps) {
   const { t } = useLanguage();
   const [internalSeconds, setInternalSeconds] = useState(0);
+  const [tooShort, setTooShort] = useState(false);
   // One clear label: the moment to tap is your last rep (or the end of a hold).
   const buttonLabel = isRepLoggedCategory(move.categoryId) ? t.moves.finishReps : t.moves.finishHold;
   const seconds = externalSeconds ?? internalSeconds;
@@ -132,6 +134,12 @@ export function TimedWorkout({
               // A satisfying finish: the ring snaps full with a flash and a chime,
               // then the set moves on.
               if (ended) return;
+              // Under 10 seconds isn't a set: say so and keep going.
+              if (seconds < MIN_SET_SECONDS) {
+                setTooShort(true);
+                fx.error();
+                return;
+              }
               setEnded(true);
               fx.success();
               const final = seconds;
@@ -140,6 +148,11 @@ export function TimedWorkout({
             className={`${WORKOUT_FINISH_BTN} normal-case`}>
             {finishing ? t.workout.saving : buttonLabel}
           </motion.button>
+          {tooShort && seconds < MIN_SET_SECONDS && (
+            <p className="workout-too-short" role="status">
+              {t.workout.tooShort}
+            </p>
+          )}
 
           {onEnableAiTracking && (
             <button

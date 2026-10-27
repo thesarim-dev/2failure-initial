@@ -88,7 +88,9 @@ export async function recordSetReps(
   categoryId: string,
   reps: number,
   weightKg?: number,
-  setNumber?: number
+  setNumber?: number,
+  /** Shared across retries: the set's id, and whether its log is saved. */
+  progress?: { logged?: boolean; clientId?: string }
 ): Promise<SetRepResult> {
   const completedAt = new Date().toISOString();
   const weighted = weightKg !== undefined && weightKg > 0;
@@ -125,9 +127,15 @@ export async function recordSetReps(
   if (weighted) logRow.weight_kg = weightKg;
   if (setNumber !== undefined && setNumber > 0) logRow.set_number = setNumber;
 
-  // Round trip 2 (in parallel): save the set and any new personal bests.
-  const [, personalBest, weightPersonalBest] = await Promise.all([
-    insertWorkoutSetLog(logRow),
+  // Round trip 2: the set itself, exactly once. A retry after a lost reply
+  // doesn't log it twice.
+  if (!progress?.logged) {
+    await insertWorkoutSetLog(logRow, progress?.clientId);
+    if (progress) progress.logged = true;
+  }
+
+  // Round trip 3 (in parallel): any new personal bests.
+  const [personalBest, weightPersonalBest] = await Promise.all([
     isNewPersonalBest
       ? (async (): Promise<PersonalBest> => {
           const { data: updated, error: updateError } = await supabase

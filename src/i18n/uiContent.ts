@@ -161,6 +161,7 @@ const en: UiContent = {
     }
   },
   workout: {
+    tooShort: 'Too short to count. Keep going until 0:10.',
     cancel: 'Cancel workout',
     failingInProgress: 'Set in progress',
     hero: {
@@ -508,6 +509,7 @@ const he: UiContent = {
     }
   },
   workout: {
+    tooShort: 'קצר מדי כדי להיחשב. המשיכו עד 0:10.',
     cancel: 'בטל אימון',
     failingInProgress: 'סט בתהליך',
     hero: {
@@ -855,6 +857,7 @@ const ar: UiContent = {
     }
   },
   workout: {
+    tooShort: 'أقصر من أن يُحتسب. استمر حتى 0:10.',
     cancel: 'إلغاء التمرين',
     failingInProgress: 'المجموعة جارية',
     hero: {
