@@ -67,7 +67,7 @@ export function useUserStats() {
   }, [stats]);
 
   /** `restAllowance`: rest days per 7 days that keep the streak alive. */
-  const recordWorkoutComplete = useCallback(async (restAllowance = 0) => {
+  const recordWorkoutComplete = useCallback(async (restAllowance = 0, extra: { restDays?: string[]; sundayFirst?: boolean } = {}) => {
     if (!user) return null;
 
     setCompleting(true);
@@ -75,7 +75,11 @@ export function useUserStats() {
 
     try {
       const today = toLocalDateString();
-      const options: StreakRestOptions = { restAllowance, recentRestDays: readRestLog(user.id) };
+      const options: StreakRestOptions = {
+        restAllowance,
+        recentRestDays: [...readRestLog(user.id), ...(extra.restDays ?? [])],
+        sundayFirst: extra.sundayFirst
+      };
       const { stats: updated, restDaysAdded } = await completeWorkout(user.id, options);
       if (restDaysAdded.length) setRecentRestDays(appendRestLog(user.id, restDaysAdded, today));
       setStats(updated);

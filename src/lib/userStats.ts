@@ -1,3 +1,4 @@
+import { restFitsWeeks } from './restWeek';
 import { supabase } from './supabase';
 import type { UserStats } from '../types/userStats';
 import { USER_STATS_COLUMNS } from '../types/userStats';
@@ -110,8 +111,10 @@ const DEFAULT_STATS = (userId: string): UserStats => ({
 export type StreakRestOptions = {
   /** Rest days allowed in any 7-day window. */
   restAllowance: number;
-  /** Days already counted as rest recently (YYYY-MM-DD). */
+  /** Days already counted as rest recently, plus declared rest days (YYYY-MM-DD). */
   recentRestDays: string[];
+  /** Weeks start on Sunday (Hebrew, Arabic) instead of Monday. */
+  sundayFirst?: boolean;
 };
 
 function shiftLocalDate(day: string, delta: number): string {
@@ -142,13 +145,14 @@ export function restFitsAllowance(
   today: string,
   options: StreakRestOptions
 ): boolean {
-  const skipped = skippedDays(lastWorkoutDate, today);
-  const windowStart = shiftLocalDate(today, -7);
-  const restInWindow = new Set(
-    [...options.recentRestDays, ...skipped].filter((day) => day >= windowStart && day < today)
-  );
-  const skippedOutsideWindow = skipped.filter((day) => day < windowStart).length;
-  return restInWindow.size + skippedOutsideWindow <= Math.max(0, options.restAllowance);
+  // Per calendar week: the days off in each week must fit that week's rest days.
+  return restFitsWeeks({
+    lastWorkoutDate,
+    today,
+    allowance: options.restAllowance,
+    knownRest: options.recentRestDays,
+    sundayFirst: !!options.sundayFirst
+  });
 }
 
 /**

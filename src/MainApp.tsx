@@ -30,11 +30,12 @@ import { supabase } from './lib/supabase';
 import { REST, restSecondsFor } from './lib/restTimes';
 import { RestTimerBanner, type RestTimer } from './components/RestTimerBanner';
 import { fetchLastSet, type LastSet } from './lib/lastSet';
+import { useTrainedDays } from './hooks/useTrainedDays';
 import { ProgressScreen } from './components/ProgressScreen';
 import { usePlan } from './hooks/usePlan';
 import { PlanScreen } from './components/PlanScreen';
 import { calculateCoinsEarned } from './lib/coinRewards';
-import { shouldCountStreakForDay, toLocalDateString } from './lib/userStats';
+import { shouldCountStreakForDay, toLocalDateString, STREAK_MIN_SETS_PER_DAY } from './lib/userStats';
 import { useTrainingDaysPerWeek } from './hooks/useTrainingDaysPerWeek';
 import { FREE_REST_DAYS_PER_WEEK, useFreeRestDays } from './hooks/useFreeRestDays';
 import type { TodayPlan } from './game/engine';
@@ -73,7 +74,11 @@ type AppState =
 
 export function MainApp() {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  // Weeks start on Sunday in Hebrew and Arabic, Monday otherwise.
+  const sundayFirst = language === 'he' || language === 'ar';
+  // Days you trained: the plan moves forward on these; rest is counted per calendar week.
+  const trained = useTrainedDays();
   const { isDark, toggle: toggleDark } = useDarkMode();
   const { dailySetGoal } = useDailySetGoal();
   const {
@@ -88,8 +93,10 @@ export function MainApp() {
     isRestDayToday: programRestDayToday,
     canTakeRestDay: programCanTakeRestDay,
     restDaysRemainingThisWeek: programRestDaysRemaining,
-    markTodayAsRestDay: programMarkRestDay
-  } = useRotatingProgram();
+    markTodayAsRestDay: programMarkRestDay,
+    declaredRestDays,
+    restTodayIsWeekDone
+  } = useRotatingProgram(trained.trainedDays, trained.loaded, sundayFirst);
   const {
     coins,
     loading: profileLoading,
@@ -148,12 +155,18 @@ export function MainApp() {
   // Without the program, the 2 rest-day uses a week are always covered.
   const restAllowance = Math.max(rotatingProgramEnabled ? 0 : FREE_REST_DAYS_PER_WEEK, 7 - weeklyTarget);
 
+  // Today becomes a training day at the same bar the streak uses (2 sets).
+  const { markToday: markTrainedToday } = trained;
+  useEffect(() => {
+    if (sumDailySets(setsCompleted) >= STREAK_MIN_SETS_PER_DAY) markTrainedToday();
+  }, [setsCompleted, markTrainedToday]);
+
   useEffect(() => {
     if (statsLoading || setsLoading) return;
     if (
       shouldCountStreakForDay(sumDailySets(setsCompleted), lastWorkoutDate)
     ) {
-      void recordWorkoutComplete(restAllowance);
+      void recordWorkoutComplete(restAllowance, { restDays: declaredRestDays, sundayFirst });
     }
   }, [
     statsLoading,
@@ -161,7 +174,9 @@ export function MainApp() {
     setsCompleted,
     lastWorkoutDate,
     recordWorkoutComplete,
-    restAllowance
+    restAllowance,
+    declaredRestDays,
+    sundayFirst
   ]);
 
   // Rest days: the program's own, or (without the program) up to 2 a week.
@@ -431,7 +446,7 @@ export function MainApp() {
         shouldCountStreakForDay(totalSetsToday, lastWorkoutDate)
       ) {
         await reward.catch(() => undefined);
-        await recordWorkoutComplete(restAllowance);
+        await recordWorkoutComplete(restAllowance, { restDays: declaredRestDays, sundayFirst });
       }
     })();
     setSummarySetContext(options?.setContext ?? null);
@@ -710,7 +725,9 @@ export function MainApp() {
         onRestoreStreak={handleRestoreStreak}
         materials={baseGame.state.resources}
         restAllowance={restAllowance}
-        recentRestDays={recentRestDays}
+        recentRestDays={[...recentRestDays, ...declaredRestDays]}
+        sundayFirst={sundayFirst}
+        restIsWeekDone={restTodayIsWeekDone}
         shields={baseGame.state.shields}
         onUseShield={handleUseShield}
         profileLoading={profileLoading}
@@ -768,7 +785,7 @@ export function MainApp() {
         <ProgressScreen
           userId={user.id}
           streak={currentStreak}
-          restDays={recentRestDays}
+          restDays={[...recentRestDays, ...declaredRestDays]}
           refreshKey={Object.values(setsCompleted).reduce((a, b) => a + b, 0)}
           onBack={() => {
             setAppState('SETTINGS');

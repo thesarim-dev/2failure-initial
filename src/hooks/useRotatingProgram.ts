@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { shiftDay, weekState } from '../lib/restWeek';
 import {
   daysBetweenLocalDates,
   DEFAULT_ROTATION_TEMPLATE,
-  getMaxRestDaysPerWeek,
   getRotatingProgramCycleDay,
   getRotatingProgramDayIndex,
   getRotatingProgramPhase,
@@ -16,7 +16,16 @@ import { storageKeyFor } from '../lib/persistedSettings';
 
 // Per-user keys to avoid leaking settings between accounts.
 
-export function useRotatingProgram() {
+/**
+ * `trainedDays`: days (YYYY-MM-DD) with training. The plan moves forward one
+ * workout per day you actually train; rest days and skipped days keep the next
+ * workout waiting. Rest days are counted per calendar week (see restWeek.ts).
+ */
+export function useRotatingProgram(
+  trainedDays: ReadonlySet<string> = new Set(),
+  trainedLoaded = false,
+  sundayFirst = false
+) {
   const today = toLocalDateString();
   const { user } = useAuth();
   const userId = user?.id;
@@ -26,6 +35,8 @@ export function useRotatingProgram() {
   const EFFECTIVE_INDEX_KEY = storageKeyFor(userId, 'rotating-program-effective-index');
   const EFFECTIVE_DATE_KEY = storageKeyFor(userId, 'rotating-program-effective-date');
   const REST_DAYS_KEY = storageKeyFor(userId, 'rotating-program-rest-days');
+  // v2: the plan advances on trained days only (v1 advanced every calendar day).
+  const MODEL_KEY = storageKeyFor(userId, 'rotating-program-model');
   const TEMPLATE_KEY = storageKeyFor(userId, 'rotating-program-template');
   /** @deprecated migrated to effective index + date */
   const LEGACY_OFFSET_KEY = storageKeyFor(userId, 'rotating-program-day-offset');
@@ -246,7 +257,28 @@ export function useRotatingProgram() {
     date: string;
   } | null>(() => {
     if (!readStoredEnabled() || !readStoredStartDate()) return null;
-    return resolveInitialEffectivePosition(readStoredStartDate()!, today);
+    let model: string | null = null;
+    try {
+      model = window.localStorage.getItem(MODEL_KEY);
+    } catch {
+      model = null;
+    }
+    if (model === '2') {
+      const index = readStoredEffectiveIndex();
+      const date = readStoredEffectiveDate();
+      if (index !== null && date !== null) return { index, date };
+    }
+    // Move to v2 once, keeping today's workout exactly where it was.
+    const old = resolveInitialEffectivePosition(readStoredStartDate()!, today);
+    const restingToday = readStoredRestDays().includes(today);
+    const index = restingToday ? old.index + 1 : Math.max(0, old.index);
+    writeStoredEffectivePosition(index, today);
+    try {
+      window.localStorage.setItem(MODEL_KEY, '2');
+    } catch {
+      // Ignore storage failures.
+    }
+    return { index, date: today };
   });
 
   const [restDays, setRestDaysState] = useState<string[]>(readStoredRestDays);
@@ -264,6 +296,11 @@ export function useRotatingProgram() {
       const anchor = toLocalDateString();
       setSavedPositionState({ index: 0, date: anchor });
       writeStoredEffectivePosition(0, anchor);
+      try {
+        window.localStorage.setItem(MODEL_KEY, '2');
+      } catch {
+        // Ignore storage failures.
+      }
     },
     []
   );
@@ -283,6 +320,11 @@ export function useRotatingProgram() {
         const position = { index: 0, date: anchor };
         setSavedPositionState(position);
         writeStoredEffectivePosition(0, anchor);
+        try {
+          window.localStorage.setItem(MODEL_KEY, '2');
+        } catch {
+          // Ignore storage failures.
+        }
         return;
       }
 
@@ -294,98 +336,80 @@ export function useRotatingProgram() {
     []
   );
 
-  const rawDayIndex = useMemo(() => {
+  // Where you are in the plan: the anchor, plus one for each day you trained since.
+  const position = useMemo(() => {
     if (!enabled || !startDate) return null;
-
-    if (savedPosition) {
-      const elapsed = Math.max(0, daysBetweenLocalDates(savedPosition.date, today));
-      // May be negative after a rest day taken on cycle day 1.
-      return savedPosition.index + elapsed;
+    const anchor = savedPosition ?? { index: 0, date: startDate };
+    let index = anchor.index;
+    for (let d = anchor.date; d < today; d = shiftDay(d, 1)) {
+      if (trainedDays.has(d)) index += 1;
     }
+    return Math.max(0, index);
+  }, [enabled, startDate, savedPosition, today, trainedDays]);
 
-    return getRotatingProgramDayIndex(startDate, today);
-  }, [enabled, startDate, savedPosition, today]);
+  // Keep the anchor recent (only once the training history has loaded).
+  useEffect(() => {
+    if (!trainedLoaded || position === null || !savedPosition) return;
+    if (daysBetweenLocalDates(savedPosition.date, today) <= 21) return;
+    setSavedPositionState({ index: position, date: today });
+    writeStoredEffectivePosition(position, today);
+  }, [trainedLoaded, position, savedPosition, today]);
 
-  const effectiveDayIndex = useMemo(() => {
-    if (rawDayIndex === null) return null;
-    return Math.max(0, rawDayIndex);
-  }, [rawDayIndex]);
-
-  const isRestDayToday = enabled && restDays.includes(today);
-
-  const restDaysUsedThisWeek = useMemo(
+  // Rest days, counted per calendar week: allowance, what's left, week done.
+  const week = useMemo(
     () =>
-      restDays.filter((day) => {
-        const elapsed = daysBetweenLocalDates(day, today);
-        return elapsed >= 0 && elapsed < 7;
-      }).length,
-    [restDays, today]
+      weekState({
+        today,
+        planDays: rotationCycle.length,
+        trainedDays,
+        declaredRest: new Set(restDays),
+        sundayFirst,
+        planStart: startDate
+      }),
+    [today, rotationCycle.length, trainedDays, restDays, sundayFirst, startDate]
   );
 
-  const maxRestDaysPerWeek = getMaxRestDaysPerWeek(rotationCycle);
-
-  const canTakeRestDay =
-    enabled && !isRestDayToday && restDaysUsedThisWeek < maxRestDaysPerWeek;
+  const isRestDayToday = enabled && week.restToday;
+  const canTakeRestDay = enabled && week.canRestToday;
 
   const markTodayAsRestDay = useCallback(() => {
-    if (!enabled || effectiveDayIndex === null) return;
+    if (!enabled || !week.canRestToday) return;
     if (restDays.includes(today)) return;
-
-    const usedThisWeek = restDays.filter((day) => {
-      const elapsed = daysBetweenLocalDates(day, today);
-      return elapsed >= 0 && elapsed < 7;
-    }).length;
-    if (usedThisWeek >= maxRestDaysPerWeek) return;
-
-    // Drop entries older than the rolling window before adding today.
-    const nextRestDays = [
-      ...restDays.filter((day) => daysBetweenLocalDates(day, today) < 7),
-      today
-    ];
+    // Keep three weeks of declared rest days; the plan doesn't move on rest days.
+    const nextRestDays = [...restDays.filter((day) => daysBetweenLocalDates(day, today) < 21), today];
     setRestDaysState(nextRestDays);
     writeStoredRestDays(nextRestDays);
-
-    // Freeze today's training day: store index - 1 so tomorrow advances to
-    // the canceled workout (elapsed +1 brings it back to today's original index).
-    const nextIndex = effectiveDayIndex - 1;
-    setSavedPositionState({ index: nextIndex, date: today });
-    writeStoredEffectivePosition(nextIndex, today);
-  }, [enabled, effectiveDayIndex, restDays, today, maxRestDaysPerWeek]);
+  }, [enabled, week.canRestToday, restDays, today]);
 
   const phase = useMemo((): RotatingProgramPhase | null => {
-    if (effectiveDayIndex === null) return null;
-    // A declared rest day creates the stretch plan for today.
+    if (position === null) return null;
+    // A rest day (declared, or the week's training is done) is a stretch day.
     if (isRestDayToday) return 'recovery';
-    return getRotatingProgramPhase(effectiveDayIndex, rotationCycle);
-  }, [effectiveDayIndex, isRestDayToday, rotationCycle]);
+    return getRotatingProgramPhase(position, rotationCycle);
+  }, [position, isRestDayToday, rotationCycle]);
 
+  // On a rest day this is the waiting workout (the next one you'll do).
   const cycleDay = useMemo(() => {
-    if (effectiveDayIndex === null) return null;
-    // On a rest day the carousel centers on REST; cycleDay stays the deferred
-    // training day so side cards / dots can preview tomorrow's workouts.
-    if (isRestDayToday && rawDayIndex !== null) {
-      return getRotatingProgramCycleDay(rawDayIndex + 1, rotationCycle);
-    }
-    return getRotatingProgramCycleDay(effectiveDayIndex, rotationCycle);
-  }, [effectiveDayIndex, isRestDayToday, rawDayIndex, rotationCycle]);
+    if (position === null) return null;
+    return getRotatingProgramCycleDay(position, rotationCycle);
+  }, [position, rotationCycle]);
 
   const selectProgramCycleDay = useCallback(
     (targetCycleDay: number) => {
-      // Don't jump days while today is locked as a player rest day.
-      if (isRestDayToday || effectiveDayIndex === null) return;
+      // Don't jump days while today is a rest day.
+      if (isRestDayToday || position === null) return;
 
       const length = rotationCycle.length;
-      const currentNorm =
-        ((effectiveDayIndex % length) + length) % length;
+      const currentNorm = ((position % length) + length) % length;
       const targetNorm = targetCycleDay - 1;
       const delta = targetNorm - currentNorm;
-      const nextIndex = Math.max(0, effectiveDayIndex + delta);
+      const nextIndex = Math.max(0, position + delta);
       const anchor = toLocalDateString();
 
       setSavedPositionState({ index: nextIndex, date: anchor });
       writeStoredEffectivePosition(nextIndex, anchor);
     },
-    [effectiveDayIndex, isRestDayToday, rotationCycle]
+    [position, isRestDayToday, rotationCycle]
   );
 
   return {
@@ -399,10 +423,11 @@ export function useRotatingProgram() {
     selectProgramCycleDay,
     isRestDayToday,
     canTakeRestDay,
-    restDaysRemainingThisWeek: Math.max(
-      0,
-      maxRestDaysPerWeek - restDaysUsedThisWeek
-    ),
-    markTodayAsRestDay
+    restDaysRemainingThisWeek: week.restLeft,
+    markTodayAsRestDay,
+    /** Rest days declared with the ticket (for the streak). */
+    declaredRestDays: restDays,
+    /** Today is rest because the week's training is done. */
+    restTodayIsWeekDone: enabled && week.restTodayIsWeekDone
   };
 }

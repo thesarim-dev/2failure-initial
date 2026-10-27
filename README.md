@@ -118,6 +118,17 @@ The home screen is your command center. Everything you need for today's session 
 | **Settings** (gear icon) | Top right | Opens preferences and FAQ |
 | **Coins badge** | Top right | Shows your current coin balance |
 
+### Rest days and the week
+
+Rest days are counted per **calendar week** (starting Monday; Sunday in Hebrew and Arabic). A plan of P training days gives **7 − P rest days** a week. One set of rules drives the rest ticket, the plan and the streak (`src/lib/restWeek.ts`, tested by `npm run test:rest`):
+
+* **A training day** is a day with at least 2 sets (the streak's bar). Any other day is a rest day: tearing the ticket and simply not training count the same.
+* **Rest days left** = the smaller of the week's remaining allowance and the days left minus the training days still needed. If every remaining day is needed, you can't rest.
+* **Week done:** once you've trained your plan's days, the rest of the week is rest automatically ("Week done · Streak safe today").
+* **The plan moves forward only on training days.** Rest and skipped days keep the next workout waiting, so no workout gets skipped.
+* **The streak** counts rest days as days on plan as long as each calendar week stays within its rest days.
+* **A first, partial week** counts from the day the plan started, with a training target that fits the days left.
+
 ### Streak badge
 
 The flame shows your **current streak**. It lights up once today is protected (your second set, or a rest day). Your streak counts **days on plan**: days you train (at least two sets, any exercises) plus rest days. You can rest up to a set number of days in any rolling 7-day window: **7 minus your weekly training target** (4 rest days at 3 days a week, 3 at 4 days, 2 at 5 days). Missed days count as rest automatically, so you don't have to tap **Rest day** (that button just swaps today to stretches). The streak only breaks when you take more rest days in a 7-day window than your allowance, or after about two weeks off. When you train again after resting, the rest days are added to your streak count.
@@ -662,5 +673,7 @@ In the Supabase dashboard, open **SQL Editor** and run each file's full contents
 
 1. `supabase/migrations/20261026120000_server_coin_rewards.sql` (coins)
 2. `supabase/migrations/20261027120000_server_economy.sql` (materials, buildings, set log, streaks)
+
+3. `supabase/migrations/20261028120000_fix_streak_guard_rest_days.sql` (lets the streak count rest days when you come back from them)
 
 Both keep existing balances and bases, and are safe to run again. Until they're run, the app falls back to its old behaviour.

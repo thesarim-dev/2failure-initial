@@ -31,6 +31,10 @@ interface DashboardProps {
   /** Rest days per 7 days that don't break the streak. */
   restAllowance: number;
   recentRestDays: string[];
+  /** Weeks start on Sunday (Hebrew, Arabic). */
+  sundayFirst?: boolean;
+  /** Today is rest because the week's training is done. */
+  restIsWeekDone?: boolean;
   /** Lodge streak shields available (free restores). */
   shields: number;
   onUseShield: () => void;
@@ -85,6 +89,8 @@ export function Dashboard({
   restoreStreakCost,
   restAllowance,
   recentRestDays,
+  sundayFirst = false,
+  restIsWeekDone = false,
   shields,
   onUseShield,
   onRestoreStreak,
@@ -158,7 +164,7 @@ export function Dashboard({
       },
       totalSetsToday,
       undefined,
-      { restAllowance, recentRestDays }
+      { restAllowance, recentRestDays, sundayFirst }
     );
 
   const activeMoves = useMemo(
@@ -223,7 +229,7 @@ export function Dashboard({
             left: t.hub.trio.leftShort(restDaysRemainingThisWeek),
             none: t.hub.trio.none,
             slide: `${t.hub.trio.slide} →`,
-            restDay: t.hub.trio.restDay,
+            restDay: restIsWeekDone ? t.hub.trio.weekDone : t.hub.trio.restDay,
             safe: t.hub.trio.safe,
             take: t.dashboard.restDay.button
           }}
