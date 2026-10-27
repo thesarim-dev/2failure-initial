@@ -1686,7 +1686,216 @@ function IsoWell({ ox, oy }: { ox: number; oy: number }) {
   );
 }
 
-export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden', 'arch', 'flowers', 'banner', 'windmill', 'bridge', 'lilypad', 'pullupbar', 'dipbars', 'punchbag', 'lanterns', 'parasol', 'statue', 'well']);
+// ---------------------------------------------------------------------------
+// The last flat decorations, redrawn in true isometric so they sit on the tile.
+// ---------------------------------------------------------------------------
+function IsoPicnic({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const cloth = themeFor('picnic', color);
+  const leg = (x: number, y: number, z1: number) => (
+    <IsoBox key={`${x}-${y}-${z1}`} b={{ x0: ox + x - 1.6, x1: ox + x + 1.6, y0: oy + y - 1.6, y1: oy + y + 1.6, z0: 0, z1 }} s={WOOD} courses={false} />
+  );
+  const bench = (y: number) => (
+    <g key={`bench${y}`}>
+      {leg(28, y, 16)}
+      {leg(72, y, 16)}
+      <IsoBox b={{ x0: ox + 22, x1: ox + 78, y0: oy + y - 4, y1: oy + y + 4, z0: 16, z1: 19 }} s={WOOD} mat="plank" />
+    </g>
+  );
+  const top = [Q(22, 36, 32), Q(78, 36, 32), Q(78, 64, 32), Q(22, 64, 32)];
+  const basket = Q(38, 46, 32);
+  const apple = Q(60, 52, 32);
+  return (
+    <g pointerEvents="none">
+      {bench(24)}
+      {leg(27, 39, 30)}
+      {leg(73, 39, 30)}
+      <IsoBox b={{ x0: ox + 22, x1: ox + 78, y0: oy + 36, y1: oy + 64, z0: 29, z1: 32 }} s={cloth} courses={false} />
+      {/* a checked cloth */}
+      <polygon points={pts(top)} fill="#f8f4ea" />
+      {[0, 1, 2, 3, 4, 5, 6].map((i) =>
+        [0, 1, 2, 3].map((j) =>
+          (i + j) % 2 ? null : (
+            <polygon
+              key={`${i}-${j}`}
+              points={pts([Q(22 + i * 8, 36 + j * 7, 32), Q(30 + i * 8, 36 + j * 7, 32), Q(30 + i * 8, 43 + j * 7, 32), Q(22 + i * 8, 43 + j * 7, 32)])}
+              fill={cloth.base}
+            />
+          )
+        )
+      )}
+      {leg(27, 61, 30)}
+      {leg(73, 61, 30)}
+      {/* a basket and an apple */}
+      <path d={`M${basket[0] - 6} ${basket[1] - 1} h12 l-1.5 -7 h-9 z`} fill={WOOD.base} stroke={WOOD.dark} strokeWidth={0.7} />
+      <path d={`M${basket[0] - 4} ${basket[1] - 8} q4 -6 8 0`} fill="none" stroke={WOOD.dark} strokeWidth={1.1} />
+      <circle cx={apple[0]} cy={apple[1] - 3} r={2.6} fill="#e5484d" />
+      <circle cx={apple[0] - 0.8} cy={apple[1] - 4} r={0.8} fill="#ffb3b3" />
+      {bench(76)}
+    </g>
+  );
+}
+
+function IsoPlyobox({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const band = themeFor('plyobox', color);
+  const rope = [Q(70, 80, 0.5), Q(86, 70, 0.5), Q(90, 86, 0.5), Q(76, 92, 0.5)];
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={{ x0: ox + 26, x1: ox + 74, y0: oy + 26, y1: oy + 74, z0: 0, z1: 36 }} s={WOOD} mat="plank" />
+      {/* a painted band and a grip pad */}
+      <polygon points={pts([Q(26, 74, 14), Q(74, 74, 14), Q(74, 74, 20), Q(26, 74, 20)])} fill={band.base} />
+      <polygon points={pts([Q(74, 74, 14), Q(74, 26, 14), Q(74, 26, 20), Q(74, 74, 20)])} fill={band.dark} />
+      <polygon points={pts([Q(34, 34, 36), Q(66, 34, 36), Q(66, 66, 36), Q(34, 66, 36)])} fill="#3a3f4a" opacity={0.85} />
+      {/* the jump rope on the ground */}
+      <path d={`M${rope[0][0]} ${rope[0][1]} Q ${rope[1][0]} ${rope[1][1]} ${rope[2][0]} ${rope[2][1]} T ${rope[3][0]} ${rope[3][1]}`} fill="none" stroke="#e5484d" strokeWidth={1.4} />
+      <rect x={rope[0][0] - 2} y={rope[0][1] - 4} width={3} height={6} rx={1} fill="#1f2328" />
+      <rect x={rope[3][0] - 1} y={rope[3][1] - 4} width={3} height={6} rx={1} fill="#1f2328" />
+    </g>
+  );
+}
+
+function IsoCoop({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const roof = themeFor('coop', color);
+  const door = [Q(42, 72, 2), Q(54, 72, 2), Q(54, 72, 14), Q(42, 72, 14)];
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={{ x0: ox + 24, x1: ox + 76, y0: oy + 30, y1: oy + 72, z0: 0, z1: 28 }} s={WOOD} mat="plank" />
+      <GableRoof x0={ox + 24} y0={oy + 30} x1={ox + 76} y1={oy + 72} z={28} rise={20} o={5} s={roof} wall={WOOD} />
+      {/* the pop-hole door and its ramp */}
+      <path d={`M${door[0][0]} ${door[0][1]} L${door[1][0]} ${door[1][1]} L${door[2][0]} ${door[2][1] + 3} Q ${(door[2][0] + door[3][0]) / 2} ${door[2][1] - 4} ${door[3][0]} ${door[3][1] + 3} Z`} fill="#2a1d14" />
+      <polygon points={pts([Q(44, 72, 2), Q(52, 72, 2), Q(52, 88, 0), Q(44, 88, 0)])} fill={WOOD.light} stroke={WOOD.dark} strokeWidth={0.5} />
+      {[[30, 84], [36, 90], [60, 86], [66, 80], [58, 92]].map(([x, y], i) => {
+        const [sx, sy] = Q(x, y, 0.5);
+        return <circle key={i} cx={sx} cy={sy} r={0.9} fill="#e8c46a" />;
+      })}
+    </g>
+  );
+}
+
+function IsoBarn({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const wall = themeFor('barn', color);
+  const roof: Shades = { light: '#c7ccd4', base: '#9aa1ac', dark: '#6b7280' };
+  const door = [Q(36, 82, 0), Q(64, 82, 0), Q(64, 82, 30), Q(36, 82, 30)];
+  const hay = { x0: ox + 80, x1: ox + 96, y0: oy + 66, y1: oy + 82, z0: 0, z1: 10 };
+  return (
+    <g pointerEvents="none">
+      <IsoBox b={{ x0: ox + 14, x1: ox + 86, y0: oy + 22, y1: oy + 82, z0: 0, z1: 42 }} s={wall} mat="plank" />
+      <GableRoof x0={ox + 14} y0={oy + 22} x1={ox + 86} y1={oy + 82} z={42} rise={30} o={5} s={roof} wall={wall} />
+      {/* white-trimmed, X-braced door on the lit face */}
+      <polygon points={pts(door)} fill={wall.dark} stroke="#f4f1ea" strokeWidth={1.6} />
+      <line x1={door[0][0]} y1={door[0][1]} x2={door[2][0]} y2={door[2][1]} stroke="#f4f1ea" strokeWidth={1.4} />
+      <line x1={door[1][0]} y1={door[1][1]} x2={door[3][0]} y2={door[3][1]} stroke="#f4f1ea" strokeWidth={1.4} />
+      <polygon points={pts([Q(14, 82, 42), Q(86, 82, 42), Q(86, 82, 40), Q(14, 82, 40)])} fill="#f4f1ea" />
+      {/* a hay bale beside it */}
+      <IsoBox b={hay} s={{ light: '#f2d77a', base: '#d8b64e', dark: '#a8862e' }} courses={false} />
+    </g>
+  );
+}
+
+function IsoTent({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const Q = decorAt(ox, oy);
+  const canvas = themeFor('tent', color);
+  // A ridge tent along x: two sloped sides, a triangle at each end.
+  const r0 = Q(22, 50, 46);
+  const r1 = Q(78, 50, 46);
+  const fl = [Q(16, 80, 0), Q(84, 80, 0)];
+  const end = [Q(84, 20, 0), Q(84, 80, 0), r1];
+  const doorEnd = [Q(84, 38, 0), Q(84, 62, 0), Q(80, 50, 30)];
+  const flag = Q(78, 50, 46);
+  return (
+    <g pointerEvents="none">
+      <polygon points={pts([Q(14, 18, 0), Q(86, 18, 0), Q(86, 82, 0), Q(14, 82, 0)])} fill="#000" opacity={0.14} />
+      {/* guy ropes */}
+      <line x1={r0[0]} y1={r0[1]} x2={Q(8, 50, 0)[0]} y2={Q(8, 50, 0)[1]} stroke="#cdb48a" strokeWidth={0.8} />
+      <line x1={r1[0]} y1={r1[1]} x2={Q(94, 50, 0)[0]} y2={Q(94, 50, 0)[1]} stroke="#cdb48a" strokeWidth={0.8} />
+      <polygon points={pts([fl[0], fl[1], r1, r0])} fill={canvas.base} />
+      <polygon points={pts(end)} fill={canvas.dark} />
+      <polygon points={pts(doorEnd)} fill="#2a1d14" />
+      <line x1={r0[0]} y1={r0[1]} x2={r1[0]} y2={r1[1]} stroke={canvas.light} strokeWidth={1.4} />
+      <line x1={flag[0]} y1={flag[1]} x2={flag[0]} y2={flag[1] - 14} stroke="#3c3326" strokeWidth={1} />
+      <polygon points={`${flag[0]},${flag[1] - 14} ${flag[0] + 9},${flag[1] - 11} ${flag[0]},${flag[1] - 8}`} fill="#c8f032" />
+    </g>
+  );
+}
+
+function IsoGazebo({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+  const roof = themeFor('gazebo', color);
+  const posts = [
+    [24, 24],
+    [76, 24],
+    [24, 76],
+    [76, 76],
+    [50, 20],
+    [50, 80]
+  ];
+  const back = posts.filter(([x, y]) => x + y < 100);
+  const front = posts.filter(([x, y]) => x + y >= 100);
+  const post = ([x, y]: number[]) => (
+    <IsoBox key={`${x}-${y}`} b={{ x0: ox + x - 2, x1: ox + x + 2, y0: oy + y - 2, y1: oy + y + 2, z0: 5, z1: 48 }} s={WOOD} courses={false} />
+  );
+  return (
+    <g pointerEvents="none">
+      <DecorCylinder ox={ox} oy={oy} x={50} y={50} r={38} z0={0} z1={5} s={MARBLE} />
+      {back.map(post)}
+      {front.map(post)}
+      <PyramidRoof x0={ox + 22} y0={oy + 22} x1={ox + 78} y1={oy + 78} z={48} rise={24} o={6} s={roof} />
+    </g>
+  );
+}
+
+function IsoFountain({ ox, oy, style }: { ox: number; oy: number; style?: string }) {
+  const Q = decorAt(ox, oy);
+  const water = '#4fb3e8';
+  const spray = (from: [number, number], r: number, drop: number) =>
+    [0, 1, 2, 3, 4, 5].map((i) => {
+      const a = (i / 6) * Math.PI * 2;
+      const end = Q(50 + Math.cos(a) * r, 50 + Math.sin(a) * r, drop);
+      return (
+        <path
+          key={i}
+          d={`M${from[0]} ${from[1]} Q ${(from[0] + end[0]) / 2} ${from[1] - 10} ${end[0]} ${end[1]}`}
+          fill="none"
+          stroke="#bfe8ff"
+          strokeOpacity={0.8}
+          strokeWidth={1}
+          className="base-fountain-water"
+        />
+      );
+    });
+  const bowl = (r: number, z: number) => (
+    <>
+      <DecorCylinder ox={ox} oy={oy} x={50} y={50} r={r} z0={z} z1={z + 4} s={STONE} />
+      <polygon points={circleAt(Q, 50, 50, r - 2, z + 4, 20)} fill={water} />
+    </>
+  );
+  const tiered = style === 'tiered';
+  const jet = style === 'jet';
+  const columnTop = tiered ? 44 : 30;
+  return (
+    <g pointerEvents="none">
+      <DecorCylinder ox={ox} oy={oy} x={50} y={50} r={36} z0={0} z1={12} s={STONE} bands={[6]} />
+      <polygon points={circleAt(Q, 50, 50, 32, 12, 24)} fill={water} />
+      <polygon points={circleAt(Q, 50, 50, 22, 12.2, 20)} fill="#7cc8f0" opacity={0.6} />
+      {!jet && <DecorCylinder ox={ox} oy={oy} x={50} y={50} r={4} z0={12} z1={columnTop} s={STONE} />}
+      {!jet && bowl(15, 26)}
+      {tiered && <DecorCylinder ox={ox} oy={oy} x={50} y={50} r={3} z0={30} z1={44} s={STONE} />}
+      {tiered && bowl(9, 40)}
+      {jet ? (
+        <>
+          <line x1={Q(50, 50, 12)[0]} y1={Q(50, 50, 12)[1]} x2={Q(50, 50, 62)[0]} y2={Q(50, 50, 62)[1]} stroke="#bfe8ff" strokeWidth={3} strokeLinecap="round" className="base-fountain-water" />
+          {spray(Q(50, 50, 62), 18, 13)}
+        </>
+      ) : (
+        spray(Q(50, 50, tiered ? 46 : 32), tiered ? 10 : 16, tiered ? 31 : 13)
+      )}
+    </g>
+  );
+}
+
+export const ISO_ITEMS = new Set(['hq', 'watchtower', 'lodge', 'forge', 'spring', 'yard', 'wall', 'garden', 'arch', 'flowers', 'banner', 'windmill', 'bridge', 'lilypad', 'pullupbar', 'dipbars', 'punchbag', 'lanterns', 'parasol', 'statue', 'well', 'picnic', 'plyobox', 'coop', 'barn', 'tent', 'gazebo', 'fountain']);
 /** True for anything drawn as an isometric model (buildings, walls, gardens, trophies). */
 export function isIsoItem(itemId: string): boolean {
   return ISO_ITEMS.has(itemId) || itemId.startsWith('trophy:');
@@ -1890,6 +2099,20 @@ export function IsoItemArt({
         return <IsoLilypad ox={ox} oy={oy} />;
       case 'punchbag':
         return <IsoPunchbag ox={ox} oy={oy} color={item.color} />;
+      case 'picnic':
+        return <IsoPicnic ox={ox} oy={oy} color={item.color} />;
+      case 'plyobox':
+        return <IsoPlyobox ox={ox} oy={oy} color={item.color} />;
+      case 'coop':
+        return <IsoCoop ox={ox} oy={oy} color={item.color} />;
+      case 'barn':
+        return <IsoBarn ox={ox} oy={oy} color={item.color} />;
+      case 'tent':
+        return <IsoTent ox={ox} oy={oy} color={item.color} />;
+      case 'gazebo':
+        return <IsoGazebo ox={ox} oy={oy} color={item.color} />;
+      case 'fountain':
+        return <IsoFountain ox={ox} oy={oy} style={item.style} />;
       case 'lanterns':
         return <IsoLanterns ox={ox} oy={oy} color={item.color} />;
       case 'parasol':

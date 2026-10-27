@@ -8808,4 +8808,18 @@
     justify-content: flex-end;
     gap: 0.5rem;
   }
+
+  /* Fountain water: a gentle flow along the arcs. */
+  .base-fountain-water {
+    stroke-dasharray: 3 2.5;
+    animation: fountain-flow 0.9s linear infinite;
+  }
+  @keyframes fountain-flow {
+    to { stroke-dashoffset: -11; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .base-fountain-water {
+      animation: none;
+    }
+  }
 }

@@ -52,7 +52,7 @@ function LevelPips({ level, color, cx = 50, y = 97 }: { level: number; color: st
 }
 
 /** Low models get a tighter preview frame so they don't look tiny. */
-const LOW_ITEMS = new Set(['garden', 'wall', 'flowers', 'bridge', 'lilypad']);
+const LOW_ITEMS = new Set(['garden', 'wall', 'flowers', 'bridge', 'lilypad', 'picnic', 'plyobox', 'coop', 'tent', 'fountain']);
 /** Isometric decorations: a tighter frame than buildings so they fill their thumbnail. */
 const TALL_DECOR = new Set(['arch', 'banner', 'windmill', 'pullupbar', 'dipbars', 'punchbag', 'lanterns', 'parasol', 'statue', 'well']);
 

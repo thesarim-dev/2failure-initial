@@ -40,7 +40,13 @@ const DEFAULT_THEME: Record<string, PaletteId> = {
   dipbars: 'cyan',
   punchbag: 'red',
   lanterns: 'amber',
-  parasol: 'cyan'
+  parasol: 'cyan',
+  picnic: 'red',
+  barn: 'red',
+  coop: 'red',
+  tent: 'amber',
+  gazebo: 'white',
+  plyobox: 'lime'
 };
 
 export function themeFor(itemId: string, color?: string): Shades {
