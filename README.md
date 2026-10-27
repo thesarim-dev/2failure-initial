@@ -198,7 +198,7 @@ Tile labels are 12px or larger, the rest banner's buttons are 44px touch targets
 * **Resources:** one HUD strip (stone, timber, crystal and coins) using the same icons as the Base screen.
 * **Rest day ticket:** "Rest day", tally marks with how many are left, and "Slide to tear". Drag the zipper along the perforation (about 60% of the way is enough); the bottom half falls off and the top half stays, centred on the row: "Rest day · Streak safe today". A tap nudges the zipper; keyboards can press Enter on it.
 * **Night falls on a rest day:** a dusk wash sweeps down, the home screen turns to an indigo night (lavender in light mode), stars come out and a crescent moon rises, while the training list hands over to the rest-day stretches. Opening the app on a rest day just shows the night sky.
-* **Your plan:** a minimal card, "4-day week · Tap to change", which opens the plan.
+* **Your plan as a departure board:** the plan's days a week on a split-flap digit ("5 · days a week · Tap to change"). Tapping clacks the flap over and opens your plan; change the days and the board flips flap by flap to the new number when you come back.
 
 ### Rest timer
 

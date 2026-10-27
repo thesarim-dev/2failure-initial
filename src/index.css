@@ -8630,4 +8630,125 @@
     font-size: 0.98rem;
     white-space: nowrap;
   }
+
+  /* ============ The plan card as a split-flap departure board ============ */
+  .flap-row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .flap {
+    position: relative;
+    display: inline-block;
+    width: 2.7rem;
+    height: 3.3rem;
+    perspective: 220px;
+    border-radius: 7px;
+    box-shadow: 0 3px 0 var(--tile-shadow), inset 0 0 0 1.5px rgba(0, 0, 0, 0.45);
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 2.2rem;
+    line-height: 3.3rem;
+    color: #f4fff9;
+  }
+  html:not(.dark) .flap {
+    color: #f4fff9;
+  }
+  .flap-half {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50%;
+    overflow: hidden;
+    background: linear-gradient(180deg, #17473f, #0f342e);
+    backface-visibility: hidden;
+  }
+  .flap-half b {
+    display: block;
+    height: 3.3rem;
+    text-align: center;
+    font-weight: inherit;
+  }
+  .flap-top {
+    top: 0;
+    border-radius: 7px 7px 0 0;
+    transform-origin: 50% 100%;
+  }
+  .flap-bottom {
+    bottom: 0;
+    border-radius: 0 0 7px 7px;
+    background: linear-gradient(180deg, #0d2f29, #0a2722);
+    transform-origin: 50% 0%;
+  }
+  .flap-bottom b {
+    margin-top: -1.65rem;
+  }
+  /* The hinge: a thin dark line with a pin at each side. */
+  .flap::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(50% - 1px);
+    height: 2px;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 3;
+  }
+  .flap::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    right: -2px;
+    top: calc(50% - 3px);
+    height: 6px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #2cc7a5 0 4px, transparent 4px calc(100% - 4px), #2cc7a5 calc(100% - 4px));
+    z-index: 4;
+  }
+  .flap-fall {
+    z-index: 2;
+    animation: flap-fall 0.14s ease-in forwards;
+  }
+  .flap-land {
+    z-index: 2;
+    transform: rotateX(90deg);
+    animation: flap-land 0.14s ease-out 0.14s forwards;
+  }
+  @keyframes flap-fall {
+    from { transform: rotateX(0deg); }
+    to { transform: rotateX(-90deg); filter: brightness(0.6); }
+  }
+  @keyframes flap-land {
+    from { transform: rotateX(90deg); filter: brightness(1.4); }
+    to { transform: rotateX(0deg); }
+  }
+  .flap-label {
+    display: flex;
+    flex-direction: column;
+    text-align: start;
+    font-size: 0.82rem;
+    font-weight: 900;
+    line-height: 1.15;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .home-trio .act-tile.week-tile.is-flap {
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flap-fall,
+    .flap-land {
+      animation-duration: 0.01s;
+      animation-delay: 0s;
+    }
+  }
+
+  /* Chunky board numerals; the label stays on two lines. */
+  .flap {
+    font-weight: 900;
+  }
+  .flap-label span {
+    white-space: nowrap;
+  }
 }

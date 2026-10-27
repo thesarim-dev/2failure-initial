@@ -736,6 +736,7 @@ export function MainApp() {
         onSelectMove={handleSelectMove}
         onOpenPlan={handleOpenPlan}
         trainingDaysPerWeek={trainingDaysPerWeek}
+        planDaysPerWeek={weeklyTarget}
  />
 
       }
