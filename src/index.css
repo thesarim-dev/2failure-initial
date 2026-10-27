@@ -8542,8 +8542,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.45rem;
-    margin-top: 0.9rem;
-    padding-top: 0.2rem;
   }
 
   /* Readable labels need room: the ticket and week tile grow to fit their text. */
@@ -8703,5 +8701,13 @@
     .amb {
       animation: none;
     }
+  }
+
+  /* The day's progress sits right under the heading. */
+  .day-heading:has(+ .today-glance) {
+    margin-bottom: 0.5rem;
+  }
+  .today-glance {
+    margin-top: 0;
   }
 }
