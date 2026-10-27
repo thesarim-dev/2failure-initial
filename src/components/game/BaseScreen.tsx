@@ -7,7 +7,24 @@ import { startAmbient, stopAmbient } from '../../lib/ambient';
 import { createPortal } from 'react-dom';
 import { CoinsBadge } from '../CoinsBadge';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Brush, Check, Coins, Expand, FlipHorizontal2, Hammer, HardHat, Lock, Move as MoveIcon, Palette, ShieldCheck, X, BoxSelect, PaintBucket, Paintbrush } from 'lucide-react';
+import {
+  Brush,
+  Check,
+  Coins,
+  Expand,
+  Hammer,
+  HardHat,
+  Lock,
+  Move as MoveIcon,
+  Palette,
+  ShieldCheck,
+  X,
+  BoxSelect,
+  PaintBucket,
+  Paintbrush,
+  RotateCw,
+  ChevronDown
+} from 'lucide-react';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
 import { useLanguage } from '../../context/LanguageContext';
@@ -188,12 +205,22 @@ function TodayPanel({ game, plan }: { game: BaseGame; plan: TodayPlan | null }) 
   const weekHit = weekTarget > 0 && weekDone >= weekTarget;
   const weeklyStreak = currentWeeklyStreak(state);
   const quests = plan && state.quests?.day === plan.day ? state.quests.list : [];
+  const [open, setOpen] = useState(false);
 
   return (
     <section className="base-today cyber-panel normal-case" aria-label={g.today.title}>
-      <div className="base-today-head">
+      {/* Collapsed to one line: tap to see the details. */}
+      <button type="button" className="base-today-head base-today-toggle" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         <h2 className="base-today-title">{g.today.title}</h2>
-      </div>
+        <span className="base-today-summary">
+          {plan?.isRestDay
+            ? g.today.rest
+            : `${g.today.training(done, planned)}${quests.length ? ` · ${g.today.questCount(quests.filter((q) => !q.done).length)}` : ''}`}
+        </span>
+        <ChevronDown size={18} strokeWidth={2.6} className="base-today-chev" aria-hidden="true" />
+      </button>
+      {open && (
+      <div className="base-today-body">
 
       {plan?.isRestDay ? (
         <p className="base-today-line">{g.today.rest}</p>
@@ -253,6 +280,8 @@ function TodayPanel({ game, plan }: { game: BaseGame; plan: TodayPlan | null }) 
         )}
         {questSlots(state) < 4 && !plan?.isRestDay && <p className="base-today-sub">{g.quests.moreSlots}</p>}
       </div>
+      </div>
+      )}
     </section>
   );
 }
@@ -487,6 +516,25 @@ export function BaseScreen({
     fx.tick();
     setMode({ ...mode, spot: { x, y } });
   };
+  /** Dragging the ghost: move the picked spot wherever it fits. */
+  const dragGhost = (x: number, y: number) => {
+    if (mode.kind === 'idle' || !modeItemId) return;
+    if (mode.spot && mode.spot.x === x && mode.spot.y === y) return;
+    const ignore = mode.kind === 'move' ? mode.uid : undefined;
+    if (!canPlaceAt(state, modeItemId, x, y, ignore)) return;
+    setMode({ ...mode, spot: { x, y } });
+  };
+
+  /** Rotate what's being placed (or moved) before confirming. */
+  const rotateDraft = () => {
+    fx.tap();
+    if (mode.kind === 'place' || mode.kind === 'placeTrophy') {
+      setMode({ ...mode, custom: { ...mode.custom, flip: !mode.custom.flip } });
+    } else if (mode.kind === 'move') {
+      game.flip(mode.uid);
+    }
+  };
+
   const confirmSpot = () => {
     if (mode.kind === 'idle' || !mode.spot) return;
     const { x, y } = mode.spot;
@@ -655,6 +703,12 @@ export function BaseScreen({
               {g.cancel}
             </button>
             {spot && (
+              <button type="button" className="base-ghost-btn base-rotate-btn" onClick={rotateDraft} aria-label={g.flip}>
+                <RotateCw size={16} strokeWidth={2.6} aria-hidden="true" />
+                {g.flip}
+              </button>
+            )}
+            {spot && (
               <button type="button" className="base-primary-btn base-confirm-btn" data-quest="confirm-place" onClick={confirmSpot}>
                 <Check size={16} strokeWidth={3} aria-hidden="true" />
                 {mode.kind === 'move' ? g.moveHere : g.placeHere}
@@ -743,6 +797,13 @@ export function BaseScreen({
           tileLabel={(x, y) => `${modeItemId ? nameOf(modeItemId) : ''} ${x + 1},${y + 1}`}
           onTile={handleTile}
           onItem={(uid) => setSheet({ uid })}
+          onItemLongPress={(uid) => {
+            const item = state.placed.find((p) => p.uid === uid);
+            if (!item) return;
+            fx.tap();
+            setSheet(null);
+            setMode({ kind: 'move', uid, spot: { x: item.x, y: item.y } });
+          }}
           painting={paintWith !== null}
           paintTool={paintTool}
           onPaintTap={onPaintTap}
@@ -751,6 +812,7 @@ export function BaseScreen({
           previewTone={paintPreview ? 'paint' : 'place'}
           anchorTile={boxAnchor ? `${boxAnchor[0]},${boxAnchor[1]}` : null}
           ghost={ghost}
+          onGhostDrag={dragGhost}
           fencing={fenceKind !== null}
           onEdge={(edgeKey, strokeMode) => {
             if (!fenceKind) return;
@@ -1182,12 +1244,16 @@ function ItemSheet({
               {g.customize.edit}
             </button>
           )}
-          {item.itemId !== 'hq' && (
-            <button type="button" className="base-secondary-btn" onClick={() => game.flip(item.uid)}>
-              <FlipHorizontal2 size={16} strokeWidth={2.5} aria-hidden="true" />
-              {g.flip}
-            </button>
-          )}
+          <button
+            type="button"
+            className="base-secondary-btn"
+            onClick={() => {
+              fx.tap();
+              game.flip(item.uid);
+            }}>
+            <RotateCw size={16} strokeWidth={2.5} aria-hidden="true" />
+            {g.flip}
+          </button>
           {item.itemId !== 'hq' && (
             <button type="button" className="base-secondary-btn" onClick={onMove}>
               <MoveIcon size={16} strokeWidth={2.5} aria-hidden="true" />

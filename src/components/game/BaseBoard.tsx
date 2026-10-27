@@ -104,6 +104,8 @@ type BoardProps = {
   labelForItem: (item: PlacedItem) => string;
   onTile: (x: number, y: number) => void;
   onItem: (uid: string) => void;
+  /** Press and hold an item to pick it up and drag it to a new spot. */
+  onItemLongPress?: (uid: string) => void;
   tileLabel: (x: number, y: number) => string;
   /** Paint mode: drag across tiles to paint terrain. */
   /** Fence mode: taps pick the nearest tile edge. */
@@ -124,6 +126,8 @@ type BoardProps = {
   anchorTile?: string | null;
   /** A see-through building previewed at a spot before it's confirmed. */
   ghost?: { itemId: string; x: number; y: number; level?: number; custom?: Customization; replaceUid?: string } | null;
+  /** Drag the ghost: called with the top-left tile it would move to. */
+  onGhostDrag?: (x: number, y: number) => void;
   onPaint?: (tile: [number, number]) => void;
   svgId?: string;
 };
@@ -159,6 +163,7 @@ export function BaseBoard({
   labelForItem,
   onTile,
   onItem,
+  onItemLongPress,
   tileLabel,
   fencing = false,
   onEdge,
@@ -170,6 +175,7 @@ export function BaseBoard({
   previewTone = 'paint',
   anchorTile = null,
   ghost = null,
+  onGhostDrag,
   onPaint,
   svgId
 }: BoardProps) {
@@ -228,10 +234,12 @@ export function BaseBoard({
   // --- Camera: pinch / wheel to zoom, drag to pan ---------------------------
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 4;
-  const [cam, setCam] = useState({ zoom: 1, cx: 0, cy: centerY });
+  // Open a little zoomed in so buildings are a comfortable size (pinch out, or Fit, to see it all).
+  const START_ZOOM = 1.4;
+  const [cam, setCam] = useState({ zoom: START_ZOOM, cx: 0, cy: centerY });
   const camRef = useRef(cam);
   camRef.current = cam;
-  useEffect(() => setCam({ zoom: 1, cx: 0, cy: centerY }), [land, centerY]);
+  useEffect(() => setCam({ zoom: START_ZOOM, cx: 0, cy: centerY }), [land, centerY]);
 
   const clampCam = useCallback(
     (next: { zoom: number; cx: number; cy: number }) => {
@@ -274,6 +282,7 @@ export function BaseBoard({
           ...(state.placed.find((p) => p.uid === ghost.replaceUid) ?? { itemId: ghost.itemId, level: Math.max(1, ghost.level ?? 1) }),
           ...(ghost.custom?.style ? { style: ghost.custom.style } : {}),
           ...(ghost.custom?.color ? { color: ghost.custom.color } : {}),
+          ...(ghost.custom?.flip !== undefined ? { flip: ghost.custom.flip } : {}),
           uid: '__ghost',
           x: ghost.x,
           y: ghost.y
@@ -329,6 +338,7 @@ export function BaseBoard({
         node: (
           <g
             key={item.uid}
+            data-uid={item.uid}
             className={`base-item group ${selectedUid === item.uid ? 'is-selected' : ''} ${inert ? 'is-inert' : ''}`}
             role={inert ? undefined : 'button'}
             tabIndex={inert ? -1 : 0}
@@ -340,14 +350,17 @@ export function BaseBoard({
             <g className={`base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1`}>
               {construction && item.level === 0 ? null : (
                 <g className="base-pop">
-                  <IsoItemArt
-                    item={item}
-                    ox={ox}
-                    oy={oy}
-                    lit={lit}
-                    plan={plan}
-                    verified={item.itemId.startsWith(TROPHY_ITEM_PREFIX) ? state.trophies[item.itemId.slice(TROPHY_ITEM_PREFIX.length)]?.verified : undefined}
-                  />
+                  {/* Rotated: mirrored around the footprint's centre, so it faces the other way. */}
+                  <g transform={item.flip ? `translate(${2 * isoP(ox + (size * T) / 2, oy + (size * T) / 2)[0]} 0) scale(-1 1)` : undefined}>
+                    <IsoItemArt
+                      item={item}
+                      ox={ox}
+                      oy={oy}
+                      lit={lit}
+                      plan={plan}
+                      verified={item.itemId.startsWith(TROPHY_ITEM_PREFIX) ? state.trophies[item.itemId.slice(TROPHY_ITEM_PREFIX.length)]?.verified : undefined}
+                    />
+                  </g>
                 </g>
               )}
             </g>
@@ -378,6 +391,7 @@ export function BaseBoard({
       node: (
         <g
           key={item.uid}
+          data-uid={item.uid}
           className={`base-item group ${selected ? 'is-selected' : ''} ${inert ? 'is-inert' : ''}`}
           role={inert ? undefined : 'button'}
           tabIndex={inert ? -1 : 0}
@@ -576,10 +590,55 @@ export function BaseBoard({
     }
   };
 
+  const ghostDrag = useRef<{ dx: number; dy: number } | null>(null);
+  // Long-press an item: pick it up (move mode) and keep dragging with the same finger.
+  const longPress = useRef<{ timer: number; uid: string; x: number; y: number } | null>(null);
+  const cancelLongPress = () => {
+    if (longPress.current) window.clearTimeout(longPress.current.timer);
+    longPress.current = null;
+  };
   const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.current.size === 1) moved.current = false;
     beginGesture();
+    // Press and hold an item to pick it up.
+    if (pointers.current.size === 1 && !ghost && !inert && onItemLongPress) {
+      const target = (event.target as Element).closest?.('[data-uid]');
+      const uid = target?.getAttribute('data-uid');
+      const item = uid ? state.placed.find((p) => p.uid === uid) : undefined;
+      if (item && item.itemId !== 'hq') {
+        const svg = event.currentTarget;
+        const pointerId = event.pointerId;
+        const startX = event.clientX;
+        const startY = event.clientY;
+        cancelLongPress();
+        longPress.current = {
+          uid: item.uid,
+          x: startX,
+          y: startY,
+          timer: window.setTimeout(() => {
+            const tile = tileAt(startX, startY);
+            longPress.current = null;
+            if (!tile) return;
+            svg.setPointerCapture?.(pointerId);
+            ghostDrag.current = { dx: tile[0] - item.x, dy: tile[1] - item.y };
+            moved.current = true; // don't also open its sheet
+            navigator.vibrate?.(15);
+            onItemLongPress(item.uid);
+          }, 450)
+        };
+      }
+    }
+    // Pressing on the item being placed picks it up: drag it to a new spot.
+    if (pointers.current.size === 1 && ghost && onGhostDrag) {
+      const tile = tileAt(event.clientX, event.clientY);
+      const n = itemSize(ghost.itemId);
+      if (tile && tile[0] >= ghost.x && tile[0] < ghost.x + n && tile[1] >= ghost.y && tile[1] < ghost.y + n) {
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        ghostDrag.current = { dx: tile[0] - ghost.x, dy: tile[1] - ghost.y };
+        return;
+      }
+    }
     if (pointers.current.size === 1 && fencing) {
       // Start a fence stroke: erase if it starts on a piece, otherwise draw.
       const key = edgeAt(event.clientX, event.clientY);
@@ -600,6 +659,18 @@ export function BaseBoard({
   };
 
   const onPointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    // Moving before the long-press fires means it's a pan, not a pick-up.
+    const lp = longPress.current;
+    if (lp && Math.hypot(event.clientX - lp.x, event.clientY - lp.y) > 8) cancelLongPress();
+    const drag = ghostDrag.current;
+    if (drag && pointers.current.size <= 1) {
+      const tile = tileAt(event.clientX, event.clientY);
+      if (tile) {
+        moved.current = true;
+        onGhostDrag?.(tile[0] - drag.dx, tile[1] - drag.dy);
+      }
+      return;
+    }
     if (fencing && pointers.current.size <= 1) {
       // Preview the edge under the pointer, and keep drawing while pressed.
       const stroke = fenceStroke.current;
@@ -662,6 +733,8 @@ export function BaseBoard({
       if (tile) onPaintTap?.(tile);
     }
     pointers.current.delete(event.pointerId);
+    cancelLongPress();
+    ghostDrag.current = null;
     lastPainted.current = null;
     fenceStroke.current = null;
     if (event.pointerType !== 'mouse') setHoverEdge(null);

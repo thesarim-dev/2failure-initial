@@ -866,6 +866,7 @@ export function jobFor(state: GameState, uid: string): Construction | undefined 
 function applyCustom(item: PlacedItem, custom?: Customization) {
   if (custom?.style) item.style = custom.style;
   if (custom?.color) item.color = custom.color;
+  if (custom?.flip) item.flip = true;
 }
 
 function pay(state: GameState, cost: Cost) {

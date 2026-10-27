@@ -68,6 +68,8 @@ export type GameCopy = {
   intro: { title: string; body: string; rule: string; ok: string };
   patterns: Record<'push' | 'pull' | 'legs' | 'core' | 'recovery', string>;
   today: {
+    /** Quests still open today (collapsed summary). */
+    questCount: (n: number) => string;
     title: string;
     training: (done: number, total: number) => string;
     rest: string;
@@ -212,7 +214,7 @@ const en: GameCopy = {
   buildTabs: { structures: 'Buildings', decor: 'Decor', trophies: 'Trophies' },
   placeHint: (name) => `Tap a highlighted tile to place ${name}.`,
   moveHint: (name) => `Tap a highlighted tile to move ${name}.`,
-  placeConfirm: 'Happy with the spot? Tap another tile to try it there.',
+  placeConfirm: 'Drag it to fine-tune, or rotate it.',
   placeHere: 'Place here',
   moveHere: 'Move here',
   tools: {
@@ -356,6 +358,7 @@ const en: GameCopy = {
   },
   patterns: { push: 'push', pull: 'pull', legs: 'leg', core: 'core', recovery: 'stretch' },
   today: {
+    questCount: (n) => (n === 0 ? 'quests done' : n === 1 ? '1 quest' : `${n} quests`),
     title: 'Today',
     training: (done, total) => `Today's plan: ${done} of ${total} sets`,
     rest: 'Rest day. Recovery counts, and your streak is safe.',
@@ -504,7 +507,7 @@ const en: GameCopy = {
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
 
-  flip: 'Flip',
+  flip: 'Rotate',
   trainingDays: {
     title: 'Training days per week',
     description: (days) =>
@@ -542,7 +545,7 @@ const he: GameCopy = {
   buildTabs: { structures: 'מבנים', decor: 'קישוטים', trophies: 'גביעים' },
   placeHint: (name) => `הקש על משבצת מודגשת כדי למקם ${name}.`,
   moveHint: (name) => `הקש על משבצת מודגשת כדי להזיז ${name}.`,
-  placeConfirm: 'מרוצים מהמקום? הקישו על משבצת אחרת כדי לנסות שם.',
+  placeConfirm: 'גררו כדי לכוונן, או סובבו.',
   placeHere: 'מקמו כאן',
   moveHere: 'הזיזו לכאן',
   tools: {
@@ -683,6 +686,7 @@ const he: GameCopy = {
   },
   patterns: { push: 'דחיפה', pull: 'משיכה', legs: 'רגליים', core: 'ליבה', recovery: 'מתיחה' },
   today: {
+    questCount: (n) => (n === 0 ? 'המשימות הושלמו' : n === 1 ? 'משימה אחת' : `${n} משימות`),
     title: 'היום',
     training: (done, total) => `התוכנית של היום: ${done} מתוך ${total} סטים`,
     rest: 'יום מנוחה. גם התאוששות נחשבת, והרצף שלך מוגן.',
@@ -831,7 +835,7 @@ const he: GameCopy = {
   zoomIn: 'הגדלה',
   zoomOut: 'הקטנה',
 
-  flip: 'היפוך',
+  flip: 'סיבוב',
   trainingDays: {
     title: 'ימי אימון בשבוע',
     description: (days) =>
@@ -869,7 +873,7 @@ const ar: GameCopy = {
   buildTabs: { structures: 'مبانٍ', decor: 'زينة', trophies: 'كؤوس' },
   placeHint: (name) => `اضغط على مربع مضيء لوضع ${name}.`,
   moveHint: (name) => `اضغط على مربع مضيء لنقل ${name}.`,
-  placeConfirm: 'راضٍ عن المكان؟ اضغط على مربع آخر لتجربته هناك.',
+  placeConfirm: 'اسحبه لضبط مكانه، أو دوّره.',
   placeHere: 'ضعه هنا',
   moveHere: 'انقله إلى هنا',
   tools: {
@@ -1010,6 +1014,7 @@ const ar: GameCopy = {
   },
   patterns: { push: 'الدفع', pull: 'السحب', legs: 'الساقين', core: 'الجذع', recovery: 'التمدد' },
   today: {
+    questCount: (n) => (n === 0 ? 'أُنجزت المهام' : n === 1 ? 'مهمة واحدة' : `${n} مهام`),
     title: 'اليوم',
     training: (done, total) => `خطة اليوم: ${done} من ${total} مجموعات`,
     rest: 'يوم راحة. التعافي يُحتسب، وسلسلتك في أمان.',
@@ -1158,7 +1163,7 @@ const ar: GameCopy = {
   zoomIn: 'تكبير',
   zoomOut: 'تصغير',
 
-  flip: 'قلب',
+  flip: 'تدوير',
   trainingDays: {
     title: 'أيام التدريب في الأسبوع',
     description: (days) =>

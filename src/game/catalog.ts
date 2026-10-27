@@ -98,7 +98,7 @@ export const PALETTE = {
 export type PaletteId = keyof typeof PALETTE;
 export const PALETTE_IDS = Object.keys(PALETTE) as PaletteId[];
 
-export type Customization = { style?: string; color?: PaletteId };
+export type Customization = { style?: string; color?: PaletteId; /** Rotated (mirrored) to face the other way. */ flip?: boolean };
 
 /** Add-ons any building can wear (drawn over its front wall). */
 const STRUCTURE_DECORATIONS = ['plain', 'banners', 'plated', 'glow'];

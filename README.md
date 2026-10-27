@@ -118,6 +118,14 @@ The home screen is your command center. Everything you need for today's session 
 | **Settings** (gear icon) | Top right | Opens preferences and FAQ |
 | **Coins badge** | Top right | Shows your current coin balance |
 
+### Building on the base
+
+* **The map comes first:** a taller map that opens slightly zoomed in (pinch out, or use Fit, to see everything). The Today panel is one tappable line ("Today's plan: 4 of 11 sets · 2 quests"); tap it for the details.
+* **Rotate anything:** every building and decoration can face the other way. Use Rotate in its sheet, or while placing or moving it (the preview turns live).
+* **Drag to place:** once something is on the map, drag it with your finger to fine-tune the spot (it only moves where it fits), then tap Place here.
+* **Long-press to move:** press and hold a building or decoration to pick it up, drag it, and set it down. A quick tap still opens its sheet; a quick drag still pans the map.
+* **What you tapped glows** on the map while its sheet is open.
+
 ### Progression (built to keep you building)
 
 * **The HQ goes to level 10, one level per consistent week:** level 3 after your first week on target, level 4 after two, and so on. A player who hits their plan gets a new HQ level about every week for two to three months.
