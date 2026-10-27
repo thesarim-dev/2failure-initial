@@ -11,7 +11,8 @@
     "demo": "vite build -c demo/vite.demo.config.ts",
     "test:pose": "esbuild scripts/pose-test.ts --bundle --platform=node --format=cjs --outfile=.tmp/pose-test.cjs --log-level=error && node .tmp/pose-test.cjs",
     "test:plan": "esbuild scripts/plan-check.ts --bundle --platform=node --format=cjs --outfile=.tmp/plan-check.cjs --log-level=error --loader:.png=dataurl && node .tmp/plan-check.cjs",
-    "test:rest": "npx esbuild scripts/rest-check.ts --bundle --platform=node --format=cjs --outfile=.tmp/rest-check.cjs --log-level=error && node .tmp/rest-check.cjs"
+    "test:rest": "npx esbuild scripts/rest-check.ts --bundle --platform=node --format=cjs --outfile=.tmp/rest-check.cjs --log-level=error && node .tmp/rest-check.cjs",
+    "sim:progress": "npx esbuild scripts/progression-sim.ts --bundle --platform=node --format=cjs --outfile=.tmp/sim.cjs --log-level=error --loader:.png=dataurl && node .tmp/sim.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",

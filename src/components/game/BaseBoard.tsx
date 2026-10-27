@@ -23,6 +23,23 @@ const T = 100; // tile size in board units
 /** Small dots under a building showing its level. */
 function LevelPips({ level, color, cx = 50, y = 97 }: { level: number; color: string; cx?: number; y?: number }) {
   if (level < 1) return null;
+  // From level 4, a gold crest with the number (pips would sprawl).
+  if (level >= 4) {
+    return (
+      <g className="level-crest" aria-hidden="true">
+        <path
+          d={`M${cx - 11} ${y - 8} h22 v8 q0 7 -11 10 q-11 -3 -11 -10 z`}
+          fill="#f7c948"
+          stroke="#7a4e00"
+          strokeWidth={1.4}
+        />
+        <path d={`M${cx - 8} ${y - 6} h16 v3`} fill="none" stroke="#fff6c8" strokeWidth={1} strokeLinecap="round" opacity={0.8} />
+        <text x={cx} y={y + 3} textAnchor="middle" fontSize={10} fontWeight={900} fill="#3a2400" fontFamily="'Archivo Black', 'Space Grotesk', sans-serif">
+          {level}
+        </text>
+      </g>
+    );
+  }
   const gap = 9;
   const start = cx - ((level - 1) * gap) / 2;
   return (

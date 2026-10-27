@@ -40,7 +40,7 @@ export type GameCopy = {
   remove: string;
   refund: string;
   putAway: string;
-  errors: Record<ActionError, string> & { unlockAt: (hq: number) => string };
+  errors: Record<ActionError, string> & { unlockAt: (hq: number) => string; needsWeeksN: (n: number) => string };
   /** Seasonal decorations: days left in season, or when they come back. */
   season: { left: (season: 'autumn' | 'winter', days: number) => string; back: (season: 'autumn' | 'winter', days: number) => string };
   /** Not enough materials: what's missing and roughly how many sets earn it. */
@@ -304,6 +304,7 @@ const en: GameCopy = {
     alreadyPlaced: 'Already on your base',
     notRemovable: "Buildings can be moved but not removed",
     needsWeeks: 'Hit your weekly target a few more weeks to unlock this.',
+    needsWeeksN: (n) => (n === 1 ? 'Hit your plan 1 more week to unlock this.' : `Hit your plan ${n} more weeks to unlock this.`),
     noForge: 'Build a Forge first',
     noShield: 'No shields left',
     sameResource: 'Pick two different materials',
@@ -630,6 +631,7 @@ const he: GameCopy = {
     alreadyPlaced: 'כבר נמצא בבסיס שלך',
     notRemovable: 'אפשר להזיז מבנים אבל לא להסיר אותם',
     needsWeeks: 'עמדו ביעד השבועי עוד כמה שבועות כדי לפתוח את זה.',
+    needsWeeksN: (n) => (n === 1 ? 'עמדו בתוכנית עוד שבוע אחד כדי לפתוח את זה.' : `עמדו בתוכנית עוד ${n} שבועות כדי לפתוח את זה.`),
     noForge: 'בנה קודם נפחייה',
     noShield: 'לא נשארו מגינים',
     sameResource: 'בחר שני חומרים שונים',
@@ -956,6 +958,7 @@ const ar: GameCopy = {
     alreadyPlaced: 'موجود في قاعدتك بالفعل',
     notRemovable: 'يمكن نقل المباني لكن لا يمكن إزالتها',
     needsWeeks: 'حقق هدفك الأسبوعي بضعة أسابيع أخرى لفتح هذا.',
+    needsWeeksN: (n) => (n === 1 ? 'التزم بخطتك أسبوعاً آخر لفتح هذا.' : `التزم بخطتك ${n} أسابيع أخرى لفتح هذا.`),
     noForge: 'ابنِ ورشة حدادة أولاً',
     noShield: 'لم يتبقَّ أي درع',
     sameResource: 'اختر مادتين مختلفتين',

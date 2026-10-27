@@ -1,6 +1,8 @@
 import { ResourceIcon } from './ResourceIcon';
 import { MATERIAL_PER_SET } from '../../game/goals';
-import { itemSize } from '../../game/engine';
+import { itemSize,
+  hqLevel
+} from '../../game/engine';
 import { startAmbient, stopAmbient } from '../../lib/ambient';
 import { createPortal } from 'react-dom';
 import { CoinsBadge } from '../CoinsBadge';
@@ -401,6 +403,11 @@ export function BaseScreen({
   const errorText = (error: ActionError, itemId?: string) => {
     const def = itemId ? getItemDef(itemId) : undefined;
     if (error === 'outOfSeason' && def?.kind === 'decor' && def.season) return g.season.back(def.season, seasonState(def.season).days);
+    // The HQ's next level: exactly how many more weeks on plan it needs.
+    if (error === 'needsWeeks') {
+      const needed = (HQ_WEEKS_REQUIRED[hqLevel(state) + 1] ?? 0) - state.stats.weeksOnTarget;
+      if (needed > 0) return g.errors.needsWeeksN(needed);
+    }
     if (error === 'locked' && def) return g.errors.unlockAt(def.unlockHq);
     if (error === 'needsBaseLevel' && def?.kind === 'decor' && def.unlockBase) {
       return `${g.baseLevel.level(def.unlockBase)} · ${g.baseLevel.titles[BASE_LEVEL_TITLES[def.unlockBase - 1]]}`;

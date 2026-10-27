@@ -37,8 +37,15 @@ export const STARTING_RESOURCES: Resources = { stone: 40, timber: 40, crystal: 2
 // ---------------------------------------------------------------------------
 
 export const GRID_SIZE = 20;
-export const MAX_HQ_LEVEL = 3;
-export const MAX_STRUCTURE_LEVEL = 3;
+/**
+ * Progression: the HQ goes to level 10 (one level per consistent week), other
+ * buildings to level 6 (never above the HQ). Costs follow what training
+ * actually earns (about 1 stone : 1 timber : 2+ crystal a week), so no
+ * material piles up while another runs dry. Tuned with
+ * scripts/progression-sim.ts.
+ */
+export const MAX_HQ_LEVEL = 10;
+export const MAX_STRUCTURE_LEVEL = 6;
 
 /**
  * Land is bought with coins (the workout currency) and is deliberately
@@ -63,12 +70,12 @@ export function isTileBuildable(x: number, y: number, landLevel: number): boolea
 export const HQ_POSITION = { x: 9, y: 9 };
 
 /** Coins for upgrading a building to each level (index = target level). */
-export const UPGRADE_COIN_COST: Record<number, number> = { 2: 250, 3: 700 };
-export const HQ_UPGRADE_COIN_COST: Record<number, number> = { 2: 300, 3: 1200 };
+export const UPGRADE_COIN_COST: Record<number, number> = { 2: 100, 3: 150, 4: 200, 5: 260, 6: 320 };
+export const HQ_UPGRADE_COIN_COST: Record<number, number> = { 2: 100, 3: 200, 4: 300, 5: 400, 6: 500, 7: 600, 8: 700, 9: 800, 10: 900 };
 
-/** Builders needed at once for a job: level N needs N; decor and trophies need 1. */
+/** Builders needed at once for a job: 1 for levels 1–2, 2 for 3–4, 3 above; decor and trophies need 1. */
 export function buildersForLevel(targetLevel: number): number {
-  return Math.max(1, targetLevel);
+  return targetLevel <= 2 ? 1 : targetLevel <= 4 ? 2 : 3;
 }
 
 /** Decor and trophies take one set to put up. */
@@ -147,7 +154,8 @@ export function customizeKey(itemId: string): string {
  */
 // HQ 2 is open from the start (after a Lodge adds the second builder);
 // HQ 3 asks for two weeks on target, so it rewards a real habit.
-export const HQ_WEEKS_REQUIRED: Record<number, number> = { 1: 0, 2: 0, 3: 2 };
+/** Weeks on target needed for each HQ level: one more each week you hit your plan. */
+export const HQ_WEEKS_REQUIRED: Record<number, number> = { 1: 0, 2: 0, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8 };
 
 // ---------------------------------------------------------------------------
 // Items
@@ -193,6 +201,24 @@ export type DecorDef = {
 
 export type ItemDef = StructureDef | DecorDef;
 
+/** A level's cost from its total size and a building's material mix. */
+function levelsFor(totals: readonly number[], mix: { stone: number; timber: number; crystal: number }, sets: (level: number) => number): StructureLevel[] {
+  return totals.map((total, i) => ({
+    cost:
+      total === 0
+        ? {}
+        : {
+            stone: Math.round(total * mix.stone),
+            timber: Math.round(total * mix.timber),
+            crystal: Math.round(total * mix.crystal)
+          },
+    sets: total === 0 ? 0 : sets(i + 1)
+  }));
+}
+/** Total materials per level (index 0 = level 1). */
+const HQ_TOTALS = [0, 50, 65, 80, 95, 110, 125, 140, 155, 170] as const;
+const BUILDING_TOTALS = [16, 25, 34, 44, 55, 66] as const;
+
 export const STRUCTURES: StructureDef[] = [
   {
     kind: 'structure',
@@ -200,23 +226,15 @@ export const STRUCTURES: StructureDef[] = [
     size: 2,
     unlockHq: 1,
     maxCount: () => 1,
-    levels: [
-      { cost: {}, sets: 0 },
-      { cost: { stone: 30, timber: 22, crystal: 12 }, sets: 3 },
-      { cost: { stone: 80, timber: 65, crystal: 40 }, sets: 5 }
-    ]
+    levels: levelsFor(HQ_TOTALS, { stone: 0.2, timber: 0.2, crystal: 0.6 }, (l) => l + 1)
   },
   {
     kind: 'structure',
     id: 'watchtower',
     size: 1,
     unlockHq: 1,
-    maxCount: (hq) => hq,
-    levels: [
-      { cost: { stone: 20, timber: 5 }, sets: 1 },
-      { cost: { stone: 28, timber: 6, crystal: 6 }, sets: 2 },
-      { cost: { stone: 50, timber: 12, crystal: 12 }, sets: 3 }
-    ]
+    maxCount: (hq) => Math.min(hq, 4),
+    levels: levelsFor(BUILDING_TOTALS, { stone: 0.3, timber: 0.2, crystal: 0.5 }, (l) => l)
   },
   {
     kind: 'structure',
@@ -225,11 +243,7 @@ export const STRUCTURES: StructureDef[] = [
     unlockHq: 1,
     // One Lodge per base: each of its levels adds a builder.
     maxCount: () => 1,
-    levels: [
-      { cost: { timber: 20, stone: 5 }, sets: 1 },
-      { cost: { timber: 28, stone: 6, crystal: 6 }, sets: 2 },
-      { cost: { timber: 50, stone: 12, crystal: 12 }, sets: 3 }
-    ]
+    levels: levelsFor(BUILDING_TOTALS, { stone: 0.2, timber: 0.3, crystal: 0.5 }, (l) => l)
   },
   {
     kind: 'structure',
@@ -237,11 +251,7 @@ export const STRUCTURES: StructureDef[] = [
     size: 1,
     unlockHq: 1,
     maxCount: () => 1,
-    levels: [
-      { cost: { stone: 15, timber: 10 }, sets: 1 },
-      { cost: { stone: 22, timber: 12, crystal: 6 }, sets: 2 },
-      { cost: { stone: 36, timber: 24, crystal: 12 }, sets: 3 }
-    ]
+    levels: levelsFor(BUILDING_TOTALS, { stone: 0.25, timber: 0.25, crystal: 0.5 }, (l) => l)
   },
   {
     // Shows today's workout as stations; its level raises the session bonus.
@@ -250,11 +260,7 @@ export const STRUCTURES: StructureDef[] = [
     size: 2,
     unlockHq: 1,
     maxCount: () => 1,
-    levels: [
-      { cost: { stone: 13, timber: 13, crystal: 9 }, sets: 2 },
-      { cost: { stone: 24, timber: 24, crystal: 15 }, sets: 3 },
-      { cost: { stone: 48, timber: 48, crystal: 30 }, sets: 4 }
-    ]
+    levels: levelsFor(BUILDING_TOTALS.map((t) => Math.round(t * 1.2)), { stone: 0.22, timber: 0.28, crystal: 0.5 }, (l) => l + 1)
   },
   {
     kind: 'structure',
@@ -262,17 +268,13 @@ export const STRUCTURES: StructureDef[] = [
     size: 1,
     unlockHq: 2,
     maxCount: () => 1,
-    levels: [
-      { cost: { crystal: 25, stone: 15 }, sets: 2 },
-      { cost: { crystal: 28, stone: 18, timber: 9 }, sets: 3 },
-      { cost: { crystal: 42, stone: 30, timber: 18 }, sets: 4 }
-    ]
+    levels: levelsFor(BUILDING_TOTALS.map((t) => Math.round(t * 1.1)), { stone: 0.2, timber: 0.2, crystal: 0.6 }, (l) => l + 1)
   }
 ];
 
+
 export const DECOR: DecorDef[] = [
   // Paths & walls
-  { kind: 'decor', id: 'path', size: 1, unlockHq: 1, group: 'paths', cost: { stone: 2 } },
   { kind: 'decor', id: 'wall', size: 1, unlockHq: 1, group: 'paths', cost: { stone: 4 } },
   { kind: 'decor', id: 'arch', size: 1, unlockHq: 1, unlockBase: 4, group: 'paths', cost: { timber: 6, crystal: 4 } },
   // Nature
@@ -347,7 +349,7 @@ export const BASE_LEVEL_TITLES = [
 export type BaseTitle = (typeof BASE_LEVEL_TITLES)[number];
 
 /** Points per finished building level, by level reached. HQ counts double. */
-export const SCORE_BUILDING_LEVEL = [0, 10, 25, 50] as const;
+export const SCORE_BUILDING_LEVEL = [0, 10, 25, 45, 70, 100, 135, 175, 220, 270, 325] as const;
 export const SCORE_PER_DECOR = 2;
 export const SCORE_PER_TROPHY_EARNED = 4;
 export const SCORE_PER_TROPHY_PLACED = 6;

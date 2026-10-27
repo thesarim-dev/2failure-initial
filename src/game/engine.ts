@@ -259,9 +259,9 @@ export const FULL_RATE_SETS = 12;
 export const DAILY_SET_LIMIT = 20;
 
 /** A typical set earns about this much of its material. */
-export const BASE_SET_AMOUNT = 3;
+export const BASE_SET_AMOUNT = 4;
 /** The most one set can earn, however big it is. */
-export const MAX_SET_AMOUNT = 12;
+export const MAX_SET_AMOUNT = 14;
 
 export type SetTier = 'BASE' | 'PRO' | 'ELITE';
 
@@ -376,6 +376,13 @@ export function sessionBonusAmount(state: GameState, isRestDay: boolean): number
 }
 
 export const WEEKLY_BONUS_AMOUNT = 12;
+/**
+ * The weekly bonus (each material) for hitting your plan's days. Shorter plans
+ * get more, so a consistent 3-day week progresses about like a 5-day one.
+ */
+export function weeklyBonusAmount(weeklyTarget: number): number {
+  return WEEKLY_BONUS_AMOUNT + 8 * Math.max(0, 5 - weeklyTarget);
+}
 
 /** Weekly streak as of now: only alive if the target was hit this week or last. */
 export function currentWeeklyStreak(state: GameState, now: Date = new Date()): number {
@@ -735,7 +742,7 @@ export function applySet(prev: GameState, event: SetEvent): { state: GameState; 
     stats.weeksOnTarget += 1;
     stats.weeklyStreak = stats.lastTargetWeek === previousWeekKey(week) ? stats.weeklyStreak + 1 : 1;
     stats.lastTargetWeek = week;
-    reward.weekly = each(WEEKLY_BONUS_AMOUNT);
+    reward.weekly = each(weeklyBonusAmount(weeklyTarget));
     addTo(state.resources, reward.weekly);
     if (state.shields < shieldCapacity(state)) {
       state.shields += 1;
@@ -1113,7 +1120,7 @@ export function baseScore(state: GameState): number {
     if (item.itemId.startsWith(TROPHY_ITEM_PREFIX)) {
       if (item.level > 0) score += SCORE_PER_TROPHY_PLACED;
     } else if (def?.kind === 'structure') {
-      const points = SCORE_BUILDING_LEVEL[Math.min(item.level, 3)] ?? 0;
+      const points = SCORE_BUILDING_LEVEL[Math.min(item.level, SCORE_BUILDING_LEVEL.length - 1)] ?? 0;
       score += def.id === 'hq' ? points * 2 : points;
     } else if (def?.kind === 'decor' && item.level > 0) {
       score += SCORE_PER_DECOR;

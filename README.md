@@ -118,6 +118,17 @@ The home screen is your command center. Everything you need for today's session 
 | **Settings** (gear icon) | Top right | Opens preferences and FAQ |
 | **Coins badge** | Top right | Shows your current coin balance |
 
+### Progression (built to keep you building)
+
+* **The HQ goes to level 10, one level per consistent week:** level 3 after your first week on target, level 4 after two, and so on. A player who hits their plan gets a new HQ level about every week for two to three months.
+* **Other buildings go to level 6**, never above the HQ, so each HQ level opens a new round of upgrades. Upgrades need at most 3 builders, so several things build at once.
+* **Costs follow what training earns** (about 1 stone : 1 timber : 2 crystal a week), so no material piles up while another runs out. Sets earn more (a typical set about 4–6 materials), and a day's training finishes an upgrade.
+* **Shorter plans get a bigger weekly bonus**, so a consistent 3-day week progresses about like a 5-day week.
+* **Levels show on the map:** pips for levels 1–3, a gold crest with the number from level 4.
+* **The HQ tells you what it needs:** "Hit your plan 2 more weeks to unlock this."
+* Tuned with a simulator that plays real weeks through the game engine: `npm run sim:progress -- 12 5` (weeks, training days a week). It also checks that an honest player always fits the server's material budget.
+* **Paths** are painted with the paint tool (no longer a decoration).
+
 ### Rest days and the week
 
 Rest days are counted per **calendar week** (starting Monday; Sunday in Hebrew and Arabic). A plan of P training days gives **7 − P rest days** a week. One set of rules drives the rest ticket, the plan and the streak (`src/lib/restWeek.ts`, tested by `npm run test:rest`):
@@ -675,5 +686,6 @@ In the Supabase dashboard, open **SQL Editor** and run each file's full contents
 2. `supabase/migrations/20261027120000_server_economy.sql` (materials, buildings, set log, streaks)
 
 3. `supabase/migrations/20261028120000_fix_streak_guard_rest_days.sql` (lets the streak count rest days when you come back from them)
+4. `supabase/migrations/20261029120000_progression_prices.sql` (the server's price table for the new levels and costs)
 
 Both keep existing balances and bases, and are safe to run again. Until they're run, the app falls back to its old behaviour.
