@@ -1,5 +1,3 @@
-import { fx } from '../lib/feedback';
-import { PlanDial } from './PlanDial';
 import { RestTicket } from './RestTicket';
 import { HudStrip } from './HudStrip';
 import { StreakFlame } from './StreakFlame';
@@ -126,7 +124,6 @@ export function Dashboard({
   const rewardLabel = (move: Move) => rewardFor(move).map((id) => t.game.resources[id]).join(' · ');
   // The current plan, in one line: own plan (sets a day) or program (which day).
   // Today's day for the Edit plan chip, and the rest-day dots (total for the week).
-  const [dialSpin, setDialSpin] = useState(0);
   const restDotsTotal = Math.min(5, Math.max(restDaysRemainingThisWeek, 7 - rotationCycleLength, 1));
 
   // Night falls when a rest day starts during this visit (not when you open the app on one).
@@ -248,18 +245,14 @@ export function Dashboard({
           )}
         </div>
 
-        {/* Your plan as a dial: training days lit around the ring. Tap to change. */}
+        {/* Your plan: days a week, flat and simple. Tap to change. */}
         <button
           type="button"
-          className="act-tile act-plan week-tile is-dial"
+          className="act-tile act-plan week-tile is-flat"
           data-tour="store"
-          onClick={() => {
-            setDialSpin((n) => n + 1);
-            fx.tick();
-            window.setTimeout(onOpenPlan, 420);
-          }}
+          onClick={onOpenPlan}
           aria-label={`${t.hub.trio.weekDays(planDaysPerWeek)}. ${t.hub.trio.tapToChange}`}>
-          <PlanDial days={planDaysPerWeek} spin={dialSpin} rememberKey="2failure-plan-days-shown" />
+          <span className="flat-days">{planDaysPerWeek}</span>
           <span className="dial-label">{t.hub.trio.daysAWeek}</span>
           <span className="week-min-hint">{t.hub.trio.tapToChange}</span>
         </button>

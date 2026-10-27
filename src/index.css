@@ -8631,43 +8631,18 @@
     white-space: nowrap;
   }
 
-  /* ============ The plan card as a dial ============ */
-  .home-trio .act-tile.week-tile.is-dial {
+  /* ============ The plan card: a flat number ============ */
+  .home-trio .act-tile.week-tile.is-flat {
     justify-content: center;
     align-items: center;
-    gap: 0.2rem;
+    gap: 0.15rem;
     text-align: center;
   }
-  .plan-dial {
-    width: 3.6rem;
-    height: 3.6rem;
-    overflow: visible;
-  }
-  .plan-dial-ring {
-    transform-origin: 32px 32px;
-  }
-  .plan-dial-ring.is-spin {
-    animation: dial-spin 0.55s cubic-bezier(0.3, 0, 0.2, 1);
-  }
-  @keyframes dial-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  .dial-seg {
-    fill: none;
-    stroke: color-mix(in srgb, var(--tile-ink) 18%, transparent);
-    stroke-width: 6;
-    stroke-linecap: round;
-    transition: stroke 0.3s ease;
-  }
-  .dial-seg.is-on {
-    stroke: var(--tile-accent);
-  }
-  .plan-dial-n {
-    fill: var(--tile-ink);
+  .flat-days {
     font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
-    font-size: 22px;
+    font-size: 2.4rem;
     font-weight: 900;
+    line-height: 1;
   }
   .dial-label {
     font-size: 0.8rem;
@@ -8725,8 +8700,7 @@
     to { transform: translate(14vmax, -16vmax) scale(1.1); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .amb,
-    .plan-dial-ring.is-spin {
+    .amb {
       animation: none;
     }
   }
