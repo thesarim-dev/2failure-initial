@@ -8286,11 +8286,23 @@
   }
   /* The stub after tearing: content sits below the ragged edge. */
   /* What stays: the top half, ragged along the bottom. */
+  /* The kept half after a tear: its own (torn) size, centred on the row. */
+  .home-trio .rest-ticket-wrap.is-centred {
+    align-self: center;
+  }
   .home-trio .rest-ticket-wrap .act-tile.rest-ticket.is-stub {
-    /* Full height like the week card: title at the top, the note at the bottom, a small torn edge below. */
-    justify-content: space-between;
-    padding-bottom: 0.95rem;
-    transition: clip-path 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    height: auto;
+    min-height: 0;
+    justify-content: flex-start;
+    gap: 0.4rem;
+    padding: 0.8rem 0.75rem 1.1rem;
+  }
+  .rest-ticket.is-settling {
+    animation: ticket-settle 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes ticket-settle {
+    from { transform: translateY(-18px); }
+    to { transform: none; }
   }
   .stub-title {
     display: inline-flex;
@@ -8562,5 +8574,60 @@
   /* The rest ticket and the week card share the row's full height, so they line up exactly. */
   .home-trio .act-tile.week-tile {
     align-self: stretch;
+  }
+
+  /* Minimal cards: less to read. */
+  .ticket-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+  .ticket-note {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--tile-accent);
+  }
+  .home-trio .act-tile.week-tile.is-min {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 0.3rem;
+  }
+  .week-min-days {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.15rem;
+    line-height: 1.1;
+  }
+  .week-min-hint {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--tile-accent);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rest-ticket.is-settling {
+      animation: none;
+    }
+  }
+
+  /* One line each: titles that fit the narrow cards. */
+  .rest-ticket .stub-title {
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .rest-ticket .stub-title svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  .rest-ticket .ticket-note {
+    font-size: 0.74rem;
+    line-height: 1.25;
+  }
+  .week-min-days {
+    font-size: 0.98rem;
+    white-space: nowrap;
   }
 }

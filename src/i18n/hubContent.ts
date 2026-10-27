@@ -105,6 +105,9 @@ export type HubCopy = {
     yourWeek: string;
     slide: string;
     restDay: string;
+    leftShort: (n: number) => string;
+    weekDays: (n: number) => string;
+    tapToChange: string;
   };
   week: {
     title: string;
@@ -246,8 +249,11 @@ const en: HubCopy = {
     restKicker: 'Rest days',
     takeOff: 'Take today off',
     yourWeek: 'Your week',
-    slide: 'Slide to tear off',
-    restDay: 'Rest day'
+    slide: 'Slide to tear',
+    restDay: 'Rest day',
+    leftShort: (n) => `${n} left`,
+    weekDays: (n) => `${n}-day week`,
+    tapToChange: 'Tap to change'
   },
   restoreBanner: {
     title: (streak) => `Your ${streak}-day streak broke.`,
@@ -389,8 +395,11 @@ const he: HubCopy = {
     restKicker: 'ימי מנוחה',
     takeOff: 'קחו את היום חופש',
     yourWeek: 'השבוע שלכם',
-    slide: 'החליקו כדי לתלוש',
-    restDay: 'יום מנוחה'
+    slide: 'החליקו לתלישה',
+    restDay: 'יום מנוחה',
+    leftShort: (n) => `נשארו ${n}`,
+    weekDays: (n) => `שבוע של ${n} ימים`,
+    tapToChange: 'הקישו לשינוי'
   },
   restoreBanner: {
     title: (streak) => `הרצף שלך של ${streak} ימים נשבר.`,
@@ -533,7 +542,10 @@ const ar: HubCopy = {
     takeOff: 'خذ اليوم إجازة',
     yourWeek: 'أسبوعك',
     slide: 'اسحب للتمزيق',
-    restDay: 'يوم راحة'
+    restDay: 'يوم راحة',
+    leftShort: (n) => `متبقٍ ${n}`,
+    weekDays: (n) => `أسبوع من ${n} أيام`,
+    tapToChange: 'اضغط للتغيير'
   },
   restoreBanner: {
     title: (streak) => `انقطعت سلسلتك المكوّنة من ${streak} أيام.`,

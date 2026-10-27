@@ -30,7 +30,7 @@ export function RestTicket({
   /** How many tally marks to draw (rest days in the week). */
   slots: number;
   onTake: () => void;
-  copy: { kicker: string; left: string; none: string; slide: string; restDay: string; safe: string; take: string };
+  copy: { left: string; none: string; slide: string; restDay: string; safe: string; take: string };
 }) {
   const [progress, setProgress] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -41,24 +41,23 @@ export function RestTicket({
   const lastTick = useRef(0);
   const moved = useRef(false);
   const [perfY, setPerfY] = useState(60);
-  // After a tear, the stub settles from the torn line down to full height (same size as its neighbours).
+  // After a tear, the kept half drifts down to sit centred on the row.
   const [justTore, setJustTore] = useState(false);
-  const [settled, setSettled] = useState(false);
   useEffect(() => {
     if (!resting || !justTore) return;
-    const frame = window.requestAnimationFrame(() => setSettled(true));
-    return () => window.cancelAnimationFrame(frame);
+    const timer = window.setTimeout(() => setJustTore(false), 700);
+    return () => window.clearTimeout(timer);
   }, [resting, justTore]);
 
   if (resting) {
     return (
-      <span className="rest-ticket-wrap">
-        <div className="act-tile act-rest rest-ticket is-stub" role="status" style={{ clipPath: topHalf(justTore && !settled ? perfY : 97) }}>
+      <span className="rest-ticket-wrap is-centred">
+        <div className={`act-tile act-rest rest-ticket is-stub ${justTore ? 'is-settling' : ''}`} role="status" style={{ clipPath: topHalf(92) }}>
           <span className="stub-title">
             <Moon size={18} strokeWidth={2.5} className="rest-ticket-moon" aria-hidden="true" />
             {copy.restDay}
           </span>
-          <span className="tile-cta">{copy.safe}</span>
+          <span className="ticket-note">{copy.safe}</span>
         </div>
       </span>
     );
@@ -68,14 +67,11 @@ export function RestTicket({
     return (
       <span className="rest-ticket-wrap">
         <div className="act-tile act-rest rest-ticket is-spent" role="status">
-          <span className="tile-kicker">{copy.kicker}</span>
-          <span className="rest-tally" aria-hidden="true">
-            {Array.from({ length: slots }, (_, k) => (
-              <i key={k} />
-            ))}
+          <span className="stub-title">
+            <Moon size={18} strokeWidth={2.5} className="rest-ticket-moon" aria-hidden="true" />
+            {copy.restDay}
           </span>
-          <span className="ticket-perf" aria-hidden="true" />
-          <span className="tile-main">{copy.none}</span>
+          <span className="ticket-note">{copy.none}</span>
         </div>
       </span>
     );
@@ -143,11 +139,17 @@ export function RestTicket({
           setDragging(false);
           if (!tearing) setProgress(0);
         }}>
-        <span className="tile-kicker">{copy.kicker}</span>
-        <span className="rest-tally" aria-hidden="true">
-          {Array.from({ length: slots }, (_, k) => (
-            <i key={k} className={k < left ? 'is-on' : ''} />
-          ))}
+        <span className="stub-title">
+          <Moon size={18} strokeWidth={2.5} className="rest-ticket-moon" aria-hidden="true" />
+          {copy.restDay}
+        </span>
+        <span className="ticket-count">
+          <span className="rest-tally" aria-hidden="true">
+            {Array.from({ length: slots }, (_, k) => (
+              <i key={k} className={k < left ? 'is-on' : ''} />
+            ))}
+          </span>
+          {copy.left}
         </span>
         <div ref={zipRef} className={`ticket-zip ${dragging ? 'is-dragging' : ''}`} aria-hidden="false">
           <span className="zip-torn" style={{ width: `${progress * 100}%` }} />
@@ -162,21 +164,15 @@ export function RestTicket({
             }}
           />
         </div>
-        <span className="tile-main">{copy.left}</span>
-        <span className="tile-cta">{copy.slide}</span>
+        <span className="ticket-note">{copy.slide}</span>
       </div>
       {tearing && (
         // The bottom half, falling away.
         <div className="act-tile act-rest rest-ticket ticket-flyaway" aria-hidden="true" style={{ clipPath: `polygon(${ragged(perfY, 1)}, 100% 100%, 0% 100%)` }}>
-          <span className="tile-kicker">{copy.kicker}</span>
-          <span className="rest-tally">
-            {Array.from({ length: slots }, (_, k) => (
-              <i key={k} className={k < left ? 'is-on' : ''} />
-            ))}
-          </span>
+          <span className="stub-title">{copy.restDay}</span>
+          <span className="ticket-count">{copy.left}</span>
           <span className="ticket-zip" />
-          <span className="tile-main">{copy.left}</span>
-          <span className="tile-cta">{copy.slide}</span>
+          <span className="ticket-note">{copy.slide}</span>
         </div>
       )}
     </span>

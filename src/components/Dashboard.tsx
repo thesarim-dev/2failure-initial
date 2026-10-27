@@ -53,8 +53,6 @@ interface DashboardProps {
   rotatingProgramPhase: RotatingProgramPhase | null;
   rotatingProgramCycleDay: number | null;
   rotationCycleLength: number;
-  /** The plan's training days in order (for the week tile). */
-  rotationCycle: readonly string[];
   /** Today at a glance (null on rest days): progress and the next set. */
   dayProgress?: {
     done: number;
@@ -72,15 +70,6 @@ interface DashboardProps {
   onOpenPlan: () => void;
   trainingDaysPerWeek: number;
 }
-
-/** Week-tile colours per training day (written out so the CSS build keeps them). */
-const WEEK_BLOCK: Record<string, string> = {
-  push: 'wk-push',
-  pull: 'wk-pull',
-  legs: 'wk-legs',
-  mixed: 'wk-mixed',
-  recovery: 'wk-recovery'
-};
 
 export function Dashboard({
   coins,
@@ -114,7 +103,7 @@ export function Dashboard({
   rotatingProgramPhase,
   rotatingProgramCycleDay,
   rotationCycleLength,
-  rotationCycle,
+  trainingDaysPerWeek,
   dayProgress = null,
   isRestDayToday,
   canTakeRestDay,
@@ -133,11 +122,6 @@ export function Dashboard({
   const rewardLabel = (move: Move) => rewardFor(move).map((id) => t.game.resources[id]).join(' · ');
   // The current plan, in one line: own plan (sets a day) or program (which day).
   // Today's day for the Edit plan chip, and the rest-day dots (total for the week).
-  const todayChip =
-    isRestDayToday || !rotatingProgramPhase || rotatingProgramPhase === 'recovery'
-      ? t.hub.plan.tileSub(rotationCycleLength)
-      : t.hub.plan.dayNames[rotatingProgramPhase];
-  const todayIndex = (Math.max(1, rotatingProgramCycleDay ?? 1) - 1) % Math.max(1, rotationCycle.length);
   const restDotsTotal = Math.min(5, Math.max(restDaysRemainingThisWeek, 7 - rotationCycleLength, 1));
 
   // Night falls when a rest day starts during this visit (not when you open the app on one).
@@ -234,8 +218,7 @@ export function Dashboard({
           slots={restDotsTotal}
           onTake={onTakeRestDay}
           copy={{
-            kicker: t.hub.trio.restKicker,
-            left: t.hub.trio.left(restDaysRemainingThisWeek),
+            left: t.hub.trio.leftShort(restDaysRemainingThisWeek),
             none: t.hub.trio.none,
             slide: `${t.hub.trio.slide} →`,
             restDay: t.hub.trio.restDay,
@@ -260,21 +243,15 @@ export function Dashboard({
           )}
         </div>
 
-        {/* Your week at a glance: one block per training day, today raised. */}
+        {/* Your plan, at a glance: how many days a week. Tap to change. */}
         <button
           type="button"
-          className="act-tile act-plan week-tile"
+          className="act-tile act-plan week-tile is-min"
           data-tour="store"
           onClick={onOpenPlan}
-          aria-label={`${t.hub.trio.planTitle}: ${todayChip}`}>
-          <span className="tile-kicker">{t.hub.trio.yourWeek}</span>
-          <span className="week-blocks" aria-hidden="true">
-            {rotationCycle.map((phase, k) => (
-              <i key={k} className={`wk ${WEEK_BLOCK[phase] ?? ''} ${!isRestDayToday && k === todayIndex ? 'is-today' : ''}`} />
-            ))}
-          </span>
-          <span className="tile-main">{todayChip}</span>
-          <span className="tile-cta">{t.hub.trio.planTitle} →</span>
+          aria-label={`${t.hub.trio.weekDays(trainingDaysPerWeek)}. ${t.hub.trio.tapToChange}`}>
+          <span className="week-min-days">{t.hub.trio.weekDays(trainingDaysPerWeek)}</span>
+          <span className="week-min-hint">{t.hub.trio.tapToChange}</span>
         </button>
       </section>
 
