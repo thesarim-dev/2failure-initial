@@ -120,7 +120,8 @@ The home screen is your command center. Everything you need for today's session 
 
 ### Building on the base
 
-* **The map comes first:** a taller map that opens slightly zoomed in (pinch out, or use Fit, to see everything). The Today panel is one tappable line ("Today's plan: 4 of 11 sets · 2 quests"); tap it for the details.
+* **The map comes first:** a taller map that opens slightly zoomed in (pinch out, or use Fit, to see everything).
+* **Under the map:** **Next up** shows what to build or upgrade next and what's still missing (materials, sets, coins, builders), with one tap to do it; then **Today** shows your plan, its rewards, the weekly bonus and today's quests.
 * **Rotate anything:** every building and decoration can face the other way. Use Rotate in its sheet, or while placing or moving it (the preview turns live).
 * **Drag to place:** once something is on the map, drag it with your finger to fine-tune the spot (it only moves where it fits), then tap Place here.
 * **Long-press to move:** press and hold a building or decoration to pick it up, drag it, and set it down. A quick tap still opens its sheet; a quick drag still pans the map.

@@ -1,5 +1,7 @@
 import { ResourceIcon } from './ResourceIcon';
 import { MATERIAL_PER_SET } from '../../game/goals';
+import { GoalsCard } from './GoalsCard';
+import { computeGoals, type Goal } from '../../game/goals';
 import { itemSize,
   hqLevel
 } from '../../game/engine';
@@ -22,8 +24,7 @@ import {
   BoxSelect,
   PaintBucket,
   Paintbrush,
-  RotateCw,
-  ChevronDown
+  RotateCw
 } from 'lucide-react';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
@@ -205,22 +206,12 @@ function TodayPanel({ game, plan }: { game: BaseGame; plan: TodayPlan | null }) 
   const weekHit = weekTarget > 0 && weekDone >= weekTarget;
   const weeklyStreak = currentWeeklyStreak(state);
   const quests = plan && state.quests?.day === plan.day ? state.quests.list : [];
-  const [open, setOpen] = useState(false);
 
   return (
     <section className="base-today cyber-panel normal-case" aria-label={g.today.title}>
-      {/* Collapsed to one line: tap to see the details. */}
-      <button type="button" className="base-today-head base-today-toggle" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+      <div className="base-today-head">
         <h2 className="base-today-title">{g.today.title}</h2>
-        <span className="base-today-summary">
-          {plan?.isRestDay
-            ? g.today.rest
-            : `${g.today.training(done, planned)}${quests.length ? ` · ${g.today.questCount(quests.filter((q) => !q.done).length)}` : ''}`}
-        </span>
-        <ChevronDown size={18} strokeWidth={2.6} className="base-today-chev" aria-hidden="true" />
-      </button>
-      {open && (
-      <div className="base-today-body">
+      </div>
 
       {plan?.isRestDay ? (
         <p className="base-today-line">{g.today.rest}</p>
@@ -280,8 +271,6 @@ function TodayPanel({ game, plan }: { game: BaseGame; plan: TodayPlan | null }) 
         )}
         {questSlots(state) < 4 && !plan?.isRestDay && <p className="base-today-sub">{g.quests.moreSlots}</p>}
       </div>
-      </div>
-      )}
     </section>
   );
 }
@@ -516,6 +505,27 @@ export function BaseScreen({
     fx.tick();
     setMode({ ...mode, spot: { x, y } });
   };
+  /** One tap from a goal to the thing that completes it. */
+  const handleGoal = (goal: Goal) => {
+    fx.tap();
+    if (goal.kind === 'upgrade') {
+      setSheet({ uid: goal.uid });
+    } else if (goal.kind === 'build') {
+      if (goal.ready) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        choose({ kind: 'item', itemId: goal.itemId });
+      } else {
+        setBuildTab('structures');
+        setSheet('build');
+      }
+    } else if (goal.kind === 'level') {
+      setBuildTab('decor');
+      setSheet('build');
+    } else if (goal.kind === 'land') {
+      setSheet('land');
+    }
+  };
+
   /** Dragging the ghost: move the picked spot wherever it fits. */
   const dragGhost = (x: number, y: number) => {
     if (mode.kind === 'idle' || !modeItemId) return;
@@ -591,6 +601,7 @@ export function BaseScreen({
     .join(' · ');
   const landSide = LAND_SIDES[state.landLevel];
   const landCost = nextLandCost(state);
+  const goals = useMemo(() => computeGoals(state, coins), [state, coins]);
 
   // ---- Paint tools: box (two corners) and fill (a connected patch) ----
   const terrainAt = (x: number, y: number) => state.terrain?.[`${x},${y}`] ?? 'grass';
@@ -876,6 +887,17 @@ export function BaseScreen({
           </div>
         )}
       </div>
+
+      {mode.kind === 'idle' && !paintWith && !fenceKind && (
+        <GoalsCard
+          goals={goals}
+          coins={coins}
+          totalBuilders={total}
+          nameOf={nameOf}
+          titleOf={(title) => g.baseLevel.titles[title as keyof typeof g.baseLevel.titles] ?? title}
+          onAction={handleGoal}
+        />
+      )}
 
       <TodayPanel game={game} plan={game.plan} />
 
