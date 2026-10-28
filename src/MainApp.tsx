@@ -437,15 +437,22 @@ export function MainApp() {
       );
     }
     // The server decides the reward (and checks the set is plausible). It also
-    // records the set, which the streak guard looks for, so the streak waits for it.
-    const reward = earnForSet(currentMove.id, duration, currentMove.tier ?? 'BASE', calculateCoinsEarned(duration, currentMove.tier ?? 'BASE'));
+    // writes the coin ledger row the streak guard looks for, so the streak
+    // waits until that save actually succeeds.
+    const reward = earnForSet(
+      currentMove.id,
+      duration,
+      currentMove.tier ?? 'BASE',
+      calculateCoinsEarned(duration, currentMove.tier ?? 'BASE')
+    );
     void (async () => {
       const totalSetsToday = await incrementSet(categoryId);
       if (
         totalSetsToday !== null &&
         shouldCountStreakForDay(totalSetsToday, lastWorkoutDate)
       ) {
-        await reward.catch(() => undefined);
+        const recorded = await reward.catch(() => false);
+        if (!recorded) return;
         await recordWorkoutComplete(restAllowance, { restDays: declaredRestDays, sundayFirst });
       }
     })();

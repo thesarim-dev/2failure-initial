@@ -16,10 +16,13 @@ as $$
 declare
   v_recent boolean;
   v_gap integer := 1;
+  -- Cast through text so this works whether last_workout_date is `date` or `text`.
+  v_old_day text := case when old.last_workout_date is null then null else old.last_workout_date::text end;
+  v_new_day text := case when new.last_workout_date is null then null else new.last_workout_date::text end;
 begin
-  if new.last_workout_date is not null
-     and new.last_workout_date ~ '^\d{4}-\d{2}-\d{2}$'
-     and new.last_workout_date::date > (now() at time zone 'utc')::date + 1 then
+  if v_new_day is not null
+     and v_new_day ~ '^\d{4}-\d{2}-\d{2}$'
+     and v_new_day::date > (now() at time zone 'utc')::date + 1 then
     raise exception 'workout_date_in_future' using errcode = 'P0001';
   end if;
 
@@ -27,8 +30,8 @@ begin
     select exists (select 1 from public.coin_ledger where user_id = new.user_id and created_at > now() - interval '48 hours')
         or exists (select 1 from public.workout_set_logs where user_id = new.user_id and completed_at > now() - interval '48 hours')
       into v_recent;
-    if old.last_workout_date ~ '^\d{4}-\d{2}-\d{2}$' and new.last_workout_date ~ '^\d{4}-\d{2}-\d{2}$' then
-      v_gap := greatest(1, least(15, new.last_workout_date::date - old.last_workout_date::date));
+    if v_old_day ~ '^\d{4}-\d{2}-\d{2}$' and v_new_day ~ '^\d{4}-\d{2}-\d{2}$' then
+      v_gap := greatest(1, least(15, v_new_day::date - v_old_day::date));
     end if;
     if not ((v_recent and new.current_streak <= old.current_streak + v_gap) or new.current_streak <= old.longest_streak) then
       raise exception 'streak_not_earned' using errcode = 'P0001';

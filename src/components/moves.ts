@@ -790,6 +790,7 @@ export const REP_LOGGED_CATEGORY_IDS = new Set([
   'dumbbell-rdls',
   'barbell-deadlifts',
   'nordic-curls',
+  'calf-raises',
   'single-leg-calf-raises',
   'dead-bugs',
   'bird-dogs',

@@ -93,9 +93,10 @@ export function useProfile() {
   const applyBalance = useCallback((balance: number) => {
     setProfile((prev) => (prev ? { ...prev, coins: balance } : prev));
   }, []);
+  /** Returns true when the server (or the pre-migration fallback) recorded the set. */
   const earnForSet = useCallback(
-    async (categoryId: string, seconds: number, tier: string, estimate: number) => {
-      if (!user) return;
+    async (categoryId: string, seconds: number, tier: string, estimate: number): Promise<boolean> => {
+      if (!user) return false;
       const before = profile?.coins ?? 0;
       setProfile((prev) => (prev ? { ...prev, coins: before + estimate } : prev)); // instant feedback
       // A dropped connection gets two more tries; a repeat the server already
@@ -106,9 +107,16 @@ export function useProfile() {
         await new Promise((r) => setTimeout(r, delay));
         result = await earnSetCoins(categoryId, seconds, tier);
       }
-      if (result.ok) applyBalance(result.balance);
-      else if (result.missing) await setCoins(before + estimate); // old path until the migration is applied
-      else await fetchProfile();
+      if (result.ok) {
+        applyBalance(result.balance);
+        return true;
+      }
+      if (result.missing) {
+        await setCoins(before + estimate); // old path until the migration is applied
+        return true;
+      }
+      await fetchProfile();
+      return false;
     },
     [user, profile?.coins, applyBalance, setCoins, fetchProfile]
   );

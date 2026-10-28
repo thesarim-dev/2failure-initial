@@ -118,13 +118,12 @@ export async function fetchSetsProgress(
   if (progressDate !== today) {
     const isNewDay = progressDate !== null;
 
-    if (isNewDay) {
-      await resetDailySets(userId);
-    }
-
+    // Mark the new day first. If this fails, keep yesterday's counts instead of
+    // wiping them and leaving sets_progress_date stuck on the old day.
     await markSetsProgressDate(userId, today);
 
     if (isNewDay) {
+      await resetDailySets(userId);
       return emptySetsMap();
     }
   }
