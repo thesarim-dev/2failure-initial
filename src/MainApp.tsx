@@ -31,6 +31,9 @@ import { REST, restSecondsFor } from './lib/restTimes';
 import { RestTimerBanner, type RestTimer } from './components/RestTimerBanner';
 import { fetchLastSet, type LastSet } from './lib/lastSet';
 import { useTrainedDays } from './hooks/useTrainedDays';
+import { FriendsScreen } from './components/FriendsScreen';
+import { FriendBase } from './components/FriendBase';
+import { SQUAD_REWARD, type Friend } from './lib/social';
 import { ProgressScreen } from './components/ProgressScreen';
 import { usePlan } from './hooks/usePlan';
 import { PlanScreen } from './components/PlanScreen';
@@ -70,6 +73,8 @@ type AppState =
   | 'STORE'
   | 'SETTINGS'
   | 'PROGRESS'
+  | 'FRIENDS'
+  | 'VISIT'
   | 'BASE';
 
 export function MainApp() {
@@ -103,8 +108,11 @@ export function MainApp() {
     error: profileError,
     setCoins,
     earnForSet,
-    spend
+    spend,
+    refetch: refetchProfile
   } = useProfile();
+  // Friends: the friend whose base you're visiting.
+  const [visiting, setVisiting] = useState<Friend | null>(null);
   const {
     currentStreak,
     longestStreak,
@@ -696,7 +704,8 @@ export function MainApp() {
       ? getWeightedSetContext(currentMove.categoryId)
       : null;
 
-  const showTabBar = appState === 'HOME' || appState === 'BASE' || appState === 'SETTINGS' || appState === 'PROGRESS';
+  const showTabBar =
+    appState === 'HOME' || appState === 'BASE' || appState === 'SETTINGS' || appState === 'PROGRESS' || appState === 'FRIENDS' || appState === 'VISIT';
 
 
   // While resting, the page moves down so the banner never covers anything.
@@ -801,6 +810,23 @@ export function MainApp() {
           }}
         />
       )}
+      {appState === 'FRIENDS' && user && (
+        <FriendsScreen
+          onBack={() => setAppState('BASE')}
+          onVisit={(friend) => {
+            fx.tap();
+            setVisiting(friend);
+            setAppState('VISIT');
+            window.scrollTo({ top: 0 });
+          }}
+          onSquadClaimed={() => {
+            // Coins come from the server; the materials join your base.
+            void refetchProfile();
+            baseGame.grantMaterials(SQUAD_REWARD.materials);
+          }}
+        />
+      )}
+      {appState === 'VISIT' && user && visiting && <FriendBase friend={visiting} onBack={() => setAppState('FRIENDS')} />}
       {appState === 'SETTINGS' &&
       <Settings
         coins={coins}
@@ -878,6 +904,11 @@ export function MainApp() {
           game={baseGame}
           coins={coins}
           onSpendCoins={(amount) => void spend(amount, 'base')}
+          onOpenFriends={() => {
+            fx.tap();
+            setAppState('FRIENDS');
+            window.scrollTo({ top: 0 });
+          }}
         />
       )}
       </motion.div>
@@ -899,7 +930,7 @@ export function MainApp() {
 
       {showTabBar && (
         <AppTabBar
-          active={appState === 'BASE' ? 'base' : appState === 'SETTINGS' || appState === 'PROGRESS' ? 'settings' : 'train'}
+          active={appState === 'BASE' || appState === 'FRIENDS' || appState === 'VISIT' ? 'base' : appState === 'SETTINGS' || appState === 'PROGRESS' ? 'settings' : 'train'}
           onChange={handleTab}
           baseHasNews={baseGame.hasNews}
         />

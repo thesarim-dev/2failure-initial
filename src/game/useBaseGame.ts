@@ -93,7 +93,8 @@ function migrateV1(save: SaveV1): SaveV2 {
 }
 
 /** Turns any saved base (local or from Supabase, any version) into current state. */
-function parseSave(input: unknown): GameState {
+/** Reads a saved base (any version) into a game state, e.g. a friend's base to visit. */
+export function parseSave(input: unknown): GameState {
   try {
     const parsed = input as GameState | SaveV2 | SaveV1;
     if (!parsed || !Array.isArray(parsed.placed)) return createInitialState();
@@ -357,6 +358,16 @@ export function useBaseGame(
     rename: (name: string) => commit(setBaseName(stateRef.current, name)),
     /** Demo build only: change the save directly (cheats for testing). */
     devPatch: (fn: (state: GameState) => GameState) => commit(fn(stateRef.current)),
+    /** Rewards from outside the base (e.g. the squad challenge): add materials. */
+    grantMaterials: (amount: number) =>
+      commit({
+        ...stateRef.current,
+        resources: {
+          stone: stateRef.current.resources.stone + amount,
+          timber: stateRef.current.resources.timber + amount,
+          crystal: stateRef.current.resources.crystal + amount
+        }
+      }),
     move: (uid: string, x: number, y: number) => run(moveItem(stateRef.current, uid, x, y)),
     remove: (uid: string) => run(removeItem(stateRef.current, uid)),
     trade: (from: ResourceId, to: ResourceId) => run(tradeMaterials(stateRef.current, from, to)),

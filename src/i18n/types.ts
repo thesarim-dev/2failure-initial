@@ -323,6 +323,44 @@ export interface AppTranslations {
   rhythm: {
     start: string;
   };
+  social: {
+    title: string;
+    open: string;
+    squadTitle: string;
+    squadGoal: (total: number, goal: number) => string;
+    squadHint: (each: number) => string;
+    squadNeedFriends: string;
+    squadYou: (n: number) => string;
+    squadMore: (n: number) => string;
+    claim: string;
+    claimed: string;
+    reward: (coins: number, materials: number) => string;
+    rewardToast: string;
+    yourCode: string;
+    copy: string;
+    copied: string;
+    share: string;
+    shareText: (code: string) => string;
+    addTitle: string;
+    addPlaceholder: string;
+    add: string;
+    result: Record<'sent' | 'accepted' | 'already' | 'pending' | 'self' | 'not_found' | 'limit' | 'error', string>;
+    requests: string;
+    accept: string;
+    decline: string;
+    friends: string;
+    empty: string;
+    visit: string;
+    cheer: string;
+    cheered: string;
+    cheerSent: string;
+    streak: (n: number) => string;
+    hq: (n: number) => string;
+    setsWeek: (n: number) => string;
+    visitTitle: (name: string) => string;
+    remove: string;
+    loading: string;
+  };
   lastSet: {
     beat: (reps: number) => string;
     beatWeighted: (kg: number, reps: number) => string;

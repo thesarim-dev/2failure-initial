@@ -24,7 +24,8 @@ import {
   BoxSelect,
   PaintBucket,
   Paintbrush,
-  RotateCw
+  RotateCw,
+  Users
 } from 'lucide-react';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
@@ -356,12 +357,15 @@ function hasCustomization(itemId: string): boolean {
 export function BaseScreen({
   game,
   coins,
-  onSpendCoins
+  onSpendCoins,
+  onOpenFriends
 }: {
   game: BaseGame;
   /** The workout currency, used for land and upgrades. */
   coins: number;
   onSpendCoins: (amount: number) => void;
+  /** Friends: visit bases, cheer, the squad challenge. */
+  onOpenFriends?: () => void;
 }) {
   const { t, language } = useLanguage();
   const g = t.game;
@@ -678,6 +682,12 @@ export function BaseScreen({
       <header className="base-header">
         <h1 className="base-title">{state.baseName ?? g.title}</h1>
         <div className="base-header-chips">
+          {onOpenFriends && (
+            <button type="button" className="base-friends-btn" onClick={onOpenFriends} aria-label={t.social.open}>
+              <Users size={16} strokeWidth={2.6} aria-hidden="true" />
+              {t.social.open}
+            </button>
+          )}
           {/* Same coins badge as the Train tab. */}
           <CoinsBadge coins={coins} />
         </div>

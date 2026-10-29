@@ -8822,4 +8822,288 @@
       animation: none;
     }
   }
+
+  /* ============================ Social ============================ */
+  .base-friends-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 900;
+    color: #0c0f02;
+    background: #c8f032;
+    border: 1.5px solid #0c0f02;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+  }
+  .base-friends-btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55);
+  }
+  .social-screen {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 1rem 1rem 6.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .social-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: 0.4rem;
+  }
+  .social-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 1.45rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .social-card {
+    padding: 1rem;
+  }
+  .social-h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.6rem;
+    font-size: 1rem;
+  }
+  .social-muted {
+    font-size: 0.86rem;
+    font-weight: 700;
+    opacity: 0.7;
+  }
+  .social-squad {
+    border-color: #c8f032;
+  }
+  .social-squad-goal {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    font-size: 1.25rem;
+  }
+  .social-bar {
+    height: 10px;
+    margin: 0.5rem 0 0.6rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  html:not(.dark) .social-bar {
+    background: rgba(0, 0, 0, 0.08);
+  }
+  .social-bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #8fd400, #c8f032);
+    transition: width 0.6s ease;
+  }
+  .social-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0 0 0.6rem;
+    padding: 0;
+    list-style: none;
+  }
+  .social-members li {
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    background: rgba(127, 127, 127, 0.18);
+  }
+  .social-members li.is-you {
+    color: #0c0f02;
+    background: #c8f032;
+  }
+  .social-reward {
+    margin-top: 0.35rem;
+    font-size: 0.84rem;
+    font-weight: 900;
+    color: #f7c948;
+  }
+  html:not(.dark) .social-reward {
+    color: #8a5a00;
+  }
+  .social-claim {
+    width: 100%;
+    margin-top: 0.7rem;
+    padding: 0.75rem;
+    border-radius: 12px;
+    font-weight: 900;
+    color: #0c0f02;
+    background: #c8f032;
+    border: 2px solid #0c0f02;
+    box-shadow: 3px 3px 0 #0c0f02;
+  }
+  .social-claim:disabled {
+    opacity: 0.6;
+  }
+  .social-claimed {
+    margin-top: 0.6rem;
+    font-weight: 900;
+    color: #c8f032;
+  }
+  html:not(.dark) .social-claimed {
+    color: #4f7a00;
+  }
+  .social-code-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .social-code {
+    flex: 1;
+    min-width: 8rem;
+    font-family: 'Archivo Black', ui-monospace, monospace;
+    font-size: 1.7rem;
+    letter-spacing: 0.18em;
+  }
+  .social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 900;
+    background: rgba(127, 127, 127, 0.16);
+    border: 1.5px solid rgba(127, 127, 127, 0.35);
+  }
+  .social-btn.is-primary {
+    color: #0c0f02;
+    background: #c8f032;
+    border-color: #0c0f02;
+  }
+  .social-btn:disabled {
+    opacity: 0.45;
+  }
+  .social-add {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .social-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.8rem;
+    border-radius: 10px;
+    font-family: 'Archivo Black', ui-monospace, monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.12em;
+    color: inherit;
+    background: rgba(127, 127, 127, 0.12);
+    border: 1.5px solid rgba(127, 127, 127, 0.35);
+  }
+  .social-result {
+    margin-top: 0.5rem;
+    font-size: 0.86rem;
+    font-weight: 800;
+    color: #ff8a7a;
+  }
+  .social-result.is-ok {
+    color: #c8f032;
+  }
+  html:not(.dark) .social-result.is-ok {
+    color: #4f7a00;
+  }
+  .social-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .social-friend {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .social-friend.is-pending {
+    opacity: 0.6;
+  }
+  .social-avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    font-weight: 900;
+    color: #0c0f02;
+    background: linear-gradient(135deg, #c8f032, #2cc7a5);
+  }
+  .social-friend-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .social-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .social-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    opacity: 0.7;
+  }
+  .social-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem);
+    z-index: 60;
+    transform: translateX(-50%);
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    font-weight: 900;
+    color: #0c0f02;
+    background: #c8f032;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    animation: social-toast 0.3s ease;
+  }
+  @keyframes social-toast {
+    from { opacity: 0; transform: translate(-50%, 8px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  .social-visit-meta {
+    margin: -0.3rem 0 0;
+    font-size: 0.84rem;
+    font-weight: 800;
+    opacity: 0.75;
+  }
+  .social-cheer-btn {
+    flex-shrink: 0;
+  }
+  .social-visit-loading {
+    padding: 3rem 1rem;
+    text-align: center;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .social-toast {
+      animation: none;
+    }
+  }
+
+  /* Visiting: the base fills the screen (nothing else below it). */
+  .social-visit-board .base-board.is-iso {
+    height: min(70vh, 42rem);
+  }
 }

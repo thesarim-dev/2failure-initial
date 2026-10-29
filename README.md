@@ -118,6 +118,14 @@ The home screen is your command center. Everything you need for today's session 
 | **Settings** (gear icon) | Top right | Opens preferences and FAQ |
 | **Coins badge** | Top right | Shows your current coin balance |
 
+### Friends (Base → Friends)
+
+* **Friend codes:** everyone has a 6-character code. Share yours (Copy or Share) and add friends by theirs; they accept or decline your request.
+* **Visit bases:** open a friend's base to look around (read-only), and **Cheer** it once a day (they get 5 coins).
+* **Squad challenge:** you and your friends share a weekly goal of 30 sets each ("96 / 90 sets this week"). When the squad hits it, everyone who did at least 10 sets claims **+300 coins and +40 of each material**, once a week.
+* All of it runs through checked server functions (`supabase/migrations/20261101120000_social.sql`): only friends can see each other's bases and training, squad progress is counted from the server's own set log, and rewards are paid by the server.
+* The demo has two demo friends to try it with: **Maya** (code `MAYA42`) and **Omar** (who sends you a request).
+
 ### Building on the base
 
 * **The map comes first:** a taller map that opens slightly zoomed in (pinch out, or use Fit, to see everything).
@@ -700,5 +708,7 @@ In the Supabase dashboard, open **SQL Editor** and run each file's full contents
 
 3. `supabase/migrations/20261028120000_fix_streak_guard_rest_days.sql` (lets the streak count rest days when you come back from them)
 4. `supabase/migrations/20261029120000_progression_prices.sql` (the server's price table for the new levels and costs)
+5. `supabase/migrations/20261031120000_fix_streak_guard_date_ops.sql` (streak guard fix for `date` columns)
+6. `supabase/migrations/20261101120000_social.sql` (friends, base visits, cheers, the squad challenge)
 
 Both keep existing balances and bases, and are safe to run again. Until they're run, the app falls back to its old behaviour.

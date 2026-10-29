@@ -393,7 +393,226 @@ async function rpcInner(name: string, args: Record<string, any>) {
     saveDb(db);
     return { data: me.coins, error: null };
   }
+  // ---- Social (same rules as 20261101120000_social.sql) ----
+  const social = socialRpc(db, uid, name, args);
+  if (social) {
+    saveDb(db);
+    return social;
+  }
   return { data: null, error: { code: 'PGRST202', message: `Could not find the function ${name}` } };
+}
+
+/** Demo friends: two players with real-looking bases and training this week. */
+const BOTS = [
+  {
+    id: 'bot-maya',
+    name: 'Maya',
+    code: 'MAYA42',
+    streak: 12,
+    sets: 24,
+    base: {
+      version: 3,
+      resources: { stone: 60, timber: 40, crystal: 80 },
+      landLevel: 3,
+      placed: [
+        { uid: 'm1', itemId: 'hq', x: 8, y: 8, level: 5 },
+        { uid: 'm2', itemId: 'lodge', x: 11, y: 7, level: 4 },
+        { uid: 'm3', itemId: 'watchtower', x: 6, y: 6, level: 4 },
+        { uid: 'm4', itemId: 'watchtower', x: 12, y: 11, level: 3 },
+        { uid: 'm5', itemId: 'spring', x: 6, y: 10, level: 3 },
+        { uid: 'm6', itemId: 'forge', x: 11, y: 10, level: 2 },
+        { uid: 'm7', itemId: 'fountain', x: 9, y: 12, level: 1, style: 'tiered' },
+        { uid: 'm8', itemId: 'arch', x: 8, y: 11, level: 1 },
+        { uid: 'm9', itemId: 'flowers', x: 7, y: 11, level: 1 },
+        { uid: 'm10', itemId: 'flowers', x: 10, y: 11, level: 1, color: 'violet' },
+        { uid: 'm11', itemId: 'pine', x: 5, y: 8, level: 1 },
+        { uid: 'm12', itemId: 'pine', x: 13, y: 8, level: 1 },
+        { uid: 'm13', itemId: 'lanterns', x: 10, y: 6, level: 1 },
+        { uid: 'm14', itemId: 'pullupbar', x: 7, y: 6, level: 1 },
+        { uid: 'm15', itemId: 'campfire', x: 12, y: 13, level: 1 }
+      ],
+      constructions: [],
+      terrain: Object.fromEntries([...Array(7).keys()].map((i) => [`${7 + i},10`, 'path']).concat([[`8,13`, 'path'], [`9,13`, 'path'], [`4,12`, 'water'], [`5,12`, 'water'], [`4,13`, 'water']])),
+      stats: { totalSets: 220 },
+      trophies: {},
+      unseen: [],
+      nextUid: 50
+    }
+  },
+  {
+    id: 'bot-omar',
+    name: 'Omar',
+    code: 'OMAR77',
+    streak: 4,
+    sets: 12,
+    base: {
+      version: 3,
+      resources: { stone: 30, timber: 50, crystal: 40 },
+      landLevel: 2,
+      placed: [
+        { uid: 'o1', itemId: 'hq', x: 8, y: 8, level: 3 },
+        { uid: 'o2', itemId: 'lodge', x: 11, y: 8, level: 2 },
+        { uid: 'o3', itemId: 'barn', x: 6, y: 10, level: 1 },
+        { uid: 'o4', itemId: 'coop', x: 9, y: 11, level: 1 },
+        { uid: 'o5', itemId: 'windmill', x: 12, y: 11, level: 1 },
+        { uid: 'o6', itemId: 'pumpkins', x: 7, y: 7, level: 1 },
+        { uid: 'o7', itemId: 'well', x: 11, y: 11, level: 1 },
+        { uid: 'o8', itemId: 'beehive', x: 6, y: 8, level: 1 }
+      ],
+      constructions: [],
+      terrain: { '8,10': 'path', '9,10': 'path', '10,10': 'path', '10,11': 'path' },
+      stats: { totalSets: 90 },
+      trophies: {},
+      unseen: [],
+      nextUid: 20
+    }
+  }
+];
+
+function weekStartMs(now: number): number {
+  const d = new Date(now);
+  const day = (d.getUTCDay() + 6) % 7; // Monday first
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - day);
+}
+
+function socialRpc(db: Record<string, Row[]>, uid: string, name: string, args: Record<string, any>) {
+  const SOCIAL = new Set(['my_friend_code', 'send_friend_request', 'respond_friend_request', 'remove_friend', 'friends_overview', 'get_friend_base', 'cheer_friend', 'squad_status', 'claim_squad_reward']);
+  if (!SOCIAL.has(name)) return null;
+  const now = Date.now();
+  const profiles = (db.profiles = db.profiles ?? []);
+  const me = profiles.find((r) => r.id === uid)!;
+  const friendships = (db.friendships = db.friendships ?? []);
+  const cheers = (db.cheers = db.cheers ?? []);
+  const claims = (db.squad_claims = db.squad_claims ?? []);
+  const logs = (db.workout_set_logs = db.workout_set_logs ?? []);
+  // Seed the demo friends once per player (Omar sends you a request).
+  if (!me.friend_code) {
+    me.friend_code = uid.replace(/[^a-z0-9]/gi, '').slice(-6).toUpperCase().padStart(6, 'X');
+    for (const bot of BOTS) {
+      if (!profiles.some((r) => r.id === bot.id)) {
+        profiles.push({ id: bot.id, display_name: bot.name, coins: 0, current_streak: bot.streak, friend_code: bot.code });
+        (db.user_stats = db.user_stats ?? []).push({ user_id: bot.id, current_streak: bot.streak, longest_streak: bot.streak, total_workouts: 40 });
+        (db.base_games = db.base_games ?? []).push({ user_id: bot.id, state: bot.base, version: 3 });
+      }
+      const start = weekStartMs(now);
+      if (!logs.some((r) => r.user_id === bot.id && Date.parse(r.completed_at) >= start)) {
+        for (let k = 0; k < bot.sets; k++) {
+          logs.push({ id: `${bot.id}-${k}`, user_id: bot.id, category_id: 'pushups', reps: 12, completed_at: new Date(start + 3600000 + k * 60000).toISOString() });
+        }
+      }
+    }
+    const pair = (a: string, b: string) => (a < b ? [a, b] : [b, a]);
+    const [a, b] = pair(uid, 'bot-omar');
+    if (!friendships.some((f) => f.user_a === a && f.user_b === b)) friendships.push({ user_a: a, user_b: b, requested_by: 'bot-omar', status: 'pending' });
+  }
+  const pairOf = (other: string) => (uid < other ? { a: uid, b: other } : { a: other, b: uid });
+  const rowWith = (other: string) => {
+    const { a, b } = pairOf(other);
+    return friendships.find((f) => f.user_a === a && f.user_b === b);
+  };
+  const friendIds = () => friendships.filter((f) => f.status === 'accepted' && (f.user_a === uid || f.user_b === uid)).map((f) => (f.user_a === uid ? f.user_b : f.user_a));
+  const setsThisWeek = (id: string) => logs.filter((r) => r.user_id === id && Date.parse(r.completed_at) >= weekStartMs(now)).length;
+  const today = new Date(now).toISOString().slice(0, 10);
+  const ok = (data: unknown) => ({ data, error: null });
+  const fail = (message: string) => ({ data: null, error: { code: 'P0001', message } });
+  const squad = () => {
+    const members = [uid, ...friendIds()];
+    const week = new Date(weekStartMs(now)).toISOString().slice(0, 10);
+    return {
+      goal: members.length >= 2 ? 30 * members.length : 0,
+      total: members.reduce((n, id) => n + setsThisWeek(id), 0),
+      my_sets: setsThisWeek(uid),
+      members: members.length,
+      claimed: claims.some((c) => c.user_id === uid && c.week_start === week),
+      week
+    };
+  };
+
+  switch (name) {
+    case 'my_friend_code':
+      return ok(me.friend_code);
+    case 'send_friend_request': {
+      const code = String(args.p_code ?? '').trim().toUpperCase();
+      const other = profiles.find((r) => r.friend_code === code);
+      if (!other) return ok('not_found');
+      if (other.id === uid) return ok('self');
+      const row = rowWith(other.id);
+      if (row) {
+        if (row.status === 'accepted') return ok('already');
+        if (row.requested_by === uid) return ok('pending');
+        row.status = 'accepted';
+        return ok('accepted');
+      }
+      const { a, b } = pairOf(other.id);
+      // The demo friends accept right away.
+      friendships.push({ user_a: a, user_b: b, requested_by: uid, status: other.id.startsWith('bot-') ? 'accepted' : 'pending' });
+      return ok(other.id.startsWith('bot-') ? 'accepted' : 'sent');
+    }
+    case 'respond_friend_request': {
+      const row = rowWith(args.p_friend);
+      if (row && row.status === 'pending' && row.requested_by === args.p_friend) {
+        if (args.p_accept) row.status = 'accepted';
+        else friendships.splice(friendships.indexOf(row), 1);
+      }
+      return ok(null);
+    }
+    case 'remove_friend': {
+      const row = rowWith(args.p_friend);
+      if (row) friendships.splice(friendships.indexOf(row), 1);
+      return ok(null);
+    }
+    case 'friends_overview':
+      return ok(
+        friendships
+          .filter((f) => f.user_a === uid || f.user_b === uid)
+          .map((f) => {
+            const id = f.user_a === uid ? f.user_b : f.user_a;
+            const p = profiles.find((r) => r.id === id);
+            const accepted = f.status === 'accepted';
+            const base = (db.base_games ?? []).find((r) => r.user_id === id)?.state;
+            const hq = (base?.placed ?? []).find((it: Row) => it.itemId === 'hq')?.level ?? 1;
+            const stats = (db.user_stats ?? []).find((r) => r.user_id === id);
+            return {
+              friend_id: id,
+              display_name: p?.display_name || 'Athlete',
+              status: f.status,
+              incoming: f.status === 'pending' && f.requested_by !== uid,
+              current_streak: accepted ? stats?.current_streak ?? 0 : 0,
+              hq_level: accepted ? hq : 0,
+              sets_this_week: accepted ? setsThisWeek(id) : 0,
+              cheered_today: cheers.some((c) => c.from_user === uid && c.to_user === id && c.day === today)
+            };
+          })
+      );
+    case 'get_friend_base': {
+      if (!friendIds().includes(args.p_friend)) return fail('not_friends');
+      return ok((db.base_games ?? []).find((r) => r.user_id === args.p_friend)?.state ?? {});
+    }
+    case 'cheer_friend': {
+      if (!friendIds().includes(args.p_friend)) return ok('not_friends');
+      if (cheers.some((c) => c.from_user === uid && c.to_user === args.p_friend && c.day === today)) return ok('already');
+      cheers.push({ from_user: uid, to_user: args.p_friend, day: today });
+      const p = profiles.find((r) => r.id === args.p_friend);
+      if (p) p.coins = (p.coins ?? 0) + 5;
+      return ok('cheered');
+    }
+    case 'squad_status': {
+      const s = squad();
+      return ok([{ goal: s.goal, total: s.total, my_sets: s.my_sets, members: s.members, claimed: s.claimed }]);
+    }
+    case 'claim_squad_reward': {
+      const s = squad();
+      if (s.members < 2) return fail('no_squad');
+      if (s.total < s.goal) return fail('not_done');
+      if (s.my_sets < 10) return fail('too_few_sets');
+      if (s.claimed) return fail('claimed');
+      claims.push({ user_id: uid, week_start: s.week, coins: 300 });
+      me.coins = (me.coins ?? 0) + 300;
+      budgetRow(db, uid, (db.base_games ?? []).find((r) => r.user_id === uid)).material_budget += 120;
+      return ok([{ coins: 300, balance: me.coins }]);
+    }
+  }
+  return null;
 }
 
 export function createClient() {
