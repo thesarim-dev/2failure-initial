@@ -6,7 +6,14 @@ import {
   addFriend,
   cheerFriend,
   claimSquadReward,
+  createSquad,
   friendsOverview,
+  inviteToSquad,
+  leaveSquad,
+  respondSquadInvite,
+  squadInvites,
+  squadMembers,
+  SQUAD_MAX,
   myFriendCode,
   respondToRequest,
   squadStatus,
@@ -15,6 +22,8 @@ import {
   SQUAD_SETS_EACH,
   type AddResult,
   type Friend,
+  type SquadInvite,
+  type SquadMember,
   type SquadStatus
 } from '../lib/social';
 
@@ -41,11 +50,16 @@ export function FriendsScreen({
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
+  const [members, setMembers] = useState<SquadMember[]>([]);
+  const [invites, setInvites] = useState<SquadInvite[]>([]);
+  const [picked, setPicked] = useState<string[]>([]);
 
   const refresh = useCallback(async () => {
-    const [list, sq] = await Promise.all([friendsOverview(), squadStatus()]);
+    const [list, sq, mem, inv] = await Promise.all([friendsOverview(), squadStatus(), squadMembers(), squadInvites()]);
     setFriends(list);
     setSquad(sq);
+    setMembers(mem);
+    setInvites(inv);
   }, []);
   useEffect(() => {
     void myFriendCode().then(setCode);
@@ -80,53 +94,162 @@ export function FriendsScreen({
         <h1 className="social-title">{s.title}</h1>
       </header>
 
-      {/* The weekly squad challenge */}
+      {/* This week's squad: the friends you picked to co-op with */}
       <section className="cyber-panel social-card social-squad">
         <h2 className="social-h2">
           <Users size={18} strokeWidth={2.6} aria-hidden="true" />
           {s.squadTitle}
         </h2>
-        {!squad || squad.members < 2 ? (
-          <p className="social-muted">{s.squadNeedFriends}</p>
-        ) : (
-          <>
-            <p className="social-squad-goal">{s.squadGoal(squad.total, squad.goal)}</p>
-            <div className="social-bar" role="progressbar" aria-valuemin={0} aria-valuemax={squad.goal} aria-valuenow={squad.total}>
-              <i style={{ width: `${Math.min(100, (squad.total / Math.max(1, squad.goal)) * 100)}%` }} />
+
+        {invites.map((inv) => (
+          <div key={inv.squadId} className="social-invite">
+            <p className="social-invite-title">{s.squadInvited(inv.from)}</p>
+            <p className="social-muted">{s.squadWith(inv.members.join(', '))}</p>
+            <div className="social-invite-actions">
+              <button
+                type="button"
+                className="social-btn is-primary"
+                onClick={async () => {
+                  fx.success();
+                  await respondSquadInvite(inv.squadId, true);
+                  await refresh();
+                }}>
+                <Check size={16} strokeWidth={2.8} />
+                {s.join}
+              </button>
+              <button
+                type="button"
+                className="social-btn"
+                aria-label={s.decline}
+                onClick={async () => {
+                  await respondSquadInvite(inv.squadId, false);
+                  await refresh();
+                }}>
+                <X size={16} strokeWidth={2.8} />
+              </button>
             </div>
-            <ul className="social-members">
-              <li className="is-you">{s.squadYou(squad.mySets)}</li>
-              {accepted.map((f) => (
-                <li key={f.id}>
-                  {f.name}: {f.setsThisWeek}
-                </li>
-              ))}
-            </ul>
-            <p className="social-muted">{s.squadHint(SQUAD_SETS_EACH)}</p>
-            <p className="social-reward">{s.reward(SQUAD_REWARD.coins, SQUAD_REWARD.materials)}</p>
-            {squad.claimed ? (
-              <p className="social-claimed">{s.claimed}</p>
-            ) : squad.total >= squad.goal && squad.mySets >= SQUAD_MIN_TO_CLAIM ? (
+          </div>
+        ))}
+
+        {!squad?.squadId ? (
+          accepted.length === 0 ? (
+            <p className="social-muted">{s.squadNeedFriends}</p>
+          ) : (
+            <>
+              <p className="social-muted">{s.squadPick}</p>
+              <div className="social-pick">
+                {accepted.map((f) => {
+                  const on = picked.includes(f.id);
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      className={`social-pick-chip ${on ? 'is-on' : ''}`}
+                      aria-pressed={on}
+                      disabled={!on && picked.length >= SQUAD_MAX - 1}
+                      onClick={() => {
+                        fx.tap();
+                        setPicked((p) => (on ? p.filter((x) => x !== f.id) : [...p, f.id]));
+                      }}>
+                      {on && <Check size={14} strokeWidth={3} aria-hidden="true" />}
+                      {f.name}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="social-reward">{s.reward(SQUAD_REWARD.coins, SQUAD_REWARD.materials)}</p>
               <button
                 type="button"
                 className="social-claim"
-                disabled={claiming}
+                disabled={picked.length === 0}
                 onClick={async () => {
-                  setClaiming(true);
-                  const r = await claimSquadReward();
-                  setClaiming(false);
-                  if (r.ok) {
-                    fx.levelUp();
-                    flash(s.rewardToast);
-                    onSquadClaimed(r.balance);
+                  if (await createSquad(picked)) {
+                    fx.success();
+                    setPicked([]);
                   } else fx.error();
                   await refresh();
                 }}>
-                {s.claim}
+                {s.squadStart}
               </button>
-            ) : squad.mySets < SQUAD_MIN_TO_CLAIM ? (
-              <p className="social-muted">{s.squadMore(SQUAD_MIN_TO_CLAIM - squad.mySets)}</p>
-            ) : null}
+            </>
+          )
+        ) : (
+          <>
+            <ul className="social-members">
+              {members.map((m) => (
+                <li key={m.id} className={m.isMe ? 'is-you' : m.status === 'invited' ? 'is-invited' : ''}>
+                  {m.isMe ? s.squadYou(m.sets) : `${m.name}: ${m.sets}`}
+                  {m.status === 'invited' && ` · ${s.invitedTag}`}
+                </li>
+              ))}
+            </ul>
+            {squad.members >= 2 ? (
+              <>
+                <p className="social-squad-goal">{s.squadGoal(squad.total, squad.goal)}</p>
+                <div className="social-bar" role="progressbar" aria-valuemin={0} aria-valuemax={squad.goal} aria-valuenow={squad.total}>
+                  <i style={{ width: `${Math.min(100, (squad.total / Math.max(1, squad.goal)) * 100)}%` }} />
+                </div>
+                <p className="social-muted">{s.squadHint(SQUAD_SETS_EACH)}</p>
+                <p className="social-reward">{s.reward(SQUAD_REWARD.coins, SQUAD_REWARD.materials)}</p>
+                {squad.claimed ? (
+                  <p className="social-claimed">{s.claimed}</p>
+                ) : squad.total >= squad.goal && squad.mySets >= SQUAD_MIN_TO_CLAIM ? (
+                  <button
+                    type="button"
+                    className="social-claim"
+                    disabled={claiming}
+                    onClick={async () => {
+                      setClaiming(true);
+                      const r = await claimSquadReward();
+                      setClaiming(false);
+                      if (r.ok) {
+                        fx.levelUp();
+                        flash(s.rewardToast);
+                        onSquadClaimed(r.balance);
+                      } else fx.error();
+                      await refresh();
+                    }}>
+                    {s.claim}
+                  </button>
+                ) : squad.mySets < SQUAD_MIN_TO_CLAIM ? (
+                  <p className="social-muted">{s.squadMore(SQUAD_MIN_TO_CLAIM - squad.mySets)}</p>
+                ) : null}
+              </>
+            ) : (
+              <p className="social-muted">{s.squadWaiting}</p>
+            )}
+            {members.length < SQUAD_MAX && accepted.some((f) => !members.some((m) => m.id === f.id)) && (
+              <div className="social-pick">
+                <span className="social-pick-label">{s.inviteMore}:</span>
+                {accepted
+                  .filter((f) => !members.some((m) => m.id === f.id))
+                  .map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      className="social-pick-chip"
+                      onClick={async () => {
+                        fx.tap();
+                        await inviteToSquad(f.id);
+                        await refresh();
+                      }}>
+                      <UserPlus size={14} strokeWidth={2.6} aria-hidden="true" />
+                      {f.name}
+                    </button>
+                  ))}
+              </div>
+            )}
+            {!squad.claimed && (
+              <button
+                type="button"
+                className="social-link"
+                onClick={async () => {
+                  await leaveSquad();
+                  await refresh();
+                }}>
+                {s.leave}
+              </button>
+            )}
           </>
         )}
       </section>

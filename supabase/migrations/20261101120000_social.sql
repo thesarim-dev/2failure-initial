@@ -1,4 +1,4 @@
--- 2failure: friends, base visits, cheers and a weekly squad challenge.
+-- 2failure: friends, base visits, cheers, and weekly squads you pick.
 --
 -- Everything goes through security-definer functions, so players only ever
 -- see what they should: their own friendships, and the bases and weekly
@@ -300,35 +300,185 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------
--- The squad challenge: you and your friends, 30 sets each, this week.
+-- Squads: each week you pick which friends to co-op with (up to 4 people).
+-- You start a squad by inviting 1–3 friends; they join or decline. Only joined
+-- members count: the goal is 30 sets each. One squad per person per week.
 -- ---------------------------------------------------------------------------
-create or replace function public.squad_status()
-returns table (goal integer, total integer, my_sets integer, members integer, claimed boolean)
+create table if not exists public.squads (
+  id uuid primary key default gen_random_uuid(),
+  week_start date not null,
+  created_by uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default timezone('utc', now())
+);
+create table if not exists public.squad_members (
+  squad_id uuid not null references public.squads (id) on delete cascade,
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  week_start date not null,
+  status text not null check (status in ('invited', 'joined')),
+  invited_by uuid,
+  created_at timestamptz not null default timezone('utc', now()),
+  primary key (squad_id, user_id)
+);
+-- One joined squad per person per week.
+create unique index if not exists squad_members_one_per_week on public.squad_members (user_id, week_start) where status = 'joined';
+alter table public.squads enable row level security;
+alter table public.squad_members enable row level security;
+drop policy if exists "Squads: read own" on public.squads;
+create policy "Squads: read own" on public.squads for select to authenticated using (
+  exists (select 1 from public.squad_members m where m.squad_id = id and m.user_id = auth.uid())
+);
+drop policy if exists "Squad members: read own squads" on public.squad_members;
+create policy "Squad members: read own squads" on public.squad_members for select to authenticated using (user_id = auth.uid());
+
+create or replace function public.my_squad_id()
+returns uuid
 language sql
 stable
 security definer
 set search_path = public
 as $$
-  with squad as (
-    select auth.uid() as id
-    union
-    select case when f.user_a = auth.uid() then f.user_b else f.user_a end
-      from public.friendships f
-     where auth.uid() in (f.user_a, f.user_b) and f.status = 'accepted'
-  )
-  select
-    (case when count(*) >= 2 then 30 * count(*) else 0 end)::integer,
-    coalesce(sum(public.sets_this_week(id)), 0)::integer,
-    public.sets_this_week(auth.uid()),
-    count(*)::integer,
-    exists (
-      select 1 from public.squad_claims
-       where user_id = auth.uid() and week_start = (public.squad_week_start())::date
-    )
-  from squad;
+  select squad_id from public.squad_members
+   where user_id = auth.uid() and week_start = (public.squad_week_start())::date and status = 'joined'
+   limit 1;
 $$;
 
--- Everyone who did 10+ sets claims once the squad hits its goal: 300 coins,
+-- Start this week's squad with 1–3 friends (they get invites).
+create or replace function public.create_squad(p_friends uuid[])
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_week date := (public.squad_week_start())::date;
+  v_squad uuid;
+  v_friend uuid;
+begin
+  if v_uid is null then raise exception 'not signed in' using errcode = '28000'; end if;
+  if public.my_squad_id() is not null then raise exception 'already_in_squad' using errcode = 'P0001'; end if;
+  if coalesce(array_length(p_friends, 1), 0) < 1 or array_length(p_friends, 1) > 3 then
+    raise exception 'pick_1_to_3' using errcode = 'P0001';
+  end if;
+  foreach v_friend in array p_friends loop
+    if not public.are_friends(v_uid, v_friend) then raise exception 'not_friends' using errcode = 'P0001'; end if;
+  end loop;
+  insert into public.squads (week_start, created_by) values (v_week, v_uid) returning id into v_squad;
+  insert into public.squad_members (squad_id, user_id, week_start, status) values (v_squad, v_uid, v_week, 'joined');
+  insert into public.squad_members (squad_id, user_id, week_start, status, invited_by)
+  select v_squad, f, v_week, 'invited', v_uid from unnest(p_friends) f
+  on conflict do nothing;
+  return v_squad;
+end;
+$$;
+
+-- Invite one more friend to your squad (up to 4 people).
+create or replace function public.invite_to_squad(p_friend uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_squad uuid := public.my_squad_id();
+begin
+  if v_squad is null then return 'no_squad'; end if;
+  if not public.are_friends(v_uid, p_friend) then return 'not_friends'; end if;
+  if (select count(*) from public.squad_members where squad_id = v_squad) >= 4 then return 'full'; end if;
+  insert into public.squad_members (squad_id, user_id, week_start, status, invited_by)
+  values (v_squad, p_friend, (public.squad_week_start())::date, 'invited', v_uid)
+  on conflict do nothing;
+  return 'invited';
+end;
+$$;
+
+-- Squad invites waiting for you this week.
+create or replace function public.my_squad_invites()
+returns table (squad_id uuid, from_name text, members text[])
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select m.squad_id,
+         coalesce(nullif(p.display_name, ''), 'Athlete'),
+         array(
+           select coalesce(nullif(pp.display_name, ''), 'Athlete')
+             from public.squad_members mm join public.profiles pp on pp.id = mm.user_id
+            where mm.squad_id = m.squad_id and mm.status = 'joined'
+         )
+    from public.squad_members m
+    join public.profiles p on p.id = m.invited_by
+   where m.user_id = auth.uid() and m.status = 'invited' and m.week_start = (public.squad_week_start())::date;
+$$;
+
+create or replace function public.respond_squad_invite(p_squad uuid, p_accept boolean)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+begin
+  if not exists (select 1 from public.squad_members where squad_id = p_squad and user_id = v_uid and status = 'invited') then
+    return 'no_invite';
+  end if;
+  if not p_accept then
+    delete from public.squad_members where squad_id = p_squad and user_id = v_uid;
+    return 'declined';
+  end if;
+  if public.my_squad_id() is not null then return 'already_in_squad'; end if;
+  update public.squad_members set status = 'joined' where squad_id = p_squad and user_id = v_uid;
+  return 'joined';
+end;
+$$;
+
+-- Leave this week's squad (you can start or join another).
+create or replace function public.leave_squad()
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from public.squad_members where squad_id = public.my_squad_id() and user_id = auth.uid();
+$$;
+
+-- Your squad this week: goal (30 sets per joined member), progress, members.
+drop function if exists public.squad_status();
+create or replace function public.squad_status()
+returns table (squad_id uuid, goal integer, total integer, my_sets integer, members integer, claimed boolean)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with mine as (select public.my_squad_id() as id),
+       joined as (select m.user_id from public.squad_members m, mine where m.squad_id = mine.id and m.status = 'joined')
+  select
+    (select id from mine),
+    (case when (select count(*) from joined) >= 2 then 30 * (select count(*) from joined) else 0 end)::integer,
+    coalesce((select sum(public.sets_this_week(user_id)) from joined), 0)::integer,
+    public.sets_this_week(auth.uid()),
+    (select count(*) from joined)::integer,
+    exists (select 1 from public.squad_claims where user_id = auth.uid() and week_start = (public.squad_week_start())::date);
+$$;
+
+create or replace function public.squad_members_status()
+returns table (user_id uuid, display_name text, status text, sets_this_week integer, is_me boolean)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select m.user_id, coalesce(nullif(p.display_name, ''), 'Athlete'), m.status, public.sets_this_week(m.user_id), m.user_id = auth.uid()
+    from public.squad_members m join public.profiles p on p.id = m.user_id
+   where m.squad_id = public.my_squad_id()
+   order by (m.user_id = auth.uid()) desc, (m.status = 'joined') desc, p.display_name;
+$$;
+
+-- Joined members with 10+ sets claim once the squad hits its goal: 300 coins,
 -- and room in the material budget for the 40 of each material the app adds.
 create or replace function public.claim_squad_reward()
 returns table (coins integer, balance integer)
@@ -346,7 +496,7 @@ begin
   end if;
   perform 1 from public.profiles where id = v_uid for update;
   select * into v_status from public.squad_status();
-  if v_status.members < 2 then raise exception 'no_squad' using errcode = 'P0001'; end if;
+  if v_status.squad_id is null or v_status.members < 2 then raise exception 'no_squad' using errcode = 'P0001'; end if;
   if v_status.total < v_status.goal then raise exception 'not_done' using errcode = 'P0001'; end if;
   if v_status.my_sets < 10 then raise exception 'too_few_sets' using errcode = 'P0001'; end if;
   if v_status.claimed then raise exception 'claimed' using errcode = 'P0001'; end if;
@@ -372,6 +522,13 @@ revoke all on function public.friends_overview() from public;
 revoke all on function public.get_friend_base(uuid) from public;
 revoke all on function public.cheer_friend(uuid) from public;
 revoke all on function public.squad_status() from public;
+revoke all on function public.my_squad_id() from public;
+revoke all on function public.create_squad(uuid[]) from public;
+revoke all on function public.invite_to_squad(uuid) from public;
+revoke all on function public.my_squad_invites() from public;
+revoke all on function public.respond_squad_invite(uuid, boolean) from public;
+revoke all on function public.leave_squad() from public;
+revoke all on function public.squad_members_status() from public;
 revoke all on function public.claim_squad_reward() from public;
 grant execute on function public.my_friend_code() to authenticated;
 grant execute on function public.send_friend_request(text) to authenticated;
@@ -381,5 +538,11 @@ grant execute on function public.friends_overview() to authenticated;
 grant execute on function public.get_friend_base(uuid) to authenticated;
 grant execute on function public.cheer_friend(uuid) to authenticated;
 grant execute on function public.squad_status() to authenticated;
+grant execute on function public.create_squad(uuid[]) to authenticated;
+grant execute on function public.invite_to_squad(uuid) to authenticated;
+grant execute on function public.my_squad_invites() to authenticated;
+grant execute on function public.respond_squad_invite(uuid, boolean) to authenticated;
+grant execute on function public.leave_squad() to authenticated;
+grant execute on function public.squad_members_status() to authenticated;
 grant execute on function public.claim_squad_reward() to authenticated;
-revoke insert, update, delete on public.friendships, public.cheers, public.squad_claims from authenticated, anon;
+revoke insert, update, delete on public.friendships, public.cheers, public.squad_claims, public.squads, public.squad_members from authenticated, anon;

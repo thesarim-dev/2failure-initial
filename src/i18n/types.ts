@@ -330,6 +330,15 @@ export interface AppTranslations {
     squadGoal: (total: number, goal: number) => string;
     squadHint: (each: number) => string;
     squadNeedFriends: string;
+    squadPick: string;
+    squadStart: string;
+    squadInvited: (name: string) => string;
+    squadWith: (names: string) => string;
+    join: string;
+    squadWaiting: string;
+    invitedTag: string;
+    inviteMore: string;
+    leave: string;
     squadYou: (n: number) => string;
     squadMore: (n: number) => string;
     claim: string;

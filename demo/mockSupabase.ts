@@ -466,6 +466,61 @@ const BOTS = [
       unseen: [],
       nextUid: 20
     }
+  },
+  {
+    id: 'bot-noa',
+    name: 'Noa',
+    code: 'NOA555',
+    streak: 21,
+    sets: 30,
+    base: {
+      version: 3,
+      resources: { stone: 90, timber: 70, crystal: 120 },
+      landLevel: 3,
+      placed: [
+        { uid: 'n1', itemId: 'hq', x: 8, y: 8, level: 6 },
+        { uid: 'n2', itemId: 'lodge', x: 11, y: 7, level: 5 },
+        { uid: 'n3', itemId: 'yard', x: 5, y: 7, level: 4 },
+        { uid: 'n4', itemId: 'pullupbar', x: 11, y: 10, level: 1 },
+        { uid: 'n5', itemId: 'dipbars', x: 12, y: 10, level: 1 },
+        { uid: 'n6', itemId: 'punchbag', x: 11, y: 11, level: 1 },
+        { uid: 'n7', itemId: 'plyobox', x: 12, y: 11, level: 1 },
+        { uid: 'n8', itemId: 'statue', x: 9, y: 11, level: 1, style: 'runner' },
+        { uid: 'n9', itemId: 'banner', x: 7, y: 11, level: 1, style: 'chevron' },
+        { uid: 'n10', itemId: 'campfire', x: 8, y: 13, level: 1 }
+      ],
+      constructions: [],
+      terrain: { '8,10': 'path', '9,10': 'path', '10,10': 'path', '8,11': 'path', '8,12': 'path' },
+      stats: { totalSets: 400 },
+      trophies: {},
+      unseen: [],
+      nextUid: 20
+    }
+  },
+  {
+    id: 'bot-eli',
+    name: 'Eli',
+    code: 'ELI808',
+    streak: 2,
+    sets: 6,
+    base: {
+      version: 3,
+      resources: { stone: 20, timber: 20, crystal: 15 },
+      landLevel: 1,
+      placed: [
+        { uid: 'e1', itemId: 'hq', x: 8, y: 8, level: 2 },
+        { uid: 'e2', itemId: 'lodge', x: 10, y: 9, level: 1 },
+        { uid: 'e3', itemId: 'tent', x: 7, y: 10, level: 1 },
+        { uid: 'e4', itemId: 'pine', x: 10, y: 7, level: 1 },
+        { uid: 'e5', itemId: 'torch', x: 9, y: 10, level: 1 }
+      ],
+      constructions: [],
+      terrain: {},
+      stats: { totalSets: 30 },
+      trophies: {},
+      unseen: [],
+      nextUid: 10
+    }
   }
 ];
 
@@ -476,7 +531,7 @@ function weekStartMs(now: number): number {
 }
 
 function socialRpc(db: Record<string, Row[]>, uid: string, name: string, args: Record<string, any>) {
-  const SOCIAL = new Set(['my_friend_code', 'send_friend_request', 'respond_friend_request', 'remove_friend', 'friends_overview', 'get_friend_base', 'cheer_friend', 'squad_status', 'claim_squad_reward']);
+  const SOCIAL = new Set(['my_friend_code', 'send_friend_request', 'respond_friend_request', 'remove_friend', 'friends_overview', 'get_friend_base', 'cheer_friend', 'squad_status', 'claim_squad_reward', 'create_squad', 'invite_to_squad', 'my_squad_invites', 'respond_squad_invite', 'leave_squad', 'squad_members_status']);
   if (!SOCIAL.has(name)) return null;
   const now = Date.now();
   const profiles = (db.profiles = db.profiles ?? []);
@@ -515,17 +570,29 @@ function socialRpc(db: Record<string, Row[]>, uid: string, name: string, args: R
   const today = new Date(now).toISOString().slice(0, 10);
   const ok = (data: unknown) => ({ data, error: null });
   const fail = (message: string) => ({ data: null, error: { code: 'P0001', message } });
+  // Squads you pick (one per person per week; up to 4 people).
+  const week = new Date(weekStartMs(now)).toISOString().slice(0, 10);
+  const squadMembersTable = (db.squad_members = db.squad_members ?? []);
+  const mySquadId = () => squadMembersTable.find((m) => m.user_id === uid && m.week_start === week && m.status === 'joined')?.squad_id ?? null;
+  const nameOf = (id: string) => profiles.find((r) => r.id === id)?.display_name || 'Athlete';
   const squad = () => {
-    const members = [uid, ...friendIds()];
-    const week = new Date(weekStartMs(now)).toISOString().slice(0, 10);
+    const id = mySquadId();
+    const joined = id ? squadMembersTable.filter((m) => m.squad_id === id && m.status === 'joined').map((m) => m.user_id) : [];
     return {
-      goal: members.length >= 2 ? 30 * members.length : 0,
-      total: members.reduce((n, id) => n + setsThisWeek(id), 0),
+      squad_id: id,
+      goal: joined.length >= 2 ? 30 * joined.length : 0,
+      total: joined.reduce((n, m) => n + setsThisWeek(m), 0),
       my_sets: setsThisWeek(uid),
-      members: members.length,
+      members: joined.length,
       claimed: claims.some((c) => c.user_id === uid && c.week_start === week),
       week
     };
+  };
+  // In the demo, invited friends join right away (if they're free).
+  const invite = (squadId: string, friend: string) => {
+    if (squadMembersTable.some((m) => m.squad_id === squadId && m.user_id === friend)) return;
+    const busy = friend.startsWith('bot-') && squadMembersTable.some((m) => m.user_id === friend && m.week_start === week && m.status === 'joined');
+    squadMembersTable.push({ squad_id: squadId, user_id: friend, week_start: week, status: friend.startsWith('bot-') && !busy ? 'joined' : 'invited', invited_by: uid });
   };
 
   switch (name) {
@@ -598,15 +665,70 @@ function socialRpc(db: Record<string, Row[]>, uid: string, name: string, args: R
     }
     case 'squad_status': {
       const s = squad();
-      return ok([{ goal: s.goal, total: s.total, my_sets: s.my_sets, members: s.members, claimed: s.claimed }]);
+      return ok([{ squad_id: s.squad_id, goal: s.goal, total: s.total, my_sets: s.my_sets, members: s.members, claimed: s.claimed }]);
+    }
+    case 'squad_members_status': {
+      const id = mySquadId();
+      if (!id) return ok([]);
+      return ok(
+        squadMembersTable
+          .filter((m) => m.squad_id === id)
+          .map((m) => ({ user_id: m.user_id, display_name: nameOf(m.user_id), status: m.status, sets_this_week: setsThisWeek(m.user_id), is_me: m.user_id === uid }))
+          .sort((a, b) => Number(b.is_me) - Number(a.is_me) || Number(b.status === 'joined') - Number(a.status === 'joined') || a.display_name.localeCompare(b.display_name))
+      );
+    }
+    case 'my_squad_invites':
+      return ok(
+        squadMembersTable
+          .filter((m) => m.user_id === uid && m.status === 'invited' && m.week_start === week)
+          .map((m) => ({
+            squad_id: m.squad_id,
+            from_name: nameOf(m.invited_by),
+            members: squadMembersTable.filter((x) => x.squad_id === m.squad_id && x.status === 'joined').map((x) => nameOf(x.user_id))
+          }))
+      );
+    case 'create_squad': {
+      const friends: string[] = args.p_friends ?? [];
+      if (mySquadId()) return fail('already_in_squad');
+      if (friends.length < 1 || friends.length > 3) return fail('pick_1_to_3');
+      if (friends.some((f) => !friendIds().includes(f))) return fail('not_friends');
+      const id = `squad-${now}`;
+      squadMembersTable.push({ squad_id: id, user_id: uid, week_start: week, status: 'joined' });
+      for (const f of friends) invite(id, f);
+      return ok(id);
+    }
+    case 'invite_to_squad': {
+      const id = mySquadId();
+      if (!id) return ok('no_squad');
+      if (!friendIds().includes(args.p_friend)) return ok('not_friends');
+      if (squadMembersTable.filter((m) => m.squad_id === id).length >= 4) return ok('full');
+      invite(id, args.p_friend);
+      return ok('invited');
+    }
+    case 'respond_squad_invite': {
+      const row = squadMembersTable.find((m) => m.squad_id === args.p_squad && m.user_id === uid && m.status === 'invited');
+      if (!row) return ok('no_invite');
+      if (!args.p_accept) {
+        squadMembersTable.splice(squadMembersTable.indexOf(row), 1);
+        return ok('declined');
+      }
+      if (mySquadId()) return ok('already_in_squad');
+      row.status = 'joined';
+      return ok('joined');
+    }
+    case 'leave_squad': {
+      const id = mySquadId();
+      const row = squadMembersTable.find((m) => m.squad_id === id && m.user_id === uid);
+      if (row) squadMembersTable.splice(squadMembersTable.indexOf(row), 1);
+      return ok(null);
     }
     case 'claim_squad_reward': {
       const s = squad();
-      if (s.members < 2) return fail('no_squad');
+      if (!s.squad_id || s.members < 2) return fail('no_squad');
       if (s.total < s.goal) return fail('not_done');
       if (s.my_sets < 10) return fail('too_few_sets');
       if (s.claimed) return fail('claimed');
-      claims.push({ user_id: uid, week_start: s.week, coins: 300 });
+      claims.push({ user_id: uid, week_start: week, coins: 300 });
       me.coins = (me.coins ?? 0) + 300;
       budgetRow(db, uid, (db.base_games ?? []).find((r) => r.user_id === uid)).material_budget += 120;
       return ok([{ coins: 300, balance: me.coins }]);

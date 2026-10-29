@@ -122,9 +122,9 @@ The home screen is your command center. Everything you need for today's session 
 
 * **Friend codes:** everyone has a 6-character code. Share yours (Copy or Share) and add friends by theirs; they accept or decline your request.
 * **Visit bases:** open a friend's base to look around (read-only), and **Cheer** it once a day (they get 5 coins).
-* **Squad challenge:** you and your friends share a weekly goal of 30 sets each ("96 / 90 sets this week"). When the squad hits it, everyone who did at least 10 sets claims **+300 coins and +40 of each material**, once a week.
+* **Squads you pick:** have as many friends as you like; each week you pick **which ones (up to 3) to co-op with**. They get an invite to join or decline; you can invite more (up to 4 people) or leave. Only joined members count: the goal is 30 sets each. When the squad hits it, everyone who did at least 10 sets claims **+300 coins and +40 of each material**, once a week. One squad per person per week.
 * All of it runs through checked server functions (`supabase/migrations/20261101120000_social.sql`): only friends can see each other's bases and training, squad progress is counted from the server's own set log, and rewards are paid by the server.
-* The demo has two demo friends to try it with: **Maya** (code `MAYA42`) and **Omar** (who sends you a request).
+* The demo has demo friends to try it with: **Maya** (`MAYA42`), **Noa** (`NOA555`), **Eli** (`ELI808`) and **Omar** (who sends you a request). In the demo, invited friends join right away.
 
 ### Building on the base
 
