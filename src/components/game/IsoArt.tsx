@@ -2227,44 +2227,73 @@ export function IsoScaffold({
   oy,
   size,
   setsRemaining,
+  progress = 0,
   height
 }: {
   ox: number;
   oy: number;
   size: number;
   setsRemaining: number;
+  /** 0–1: how much of the build is done (fills the ring). */
+  progress?: number;
   /** Scaffold height; smaller things get a lower one. */
   height?: number;
 }) {
   const w = size * 100;
   const h = height ?? (size === 2 ? 90 : 60);
-  const b: Box = { x0: ox + 14, y0: oy + 14, x1: ox + w - 14, y1: oy + w - 14, z0: 0, z1: h };
-  const corners: Array<[number, number]> = [
-    [b.x0, b.y1],
-    [b.x1, b.y1],
-    [b.x1, b.y0]
-  ];
+  const b: Box = { x0: ox + 10, y0: oy + 10, x1: ox + w - 10, y1: oy + w - 10, z0: 0, z1: h };
+  // Light wooden scaffolding: poles at the corners, rails along the front, a brace.
+  const pole = (x: number, y: number, key: string, back = false) => {
+    const [x1, y1] = P(x, y, 0);
+    const [x2, y2] = P(x, y, h);
+    return (
+      <g key={key} opacity={back ? 0.55 : 1}>
+        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={WOOD.dark} strokeWidth={3.4} strokeLinecap="round" />
+        <line x1={x1 - 0.6} y1={y1} x2={x2 - 0.6} y2={y2} stroke={WOOD.light} strokeWidth={1.4} strokeLinecap="round" />
+      </g>
+    );
+  };
+  const rail = (z: number, key: string) => (
+    <polyline
+      key={key}
+      points={pts([P(b.x0, b.y1, z), P(b.x1, b.y1, z), P(b.x1, b.y0, z)])}
+      fill="none"
+      stroke={WOOD.base}
+      strokeWidth={2.4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  );
+  const brace = pts([P(b.x0, b.y1, 0), P(b.x1, b.y1, h * 0.55)]);
   const [bx, by] = P(b.x1, b.y0, h);
+  const r = 12;
+  const done = Math.max(0, Math.min(1, progress));
+  const circ = 2 * Math.PI * r;
   return (
-    <g className="base-scaffold">
-      {/* The tile being built on, outlined on the ground. */}
-      <polygon
-        points={pts([P(ox + 6, oy + 6), P(ox + w - 6, oy + 6), P(ox + w - 6, oy + w - 6), P(ox + 6, oy + w - 6)])}
-        className="base-scaffold-ground"
-      />
-      <polygon points={leftQuad(b, 0, 1, 0, 1)} fill="rgba(242,165,65,0.14)" />
-      <polygon points={rightQuad(b, 0, 1, 0, 1)} fill="rgba(242,165,65,0.08)" />
-      <polygon points={leftQuad(b, 0, 1, 0, 1)} fill="url(#base-scaffold-hatch)" className="base-scaffold-fill" />
-      <polygon points={rightQuad(b, 0, 1, 0, 1)} fill="url(#base-scaffold-hatch)" className="base-scaffold-fill" />
-      {corners.map(([x, y]) => (
-        <line key={`${x}${y}`} x1={P(x, y, 0)[0]} y1={P(x, y, 0)[1]} x2={P(x, y, h)[0]} y2={P(x, y, h)[1]} className="base-scaffold-frame" />
-      ))}
-      <polyline points={pts([P(b.x0, b.y1, h), P(b.x1, b.y1, h), P(b.x1, b.y0, h)])} className="base-scaffold-frame" fill="none" />
-      <polyline points={pts([P(b.x0, b.y1, h / 2), P(b.x1, b.y1, h / 2), P(b.x1, b.y0, h / 2)])} className="base-scaffold-frame" fill="none" />
-      <circle cx={bx} cy={by - 4} r={14} className="base-scaffold-badge" />
-      <text x={bx} y={by + 2} textAnchor="middle" className="base-scaffold-count">
-        {setsRemaining}
-      </text>
+    <g className="base-scaffold" pointerEvents="none">
+      {/* The footprint being built on, softly outlined. */}
+      <polygon points={pts([P(ox + 4, oy + 4), P(ox + w - 4, oy + 4), P(ox + w - 4, oy + w - 4), P(ox + 4, oy + w - 4)])} className="base-scaffold-ground" />
+      {pole(b.x0, b.y0, 'back', true)}
+      {pole(b.x0, b.y1, 'left')}
+      {pole(b.x1, b.y0, 'right')}
+      {rail(h * 0.5, 'mid')}
+      <polyline points={brace} fill="none" stroke={WOOD.dark} strokeWidth={1.8} strokeLinecap="round" opacity={0.85} />
+      {pole(b.x1, b.y1, 'front')}
+      {rail(h, 'top')}
+      {/* Progress: sets left, inside a ring that fills as you train. */}
+      <g transform={`translate(${bx} ${by - 6})`}>
+        <circle r={r + 3} className="base-scaffold-badge" />
+        <circle r={r} className="base-scaffold-track" />
+        <circle
+          r={r}
+          className="base-scaffold-ring"
+          strokeDasharray={`${circ * done} ${circ}`}
+          transform="rotate(-90)"
+        />
+        <text y={5.5} textAnchor="middle" className="base-scaffold-count">
+          {setsRemaining}
+        </text>
+      </g>
     </g>
   );
 }

@@ -348,7 +348,14 @@ export function BaseBoard({
             onKeyDown={inert ? undefined : (e) => onKeyActivate(e, () => onItem(item.uid))}>
             <polygon points={foot} fill="transparent" />
             <g className={`base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1`}>
-              {construction && item.level === 0 ? null : (
+              {construction && item.level === 0 ? (
+                // Being built: a see-through blueprint of the building it will be.
+                <g className="base-blueprint">
+                  <g transform={item.flip ? `translate(${2 * isoP(ox + (size * T) / 2, oy + (size * T) / 2)[0]} 0) scale(-1 1)` : undefined}>
+                    <IsoItemArt item={{ ...item, level: construction.targetLevel }} ox={ox} oy={oy} lit={false} plan={plan} />
+                  </g>
+                </g>
+              ) : (
                 <g className="base-pop">
                   {/* Rotated: mirrored around the footprint's centre, so it faces the other way. */}
                   <g transform={item.flip ? `translate(${2 * isoP(ox + (size * T) / 2, oy + (size * T) / 2)[0]} 0) scale(-1 1)` : undefined}>
@@ -365,7 +372,14 @@ export function BaseBoard({
               )}
             </g>
             {construction && (
-              <IsoScaffold ox={ox} oy={oy} size={size} setsRemaining={construction.setsRemaining} height={item.itemId === 'wall' || item.itemId === 'garden' ? 34 : item.itemId.startsWith(TROPHY_ITEM_PREFIX) ? 48 : undefined} />
+              <IsoScaffold
+                ox={ox}
+                oy={oy}
+                size={size}
+                setsRemaining={construction.setsRemaining}
+                progress={1 - construction.setsRemaining / Math.max(1, construction.setsTotal)}
+                height={item.itemId === 'wall' || item.itemId === 'garden' ? 34 : item.itemId.startsWith(TROPHY_ITEM_PREFIX) ? 48 : undefined}
+              />
             )}
             {def?.kind === 'structure' && !construction && (
               <g transform={`translate(${px - (size * T) / 2} ${py - size * T + 10})`}>
@@ -409,6 +423,13 @@ export function BaseBoard({
           {/* The figure stands on the centre of its tile. */}
           <g transform={`translate(${cx - box / 2} ${cy - box * 0.9})`}>
             <rect x={box * 0.12} y={box * 0.1} width={box * 0.76} height={box * 0.82} fill="transparent" />
+            {building && item.level === 0 && (
+              <g className="base-blueprint">
+                <g transform={item.flip ? `translate(${box} 0) scale(-1 1)` : undefined}>
+                  <ItemArt item={{ ...item, level: Math.max(1, construction?.targetLevel ?? 1) }} lit={false} verified={verified} plan={plan} />
+                </g>
+              </g>
+            )}
             {!(building && item.level === 0) && (
               <g className={`base-item-art transition-transform duration-200 ease-out group-hover:-translate-y-1`}>
                 <g className="base-pop">
@@ -424,7 +445,14 @@ export function BaseBoard({
           </g>
           {/* While it's being built: scaffolding on the exact footprint. */}
           {building && construction && (
-            <IsoScaffold ox={item.x * T} oy={item.y * T} size={size} setsRemaining={construction.setsRemaining} height={44} />
+            <IsoScaffold
+              ox={item.x * T}
+              oy={item.y * T}
+              size={size}
+              setsRemaining={construction.setsRemaining}
+              progress={1 - construction.setsRemaining / Math.max(1, construction.setsTotal)}
+              height={44}
+            />
           )}
         </g>
       )

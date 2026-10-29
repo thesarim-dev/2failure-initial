@@ -2739,27 +2739,52 @@
     stroke-dasharray: 8 6;
   }
   .base-scaffold-line {
-    stroke: rgba(242, 165, 65, 0.75);
+    stroke: rgba(196, 138, 76, 0.75);
   }
+  /* The footprint being built on: a soft dashed outline. */
   .base-scaffold-ground {
-    fill: rgba(242, 165, 65, 0.12);
-    stroke: #f2a541;
-    stroke-width: 2;
-    stroke-dasharray: 7 5;
-  }
-  .base-scaffold-frame {
-    fill: none;
-    stroke: #f2a541;
-    stroke-width: 3;
+    fill: rgba(200, 240, 50, 0.08);
+    stroke: rgba(200, 240, 50, 0.55);
+    stroke-width: 1.6;
+    stroke-dasharray: 6 5;
   }
   .base-scaffold-badge {
-    fill: #f2a541;
+    fill: #14180a;
+    stroke: rgba(0, 0, 0, 0.35);
+    stroke-width: 1;
+  }
+  .base-scaffold-track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.18);
+    stroke-width: 3;
+  }
+  .base-scaffold-ring {
+    fill: none;
+    stroke: #c8f032;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s ease;
   }
   .base-scaffold-count {
-    fill: #1a1206;
-    font-size: 18px;
-    font-weight: 800;
-    font-family: 'Space Grotesk', sans-serif;
+    fill: #f4f4f0;
+    font-size: 15px;
+    font-weight: 900;
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+  }
+  /* What's being built: a see-through blueprint of the finished building. */
+  .base-blueprint {
+    opacity: 0.62;
+    filter: saturate(0.45) brightness(1.2) hue-rotate(-12deg) drop-shadow(0 0 4px rgba(140, 215, 255, 0.85));
+    animation: base-blueprint 2.6s ease-in-out infinite alternate;
+  }
+  @keyframes base-blueprint {
+    from { opacity: 0.52; }
+    to { opacity: 0.72; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .base-blueprint {
+      animation: none;
+    }
   }
   .base-preview {
     flex-shrink: 0;
