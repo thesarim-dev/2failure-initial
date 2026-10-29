@@ -9222,4 +9222,16 @@
   .map-place-dock .map-build-btn {
     white-space: nowrap;
   }
+
+  /* Build menu: items that join up with neighbours */
+  .base-catalog-joins {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.74rem;
+    font-weight: 800;
+    color: #2cc7a5;
+  }
+  html:not(.dark) .base-catalog-joins {
+    color: #0f7a64;
+  }
 }

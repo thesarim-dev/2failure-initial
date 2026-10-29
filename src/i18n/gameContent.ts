@@ -43,6 +43,8 @@ export type GameCopy = {
   errors: Record<ActionError, string> & { unlockAt: (hq: number) => string; needsWeeksN: (n: number) => string };
   /** Seasonal decorations: days left in season, or when they come back. */
   season: { left: (season: 'autumn' | 'winter', days: number) => string; back: (season: 'autumn' | 'winter', days: number) => string };
+  /** Items that join up with neighbours of the same kind. */
+  joins: Record<'arch' | 'flowers' | 'garden' | 'lanterns' | 'bridge' | 'gym', string>;
   /** Not enough materials: what's missing and roughly how many sets earn it. */
   needMore: (amount: number, resource: string, sets: number, from: 'stone' | 'timber' | 'crystal') => string;
   trophyShelf: {
@@ -288,6 +290,14 @@ const en: GameCopy = {
   putAway: 'Put back on shelf',
   needMore: (amount, resource, sets, from) =>
     `You need ${amount} more ${resource.toLowerCase()}, about ${sets} ${{ stone: 'upper-body', timber: 'leg', crystal: 'core' }[from]} set${sets === 1 ? '' : 's'}.`,
+  joins: {
+    arch: 'Joins up: in a line they make a pergola, side by side an arcade.',
+    flowers: 'Joins up: side by side they grow into one big bed.',
+    garden: 'Joins up: in a row they make one long bed.',
+    lanterns: 'Joins up: in a row they make one long string of lights.',
+    bridge: 'Joins up: in a row they make one long bridge.',
+    gym: 'Joins up: next to other equipment, they share a gym floor.'
+  },
   season: {
     left: (season, days) => `${season === 'autumn' ? 'Autumn' : 'Winter'} only · ${days === 1 ? '1 day' : `${days} days`} left`,
     back: (season, days) => `Back in ${season === 'autumn' ? 'autumn' : 'winter'} (${days === 1 ? '1 day' : `${days} days`})`
@@ -616,6 +626,14 @@ const he: GameCopy = {
   putAway: 'החזר למדף',
   needMore: (amount, resource, sets, from) =>
     `חסרים ${amount} ${resource}, בערך ${sets === 1 ? 'סט אחד' : `${sets} סטים`} של ${{ stone: 'פלג גוף עליון', timber: 'רגליים', crystal: 'ליבה' }[from]}.`,
+  joins: {
+    arch: 'מתחבר: בשורה יוצרים פרגולה, זה לצד זה — קשתות.',
+    flowers: 'מתחבר: זה לצד זה הופכים לערוגה אחת גדולה.',
+    garden: 'מתחבר: בשורה יוצרים ערוגה אחת ארוכה.',
+    lanterns: 'מתחבר: בשורה יוצרים שרשרת אורות אחת ארוכה.',
+    bridge: 'מתחבר: בשורה יוצרים גשר אחד ארוך.',
+    gym: 'מתחבר: ליד ציוד אחר — רצפת חדר כושר משותפת.'
+  },
   season: {
     left: (season, days) => `רק ב${season === 'autumn' ? 'סתיו' : 'חורף'} · נשארו ${days === 1 ? 'יום אחד' : `${days} ימים`}`,
     back: (season, days) => `חוזר ב${season === 'autumn' ? 'סתיו' : 'חורף'} (בעוד ${days === 1 ? 'יום אחד' : `${days} ימים`})`
@@ -944,6 +962,14 @@ const ar: GameCopy = {
   putAway: 'أعده إلى الرف',
   needMore: (amount, resource, sets, from) =>
     `تحتاج إلى ${amount} وحدة إضافية من ${resource}، أي نحو ${sets === 1 ? 'مجموعة واحدة' : `${sets} مجموعات`} ${{ stone: 'للجزء العلوي', timber: 'للساقين', crystal: 'للجذع' }[from]}.`,
+  joins: {
+    arch: 'يتّصل: في صف تصنع عريشة، وجنباً إلى جنب رواقاً.',
+    flowers: 'يتّصل: جنباً إلى جنب تصبح حوضاً واحداً كبيراً.',
+    garden: 'يتّصل: في صف تصنع حوضاً واحداً طويلاً.',
+    lanterns: 'يتّصل: في صف تصنع سلسلة أضواء واحدة طويلة.',
+    bridge: 'يتّصل: في صف تصنع جسراً واحداً طويلاً.',
+    gym: 'يتّصل: بجانب معدات أخرى تتشارك أرضية نادٍ.'
+  },
   season: {
     left: (season, days) => `${season === 'autumn' ? 'في الخريف' : 'في الشتاء'} فقط · ${days === 1 ? 'بقي يوم واحد' : `بقي ${days} يوماً`}`,
     back: (season, days) => `يعود ${season === 'autumn' ? 'في الخريف' : 'في الشتاء'} (بعد ${days === 1 ? 'يوم واحد' : `${days} يوماً`})`

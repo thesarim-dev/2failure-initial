@@ -1124,12 +1124,17 @@ const BED_METAL: Shades = { light: '#6b717c', base: '#454a53', dark: '#2c3037' }
  * A raised garden bed: corrugated metal walls standing on the tile, soil set
  * just below the rim, and flowers planted in rows (drawn back to front).
  */
-function IsoGarden({ ox, oy, style, color }: { ox: number; oy: number; style?: string; color?: string }) {
-  const b: Box = { x0: ox + 8, y0: oy + 20, x1: ox + 92, y1: oy + 80, z0: 0, z1: 24 };
+function IsoGarden({ ox, oy, style, color, links }: { ox: number; oy: number; style?: string; color?: string; links?: Links }) {
+  // Joined beds reach the shared edge, so a row of them reads as one long bed.
+  const b: Box = { x0: ox + (links?.mx ? 0 : 8), y0: oy + (links?.my ? 0 : 20), x1: ox + (links?.px ? 100 : 92), y1: oy + (links?.py ? 100 : 80), z0: 0, z1: 24 };
   const ribs = Array.from({ length: 9 }, (_, i) => (i + 0.5) / 9);
   const sideRibs = Array.from({ length: 6 }, (_, i) => (i + 0.5) / 6);
   const soilZ = b.z1 - 4;
-  const soil = pts([P(b.x0 + 4, b.y0 + 4, soilZ), P(b.x1 - 4, b.y0 + 4, soilZ), P(b.x1 - 4, b.y1 - 4, soilZ), P(b.x0 + 4, b.y1 - 4, soilZ)]);
+  const sx0 = b.x0 + (links?.mx ? 0 : 4);
+  const sx1 = b.x1 - (links?.px ? 0 : 4);
+  const sy0 = b.y0 + (links?.my ? 0 : 4);
+  const sy1 = b.y1 - (links?.py ? 0 : 4);
+  const soil = pts([P(sx0, sy0, soilZ), P(sx1, sy0, soilZ), P(sx1, sy1, soilZ), P(sx0, sy1, soilZ)]);
   const accent = color ? themeFor('garden', color) : null;
   const palettes: Record<string, string[]> = {
     roses: ['#e5484d', '#ff7a7a', '#c22f3a'],
@@ -1139,14 +1144,17 @@ function IsoGarden({ ox, oy, style, color }: { ox: number; oy: number; style?: s
   };
   const petals = palettes[style ?? 'wildflowers'] ?? palettes.wildflowers;
   // Planting grid inside the bed, back row first so nearer flowers overlap.
+  // Planted right across the bed, out to any joined edge, so joined beds read as one.
   const plants: Array<[number, number, number]> = [];
   let k = 0;
-  for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 5; col++) {
-      const x = b.x0 + 14 + col * 15 + (row % 2) * 6;
-      const y = b.y0 + 12 + row * 17;
-      plants.push([x, y, k++]);
-    }
+  const xFrom = b.x0 + (links?.mx ? 5 : 14);
+  const xTo = b.x1 - (links?.px ? 5 : 14);
+  const yFrom = b.y0 + (links?.my ? 6 : 12);
+  const yTo = b.y1 - (links?.py ? 6 : 12);
+  const rows = Math.max(1, Math.round((yTo - yFrom) / 17) + 1);
+  for (let row = 0; row < rows; row++) {
+    const y = yFrom + (rows === 1 ? 0 : ((yTo - yFrom) * row) / (rows - 1));
+    for (let x = xFrom + (row % 2) * 6; x <= xTo; x += 15) plants.push([x, y, k++]);
   }
   plants.sort((p, q) => p[0] + p[1] - (q[0] + q[1]));
   return (
@@ -1235,34 +1243,64 @@ function Bloom({ x, y, r, petal, light }: { x: number; y: number; r: number; pet
   );
 }
 
-function IsoArch({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+function IsoArch({ ox, oy, color, links }: { ox: number; oy: number; color?: string; links?: Links }) {
   const Q = decorAt(ox, oy);
   const bloom = themeFor('arch', color);
+  // Side by side: posts move to the shared edge (an arcade). In a line: beams join them (a pergola).
+  const L = links?.mx ? 0 : 12;
+  const R = links?.px ? 100 : 88;
+  const c = (L + R) / 2;
+  const rx = (R - L) / 2;
   const arc = (y: number) =>
     Array.from({ length: 17 }, (_, i) => {
       const t = Math.PI * (i / 16);
-      return Q(50 - 38 * Math.cos(t), y, 74 + 30 * Math.sin(t));
+      return Q(c - rx * Math.cos(t), y, 74 + 30 * Math.sin(t));
     });
   const back = arc(42);
   const front = arc(58);
   const line = (list: Array<[number, number]>) => list.map((p) => p.join(',')).join(' ');
-  const lantern = Q(50, 50, 86);
+  const lantern = Q(c, 50, 86);
+  const post = (x0: number, x1: number) => <IsoBox b={{ x0: ox + x0, x1: ox + x1, y0: oy + 40, y1: oy + 60, z0: 0, z1: 75 }} s={WOOD} mat="plank" />;
+  // Pergola beams from the arch to the tile edge, along the top and both sides.
+  const beams = (y0: number, y1: number, key: string) => {
+    const along = [Q(c, y0, 104), Q(c, y1, 104)];
+    const left = [Q(L + (links?.mx ? 2 : 0), y0, 75), Q(L + (links?.mx ? 2 : 0), y1, 75)];
+    const right = [Q(R - (links?.px ? 2 : 0), y0, 75), Q(R - (links?.px ? 2 : 0), y1, 75)];
+    const vine = Array.from({ length: 4 }, (_, k) => Q(c + (k % 2 ? 6 : -6), y0 + ((y1 - y0) * (k + 0.5)) / 4, 103));
+    return (
+      <g key={key}>
+        {[left, right, along].map((b, k) => (
+          <g key={k}>
+            <line x1={b[0][0]} y1={b[0][1]} x2={b[1][0]} y2={b[1][1]} stroke={WOOD.dark} strokeWidth={4.4} strokeLinecap="round" />
+            <line x1={b[0][0]} y1={b[0][1]} x2={b[1][0]} y2={b[1][1]} stroke={WOOD.base} strokeWidth={2.4} strokeLinecap="round" />
+          </g>
+        ))}
+        {vine.map(([x, y], k) => (
+          <g key={`v${k}`}>
+            <ellipse cx={x - 2} cy={y} rx={3} ry={1.8} fill={k % 2 ? LEAF.base : LEAF.dark} />
+            <Bloom x={x + 2} y={y - 1} r={2.5} petal={bloom.base} light={bloom.light} />
+          </g>
+        ))}
+      </g>
+    );
+  };
   return (
     <g pointerEvents="none">
-      {/* stepping stones under the arch */}
-      {[30, 50, 70].map((y, i) => (
-        <polygon key={y} points={circleAt(Q, 50 + (i - 1) * 3, y, 8.5, 0.6, 12)} fill={STONE.base} stroke={STONE.dark} strokeOpacity={0.5} strokeWidth={0.6} />
+      {/* stepping stones under the arch (and on to the next one) */}
+      {(links?.py ? [30, 50, 70, 92] : [30, 50, 70]).concat(links?.my ? [8] : []).map((y, i) => (
+        <polygon key={y} points={circleAt(Q, c + ((i % 3) - 1) * 3, y, 8.5, 0.6, 12)} fill={STONE.base} stroke={STONE.dark} strokeOpacity={0.5} strokeWidth={0.6} />
       ))}
+      {links?.my && beams(0, 42, 'beams-back')}
       {/* the back half of the trellis, slats, then posts, then the front arch */}
       <polyline points={line(back)} fill="none" stroke={WOOD.dark} strokeWidth={5.4} strokeLinecap="round" />
       <polyline points={line(back)} fill="none" stroke={WOOD.base} strokeWidth={3.4} strokeLinecap="round" />
       {back.map((b, i) => (i % 2 === 0 ? <line key={i} x1={b[0]} y1={b[1]} x2={front[i][0]} y2={front[i][1]} stroke={WOOD.dark} strokeWidth={1.6} /> : null))}
-      <IsoBox b={{ x0: ox + 8, x1: ox + 16, y0: oy + 40, y1: oy + 60, z0: 0, z1: 75 }} s={WOOD} mat="plank" />
-      <IsoBox b={{ x0: ox + 84, x1: ox + 92, y0: oy + 40, y1: oy + 60, z0: 0, z1: 75 }} s={WOOD} mat="plank" />
+      {links?.mx ? post(0, 4) : post(8, 16)}
+      {links?.px ? post(96, 100) : post(84, 92)}
       <polyline points={line(front)} fill="none" stroke={WOOD.dark} strokeWidth={6} strokeLinecap="round" />
       <polyline points={line(front)} fill="none" stroke={WOOD.light} strokeWidth={3.6} strokeLinecap="round" />
       {/* vines climbing the posts and over the arch */}
-      {[...front, ...[10, 22, 34, 46, 58, 70].map((z) => Q(12, 61, z)), ...[14, 28, 42, 56, 68].map((z) => Q(88, 61, z))].map(([x, y], i) => (
+      {[...front, ...[10, 22, 34, 46, 58, 70].map((z) => Q(L, 61, z)), ...[14, 28, 42, 56, 68].map((z) => Q(R, 61, z))].map(([x, y], i) => (
         <g key={`v${i}`}>
           <ellipse cx={x - 2.2} cy={y + 0.5} rx={3} ry={1.9} fill={LEAF.dark} transform={`rotate(-28 ${x - 2.2} ${y + 0.5})`} />
           <ellipse cx={x + 2.2} cy={y - 0.6} rx={2.8} ry={1.8} fill={i % 3 ? LEAF.base : LEAF.light} transform={`rotate(24 ${x + 2.2} ${y - 0.6})`} />
@@ -1273,30 +1311,50 @@ function IsoArch({ ox, oy, color }: { ox: number; oy: number; color?: string }) 
         const [x, y] = front[i];
         return <Bloom key={`b${i}`} x={x} y={y - 1.5} r={2.9} petal={bloom.base} light={bloom.light} />;
       })}
-      {[Q(12, 61, 26), Q(88, 61, 20), Q(12, 61, 52), Q(88, 61, 46)].map(([x, y], i) => (
+      {[Q(L, 61, 26), Q(R, 61, 20), Q(L, 61, 52), Q(R, 61, 46)].map(([x, y], i) => (
         <Bloom key={`p${i}`} x={x + 2} y={y} r={2.5} petal={bloom.base} light={bloom.light} />
       ))}
+      {links?.py && beams(58, 100, 'beams-front')}
       {/* a lantern hanging from the top */}
-      <line x1={lantern[0]} y1={Q(50, 50, 104)[1]} x2={lantern[0]} y2={lantern[1] - 4} stroke="#3c3326" strokeWidth={0.8} />
+      <line x1={lantern[0]} y1={Q(c, 50, 104)[1]} x2={lantern[0]} y2={lantern[1] - 4} stroke="#3c3326" strokeWidth={0.8} />
       <rect x={lantern[0] - 3} y={lantern[1] - 4} width={6} height={7} rx={1.2} fill="#3c3326" />
       <rect x={lantern[0] - 2} y={lantern[1] - 3} width={4} height={5} rx={0.8} fill={WINDOW_LIT} className="base-window is-warm is-candle" />
     </g>
   );
 }
 
-function IsoFlowers({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+function IsoFlowers({ ox, oy, color, links }: { ox: number; oy: number; color?: string; links?: Links }) {
   const Q = decorAt(ox, oy);
   const bloom = themeFor('flowers', color);
   const spots: Array<[number, number, number]> = [
     [34, 30, 15], [52, 26, 18], [68, 34, 14], [28, 46, 17], [46, 44, 21], [64, 50, 16],
     [74, 64, 18], [36, 62, 15], [54, 64, 19], [44, 76, 14], [62, 76, 16]
   ];
+  // Joined beds: more flowers out to the shared edge.
+  if (links?.px) spots.push([86, 40, 16], [92, 58, 19], [84, 70, 14]);
+  if (links?.mx) spots.push([10, 36, 17], [14, 58, 15], [6, 70, 18]);
+  if (links?.py) spots.push([40, 90, 16], [58, 94, 18], [72, 86, 14]);
+  if (links?.my) spots.push([38, 10, 15], [56, 6, 18], [70, 14, 16]);
   spots.sort((a, b) => a[0] + a[1] - (b[0] + b[1]));
+  // The soil reaches across to joined neighbours, so the beds become one.
+  const band = (x0: number, y0: number, x1: number, y1: number, z: number, fill: string, key: string) => (
+    <polygon key={key} points={pts([Q(x0, y0, z), Q(x1, y0, z), Q(x1, y1, z), Q(x0, y1, z)])} fill={fill} />
+  );
+  const bands = (inset: number, z: number, fill: string, key: string) => (
+    <>
+      {links?.px && band(50, 14 + inset, 100, 90 - inset, z, fill, `${key}px`)}
+      {links?.mx && band(0, 14 + inset, 50, 90 - inset, z, fill, `${key}mx`)}
+      {links?.py && band(12 + inset, 52, 88 - inset, 100, z, fill, `${key}py`)}
+      {links?.my && band(12 + inset, 0, 88 - inset, 52, z, fill, `${key}my`)}
+    </>
+  );
   return (
     <g pointerEvents="none">
       {/* a soft mound of dark soil with a lighter rim */}
       <polygon points={circleAt(Q, 50, 52, 38, 0, 24)} fill="#5e4128" />
+      {bands(0, 0, '#5e4128', 'a')}
       <polygon points={circleAt(Q, 50, 52, 34, 2.5, 24)} fill="#7a5636" />
+      {bands(4, 2.5, '#7a5636', 'b')}
       <polygon points={circleAt(Q, 48, 50, 26, 3.5, 24)} fill="#6b4a2e" />
       {spots.map(([x, y, h], i) => {
         const base = Q(x, y, 3);
@@ -1388,18 +1446,18 @@ function IsoWindmill({ ox, oy, color }: { ox: number; oy: number; color?: string
   );
 }
 
-function IsoBridge({ ox, oy }: { ox: number; oy: number }) {
+function IsoBridge({ ox, oy, links }: { ox: number; oy: number; links?: Links }) {
   const Q = decorAt(ox, oy);
-  const posts = (y: number) => [8, 30, 52, 74, 92].map((x) => <IsoBox key={`${y}-${x}`} b={{ x0: ox + x - 1.8, x1: ox + x + 1.8, y0: oy + y - 1.8, y1: oy + y + 1.8, z0: 15, z1: 32 }} s={WOOD} courses={false} />);
-  const rail = (y: number) => <IsoBox b={{ x0: ox + 6, x1: ox + 94, y0: oy + y - 1.2, y1: oy + y + 1.2, z0: 28, z1: 31 }} s={WOOD} courses={false} />;
+  const posts = (y: number) => [8, 30, 52, 74, 92].filter((x) => !(links?.mx && x === 8) && !(links?.px && x === 92)).map((x) => <IsoBox key={`${y}-${x}`} b={{ x0: ox + x - 1.8, x1: ox + x + 1.8, y0: oy + y - 1.8, y1: oy + y + 1.8, z0: 15, z1: 32 }} s={WOOD} courses={false} />);
+  const rail = (y: number) => <IsoBox b={{ x0: ox + (links?.mx ? 0 : 6), x1: ox + (links?.px ? 100 : 94), y0: oy + y - 1.2, y1: oy + y + 1.2, z0: 28, z1: 31 }} s={WOOD} courses={false} />;
   return (
     <g pointerEvents="none">
-      {[[12, 34], [88, 34], [12, 66], [88, 66]].map(([x, y]) => (
+      {[[12, 34], [88, 34], [12, 66], [88, 66]].filter(([x]) => !(links?.mx && x === 12) && !(links?.px && x === 88)).map(([x, y]) => (
         <IsoBox key={`s${x}${y}`} b={{ x0: ox + x - 3, x1: ox + x + 3, y0: oy + y - 3, y1: oy + y + 3, z0: -8, z1: 10 }} s={WOOD} courses={false} />
       ))}
       {posts(31)}
       {rail(31)}
-      <IsoBox b={{ x0: ox + 2, x1: ox + 98, y0: oy + 30, y1: oy + 70, z0: 10, z1: 15 }} s={WOOD} mat="plank" />
+      <IsoBox b={{ x0: ox + (links?.mx ? 0 : 2), x1: ox + (links?.px ? 100 : 98), y0: oy + 30, y1: oy + 70, z0: 10, z1: 15 }} s={WOOD} mat="plank" />
       {[12, 22, 32, 42, 52, 62, 72, 82, 92].map((x) => {
         const a = Q(x, 30, 15);
         const b = Q(x, 70, 15);
@@ -1443,6 +1501,33 @@ function IsoLilypad({ ox, oy }: { ox: number; oy: number }) {
         <ellipse key={k} cx={lotus[0] + k * 2.6} cy={lotus[1] - 2 + Math.abs(k) * 0.8} rx={2.2} ry={4.2} fill={k % 2 ? '#f7a8c8' : '#fbc8de'} transform={`rotate(${k * 22} ${lotus[0] + k * 2.6} ${lotus[1] - 2})`} />
       ))}
       <circle cx={lotus[0]} cy={lotus[1] - 2.5} r={1.8} fill="#ffd76a" />
+    </g>
+  );
+}
+
+/** Training equipment next to other equipment: a shared rubber gym floor. */
+function GymFloor({ ox, oy, links }: { ox: number; oy: number; links?: Links }) {
+  if (!links || !(links.px || links.mx || links.py || links.my)) return null;
+  const Q = decorAt(ox, oy);
+  const edge = (a: [number, number], b: [number, number], key: string) => {
+    const [x1, y1] = Q(a[0], a[1], 0.6);
+    const [x2, y2] = Q(b[0], b[1], 0.6);
+    return <line key={key} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#c8f032" strokeWidth={1.6} strokeOpacity={0.8} />;
+  };
+  return (
+    <g pointerEvents="none">
+      <polygon points={pts([Q(0, 0, 0.5), Q(100, 0, 0.5), Q(100, 100, 0.5), Q(0, 100, 0.5)])} fill="#2b3038" />
+      {[25, 50, 75].map((v) => (
+        <g key={v} stroke="#3a404a" strokeWidth={0.7}>
+          <line x1={Q(v, 0, 0.6)[0]} y1={Q(v, 0, 0.6)[1]} x2={Q(v, 100, 0.6)[0]} y2={Q(v, 100, 0.6)[1]} />
+          <line x1={Q(0, v, 0.6)[0]} y1={Q(0, v, 0.6)[1]} x2={Q(100, v, 0.6)[0]} y2={Q(100, v, 0.6)[1]} />
+        </g>
+      ))}
+      {/* a lime border round the outside of the gym floor only */}
+      {!links.my && edge([0, 2], [100, 2], 'my')}
+      {!links.py && edge([0, 98], [100, 98], 'py')}
+      {!links.mx && edge([2, 0], [2, 100], 'mx')}
+      {!links.px && edge([98, 0], [98, 100], 'px')}
     </g>
   );
 }
@@ -1540,20 +1625,33 @@ function IsoPunchbag({ ox, oy, color }: { ox: number; oy: number; color?: string
   );
 }
 
-function IsoLanterns({ ox, oy, color }: { ox: number; oy: number; color?: string }) {
+function IsoLanterns({ ox, oy, color, links }: { ox: number; oy: number; color?: string; links?: Links }) {
   const Q = decorAt(ox, oy);
   const paper = themeFor('lanterns', color);
-  const sag = (t: number) => 72 - Math.sin(t * Math.PI) * 12;
-  const string = Array.from({ length: 21 }, (_, i) => Q(12 + (76 * i) / 20, 50, sag(i / 20)));
+  // A row of lantern strings becomes one: posts at the two ends, one sag across the run.
+  const run = links?.run ?? { index: 0, length: 1 };
+  const total = (run.length - 1) * 100 + 76;
+  const depth = 12 + 5 * Math.min(4, run.length - 1);
+  const sag = (localX: number) => {
+    const t = (run.index * 100 + (localX - 12)) / total;
+    return 72 - Math.sin(Math.max(0, Math.min(1, t)) * Math.PI) * depth;
+  };
+  const from = links?.mx ? 0 : 12;
+  const to = links?.px ? 100 : 88;
+  const string = Array.from({ length: 21 }, (_, i) => {
+    const x = from + ((to - from) * i) / 20;
+    return Q(x, 50, sag(x));
+  });
+  const spots = [0.18, 0.34, 0.5, 0.66, 0.82].map((u) => from + (to - from) * u);
   return (
     <g pointerEvents="none">
-      <IsoBox b={{ x0: ox + 9, x1: ox + 15, y0: oy + 47, y1: oy + 53, z0: 0, z1: 76 }} s={WOOD} mat="plank" />
-      <IsoBox b={{ x0: ox + 85, x1: ox + 91, y0: oy + 47, y1: oy + 53, z0: 0, z1: 76 }} s={WOOD} mat="plank" />
+      {!links?.mx && <IsoBox b={{ x0: ox + 9, x1: ox + 15, y0: oy + 47, y1: oy + 53, z0: 0, z1: 76 }} s={WOOD} mat="plank" />}
+      {!links?.px && <IsoBox b={{ x0: ox + 85, x1: ox + 91, y0: oy + 47, y1: oy + 53, z0: 0, z1: 76 }} s={WOOD} mat="plank" />}
       <polyline points={pts(string)} fill="none" stroke="#3c3326" strokeWidth={0.9} />
-      {[0.18, 0.34, 0.5, 0.66, 0.82].map((t, i) => {
-        const [x, y] = Q(12 + 76 * t, 50, sag(t) - 2);
+      {spots.map((lx, i) => {
+        const [x, y] = Q(lx, 50, sag(lx) - 2);
         return (
-          <g key={t}>
+          <g key={lx}>
             <circle cx={x} cy={y + 6} r={8} fill={WINDOW_LIT} opacity={0.16} />
             <line x1={x} y1={y - 2} x2={x} y2={y + 1} stroke="#3c3326" strokeWidth={0.8} />
             <rect x={x - 4} y={y + 1} width={8} height={10} rx={3.5} fill={i % 2 ? paper.light : paper.base} className="base-window is-warm is-candle" />
@@ -2037,13 +2135,22 @@ function Signature({ itemId, ox, oy, lit, level, style }: { itemId: string; ox: 
   }
 }
 
+/**
+ * Neighbours of the same kind (in the item's own frame: x along its length).
+ * Joined items merge: arches into a pergola or arcade, flower and garden beds
+ * into one, lanterns into one string, bridges into one span, training
+ * equipment onto one gym floor. `run`: position in a straight row (lanterns).
+ */
+export type Links = { px?: boolean; mx?: boolean; py?: boolean; my?: boolean; run?: { index: number; length: number } };
+
 export function IsoItemArt({
   item,
   ox,
   oy,
   lit,
   plan,
-  verified
+  verified,
+  links
 }: {
   item: PlacedItem;
   ox: number;
@@ -2051,6 +2158,8 @@ export function IsoItemArt({
   lit: boolean;
   plan?: TodayPlan | null;
   verified?: boolean;
+  /** Neighbours of the same kind, for items that join up. */
+  links?: Links;
 }): ReactNode {
   if (item.itemId.startsWith('trophy:')) {
     return <IsoTrophy trophyId={item.itemId.slice('trophy:'.length)} ox={ox} oy={oy} lit={lit} verified={verified} color={item.color} />;
@@ -2084,25 +2193,35 @@ export function IsoItemArt({
       case 'wall':
         return <IsoWall ox={ox} oy={oy} style={item.style} />;
       case 'garden':
-        return <IsoGarden ox={ox} oy={oy} style={item.style} color={item.color} />;
+        return <IsoGarden ox={ox} oy={oy} style={item.style} color={item.color} links={links} />;
       case 'arch':
-        return <IsoArch ox={ox} oy={oy} color={item.color} />;
+        return <IsoArch ox={ox} oy={oy} color={item.color} links={links} />;
       case 'flowers':
-        return <IsoFlowers ox={ox} oy={oy} color={item.color} />;
+        return <IsoFlowers ox={ox} oy={oy} color={item.color} links={links} />;
       case 'banner':
         return <IsoBanner ox={ox} oy={oy} style={item.style} color={item.color} />;
       case 'windmill':
         return <IsoWindmill ox={ox} oy={oy} color={item.color} />;
       case 'bridge':
-        return <IsoBridge ox={ox} oy={oy} />;
+        return <IsoBridge ox={ox} oy={oy} links={links} />;
       case 'lilypad':
         return <IsoLilypad ox={ox} oy={oy} />;
       case 'punchbag':
-        return <IsoPunchbag ox={ox} oy={oy} color={item.color} />;
+        return (
+          <>
+            <GymFloor ox={ox} oy={oy} links={links} />
+            <IsoPunchbag ox={ox} oy={oy} color={item.color} />
+          </>
+        );
       case 'picnic':
         return <IsoPicnic ox={ox} oy={oy} color={item.color} />;
       case 'plyobox':
-        return <IsoPlyobox ox={ox} oy={oy} color={item.color} />;
+        return (
+          <>
+            <GymFloor ox={ox} oy={oy} links={links} />
+            <IsoPlyobox ox={ox} oy={oy} color={item.color} />
+          </>
+        );
       case 'coop':
         return <IsoCoop ox={ox} oy={oy} color={item.color} />;
       case 'barn':
@@ -2114,7 +2233,7 @@ export function IsoItemArt({
       case 'fountain':
         return <IsoFountain ox={ox} oy={oy} style={item.style} />;
       case 'lanterns':
-        return <IsoLanterns ox={ox} oy={oy} color={item.color} />;
+        return <IsoLanterns ox={ox} oy={oy} color={item.color} links={links} />;
       case 'parasol':
         return <IsoParasol ox={ox} oy={oy} color={item.color} />;
       case 'statue':
@@ -2123,7 +2242,12 @@ export function IsoItemArt({
         return <IsoWell ox={ox} oy={oy} />;
       case 'pullupbar':
       case 'dipbars':
-        return <IsoTrainingBars ox={ox} oy={oy} kind={item.itemId} color={item.color} />;
+        return (
+          <>
+            <GymFloor ox={ox} oy={oy} links={links} />
+            <IsoTrainingBars ox={ox} oy={oy} kind={item.itemId} color={item.color} />
+          </>
+        );
       default:
         return null;
     }
@@ -2132,7 +2256,10 @@ export function IsoItemArt({
   return (
     <g>
       {art}
-      <Signature itemId={item.itemId} ox={ox} oy={oy} lit={lit} level={props.level} style={item.style} />
+      {/* A joined garden bed keeps one watering can, at the end of the run. */}
+      {!(item.itemId === 'garden' && (links?.px || links?.py)) && (
+        <Signature itemId={item.itemId} ox={ox} oy={oy} lit={lit} level={props.level} style={item.style} />
+      )}
     </g>
   );
 }

@@ -354,6 +354,12 @@ function hasCustomization(itemId: string): boolean {
   return !!(options?.styles?.length || options?.colors);
 }
 
+/** Which join-up rule an item follows (see Links in IsoArt). */
+function joinsFor(id: string): 'arch' | 'flowers' | 'garden' | 'lanterns' | 'bridge' | 'gym' | null {
+  if (id === 'pullupbar' || id === 'dipbars' || id === 'punchbag' || id === 'plyobox') return 'gym';
+  return id === 'arch' || id === 'flowers' || id === 'garden' || id === 'lanterns' || id === 'bridge' ? id : null;
+}
+
 export function BaseScreen({
   game,
   coins,
@@ -972,6 +978,7 @@ export function BaseScreen({
                         {!blocker && def.kind === 'decor' && def.season && (
                           <span className="base-catalog-season">{g.season.left(def.season, seasonState(def.season).days)}</span>
                         )}
+                        {joinsFor(def.id) && <span className="base-catalog-joins">{g.joins[joinsFor(def.id)!]}</span>}
                         {blocker && <span className="base-catalog-blocker">{errorText(blocker, def.id)}</span>}
                       </span>
                     </button>

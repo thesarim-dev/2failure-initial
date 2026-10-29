@@ -14,7 +14,11 @@ import { BaseCritters, BaseLife } from './Critters';
 import { GroundDetail, GroundEdges } from './GroundDetail';
 import { SlabSides } from './SlabSides';
 import { bakeGround } from './groundBake';
-import { IsoEdge, IsoEdgePost, IsoItemArt, IsoScaffold, P as isoP, isIsoItem } from './IsoArt';
+import { IsoEdge, IsoEdgePost, IsoItemArt, IsoScaffold, P as isoP, isIsoItem, type Links } from './IsoArt';
+
+/** Items that join up with neighbours of the same kind; oriented ones only when facing the same way. */
+const JOINS = new Set(['arch', 'flowers', 'garden', 'lanterns', 'bridge']);
+const ORIENTED = new Set(['arch', 'garden', 'lanterns', 'bridge']);
 
 export { ItemArt, TrophyArt } from './BaseArt';
 
@@ -289,6 +293,33 @@ export function BaseBoard({
         }) as (typeof state.placed)[number]
       ]
     : state.placed;
+  // Items that join up with neighbours of the same kind (pergolas, long beds, gym floors…).
+  const linksFor = (() => {
+    const group = (id: string) => (id === 'pullupbar' || id === 'dipbars' || id === 'punchbag' || id === 'plyobox' ? 'gym' : JOINS.has(id) ? id : null);
+    const at = new Map<string, PlacedItem>();
+    for (const p of placedForRender) if (group(p.itemId)) at.set(`${p.x},${p.y}`, p);
+    const map = new Map<string, Links>();
+    for (const p of placedForRender) {
+      const g = group(p.itemId);
+      if (!g) continue;
+      // In the item's own frame: a rotated (mirrored) item's x runs along the world's y.
+      const joins = (dx: number, dy: number, from: PlacedItem = p) => {
+        const [wx, wy] = from.flip ? [dy, dx] : [dx, dy];
+        const n = at.get(`${from.x + wx},${from.y + wy}`);
+        return !!n && group(n.itemId) === g && (!ORIENTED.has(g) || !!n.flip === !!from.flip) ? n : null;
+      };
+      const links: Links = { px: !!joins(1, 0), mx: !!joins(-1, 0), py: !!joins(0, 1), my: !!joins(0, -1) };
+      if (g === 'lanterns') {
+        let index = 0;
+        for (let cur: PlacedItem | null = p; cur && (cur = joins(-1, 0, cur)); ) index++;
+        let after = 0;
+        for (let cur: PlacedItem | null = p; cur && (cur = joins(1, 0, cur)); ) after++;
+        links.run = { index, length: index + 1 + after };
+      }
+      map.set(p.uid, links);
+    }
+    return map;
+  })();
   for (const item of placedForRender) {
     const size = itemSize(item.itemId);
     // Paths are paving: laid flat into the ground layer.
@@ -352,7 +383,7 @@ export function BaseBoard({
                 // Being built: a see-through blueprint of the building it will be.
                 <g className="base-blueprint">
                   <g transform={item.flip ? `translate(${2 * isoP(ox + (size * T) / 2, oy + (size * T) / 2)[0]} 0) scale(-1 1)` : undefined}>
-                    <IsoItemArt item={{ ...item, level: construction.targetLevel }} ox={ox} oy={oy} lit={false} plan={plan} />
+                    <IsoItemArt item={{ ...item, level: construction.targetLevel }} ox={ox} oy={oy} lit={false} plan={plan} links={linksFor.get(item.uid)} />
                   </g>
                 </g>
               ) : (
@@ -366,6 +397,7 @@ export function BaseBoard({
                       lit={lit}
                       plan={plan}
                       verified={item.itemId.startsWith(TROPHY_ITEM_PREFIX) ? state.trophies[item.itemId.slice(TROPHY_ITEM_PREFIX.length)]?.verified : undefined}
+                      links={linksFor.get(item.uid)}
                     />
                   </g>
                 </g>
