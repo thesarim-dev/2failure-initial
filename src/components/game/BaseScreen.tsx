@@ -714,31 +714,6 @@ export function BaseScreen({
 
 
 
-      {mode.kind !== 'idle' && modeItemId && (
-        <div className="base-mode-bar" role="status">
-          <span>
-            {spot ? g.placeConfirm : mode.kind === 'move' ? g.moveHint(nameOf(modeItemId)) : g.placeHint(nameOf(modeItemId))}
-          </span>
-          <div className="base-mode-actions">
-            <button type="button" className="base-ghost-btn" onClick={() => setMode({ kind: 'idle' })}>
-              {g.cancel}
-            </button>
-            {spot && (
-              <button type="button" className="base-ghost-btn base-rotate-btn" onClick={rotateDraft} aria-label={g.flip}>
-                <RotateCw size={16} strokeWidth={2.6} aria-hidden="true" />
-                {g.flip}
-              </button>
-            )}
-            {spot && (
-              <button type="button" className="base-primary-btn base-confirm-btn" data-quest="confirm-place" onClick={confirmSpot}>
-                <Check size={16} strokeWidth={3} aria-hidden="true" />
-                {mode.kind === 'move' ? g.moveHere : g.placeHere}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
       {paintWith && (
         <div className="base-paint-bar" role="toolbar" aria-label={g.paint.title}>
           <div className="base-paint-tools" role="radiogroup" aria-label={g.paint.title}>
@@ -882,6 +857,26 @@ export function BaseScreen({
             {total - busy}/{total}
           </span>
         </button>
+        {/* Placing or moving: the controls sit where Build is (same spot, same layout). */}
+        {mode.kind !== 'idle' && modeItemId && (
+          <div className="map-dock map-place-dock" role="status">
+            <span className="map-place-hint">
+              {spot ? g.placeConfirm : mode.kind === 'move' ? g.moveHint(nameOf(modeItemId)) : g.placeHint(nameOf(modeItemId))}
+            </span>
+            <div className="map-place-actions">
+              <button type="button" className="map-round-btn" onClick={() => setMode({ kind: 'idle' })} aria-label={g.cancel}>
+                <X size={20} strokeWidth={2.6} aria-hidden="true" />
+              </button>
+              <button type="button" className="map-build-btn" data-quest="confirm-place" onClick={confirmSpot} disabled={!spot}>
+                <Check size={20} strokeWidth={3} aria-hidden="true" />
+                {mode.kind === 'move' ? g.moveHere : g.placeHere}
+              </button>
+              <button type="button" className="map-round-btn" onClick={rotateDraft} disabled={!spot} aria-label={g.flip}>
+                <RotateCw size={20} strokeWidth={2.6} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        )}
         {mode.kind === 'idle' && !paintWith && !fenceKind && (
           <div className="map-dock">
             <button type="button" className="map-round-btn" onClick={() => setSheet('land')} aria-label={g.land.button}>

@@ -9166,4 +9166,35 @@
     text-decoration: underline;
     opacity: 0.6;
   }
+
+  /* Placing: the controls take the Build dock's place on the map. */
+  .map-place-dock {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+  }
+  .map-place-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .map-place-hint {
+    max-width: min(88vw, 22rem);
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-align: center;
+    color: #f4f4f0;
+    background: rgba(12, 15, 2, 0.72);
+    backdrop-filter: blur(4px);
+  }
+  .map-place-dock .map-build-btn:disabled,
+  .map-place-dock .map-round-btn:disabled {
+    opacity: 0.45;
+  }
+
+  .map-place-dock .map-build-btn {
+    white-space: nowrap;
+  }
 }
