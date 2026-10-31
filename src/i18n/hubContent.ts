@@ -59,6 +59,11 @@ export type HubCopy = {
     title: string;
     days: string;
     daysSub: string;
+    /** The week you're in is committed to its format. */
+    lockedSub: (days: number) => string;
+    nextWeek: (days: number, date: string) => string;
+    keep: (days: number) => string;
+    nextTag: string;
     gear: string;
     gearSub: string;
     gearNote: string;
@@ -111,6 +116,7 @@ export type HubCopy = {
     daysAWeek: string;
     weekDone: string;
     trainInstead: string;
+    nextWeekDays: (days: number) => string;
   };
   week: {
     title: string;
@@ -200,6 +206,10 @@ const en: HubCopy = {
     title: 'Your plan',
     days: 'Days per week',
     daysSub: 'We rotate push, pull, legs and full-body days for you.',
+    lockedSub: (days) => `This week is set to ${days} days. A change starts next week, so this week's rest days stay the same.`,
+    nextWeek: (days, date) => `${days} days a week starts ${date}.`,
+    keep: (days) => `Keep ${days} days`,
+    nextTag: 'Next week',
     gear: 'Your equipment',
     gearSub: 'Tap the equipment at your disposal.',
     gearNote: "Chair and backpack exercises are always included. No equipment? That's fine, every day still works.",
@@ -259,7 +269,8 @@ const en: HubCopy = {
     tapToChange: 'Tap to change',
     daysAWeek: 'days a week',
     weekDone: 'Week done',
-    trainInstead: 'Train today instead'
+    trainInstead: 'Train today instead',
+    nextWeekDays: (days) => `${days} from next week`
   },
   restoreBanner: {
     title: (streak) => `Your ${streak}-day streak broke.`,
@@ -349,6 +360,10 @@ const he: HubCopy = {
     title: 'התוכנית שלך',
     days: 'ימים בשבוע',
     daysSub: 'אנחנו מחליפים בשבילכם ימי דחיפה, משיכה, רגליים וגוף מלא.',
+    lockedSub: (days) => `השבוע נקבע על ${days} ימים. שינוי ייכנס לתוקף בשבוע הבא, כך שימי המנוחה של השבוע נשארים כמו שהם.`,
+    nextWeek: (days, date) => `${days} ימים בשבוע מתחילים ב${date}.`,
+    keep: (days) => `להישאר עם ${days} ימים`,
+    nextTag: 'שבוע הבא',
     gear: 'הציוד שלך',
     gearSub: 'הקישו על הציוד שעומד לרשותכם.',
     gearNote: 'תרגילים עם כיסא ותיק גב תמיד כלולים. אין ציוד? זה בסדר, כל יום עובד גם ככה.',
@@ -408,7 +423,8 @@ const he: HubCopy = {
     tapToChange: 'הקישו לשינוי',
     daysAWeek: 'ימים בשבוע',
     weekDone: 'השבוע הושלם',
-    trainInstead: 'בעצם, להתאמן היום'
+    trainInstead: 'בעצם, להתאמן היום',
+    nextWeekDays: (days) => `${days} מהשבוע הבא`
   },
   restoreBanner: {
     title: (streak) => `הרצף שלך של ${streak} ימים נשבר.`,
@@ -498,6 +514,10 @@ const ar: HubCopy = {
     title: 'خطتك',
     days: 'أيام في الأسبوع',
     daysSub: 'ننوّع لك بين أيام الدفع والسحب والأرجل والجسم الكامل.',
+    lockedSub: (days) => `هذا الأسبوع محدد على ${days} أيام. أي تغيير يبدأ الأسبوع القادم، فتبقى أيام راحة هذا الأسبوع كما هي.`,
+    nextWeek: (days, date) => `${days} أيام في الأسبوع تبدأ ${date}.`,
+    keep: (days) => `ابقَ على ${days} أيام`,
+    nextTag: 'الأسبوع القادم',
     gear: 'معداتك',
     gearSub: 'اضغط على المعدات المتوفرة لديك.',
     gearNote: 'تمارين الكرسي وحقيبة الظهر مشمولة دائماً. لا معدات؟ لا بأس، كل يوم يعمل كذلك.',
@@ -557,7 +577,8 @@ const ar: HubCopy = {
     tapToChange: 'اضغط للتغيير',
     daysAWeek: 'أيام أسبوعياً',
     weekDone: 'اكتمل الأسبوع',
-    trainInstead: 'تمرّن اليوم بدلاً من ذلك'
+    trainInstead: 'تمرّن اليوم بدلاً من ذلك',
+    nextWeekDays: (days) => `${days} من الأسبوع القادم`
   },
   restoreBanner: {
     title: (streak) => `انقطعت سلسلتك المكوّنة من ${streak} أيام.`,

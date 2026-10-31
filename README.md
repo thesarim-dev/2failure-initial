@@ -155,6 +155,7 @@ A set counts once you've been going for at least **10 seconds**. Tapping finish 
 
 ### Rest days and the week
 
+* **Your week format is committed for the week.** Days per week (and the rest days that come with them) can't change mid-week: a change on the Plan screen starts next week ("3 days a week starts Monday"), and the home card shows it ("3 from next week"). Keep your current days to cancel. If nothing has happened yet this week (no training, no rest used), a change applies right away.
 * **A finished week never forces rest.** Once you've trained your plan's days, today stays a normal training day (the next workout in your plan) and resting is optional and free.
 * **Changed your mind?** On a rest day, **Train today instead** brings your workout back.
 * Your training history is read newest first, page by page (the server returns at most 1,000 rows at a time), so recent days are never missed.

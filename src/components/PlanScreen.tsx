@@ -47,10 +47,23 @@ function GearIcon({ item }: { item: Gear }) {
  * "Your plan": the one place to set up training. Days per week, equipment,
  * the week's rotation, and each day's exercises with Easier / Harder.
  */
+/** A day like "Monday, 2 Nov" in the app's language. */
+function formatDay(day: string, language: string): string {
+  const [y, m, d] = day.split('-').map(Number);
+  try {
+    return new Date(y, m - 1, d).toLocaleDateString(language, { weekday: 'long', day: 'numeric', month: 'short' });
+  } catch {
+    return day;
+  }
+}
+
 export function PlanScreen({
   onBack,
   days,
   onDays,
+  nextDays,
+  nextFrom,
+  locked,
   rotation,
   cycleDay,
   isRestDayToday,
@@ -63,6 +76,11 @@ export function PlanScreen({
   onBack: () => void;
   days: 3 | 4 | 5;
   onDays: (days: 3 | 4 | 5) => void;
+  /** A format chosen mid-week, and the day it starts. */
+  nextDays?: 3 | 4 | 5 | null;
+  nextFrom?: string | null;
+  /** This week has begun: a change starts next week. */
+  locked?: boolean;
   rotation: readonly RotatingProgramPhase[];
   cycleDay: number | null;
   isRestDayToday: boolean;
@@ -73,7 +91,7 @@ export function PlanScreen({
   /** Make a day of the week (1-based) today's workout. */
   onSelectDay: (cycleDay: number) => void;
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const p = t.hub.plan;
   const todayIndex = cycleDay !== null && rotation.length ? (cycleDay - 1) % rotation.length : 0;
   const todayPhase = rotation[todayIndex];
@@ -95,7 +113,7 @@ export function PlanScreen({
 
       <section className="plan-card-block">
         <h2 className="plan-block-title">{p.days}</h2>
-        <p className="plan-block-sub">{p.daysSub}</p>
+        <p className="plan-block-sub">{locked ? p.lockedSub(days) : p.daysSub}</p>
         <div className="plan-days" role="radiogroup" aria-label={p.days}>
           {([3, 4, 5] as const).map((n) => (
             <button
@@ -103,15 +121,24 @@ export function PlanScreen({
               type="button"
               role="radio"
               aria-checked={days === n}
-              className={`plan-day-btn ${days === n ? 'is-on' : ''}`}
+              className={`plan-day-btn ${days === n ? 'is-on' : ''} ${nextDays === n ? 'is-next' : ''}`}
               onClick={() => {
                 if (days !== n) fx.tap();
                 onDays(n);
               }}>
               {n}
+              {nextDays === n && <span className="plan-day-next">{p.nextTag}</span>}
             </button>
           ))}
         </div>
+        {nextDays && nextFrom && (
+          <div className="plan-next-week" role="status">
+            <p>{p.nextWeek(nextDays, formatDay(nextFrom, language))}</p>
+            <button type="button" className="plan-keep-btn" onClick={() => onDays(days)}>
+              {p.keep(days)}
+            </button>
+          </div>
+        )}
       </section>
 
       <section className="plan-card-block">

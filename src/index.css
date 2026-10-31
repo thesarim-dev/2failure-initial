@@ -9255,4 +9255,49 @@
     background: #d6453d;
     border-color: #8f1f19;
   }
+
+  /* Plan: a week format scheduled for next week. */
+  .plan-day-btn {
+    position: relative;
+  }
+  .plan-day-btn.is-next {
+    border-style: dashed;
+    border-color: #c8f032;
+  }
+  .plan-day-next {
+    position: absolute;
+    left: 50%;
+    bottom: -0.55rem;
+    transform: translateX(-50%);
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    font-size: 0.6rem;
+    font-weight: 900;
+    white-space: nowrap;
+    color: #0c0f02;
+    background: #c8f032;
+  }
+  .plan-next-week {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.65rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    font-weight: 800;
+    background: rgba(200, 240, 50, 0.1);
+    border: 1.5px dashed rgba(200, 240, 50, 0.6);
+  }
+  .plan-keep-btn {
+    min-height: 2.5rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 900;
+    background: rgba(127, 127, 127, 0.16);
+    border: 1.5px solid rgba(127, 127, 127, 0.35);
+  }
 }

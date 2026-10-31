@@ -93,6 +93,9 @@ export function MainApp() {
     rotatingProgramCycleDay,
     rotatingProgramTemplate,
     setRotatingProgramTemplate,
+    nextTemplate,
+    nextTemplateFrom,
+    templateLocked,
     rotationCycle,
     selectProgramCycleDay,
     isRestDayToday: programRestDayToday,
@@ -784,6 +787,7 @@ export function MainApp() {
         onOpenPlan={handleOpenPlan}
         trainingDaysPerWeek={trainingDaysPerWeek}
         planDaysPerWeek={weeklyTarget}
+        nextPlanDays={nextTemplate ? DAYS_FOR_TEMPLATE[nextTemplate] ?? null : null}
  />
 
       }
@@ -793,6 +797,9 @@ export function MainApp() {
           onBack={handleCloseStore}
           days={DAYS_FOR_TEMPLATE[rotatingProgramTemplate] ?? 5}
           onDays={(n) => setRotatingProgramTemplate(TEMPLATE_FOR_DAYS[n])}
+          nextDays={nextTemplate ? DAYS_FOR_TEMPLATE[nextTemplate] ?? null : null}
+          nextFrom={nextTemplateFrom}
+          locked={templateLocked}
           rotation={rotationCycle}
           cycleDay={rotatingProgramCycleDay}
           isRestDayToday={isRestDayToday}

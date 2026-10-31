@@ -41,6 +41,8 @@ interface DashboardProps {
   onRestoreStreak: () => void;
   /** Train today after all (undo today's rest day). */
   onUndoRest?: () => void;
+  /** A week format starting next week, if one is scheduled. */
+  nextPlanDays?: number | null;
   profileLoading: boolean;
   profileError: string | null;
   statsError: string | null;
@@ -97,6 +99,7 @@ export function Dashboard({
   onUseShield,
   onRestoreStreak,
   onUndoRest,
+  nextPlanDays,
   profileLoading,
   profileError,
   statsError,
@@ -263,7 +266,7 @@ export function Dashboard({
           aria-label={`${t.hub.trio.weekDays(planDaysPerWeek)}. ${t.hub.trio.tapToChange}`}>
           <span className="flat-days">{planDaysPerWeek}</span>
           <span className="dial-label">{t.hub.trio.daysAWeek}</span>
-          <span className="week-min-hint">{t.hub.trio.tapToChange}</span>
+          <span className="week-min-hint">{nextPlanDays ? t.hub.trio.nextWeekDays(nextPlanDays) : t.hub.trio.tapToChange}</span>
         </button>
       </section>
 

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { shiftDay, weekState } from '../lib/restWeek';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { shiftDay, weekStartOf, weekState } from '../lib/restWeek';
 import {
   daysBetweenLocalDates,
   DEFAULT_ROTATION_TEMPLATE,
@@ -38,6 +38,8 @@ export function useRotatingProgram(
   // v2: the plan advances on trained days only (v1 advanced every calendar day).
   const MODEL_KEY = storageKeyFor(userId, 'rotating-program-model');
   const TEMPLATE_KEY = storageKeyFor(userId, 'rotating-program-template');
+  // A week format chosen mid-week: { template, from } (the first day of next week).
+  const NEXT_TEMPLATE_KEY = storageKeyFor(userId, 'rotating-program-next-template');
   /** @deprecated migrated to effective index + date */
   const LEGACY_OFFSET_KEY = storageKeyFor(userId, 'rotating-program-day-offset');
 
@@ -131,6 +133,26 @@ export function useRotatingProgram(
 
     try {
       window.localStorage.setItem(TEMPLATE_KEY, template);
+    } catch {
+      // Ignore storage failures.
+    }
+  }
+
+  type PendingTemplate = { template: RotatingProgramTemplateId; from: string };
+  function readStoredPending(): PendingTemplate | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = JSON.parse(window.localStorage.getItem(NEXT_TEMPLATE_KEY) ?? 'null') as PendingTemplate | null;
+      return raw && raw.template in ROTATION_TEMPLATES && typeof raw.from === 'string' ? raw : null;
+    } catch {
+      return null;
+    }
+  }
+  function writeStoredPending(next: PendingTemplate | null): void {
+    if (typeof window === 'undefined') return;
+    try {
+      if (next) window.localStorage.setItem(NEXT_TEMPLATE_KEY, JSON.stringify(next));
+      else window.localStorage.removeItem(NEXT_TEMPLATE_KEY);
     } catch {
       // Ignore storage failures.
     }
@@ -287,23 +309,56 @@ export function useRotatingProgram(
 
   const rotationCycle = ROTATION_TEMPLATES[template];
 
+  const [pending, setPendingState] = useState<PendingTemplate | null>(readStoredPending);
+
+  /** Switch to a week format from `anchor` (day 1 of the new split). */
+  const applyTemplate = useCallback((next: RotatingProgramTemplateId, anchor: string) => {
+    setTemplateState(next);
+    writeStoredTemplate(next);
+    setSavedPositionState({ index: 0, date: anchor });
+    writeStoredEffectivePosition(0, anchor);
+    setPendingState(null);
+    writeStoredPending(null);
+    try {
+      window.localStorage.setItem(MODEL_KEY, '2');
+    } catch {
+      // Ignore storage failures.
+    }
+  }, []);
+
+  // The week you're in is committed: its format (and rest days) can't change mid-week.
+  // `weekRef` is the current week's state (set below, once it's computed).
+  const weekRef = useRef<{ trained: number; restUsed: number } | null>(null);
   const setRotatingProgramTemplate = useCallback(
     (next: RotatingProgramTemplateId) => {
-      setTemplateState(next);
-      writeStoredTemplate(next);
-
-      // Restart the cycle from day 1 so the new split begins cleanly.
-      const anchor = toLocalDateString();
-      setSavedPositionState({ index: 0, date: anchor });
-      writeStoredEffectivePosition(0, anchor);
-      try {
-        window.localStorage.setItem(MODEL_KEY, '2');
-      } catch {
-        // Ignore storage failures.
+      // Choosing the current format again cancels a scheduled change.
+      if (next === template) {
+        if (pending) {
+          setPendingState(null);
+          writeStoredPending(null);
+        }
+        return;
       }
+      const week = weekRef.current;
+      const untouched = !week || (week.trained === 0 && week.restUsed === 0);
+      if (untouched) {
+        // Nothing has happened this week yet: switch now.
+        applyTemplate(next, toLocalDateString());
+        return;
+      }
+      // Otherwise it starts next week; this week keeps its format and rest days.
+      const from = shiftDay(weekStartOf(today, sundayFirst), 7);
+      const scheduled = { template: next, from };
+      setPendingState(scheduled);
+      writeStoredPending(scheduled);
     },
-    []
+    [template, pending, applyTemplate, today, sundayFirst]
   );
+
+  // A scheduled format starts on its day, from day 1 of the new split.
+  useEffect(() => {
+    if (pending && today >= pending.from) applyTemplate(pending.template, pending.from);
+  }, [pending, today, applyTemplate]);
 
   const setRotatingProgramEnabled = useCallback(
     (next: boolean) => {
@@ -369,6 +424,7 @@ export function useRotatingProgram(
     [today, rotationCycle.length, trainedDays, restDays, sundayFirst, startDate]
   );
 
+  weekRef.current = { trained: week.trained, restUsed: week.restUsed };
   const isRestDayToday = enabled && week.restToday;
   const canTakeRestDay = enabled && week.canRestToday;
 
@@ -436,6 +492,11 @@ export function useRotatingProgram(
     undoTodayRest,
     /** Rest days declared with the ticket (for the streak). */
     declaredRestDays: restDays,
+    /** A week format chosen mid-week: it starts on `from` (next week). */
+    nextTemplate: pending?.template ?? null,
+    nextTemplateFrom: pending?.from ?? null,
+    /** Changing the format now would start next week (this week has begun). */
+    templateLocked: enabled && (week.trained > 0 || week.restUsed > 0),
     /** Today is rest because the week's training is done. */
     restTodayIsWeekDone: enabled && week.restTodayIsWeekDone
   };
