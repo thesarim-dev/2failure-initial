@@ -9234,4 +9234,18 @@
   html:not(.dark) .base-catalog-joins {
     color: #0f7a64;
   }
+
+  /* Rest day: change your mind and train after all. */
+  .undo-rest-btn {
+    margin-top: 0.55rem;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    font-weight: 900;
+    color: #0c0f02;
+    background: #c8f032;
+    border: 1.5px solid #0c0f02;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+  }
 }

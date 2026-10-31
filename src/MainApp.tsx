@@ -99,6 +99,7 @@ export function MainApp() {
     canTakeRestDay: programCanTakeRestDay,
     restDaysRemainingThisWeek: programRestDaysRemaining,
     markTodayAsRestDay: programMarkRestDay,
+    undoTodayRest: programUndoRest,
     declaredRestDays,
     restTodayIsWeekDone
   } = useRotatingProgram(trained.trainedDays, trained.loaded, sundayFirst);
@@ -195,6 +196,7 @@ export function MainApp() {
     ? programRestDaysRemaining
     : freeRest.restDaysRemainingThisWeek;
   const markTodayAsRestDay = rotatingProgramEnabled ? programMarkRestDay : freeRest.markTodayAsRestDay;
+  const undoTodayRest = rotatingProgramEnabled ? programUndoRest : freeRest.undoTodayRest;
 
   const plan = usePlan();
   // One way to train: everyone follows Your plan (the rotating day types).
@@ -740,6 +742,10 @@ export function MainApp() {
         lastWorkoutDate={lastWorkoutDate}
         restoreStreakCost={restoreStreakCost}
         onRestoreStreak={handleRestoreStreak}
+        onUndoRest={() => {
+          fx.tap();
+          undoTodayRest();
+        }}
         materials={baseGame.state.resources}
         restAllowance={restAllowance}
         recentRestDays={[...recentRestDays, ...declaredRestDays]}

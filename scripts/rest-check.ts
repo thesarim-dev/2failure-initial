@@ -16,7 +16,7 @@ let s = ws(D(0), []);
 check('Mon, fresh week: 2 rest days left, can rest', [s.restLeft, s.canRestToday], [2, true]);
 
 s = ws(D(5), [D(0), D(1), D(2), D(3), D(4)]);
-check('Sat after Mon–Fri trained: week done, today is rest automatically', [s.weekDone, s.restToday, s.restTodayIsWeekDone, s.canRestToday], [true, true, true, false]);
+check('Sat after Mon–Fri trained: week done, today still a training day, resting is optional', [s.weekDone, s.restToday, s.restTodayIsWeekDone, s.canRestToday], [true, false, true, true]);
 
 s = ws(D(2), [], [D(0)]);
 check('Wed, rested Mon (ticket) and skipped Tue: no rest left, must train', [s.restUsed, s.restLeft, s.canRestToday, s.trainingLeft], [2, 0, false, 5]);
@@ -43,7 +43,7 @@ s = ws(D(1), [], [D(1)]);
 check('Tue, ticket torn today: today is rest, 1 used + Mon off = 2', [s.restToday, s.restUsed], [true, 2]);
 
 s = ws(D(3), [D(0), D(1), D(2)], [], 3);
-check('3-day plan, done by Wed: Thu is rest automatically', [s.weekDone, s.restToday], [true, true]);
+check('3-day plan, done by Wed: Thu is not forced rest (optional)', [s.weekDone, s.restToday, s.canRestToday], [true, false, true]);
 
 s = weekState({ today: D(1), planDays: 5, trainedDays: set(), declaredRest: set(), sundayFirst: false, planStart: D(1) });
 check('Joined Tue: Mon before joining is not a used rest day', [s.restUsed, s.restLeft, s.canRestToday], [0, 2, true]);

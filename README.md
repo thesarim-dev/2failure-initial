@@ -153,6 +153,10 @@ A set counts once you've been going for at least **10 seconds**. Tapping finish 
 
 ### Rest days and the week
 
+* **A finished week never forces rest.** Once you've trained your plan's days, today stays a normal training day (the next workout in your plan) and resting is optional and free.
+* **Changed your mind?** On a rest day, **Train today instead** brings your workout back.
+* Your training history is read newest first, page by page (the server returns at most 1,000 rows at a time), so recent days are never missed.
+
 Rest days are counted per **calendar week** (starting Monday; Sunday in Hebrew and Arabic). A plan of P training days gives **7 − P rest days** a week. One set of rules drives the rest ticket, the plan and the streak (`src/lib/restWeek.ts`, tested by `npm run test:rest`):
 
 * **A training day** is a day with at least 2 sets (the streak's bar). Any other day is a rest day: tearing the ticket and simply not training count the same.

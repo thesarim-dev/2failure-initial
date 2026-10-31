@@ -39,6 +39,8 @@ interface DashboardProps {
   shields: number;
   onUseShield: () => void;
   onRestoreStreak: () => void;
+  /** Train today after all (undo today's rest day). */
+  onUndoRest?: () => void;
   profileLoading: boolean;
   profileError: string | null;
   statsError: string | null;
@@ -94,6 +96,7 @@ export function Dashboard({
   shields,
   onUseShield,
   onRestoreStreak,
+  onUndoRest,
   profileLoading,
   profileError,
   statsError,
@@ -312,6 +315,11 @@ export function Dashboard({
               ? t.hub.plan.rest
               : t.hub.plan.focus[rotatingProgramPhase]}
           </p>
+          {isRestDayToday && onUndoRest && (
+            <button type="button" className="undo-rest-btn" onClick={onUndoRest}>
+              {t.hub.trio.trainInstead}
+            </button>
+          )}
         </div>
 
         {/* Today at a glance: sets done and roughly how long is left. */}

@@ -60,10 +60,22 @@ export function useFreeRestDays(enabled: boolean) {
     }
   }, [canTakeRestDay, restDays, today, key]);
 
+  const undoTodayRest = useCallback(() => {
+    if (!restDays.includes(today)) return;
+    const next = restDays.filter((day) => day !== today);
+    setRestDays(next);
+    try {
+      window.localStorage.setItem(key, JSON.stringify(next));
+    } catch {
+      // Ignore storage failures.
+    }
+  }, [restDays, today, key]);
+
   return {
     isRestDayToday,
     canTakeRestDay,
     restDaysRemainingThisWeek: Math.max(0, FREE_REST_DAYS_PER_WEEK - usedThisWeek),
-    markTodayAsRestDay
+    markTodayAsRestDay,
+    undoTodayRest
   };
 }

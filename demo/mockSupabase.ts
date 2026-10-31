@@ -49,6 +49,7 @@ class Query implements PromiseLike<{ data: any; error: any }> {
   private returning = false;
   private orderBy: { col: string; asc: boolean } | null = null;
   private max: number | null = null;
+  private skip = 0;
   private mode: 'many' | 'single' | 'maybe' = 'many';
   private opts: Row = {};
   constructor(private name: string) {}
@@ -126,6 +127,11 @@ class Query implements PromiseLike<{ data: any; error: any }> {
     this.max = n;
     return this;
   }
+  range(from: number, to: number) {
+    this.skip = from;
+    this.max = to - from + 1;
+    return this;
+  }
   single() {
     this.mode = 'single';
     return this;
@@ -177,7 +183,9 @@ class Query implements PromiseLike<{ data: any; error: any }> {
       const { col, asc } = this.orderBy;
       result = [...result].sort((a, b) => (a[col] < b[col] ? (asc ? -1 : 1) : a[col] > b[col] ? (asc ? 1 : -1) : 0));
     }
-    if (this.max !== null) result = result.slice(0, this.max);
+    if (this.max !== null) result = result.slice(this.skip, this.skip + this.max);
+    // Like Supabase: a read returns at most 1,000 rows.
+    if (this.op === 'select') result = result.slice(0, 1000);
     if (this.op !== 'select' && !this.returning) return { data: null, error: null };
     const shaped = result.map((r) => pick(r, this.cols));
     if (this.mode === 'single') {

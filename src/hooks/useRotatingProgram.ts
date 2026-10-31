@@ -381,9 +381,17 @@ export function useRotatingProgram(
     writeStoredRestDays(nextRestDays);
   }, [enabled, week.canRestToday, restDays, today]);
 
+  /** Changed your mind (or tore it by accident): train today after all. */
+  const undoTodayRest = useCallback(() => {
+    if (!restDays.includes(today)) return;
+    const next = restDays.filter((day) => day !== today);
+    setRestDaysState(next);
+    writeStoredRestDays(next);
+  }, [restDays, today]);
+
   const phase = useMemo((): RotatingProgramPhase | null => {
     if (position === null) return null;
-    // A rest day (declared, or the week's training is done) is a stretch day.
+    // A rest day you declared is a stretch day (a finished week never forces one).
     if (isRestDayToday) return 'recovery';
     return getRotatingProgramPhase(position, rotationCycle);
   }, [position, isRestDayToday, rotationCycle]);
@@ -425,6 +433,7 @@ export function useRotatingProgram(
     canTakeRestDay,
     restDaysRemainingThisWeek: week.restLeft,
     markTodayAsRestDay,
+    undoTodayRest,
     /** Rest days declared with the ticket (for the streak). */
     declaredRestDays: restDays,
     /** Today is rest because the week's training is done. */

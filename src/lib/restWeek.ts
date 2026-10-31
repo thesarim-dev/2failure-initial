@@ -6,8 +6,9 @@
  *    didn't train (one count for the ticket and the streak);
  *  - you can't rest when the days left in the week are all needed to fit your
  *    remaining training days;
- *  - once you've trained your plan's days this week, the rest of the week is
- *    rest (no more training needed; the streak is safe).
+ *  - once you've trained your plan's days this week, resting is optional and
+ *    free for the rest of the week (the streak is safe), but training is never
+ *    blocked: today stays a normal training day.
  */
 
 export function shiftDay(day: string, delta: number): string {
@@ -38,9 +39,9 @@ export type WeekState = {
   trainingLeft: number;
   /** The plan's training days are done for the week: the rest of it is rest. */
   weekDone: boolean;
-  /** Today is a rest day: declared, or because the week's training is done. */
+  /** Today is a rest day: only when you tore the ticket. */
   restToday: boolean;
-  /** Today was made a rest day by finishing the week (not by the ticket). */
+  /** The week's training is done and today is untouched: resting is optional and free. */
   restTodayIsWeekDone: boolean;
   /** Whether you may take today off (tear the ticket). */
   canRestToday: boolean;
@@ -78,12 +79,14 @@ export function weekState(opts: {
   const openDays = weekLength - past.length - (trainedToday || declaredToday ? 1 : 0);
   const restLeft = Math.max(0, Math.min(allowance - restUsed, openDays - trainingLeft));
 
+  // A finished week never forces rest: today stays a training day, and resting is free.
   const restTodayIsWeekDone = weekDone && !trainedToday && !declaredToday;
-  const restToday = declaredToday || restTodayIsWeekDone;
-  // Taking today off needs a rest day left and enough days after today to fit the training.
+  const restToday = declaredToday;
+  // Taking today off needs a rest day left and enough days after today to fit the training
+  // (or a finished week, when it's free).
   const daysAfterToday = weekLength - past.length - 1;
   const canRestToday =
-    !trainedToday && !restToday && allowance - restUsed >= 1 && daysAfterToday >= trainingLeft;
+    !trainedToday && !restToday && (weekDone || (allowance - restUsed >= 1 && daysAfterToday >= trainingLeft));
 
   return { planDays, allowance, trained, restUsed, restLeft, trainingLeft, weekDone, restToday, restTodayIsWeekDone, canRestToday };
 }
