@@ -893,23 +893,27 @@ export function BaseBoard({
       </g>
       <g transform={ISO} pointerEvents="none">
         {ground}
-        {/* Gentle colour patches so the grass isn't one flat green. */}
-        {Array.from({ length: (max - min + 1) * (max - min + 1) }, (_, i) => {
-          const x = min + (i % (max - min + 1));
-          const y = min + Math.floor(i / (max - min + 1));
-          const terr = state.terrain?.[`${x},${y}`] ?? 'grass';
+        {/* A natural meadow: soft round patches of sun and shade across several tiles. */}
+        {Array.from({ length: Math.ceil((max - min + 2) / 2) ** 2 }, (_, i) => {
+          const cols = Math.ceil((max - min + 2) / 2);
+          const gx = min + (i % cols) * 2 + 0.5;
+          const gy = min + Math.floor(i / cols) * 2 + 0.5;
+          const terr = state.terrain?.[`${Math.round(gx)},${Math.round(gy)}`] ?? 'grass';
           if (terr !== 'grass' && terr !== 'meadow') return null;
-          const n = Math.sin(x * 0.61 + y * 0.27) + Math.cos(x * 0.33 - y * 0.71) + Math.sin((x + y) * 0.19) * 0.6;
-          if (Math.abs(n) < 0.7) return null;
+          const n = Math.sin(gx * 0.61 + gy * 0.27) + Math.cos(gx * 0.33 - gy * 0.71) + Math.sin((gx + gy) * 0.19) * 0.6;
+          if (Math.abs(n) < 0.35) return null;
+          const jitterX = Math.sin(gx * 12.9 + gy * 78.2) * 0.6;
+          const jitterY = Math.cos(gx * 39.3 + gy * 11.1) * 0.6;
+          const r = T * (1.3 + Math.abs(Math.sin(gx * 3.1 + gy * 1.7)) * 0.9);
           return (
-            <rect
-              key={`tint${x},${y}`}
-              x={x * T}
-              y={y * T}
-              width={T}
-              height={T}
-              fill={n > 0 ? '#fff4b8' : '#06331a'}
-              opacity={Math.min(0.13, (Math.abs(n) - 0.7) * 0.09)}
+            <ellipse
+              key={`meadow${gx},${gy}`}
+              cx={(gx + 0.5 + jitterX) * T}
+              cy={(gy + 0.5 + jitterY) * T}
+              rx={r}
+              ry={r * 0.85}
+              fill={n > 0 ? 'url(#meadow-sun)' : 'url(#meadow-shade)'}
+              opacity={Math.min(1, (Math.abs(n) - 0.35) * 0.9)}
             />
           );
         })}

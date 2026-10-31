@@ -180,6 +180,21 @@ export function ArtDefs() {
         <stop offset="1" stopColor="#000000" stopOpacity="0" />
       </radialGradient>
       {/* Round bodies (animals, bushes): light top, shaded underside. */}
+      {/* Meadow light: soft sunlit and shaded patches across the grass. */}
+      <radialGradient id="meadow-sun" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#fff3b0" stopOpacity={0.2} />
+        <stop offset="100%" stopColor="#fff3b0" stopOpacity={0} />
+      </radialGradient>
+      <radialGradient id="meadow-shade" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#03291a" stopOpacity={0.26} />
+        <stop offset="100%" stopColor="#03291a" stopOpacity={0} />
+      </radialGradient>
+      {/* A soft contact shadow for animals (dark centre fading out). */}
+      <radialGradient id="crit-shadow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#000" stopOpacity={0.38} />
+        <stop offset="70%" stopColor="#000" stopOpacity={0.16} />
+        <stop offset="100%" stopColor="#000" stopOpacity={0} />
+      </radialGradient>
       <linearGradient id="hf-body" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#ffffff" stopOpacity="0.3" />
         <stop offset="0.5" stopColor="#ffffff" stopOpacity="0" />

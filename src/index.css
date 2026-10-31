@@ -9248,4 +9248,11 @@
     border: 1.5px solid #0c0f02;
     box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
   }
+
+  /* Removing a building: the second tap confirms. */
+  .base-secondary-btn.is-danger {
+    color: #fff;
+    background: #d6453d;
+    border-color: #8f1f19;
+  }
 }

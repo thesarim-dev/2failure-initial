@@ -316,14 +316,16 @@ function IsoCylinder({ cx, cy, r, z0, z1, s }: { cx: number; cy: number; r: numb
 }
 
 function IsoShadow({ x0, y0, x1, y1 }: { x0: number; y0: number; x1: number; y1: number }) {
-  const o = 10;
-  return (
+  // A soft shadow: a dark core with a feathered edge (layers, no blur filter).
+  const layer = (o: number, opacity: number) => (
     <polygon
-      points={pts([P(x0 - o + 14, y0 + 14), P(x1 + o + 6, y0 + 6), P(x1 + o + 6, y1 + o + 8), P(x0 - o + 14, y1 + o + 8)])}
+      key={o}
+      points={pts([P(x0 - o + 14, y0 + 14 - (o - 10) * 0.4), P(x1 + o + 6, y0 + 6 - (o - 10) * 0.4), P(x1 + o + 6, y1 + o + 8), P(x0 - o + 14, y1 + o + 8)])}
       fill="#000"
-      opacity={0.22}
+      opacity={opacity}
     />
   );
+  return <g>{[layer(17, 0.06), layer(13, 0.08), layer(9, 0.1), layer(5, 0.09)]}</g>;
 }
 
 /** Banners, plating or glow on a building's main body. */

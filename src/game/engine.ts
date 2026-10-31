@@ -36,7 +36,8 @@ import {
   EDGE_COST,
   RETIRED_DECOR,
   seasonState,
-  type EdgeKind
+  type EdgeKind,
+  STRUCTURES
 } from './catalog';
 
 // ---------------------------------------------------------------------------
@@ -1019,17 +1020,34 @@ export function moveItem(prev: GameState, uid: string, x: number, y: number): Ac
 }
 
 /** Decor is refunded in full; trophies go back to the shelf. Buildings stay. */
+/** Removing a building gives back half of the materials spent on its levels. */
+export function buildingRefund(itemId: string, paidLevel: number): Partial<Record<ResourceId, number>> {
+  const def = STRUCTURES.find((d) => d.id === itemId);
+  const out: Partial<Record<ResourceId, number>> = {};
+  if (!def) return out;
+  for (let l = 1; l <= Math.min(paidLevel, def.levels.length); l++) {
+    for (const id of RESOURCE_IDS) out[id] = (out[id] ?? 0) + (def.levels[l - 1].cost[id] ?? 0);
+  }
+  for (const id of RESOURCE_IDS) out[id] = Math.floor((out[id] ?? 0) / 2);
+  return out;
+}
+
 export function removeItem(prev: GameState, uid: string): ActionResult {
   const item = prev.placed.find((p) => p.uid === uid);
   if (!item) return { ok: false, error: 'notRemovable' };
   const isTrophy = item.itemId.startsWith(TROPHY_ITEM_PREFIX);
   const def = getItemDef(item.itemId);
-  if (!isTrophy && def?.kind !== 'decor') return { ok: false, error: 'notRemovable' };
+  // Everything can be removed except the HQ (the base needs it).
+  if (!isTrophy && (!def || item.itemId === 'hq')) return { ok: false, error: 'notRemovable' };
   const state = structuredClone(prev);
+  const job = state.constructions.find((c) => c.uid === uid);
   state.placed = state.placed.filter((p) => p.uid !== uid);
-  state.constructions = state.constructions.filter((job) => job.uid !== uid);
+  state.constructions = state.constructions.filter((c) => c.uid !== uid);
   if (def?.kind === 'decor') {
     for (const id of RESOURCE_IDS) state.resources[id] += def.cost[id] ?? 0;
+  } else if (def?.kind === 'structure') {
+    const refund = buildingRefund(item.itemId, job ? job.targetLevel : item.level);
+    for (const id of RESOURCE_IDS) state.resources[id] += refund[id] ?? 0;
   }
   return { ok: true, state };
 }

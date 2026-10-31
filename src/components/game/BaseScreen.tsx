@@ -25,7 +25,8 @@ import {
   PaintBucket,
   Paintbrush,
   RotateCw,
-  Users
+  Users,
+  Trash2
 } from 'lucide-react';
 import { getVariantById } from '../moves';
 import { localizeVariant } from '../../i18n/localize';
@@ -1113,7 +1114,8 @@ export function BaseScreen({
           onClose={() => setSheet(null)}
           onMove={() => {
             setSheet(null);
-            setMode({ kind: 'move', uid: selected.uid });
+            // Picked up where it stands: drag it, rotate it, or tap a new spot.
+            setMode({ kind: 'move', uid: selected.uid, spot: { x: selected.x, y: selected.y } });
           }}
           onNotice={setNotice}
         />
@@ -1156,6 +1158,7 @@ function ItemSheet({
   const [editing, setEditing] = useState(false);
   const [custom, setCustom] = useState<Customization>({ style: item.style, color: item.color as Customization['color'] });
   const canCustomize = hasCustomization(item.itemId);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
   const remove = () => {
     const result = game.remove(item.uid);
@@ -1278,16 +1281,7 @@ function ItemSheet({
               {g.customize.edit}
             </button>
           )}
-          <button
-            type="button"
-            className="base-secondary-btn"
-            onClick={() => {
-              fx.tap();
-              game.flip(item.uid);
-            }}>
-            <RotateCw size={16} strokeWidth={2.5} aria-hidden="true" />
-            {g.flip}
-          </button>
+          {/* Customize · Move · Remove (rotate while moving). */}
           {item.itemId !== 'hq' && (
             <button type="button" className="base-secondary-btn" onClick={onMove}>
               <MoveIcon size={16} strokeWidth={2.5} aria-hidden="true" />
@@ -1296,7 +1290,24 @@ function ItemSheet({
           )}
           {def?.kind === 'decor' && (
             <button type="button" className="base-secondary-btn" onClick={remove}>
+              <Trash2 size={16} strokeWidth={2.5} aria-hidden="true" />
               {g.remove} · {g.refund}
+            </button>
+          )}
+          {def?.kind === 'structure' && item.itemId !== 'hq' && (
+            <button
+              type="button"
+              className={`base-secondary-btn ${confirmRemove ? 'is-danger' : ''}`}
+              onClick={() => {
+                if (!confirmRemove) {
+                  fx.tap();
+                  setConfirmRemove(true);
+                  return;
+                }
+                remove();
+              }}>
+              <Trash2 size={16} strokeWidth={2.5} aria-hidden="true" />
+              {confirmRemove ? g.removeConfirm : `${g.remove} · ${g.halfBack}`}
             </button>
           )}
           {isTrophy && (

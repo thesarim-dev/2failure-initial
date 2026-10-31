@@ -39,6 +39,9 @@ export type GameCopy = {
   move: string;
   remove: string;
   refund: string;
+  /** Buildings give back half of their materials. */
+  halfBack: string;
+  removeConfirm: string;
   putAway: string;
   errors: Record<ActionError, string> & { unlockAt: (hq: number) => string; needsWeeksN: (n: number) => string };
   /** Seasonal decorations: days left in season, or when they come back. */
@@ -287,6 +290,8 @@ const en: GameCopy = {
   move: 'Move',
   remove: 'Remove',
   refund: 'Full refund',
+  halfBack: 'Half back',
+  removeConfirm: 'Tap again to remove',
   putAway: 'Put back on shelf',
   needMore: (amount, resource, sets, from) =>
     `You need ${amount} more ${resource.toLowerCase()}, about ${sets} ${{ stone: 'upper-body', timber: 'leg', crystal: 'core' }[from]} set${sets === 1 ? '' : 's'}.`,
@@ -623,6 +628,8 @@ const he: GameCopy = {
   move: 'הזזה',
   remove: 'הסרה',
   refund: 'החזר מלא',
+  halfBack: 'חצי חוזר',
+  removeConfirm: 'הקישו שוב להסרה',
   putAway: 'החזר למדף',
   needMore: (amount, resource, sets, from) =>
     `חסרים ${amount} ${resource}, בערך ${sets === 1 ? 'סט אחד' : `${sets} סטים`} של ${{ stone: 'פלג גוף עליון', timber: 'רגליים', crystal: 'ליבה' }[from]}.`,
@@ -959,6 +966,8 @@ const ar: GameCopy = {
   move: 'نقل',
   remove: 'إزالة',
   refund: 'استرداد كامل',
+  halfBack: 'يعود النصف',
+  removeConfirm: 'اضغط مجدداً للإزالة',
   putAway: 'أعده إلى الرف',
   needMore: (amount, resource, sets, from) =>
     `تحتاج إلى ${amount} وحدة إضافية من ${resource}، أي نحو ${sets === 1 ? 'مجموعة واحدة' : `${sets} مجموعات`} ${{ stone: 'للجزء العلوي', timber: 'للساقين', crystal: 'للجذع' }[from]}.`,

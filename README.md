@@ -134,6 +134,8 @@ The home screen is your command center. Everything you need for today's session 
 * **Drag to place:** once something is on the map, drag it with your finger to fine-tune the spot (it only moves where it fits), then tap Place here. While placing or moving, the controls (✕ Cancel, ✓ Place here, ↻ Rotate) sit where the Build button is.
 * **Long-press to move:** press and hold a building or decoration to pick it up, drag it, and set it down. A quick tap still opens its sheet; a quick drag still pans the map.
 * **Things join up** when you place them next to the same kind (the build menu says which): flower arches make a **pergola** in a line or an **arcade** side by side; flower beds grow into **one big bed**; garden beds make **one long bed**; lantern strings make **one long string of lights**; bridges make **one long bridge**; and training equipment (pull-up bar, dip bars, punching bag, plyo box) shares a **gym floor**. Rotated arches, lanterns, bridges and beds only join neighbours facing the same way.
+* **Tapping something** shows Customize · Move · Remove (buildings also show Upgrade). Removing a building asks once more and gives back half its materials; decorations refund in full; the HQ stays. Rotate while moving (↻ in the dock).
+* **Lifelike animals:** cows, sheep, pigs, chickens, rabbits, mallards, dogs, cats and foxes with real shapes, shading and soft shadows, at realistic sizes next to people. The grass has soft patches of sun and shade, and buildings cast soft shadows.
 * **What you tapped glows** on the map while its sheet is open.
 
 ### Progression (built to keep you building)
