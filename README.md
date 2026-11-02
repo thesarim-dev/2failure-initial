@@ -252,10 +252,6 @@ Tile labels are 12px or larger, the rest banner's buttons are 44px touch targets
 * **Your plan:** a flat card with the plan's days a week ("5 · days a week · Tap to change"); tapping opens your plan.
 * **Ambient background (dark mode):** slow-drifting lime, teal and cyan light behind every screen, calm but alive on training days; rest days switch to the starry night sky.
 
-### Rest timer
-
-After every set a banner drops down from the top of the screen and stays while you move around the app (the page shifts down so it never covers anything). Its colour slides smoothly from green through yellow to red as the rest runs out; at zero it chimes, buzzes and offers **Start set**. Adjust with −15 s / +15 s, or skip with ✕. Rest length follows the evidence (`src/lib/restTimes.ts`): barbell lifts 3:00, hard and loaded moves 2:00, standard bodyweight 1:30, core / calves / holds 1:00, moving on to the next exercise 1:00, and no timer after the day's last set.
-
 ### Progress (in Settings)
 
 Open it from **Settings → Your progress → View**. Sets this week, streak, all sets in the last 6 months and new records this month; a 12-week training calendar (rest days in violet); sets per week split into upper body / legs / core; every exercise with its best set, improvement since the first session and a trend chart; and a list of personal records.
