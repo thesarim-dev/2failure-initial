@@ -27,8 +27,7 @@ import { localizeVariant } from './i18n/localize';
 import { DAYS_FOR_TEMPLATE, TEMPLATE_FOR_DAYS, lineupFromPlan, planForPhase, slotProgress } from './lib/plan';
 import { addSlotHint, readSlotHints } from './lib/slotHints';
 import { supabase } from './lib/supabase';
-import { REST, restSecondsFor } from './lib/restTimes';
-import { RestTimerBanner, type RestTimer } from './components/RestTimerBanner';
+import { restSecondsFor } from './lib/restTimes';
 import { fetchLastSet, type LastSet } from './lib/lastSet';
 import { useTrainedDays } from './hooks/useTrainedDays';
 import { FriendsScreen } from './components/FriendsScreen';
@@ -341,29 +340,6 @@ export function MainApp() {
   // Your last set of the exercise you're doing: a target, and the rep prompt's default.
   const [lastSet, setLastSet] = useState<LastSet | null>(null);
 
-  // Rest timer between sets (remembered across screens and reloads).
-  const restKey = user?.id ? `2failure-user-${user.id}-rest-timer` : null;
-  const [restTimer, setRestTimerState] = useState<RestTimer | null>(() => {
-    try {
-      const saved = restKey ? (JSON.parse(window.localStorage.getItem(restKey) ?? 'null') as RestTimer | null) : null;
-      return saved && saved.endsAt > Date.now() - 10 * 60 * 1000 ? saved : null;
-    } catch {
-      return null;
-    }
-  });
-  const setRestTimer = useCallback(
-    (next: RestTimer | null) => {
-      setRestTimerState(next);
-      try {
-        if (!restKey) return;
-        if (next) window.localStorage.setItem(restKey, JSON.stringify(next));
-        else window.localStorage.removeItem(restKey);
-      } catch {
-        // Storage blocked: the timer still runs for this session.
-      }
-    },
-    [restKey]
-  );
   const finishingRef = useRef(false);
   const [isFinishing, setIsFinishing] = useState(false);
 
@@ -373,7 +349,6 @@ export function MainApp() {
   );
 
   const handleSelectMove = (move: Move) => {
-    setRestTimer(null);
     setLastSet(null);
     if (user) {
       void fetchLastSet(user.id, move.id)
@@ -435,20 +410,6 @@ export function MainApp() {
       todayPlan.exercises.length > 0 &&
       todayPlan.exercises.every((e) => (e.id === categoryId ? e.done + 1 : e.done) >= e.target);
     setWorkoutDone(dayDone);
-    // Rest before the next set: this exercise's rest if more sets remain,
-    // a short transition if the next set is a different exercise.
-    {
-      const here = todayPlan?.exercises.find((e) => e.id === categoryId);
-      const moreHere = !here || here.done + 1 < here.target;
-      const nextUp = moreHere ? categoryId : todayPlan?.exercises.find((e) => e.id !== categoryId && e.done < e.target)?.id;
-      const seconds = dayDone || !nextUp ? 0 : moreHere ? restSecondsFor(categoryId) : REST.nextExercise;
-      const nextMove = nextUp ? resolveMoveById(nextUp) : null;
-      setRestTimer(
-        seconds > 0 && nextUp && nextMove
-          ? { endsAt: Date.now() + seconds * 1000, total: seconds, nextId: nextUp, nextName: nextMove.name, nextExercise: !moreHere }
-          : null
-      );
-    }
     // The server decides the reward (and checks the set is plausible). It also
     // writes the coin ledger row the streak guard looks for, so the streak
     // waits until that save actually succeeds.
@@ -714,13 +675,12 @@ export function MainApp() {
 
 
   // While resting, the page moves down so the banner never covers anything.
-  const showRestBanner = !!restTimer && appState !== 'WORKOUT' && appState !== 'REP_PROMPT' && appState !== 'WEIGHT_REP_PROMPT';
 
   return (
     <div
       className={`min-h-screen w-full bg-[#f4f4f0] dark:bg-[#1a1a1a] text-black dark:text-[#f4f4f0] selection:bg-[#BEF028] selection:text-black ${
         showTabBar ? 'has-tab-bar' : ''
-      } ${showRestBanner ? 'has-rest-banner' : ''}`}>
+      }`}>
       {/* Screens fade in. Opacity only: a transform would break fixed-position screens. */}
       {/* Ambient light behind every screen (dark mode): slow lime/teal/cyan aurora. */}
       <div className="app-ambient" aria-hidden="true">
@@ -925,21 +885,6 @@ export function MainApp() {
         />
       )}
       </motion.div>
-
-      {showRestBanner && restTimer && (
-        <RestTimerBanner
-          timer={restTimer}
-          onAdjust={(sec) =>
-            setRestTimer({ ...restTimer, endsAt: Math.max(Date.now(), restTimer.endsAt + sec * 1000), total: Math.max(15, restTimer.total + sec) })
-          }
-          onDismiss={() => setRestTimer(null)}
-          onStart={() => {
-            const move = resolveMoveById(restTimer.nextId);
-            if (move) handleSelectMove(move);
-            else setRestTimer(null);
-          }}
-        />
-      )}
 
       {showTabBar && (
         <AppTabBar

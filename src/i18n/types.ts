@@ -378,16 +378,6 @@ export interface AppTranslations {
     less: string;
     more: string;
   };
-  rest: {
-    resting: string;
-    nextExercise: string;
-    over: string;
-    next: (name: string) => string;
-    start: string;
-    less: string;
-    more: string;
-    skip: string;
-  };
   summary: {
     title: string;
     /** "in 11s" next to the coins: how long the set took. */

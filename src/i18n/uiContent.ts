@@ -50,7 +50,6 @@ type UiContent = {
   login: import('./types').AppTranslations['login'];
   workout: import('./types').AppTranslations['workout'];
   summary: import('./types').AppTranslations['summary'];
-  rest: import('./types').AppTranslations['rest'];
   upNext: import('./types').AppTranslations['upNext'];
   lastSet: import('./types').AppTranslations['lastSet'];
   social: import('./types').AppTranslations['social'];
@@ -344,16 +343,6 @@ const en: UiContent = {
     earlierWeighted: (kg, reps) => `Last set: ${kg} kg × ${reps}`,
     less: 'One rep less',
     more: 'One rep more'
-  },
-  rest: {
-    resting: 'Rest',
-    nextExercise: 'Rest, then next exercise',
-    over: "Rest's over",
-    next: (name) => `Next: ${name}`,
-    start: 'Start set',
-    less: '15 seconds less',
-    more: '15 seconds more',
-    skip: 'Skip rest'
   },
   summary: {
     title: 'Set logged!',
@@ -749,16 +738,6 @@ const he: UiContent = {
     less: 'חזרה אחת פחות',
     more: 'חזרה אחת יותר'
   },
-  rest: {
-    resting: 'מנוחה',
-    nextExercise: 'מנוחה, ואז התרגיל הבא',
-    over: 'המנוחה נגמרה',
-    next: (name) => `הבא: ${name}`,
-    start: 'התחילו סט',
-    less: '15 שניות פחות',
-    more: '15 שניות יותר',
-    skip: 'דלגו על המנוחה'
-  },
   summary: {
     title: 'הסט נרשם!',
     inTime: (time) => `תוך ${time}`,
@@ -1153,16 +1132,6 @@ const ar: UiContent = {
     earlierWeighted: (kg, reps) => `المجموعة السابقة: ${kg} كغ × ${reps}`,
     less: 'تكرار أقل',
     more: 'تكرار أكثر'
-  },
-  rest: {
-    resting: 'راحة',
-    nextExercise: 'راحة، ثم التمرين التالي',
-    over: 'انتهت الراحة',
-    next: (name) => `التالي: ${name}`,
-    start: 'ابدأ المجموعة',
-    less: '15 ثانية أقل',
-    more: '15 ثانية أكثر',
-    skip: 'تخطَّ الراحة'
   },
   summary: {
     title: 'تم تسجيل المجموعة!',
